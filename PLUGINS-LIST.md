@@ -13,4 +13,4 @@ Scenes|[markerTagToScene](plugins/markerTagToScene)|Adds primary tag of Scene Ma
 
 Category|Plugin Name|Description|Minimum Stash version
 --------|-----------|-----------|---------------------
-Files|[Stash Sqlite Renamer](scripts/Sqlite_Renamer/Stash_Sqlite_Renamer)|Using metadata from your database (SQLITE) to rename your file.|v0.7
+Maintenance|[Stash Sqlite Renamer](scripts/Sqlite_Renamer/Stash_Sqlite_Renamer)|Renames your files using stash's metadata.|v0.7
