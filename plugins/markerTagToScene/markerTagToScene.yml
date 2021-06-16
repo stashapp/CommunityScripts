@@ -1,0 +1,14 @@
+# example plugin config
+name: Scene Marker Tags to Scene
+description: Adds primary tag of Scene Marker to the Scene on marker create/update.
+url: https://github.com/stashapp/CommunityScripts
+version: 1.0
+exec:
+  - markerTagToScene.js
+interface: js
+hooks:
+  - name: Update scene with scene marker tag
+    description: Adds primary tag of Scene Marker to the Scene on marker create/update.
+    triggeredBy: 
+      - SceneMarker.Create.Post
+      - SceneMarker.Update.Post
