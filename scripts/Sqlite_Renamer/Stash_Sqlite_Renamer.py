@@ -9,6 +9,8 @@ DB_PATH = r"C:\Users\Winter\.stash\Full.sqlite"
 USING_LOG = True
 # DRY_RUN = True | Will don't change anything in your database & disk.
 DRY_RUN = False
+# Only take female performer name
+FEMALE_ONLY = False
 
 print("Path:", DB_PATH)
 if DRY_RUN == True:
@@ -49,11 +51,21 @@ def get_Perf_fromSceneID(id_scene):
     if len(record) > 3:
         print("More than 3 performers.")
     else:
+        perfcount=0
         for row in record:
             perf_id = str(row[0])
-            cursor.execute("SELECT name from performers WHERE id=?;", [perf_id])
+            cursor.execute("SELECT name,gender from performers WHERE id=?;", [perf_id])
             perf = cursor.fetchall()
-            perf_list += str(perf[0][0]) + " "
+            if FEMALE_ONLY == True:
+                # Only take female gender
+                if str(perf[0][1]) == "FEMALE":
+                    perf_list += str(perf[0][0]) + " "
+                    perfcount += 1
+                else:
+                    continue
+            else:
+                perf_list += str(perf[0][0]) + " "
+                perfcount += 1
     perf_list = perf_list.strip()
     return perf_list
 
@@ -123,7 +135,8 @@ def edit_db(queryfilename,optionnal_query=None):
         progress.update(progressbar_Index + 1)
         progressbar_Index += 1
         scene_ID = str(row[0])
-        scene_fullPath = str(row[1])
+        # Fixing letter (X:Folder -> X:\Folder)
+        scene_fullPath =re.sub(r"^(.):\\*", r"\1:\\", str(row[1]))
         scene_Directory = os.path.dirname(scene_fullPath)
         scene_Extension = os.path.splitext(scene_fullPath)[1]
         scene_Title = str(row[2])
@@ -170,9 +183,9 @@ def edit_db(queryfilename,optionnal_query=None):
             "studio": studio_name,
             "height": scene_height
         }
-
+        #print("[DEBUG] INFO: {}".format(scene_information))
         newfilename = makeFilename(scene_information, queryfilename) + scene_Extension
-
+        #print("[DEBUG] Name:{}".format(newfilename))
         # Remove illegal character for Windows ('#' and ',' is not illegal you can remove it)
         newfilename = re.sub('[\\/:"*?<>|#,]+', '', newfilename)
         newpath = scene_Directory + "\\" + newfilename
@@ -180,24 +193,12 @@ def edit_db(queryfilename,optionnal_query=None):
             print("The Path is too long...\n", newpath)
             reducePath = len(scene_Directory) + len(scene_Date) + len(scene_Title) + len(scene_Extension) + 3
             if reducePath < 240:
-                newpath = scene_Directory + "\\" + \
-                    makeFilename(scene_information,"$date - $title") + scene_Extension
+                newpath = scene_Directory + "\\" + makeFilename(scene_information,"$date - $title") + scene_Extension
                 print("Reducing path to: ", newpath)
         if (newpath == scene_fullPath):
             #print("Files already renamed (Db).\n")
             continue
         else:
-            #print("ID: ", scene_ID)
-            #print("Path: ", scene_fullPath)
-            #print("Directory:", scene_Directory)
-            #print("Extension: ", scene_Extension)
-            #print("Title: ", scene_Title)
-            #print("Date: ", scene_Date)
-            #print("Studio ID: ", scene_Studio_id)
-            #print("Performer name: ", performer_name)
-            #print("Studio name: ", studio_name)
-            #print("Resolution: ", scene_height)
-            #print("-------------")
             print("OLD Filename: ", os.path.basename(scene_fullPath))  # Get filename
             print("NEW Filename: ", newfilename)
             print("NEW Path: ", newpath)
@@ -227,7 +228,7 @@ def edit_db(queryfilename,optionnal_query=None):
                     print("[DRY_RUN] File should be renamed")
                     print("{} -> {}\n".format(scene_fullPath,newpath), file=open("rename_dryrun.txt", "a", encoding='utf-8'))
             else:
-                print("File don't exist in your Disk/Drive")
+                print("File don't exist in your Disk/Drive ({})".format(scene_fullPath))
             print("\n")
         # break
     progress.finish()
@@ -250,15 +251,15 @@ except sqlite3.Error as error:
 # Select Scene with Specific Tags
 tags_dict = {
     '1': {
-        'tag': '1. JAV',
+        'tag': '!1. JAV',
         'filename': '$title'
     },
     '2': {
-        'tag': '1. Anime',
+        'tag': '!1. Anime',
         'filename': '$date $title'
     },
     '3': {
-        'tag': '1. Western',
+        'tag': '!1. Western',
         'filename': '$date $performer - $title [$studio]'
     }
 }
