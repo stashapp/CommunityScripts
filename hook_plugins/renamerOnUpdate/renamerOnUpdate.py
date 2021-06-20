@@ -2,7 +2,6 @@ import json
 import os
 import re
 import sqlite3
-import subprocess
 import sys
 
 import requests
@@ -11,6 +10,7 @@ import log
 
 log.LogDebug("--Starting Hook 'Update' Plugin--")
 
+
 FRAGMENT = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = FRAGMENT["server_connection"]
 FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
@@ -18,7 +18,7 @@ FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
 # File to save what is renamed, so it could be useful to revert what you done. 
 # Look like: IDSCENE|OLD_FILENAME|NEW_FILENAME
 # Blank or None if you don't want this file.
-STASH_LOGFILE = r"C:\Users\Winter\.stash\plugins\Hooks\rename_log.txt"
+STASH_LOGFILE = r""
 
 # ! You have other things to change at line 351-369 !
 
