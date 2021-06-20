@@ -17,7 +17,7 @@ FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
 
 # File to save what is renamed, so it could be useful to revert what you done. 
 # Look like: IDSCENE|OLD_FILENAME|NEW_FILENAME
-# Blank or None if you don't want this file.
+# Blank or None if you don't want this file, or a working path like this: C:\Users\Winter\.stash\plugins\Hooks\rename_log.txt
 STASH_LOGFILE = r""
 
 # ! You have other things to change at line 351-369 !
