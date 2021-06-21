@@ -421,8 +421,8 @@ new_filename = makeFilename(scene_information, result_template) + file_extension
 new_filename = re.sub('[\\/:"*?<>|#,]+', '', new_filename)
 
 # Replace the old filename by the new in the filepath
-#new_path = current_path.replace(current_filename,new_filename)
-new_path = re.sub('{}$'.format(current_filename), new_filename, current_path)
+new_path = current_path.replace(current_filename,new_filename)
+#new_path = re.sub('{}$'.format(current_filename), new_filename, current_path)
 
 # Trying to prevent error with long path for Win10
 # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
@@ -438,7 +438,8 @@ if len(new_path) > 240:
             new_filename = makeFilename(scene_information, "$date - $title") + file_extension
         else:
             new_filename = makeFilename(scene_information, "$title") + file_extension
-        new_path = re.sub('{}$'.format(current_filename), new_filename, current_path)
+        new_path = current_path.replace(current_filename,new_filename)
+        #new_path = re.sub('{}$'.format(current_filename), new_filename, current_path)
         log.LogInfo("Reduced filename to: {}", new_filename)
     else:
         log.LogError("Can't manage to reduce the path, operation aborted.")
