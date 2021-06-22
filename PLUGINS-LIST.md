@@ -20,3 +20,4 @@ Maintenance|Scene.Update|[renamerOnUpdate](hook_plugins/renameronUpdate)|Rename 
 
 Category|Plugin Name|Description|Minimum Stash version
 --------|-----------|-----------|---------------------
+Maintenance|[Stash Sqlite Renamer](scripts/Sqlite_Renamer/Stash_Sqlite_Renamer)|Renames your files using stash's metadata.|v0.7
