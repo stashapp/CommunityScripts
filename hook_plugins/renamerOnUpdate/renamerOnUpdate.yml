@@ -1,0 +1,12 @@
+name: Update_Hook
+description: Hook for update scenes
+version: 1.0
+exec:
+  - python
+  - "{pluginDir}/renamerOnUpdate.py"
+interface: raw
+hooks:
+  - name: Renamer
+    description: Rename files when you update
+    triggeredBy: 
+      - Scene.Update.Post
