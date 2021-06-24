@@ -14,13 +14,13 @@ Modify `config.py` to enter values for `API_KEY` and `SERVER_URL`.
 
 ## Generating NFO files
 
-`python kodi-helper.py generate-nfo [--inline | --outdir=<output directory>] [--overwrite] [--filter=<filter string>]`
+`python kodi-helper.py generate-nfo [--inline | --outdir=<output directory>] [--overwrite] [--filter=<filter string>] [--preserve-path --truncate-prefix=<prefix>] [--genre <genre> ...]`
 
 All nfo files will be named using the same basename as the source file. For example: `foo.mp4` will have `foo.nfo` generated. 
 
 If `--inline` is used, then nfo files will be created alongside the source files. This requires the source files being accessible using the `path` stored by stash. This usually means that the script must be run on the same machine as stash, and if the stash libraries are relative, then the script must be run from the same directory as stash.
 
-If `--outdir` is provided, then all nfo files will be created in the provided directory. Note that this may cause issues if there are source files with the same basename, as they will generate the same filename.
+If `--outdir` is provided, then all nfo files will be created in the provided directory. Note that this may cause issues if there are source files with the same basename, as they will generate the same filename. If `--preserve-path` is included, then the full path of the source file will be added to the directory provided with `--outdir`. The path can be stripped of a prefix by providing a `--truncate-prefix` parameter.
 
 The nfo files will not be overwritten by default. This can be overridden with `--overwrite`.
 
@@ -30,13 +30,17 @@ nfo files will be generated for all scenes in the system. The scenes can be filt
 
 This will only generate for files that include `foo` in the path.
 
+Genres can be added to nfo files by providing `--genre` parameters. More than one `--genre <genre>` parameter may be provided (ie `--genre=foo --genre=bar`).
+
 ## Generating STRM files
 
-`python kodi-helper.py generate-strm --outdir=<output directory> [--hierarchy=<hierarchy string>] [--overwrite] [--filter=<filter string>]`
+`python kodi-helper.py generate-strm --outdir=<output directory> [--preserve-path --truncate-prefix=<prefix>] [--use-source-filenames] [--overwrite] [--filter=<filter string>] [--genre <genre> ...]`
 
-All strm files will be named by the scene ID in stash. ie `30.strm`. An nfo file will be generated alongside the strm file. 
+This will generate strm and nfo files.
 
-All files will be generated in the directory provided by `--outdir`.
+All strm files will be named by the scene ID in stash. ie `30.strm`. If `--use-source-filenames` is provided, then the strm and nfo filenames will be named by the source file instead.
+
+All files will be generated in the directory provided by `--outdir`. If `--preserve-path` is included, then the full path of the source file will be added to the directory provided with `--outdir`. The path can be stripped of a prefix by providing a `--truncate-prefix` parameter. 
 
 The generated files will not be overwritten by default. This can be overridden with `--overwrite`.
 

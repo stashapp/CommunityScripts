@@ -14,8 +14,12 @@ def parseArgs():
     parser.add_argument("mode", metavar="MODE", choices=["generate-nfo", "generate-strm"], help="generate-nfo or generate-strm")
     parser.add_argument("--inline", action="store_true", help="Generate nfo files along side video files")
     parser.add_argument("--outdir", metavar="<output directory>", help="Generate files in <outdir>")
+    parser.add_argument("--preserve-path", action="store_true", help="Include source file directory structure in output directory (with --outdir only)")
+    parser.add_argument("--truncate-prefix", type=str, metavar="<path prefix>", help="Remove prefix from output directory (with --preserve-path only)")
+    parser.add_argument("--use-source-filenames", action="store_true", help="Use source filenames for strm files instead of stash id")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite nfo/strm files if already present")
     parser.add_argument("--filter", metavar="<filter string>", help="JSON graphql string to filter scenes with")
+    parser.add_argument("--genre", metavar="<genre>", help="Genre to assign. May be included multiple times", action="append")
     return parser.parse_args()
 
 # raw plugins may accept the plugin input from stdin, or they can elect
@@ -55,7 +59,7 @@ def generateNFOFiles(args):
             if not args.overwrite and os.path.exists(output):
                 continue
             
-            nfo = generateNFO(scene) 
+            nfo = generateNFO(scene, args) 
             writeFile(output, nfo, True)
 
         i += 1
@@ -80,7 +84,15 @@ def generateSTRMFiles(args):
         scenes = getScenes(i, filter)
 
         for scene in scenes:
-            name = os.path.join(args.outdir, scene["id"])
+            name = ""
+            outdir = getOutputDir(scene["path"], args)
+            
+            if args.use_source_filenames:
+                name = basename(os.path.splitext(scene["path"])[0])
+            else:
+                name = scene["id"]
+            
+            name = os.path.join(outdir, name)
 
             # don't regenerate if file already exists and not overwriting
             strmOut = name + ".strm"
@@ -90,28 +102,40 @@ def generateSTRMFiles(args):
 
             output = name + ".nfo"
             if args.overwrite or not os.path.exists(output):
-                nfo = generateNFO(scene) 
+                nfo = generateNFO(scene, args) 
                 writeFile(output, nfo, True)
 
         i += 1
 
 def basename(f):
-    # file could have a different separator, so check both
-    i = f.rfind("\\")
-    if i == -1:
-        i = f.rfind("/")
-    
-    return f[i+1:]
+    f = os.path.normpath(f)
+    return os.path.basename(f)
 
 def getOutputSTRMFile(sceneID, args):
     return os.path.join(args.outdir, "{}.strm".format(sceneID))
+
+def getOutputDir(sourceFile, args):
+    ret = args.outdir
+
+    if args.preserve_path:
+        if args.truncate_prefix != None:
+            toRemove = args.truncate_prefix
+            if sourceFile.startswith(toRemove):
+                sourceFile = sourceFile[len(toRemove):]
+
+        sourceFile = os.path.normpath(sourceFile)
+        ret = os.path.join(args.outdir, os.path.dirname(sourceFile))
+
+    return ret
 
 def getOutputNFOFile(sourceFile, args):
     if args.inline:
         # just replace the extension
         return os.path.splitext(sourceFile)[0]+".nfo"
 
-    ret = os.path.join(args.outdir, basename(sourceFile))
+    outdir = getOutputDir(sourceFile, args)
+
+    ret = os.path.join(outdir, basename(sourceFile))
     return os.path.splitext(ret)[0]+".nfo"
 
 def getCount(sceneFilter):
@@ -197,7 +221,7 @@ def getSceneTitle(scene):
 def generateSTRM(scene):
     return scene["paths"]["stream"]
 
-def generateNFO(scene):
+def generateNFO(scene, args):
     ret = """
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <movie>
@@ -211,6 +235,7 @@ def generateNFO(scene):
     {performers}
     {thumbs}
     {fanart}
+    {genres}
 </movie>
 """
     tags = ""
@@ -261,7 +286,12 @@ def generateNFO(scene):
 
     fanart = """<fanart>{}</fanart>""".format("\n".join(fanart))
 
-    ret = ret.format(title = getSceneTitle(scene), rating = rating, id = scene["id"], tags = tags, date = date, studio = studio, performers = performers, details = scene["details"] or "", thumbs = "\n".join(thumbs), fanart = fanart)
+    genres = []
+    if args.genre != None:
+        for g in args.genre:
+            genres.append("<genre>{}</genre>".format(g))
+
+    ret = ret.format(title = getSceneTitle(scene), rating = rating, id = scene["id"], tags = tags, date = date, studio = studio, performers = performers, details = scene["details"] or "", thumbs = "\n".join(thumbs), fanart = fanart, genres = "\n".join(genres))
 
     return ret
 
