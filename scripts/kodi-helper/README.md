@@ -6,7 +6,7 @@ Kodi helper generates files that can be imported with Kodi, to integrate your st
 
 Kodi helper can generate nfo files alongside the source files, or in a specific directory. For more information on how Kodi uses nfo files, see the [Kodi wiki page](https://kodi.wiki/view/NFO_files).
 
-Kodi helper can also generate strm files, along with nfo files, in a customisable hierarchical directory structure. For more information on how Kodi uses strm files, see the [Kodi wiki page](https://kodi.wiki/view/Internet_video_and_audio_streams).
+Kodi helper can also generate strm files, along with nfo files. For more information on how Kodi uses strm files, see the [Kodi wiki page](https://kodi.wiki/view/Internet_video_and_audio_streams).
 
 ## Configuration
 
@@ -36,14 +36,7 @@ This will only generate for files that include `foo` in the path.
 
 All strm files will be named by the scene ID in stash. ie `30.strm`. An nfo file will be generated alongside the strm file. 
 
-By default, all files will be generated in the directory provided by `--outdir`. The output files can be organised by their metadata by providing the `--hierarchy` parameter. This parameter is a comma-delimited list of metadata to organise by. Valid values are:
-* `studios`
-* `tags`
-* `performers`
-* `movies`
-* `rating`
-
-For example, if `studios` is included in the `hierarchy` paratemer, and a scene has a studio, its strm and nfo files will be saved in `<outdir>/studios/<studio name>/`. If a scene does not have any applicable metadata to place it in a subdirectory, then the strm and nfo files will be generated in `<outdir>`.
+All files will be generated in the directory provided by `--outdir`.
 
 The generated files will not be overwritten by default. This can be overridden with `--overwrite`.
 

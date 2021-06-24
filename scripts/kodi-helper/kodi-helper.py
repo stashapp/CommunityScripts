@@ -16,7 +16,6 @@ def parseArgs():
     parser.add_argument("--outdir", metavar="<output directory>", help="Generate files in <outdir>")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite nfo/strm files if already present")
     parser.add_argument("--filter", metavar="<filter string>", help="JSON graphql string to filter scenes with")
-    parser.add_argument("--hierarchy", metavar="<hierarchy string>", help="Generate strm/nfo files in a hierarchy based on scene metadata. See README for details")
     return parser.parse_args()
 
 # raw plugins may accept the plugin input from stdin, or they can elect
@@ -57,45 +56,9 @@ def generateNFOFiles(args):
                 continue
             
             nfo = generateNFO(scene) 
-            writeFile(output, nfo)
+            writeFile(output, nfo, True)
 
         i += 1
-
-def parseHierarchy(args):
-    h = args.hierarchy
-    items = h.split(",")
-
-    ret = {}
-    for i in items:
-        ret[i] = True
-    
-    return ret
-
-def generateHierarchyFilenames(scene, args, hierarchyFlags):
-    ret = []
-    bn = scene["id"]
-    if hierarchyFlags.get("studios") and scene["studio"] != None:
-        ret.append(os.path.join(args.outdir, "studios", sanitiseName(scene["studio"]["name"]), bn))
-    
-    if hierarchyFlags.get("tags"):
-        for t in scene["tags"]:
-            ret.append(os.path.join(args.outdir, "tags", sanitiseName(t["name"]), bn))
-    
-    if hierarchyFlags.get("performers"):
-        for p in scene["performers"]:
-            ret.append(os.path.join(args.outdir, "performers", sanitiseName(p["name"]), bn))
-
-    if hierarchyFlags.get("movies"):
-        for m in scene["movies"]:
-            ret.append(os.path.join(args.outdir, "movies", sanitiseName(m["movie"]["name"]), bn))
-
-    if hierarchyFlags.get("rating") and scene["rating"] != None:
-        ret.append(os.path.join(args.outdir, "rating", "{}".format(scene["rating"]), bn))
-    
-    return ret
-
-def sanitiseName(name: str):
-    return re.sub("[*?\":]", "", name)
 
 def generateSTRMFiles(args):
     if args.outdir == "":
@@ -111,30 +74,24 @@ def generateSTRMFiles(args):
     total = getCount(filter)
     pages = math.ceil(total / BATCH_SIZE)
 
-    hierarchies = parseHierarchy(args)
-
     i = 1
     while i <= pages:
         print("Processing page {} of {}".format(i, pages))
         scenes = getScenes(i, filter)
 
         for scene in scenes:
-            # TODO - generate hierarchy
-            names = generateHierarchyFilenames(scene, args, hierarchies)
-            if len(names) == 0:
-                names = [os.path.join(args.outdir, scene["id"])]
+            name = os.path.join(args.outdir, scene["id"])
 
-            for name in names:
-                # don't regenerate if file already exists and not overwriting
-                strmOut = name + ".strm"
-                if args.overwrite or not os.path.exists(strmOut):
-                    data = generateSTRM(scene)
-                    writeFile(strmOut, data)
+            # don't regenerate if file already exists and not overwriting
+            strmOut = name + ".strm"
+            if args.overwrite or not os.path.exists(strmOut):
+                data = generateSTRM(scene)
+                writeFile(strmOut, data, False)
 
-                output = name + ".nfo"
-                if args.overwrite or not os.path.exists(output):
-                    nfo = generateNFO(scene) 
-                    writeFile(output, nfo)
+            output = name + ".nfo"
+            if args.overwrite or not os.path.exists(output):
+                nfo = generateNFO(scene) 
+                writeFile(output, nfo, True)
 
         i += 1
 
@@ -228,11 +185,11 @@ query findScenes($filter: FindFilterType!, $scene_filter: SceneFilterType!) {
 
 def addAPIKey(url):
     if config.api_key:
-        return url + "&apiKey=" + config.api_key
+        return url + "&apikey=" + config.api_key
     return url
 
 def getSceneTitle(scene):
-    if scene["title"] != "":
+    if scene["title"] != None and scene["title"] != "":
         return scene["title"]
     
     return basename(scene["path"])
@@ -293,10 +250,10 @@ def generateNFO(scene):
         i += 1
 
     thumbs = [
-        """<thumb aspect="poster">{}</thumb>""".format(scene["paths"]["screenshot"])
+        """<thumb aspect="poster">{}</thumb>""".format(addAPIKey(scene["paths"]["screenshot"]))
     ]
     fanart = [
-        """<thumb>{}</thumb>""".format(scene["paths"]["screenshot"])
+        """<thumb>{}</thumb>""".format(addAPIKey(scene["paths"]["screenshot"]))
     ]
     if logo != "":
         thumbs.append("""<thumb aspect="clearlogo">{}</thumb>""".format(logo))
@@ -308,9 +265,12 @@ def generateNFO(scene):
 
     return ret
 
-def writeFile(fn, data):
+def writeFile(fn, data, useUTF):
+    encoding = None
+    if useUTF:
+        encoding = "utf-8-sig"
     os.makedirs(os.path.dirname(fn), exist_ok=True)
-    f = open(fn, "w", encoding="utf-8-sig")
+    f = open(fn, "w", encoding=encoding)
     f.write(data)
     f.close()
 
