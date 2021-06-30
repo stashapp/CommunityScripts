@@ -461,6 +461,8 @@ except sqlite3.Error as error:
     sys.exit(1)
 
 # Looking for duplicate filename
+new_filename = new_filename.replace("'", "''")  # Fixing a bug whereby filenames with apostrophes would end the string prematurely, and would throw a syntax error
+                                                #when executing the query
 sqlite_query = "SELECT id FROM scenes WHERE path LIKE '%{}%';".format(new_filename)
 cursor.execute(sqlite_query)
 dupl_check = cursor.fetchall()
