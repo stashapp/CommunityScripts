@@ -479,9 +479,11 @@ if (os.path.isfile(current_path) == True):
             f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, current_path, new_path))
             f.close()
     else:
-        log.LogWarning("[OS] File failed to rename ? {}".format(new_path))
+        log.LogError("[OS] File failed to rename ? {}".format(new_path))
+        sys.exit(1)
 else:
-    log.LogWarning("[OS] File don't exist in your Disk/Drive ({})".format(current_path))
+    log.LogError("[OS] File don't exist in your Disk/Drive ({})".format(current_path))
+    sys.exit(1)
 
 # Database rename
 cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [new_path, FRAGMENT_SCENE_ID])
@@ -492,3 +494,5 @@ sqliteConnection.close()
 log.LogInfo("[SQLITE] Database updated!")
 
 print("{'output':'Hook 'Update' Plugin finished.'}\n")
+
+# Last Updated July 02, 2021
