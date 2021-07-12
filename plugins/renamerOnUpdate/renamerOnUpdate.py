@@ -129,6 +129,7 @@ def graphql_getscene(scene_id):
         }
         parent_studio {
             id
+            name
         }
         details
         rating
@@ -291,10 +292,12 @@ def graphql_configuration():
 
 def makeFilename(scene_information, query):
     # Query exemple:
-    # Available: $date $performer $title $studio $height
-    # $title                              == SSNI-000.mp4
-    # $date $title                        == 2017-04-27 Oni Chichi.mp4
-    # $date $performer - $title [$studio] == 2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
+    # Available: $date $performer $title $studio $height $parent_studio
+    # $title                                    == SSNI-000.mp4
+    # $date $title                              == 2017-04-27 Oni Chichi.mp4
+    # $date $title $height                      == 2017-04-27 Oni Chichi 1080p.mp4
+    # $date $performer - $title [$studio]       == 2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
+    # $parent_studio $date $performer - $title  == RealityKings 2016-12-29 Eva Lovia - Her Fantasy Ball.mp4
     new_filename = str(query)
     if "$date" in new_filename:
         if scene_information.get('date') == "" or scene_information.get('date') is None:
@@ -320,6 +323,12 @@ def makeFilename(scene_information, query):
         else:
             new_filename = new_filename.replace("$studio", scene_information["studio"])
 
+    if "$parent_studio" in new_filename:
+        if scene_information.get('parent_studio') == "" or scene_information.get('parent_studio') is None:
+            new_filename = re.sub('\$parent_studio\s*', '', new_filename)
+        else:
+            new_filename = new_filename.replace("$parent_studio", scene_information["parent_studio"])
+
     if "$height" in new_filename:
         if scene_information.get('height') == "" or scene_information.get('height') is None:
             new_filename = re.sub('\$height\s*', '', new_filename)
@@ -341,13 +350,14 @@ log.LogDebug("Scene ID: {}".format(FRAGMENT_SCENE_ID))
 log.LogDebug("Database Path: {}".format(stash_database))
 result_template = None
 # -----------------------------------------------------------------
-# Available: $date $performer $title $studio $height
+# Available: $date $performer $title $studio $height $parent_studio
 # -----------------------------------------------------------------
 # e.g.:
-# $title                              == SSNI-000.mp4
-# $date $title                        == 2017-04-27 Oni Chichi.mp4
-# $date $title $height                == 2017-04-27 Oni Chichi 1080p.mp4
-# $date $performer - $title [$studio] == 2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
+# $title                                    == SSNI-000.mp4
+# $date $title                              == 2017-04-27 Oni Chichi.mp4
+# $date $title $height                      == 2017-04-27 Oni Chichi 1080p.mp4
+# $date $performer - $title [$studio]       == 2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
+# $parent_studio $date $performer - $title  == Reality Kings 2016-12-29 Eva Lovia - Her Fantasy Ball.mp4
 # -----------------------------------------------------------------
 # START OF PERSONAL THINGS
 
@@ -404,6 +414,9 @@ if scene_info.get("performers"):
 # Grab Studio name
 if scene_info.get("studio"):
     scene_information["studio"] = scene_info["studio"].get("name")
+    # Grab Parent name
+    if scene_info["studio"].get("parent_studio"):
+        scene_information["parent_studio"] = scene_info["studio"]["parent_studio"]["name"]
 # Grab Height (720p,1080p,4k...)
 if scene_info["file"]["height"] == '4320':
     scene_information["height"] = '8k'

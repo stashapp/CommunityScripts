@@ -15,7 +15,7 @@ Using metadata from your stash to rename your file.
 - You can set a path for [STASH_LOGFILE](renamerOnUpdate.py#L21), so you will have a file with all changes that the plugins made. Could be useful to revert.
 
 ## Filename template
-Available: `$date` `$performer` `$title` `$studio` `$height`
+Available: `$date` `$performer` `$title` `$studio` `$height` `$parent_studio`
 
 The script will replace these field with the data from the database.
 Exemple:
@@ -25,6 +25,7 @@ $title|Her Fantasy Ball.mp4
 $title $height|Her Fantasy Ball 1080p.mp4
 $date $title|2016-12-29 Her Fantasy Ball.mp4
 $date $performer - $title [$studio]|2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
+$parent_studio $date $performer - $title|RealityKings 2016-12-29 Eva Lovia - Her Fantasy Ball.mp4
 
 Note: 
 - A regex will remove illegal character for Windows.
@@ -55,6 +56,15 @@ if scene_info.get("tags"):
         if result_template:
             break
 ```
+If you want to change by studio:
+```py
+if scene_info.get("studio"):
+    if scene_info["studio"]["name"] == "STUDIO NAME":
+        result_template = "$date $performer - $title [$studio]"
+    if scene_info["studio"]["name"] == "STUDIO NAME 2":
+        result_template = "$parent_studio $date $performer - $title"
+```
+
 ## Change all scenes
 
 ```py
