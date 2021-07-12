@@ -1,41 +1,51 @@
 import os
-import sqlite3
 import re
+import sqlite3
+import sys
+
 import progressbar
 
 # Your sqlite path
 DB_PATH = r"C:\Users\Winter\.stash\Full.sqlite"
-# Log keep a trace of OldPath & Newpath. Could be useful if you want to revert everything. Filename: rename_log.txt
+# Log keep a trace of OldPath & new_path. Could be useful if you want to revert everything. Filename: rename_log.txt
 USING_LOG = True
 # DRY_RUN = True | Will don't change anything in your database & disk.
 DRY_RUN = False
 # Only take female performer name
 FEMALE_ONLY = False
+# Print debug message
+DEBUG_MODE = True
 
-print("Path:", DB_PATH)
+def logPrint(q):
+    if "[DEBUG]" in q and DEBUG_MODE == False:
+        return
+    print(q)
+
+logPrint("Database Path: {}".format(DB_PATH))
 if DRY_RUN == True:
     try:
-        os.remove("rename_dryrun.txt") 
+        os.remove("rename_dryrun.txt")
     except FileNotFoundError:
         pass
-    print("DRY-RUN Enable")
+    logPrint("[DRY_RUN] DRY-RUN Enable")
+
 
 def gettingTagsID(name):
     cursor.execute("SELECT id from tags WHERE name=?;", [name])
     result = cursor.fetchone()
     try:
         id = str(result[0])
-        print("Tag: {} [{}]".format(name,id))
+        logPrint("[Tag] [{}] {}".format(id,name))
     except:
         id = None
-        print("Error when trying to get:{}".format(name))
+        logPrint("[Tag] Error when trying to get:{}".format(name))
     return id
 
 
 def get_SceneID_fromTags(id):
     cursor.execute("SELECT scene_id from scenes_tags WHERE tag_id=?;", [id])
     record = cursor.fetchall()
-    print("There is {} scene(s) with the tag_id {}".format(len(record),id))
+    logPrint("There is {} scene(s) with the tag_id {}".format(len(record), id))
     array_ID = []
     for row in record:
         array_ID.append(row[0])
@@ -47,11 +57,11 @@ def get_Perf_fromSceneID(id_scene):
     perf_list = ""
     cursor.execute("SELECT performer_id from performers_scenes WHERE scene_id=?;", [id_scene])
     record = cursor.fetchall()
-    #print("Performer in scene: ", len(record))
+    #logPrint("Performer in scene: ", len(record))
     if len(record) > 3:
-        print("More than 3 performers.")
+        logPrint("More than 3 performers.")
     else:
-        perfcount=0
+        perfcount = 0
         for row in record:
             perf_id = str(row[0])
             cursor.execute("SELECT name,gender from performers WHERE id=?;", [perf_id])
@@ -77,58 +87,60 @@ def get_Studio_fromID(id):
     return studio_name
 
 
-def makeFilename(scene_information, query):
-    # Query exemple: 
+def makeFilename(scene_info, query):
+    # Query exemple:
     # Available: $date $performer $title $studio $height
     # $title                              == SSNI-000.mp4
     # $date $title                        == 2017-04-27 Oni Chichi.mp4
     # $date $performer - $title [$studio] == 2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
     new_filename = str(query)
     if "$date" in new_filename:
-        if scene_information.get('date') == "":
+        if scene_info.get('date') == "" or scene_info.get('date') is None:
             new_filename = re.sub('\$date\s*', '', new_filename)
         else:
-            new_filename =new_filename.replace("$date", scene_information.get('date'))
+            new_filename = new_filename.replace("$date", scene_info["date"])
 
     if "$performer" in new_filename:
-        if scene_information.get('performer') == "":
+        if scene_info.get('performer') == "" or scene_info.get('performer') is None:
             new_filename = re.sub('\$performer\s*', '', new_filename)
         else:
-            new_filename = new_filename.replace("$performer", scene_information.get('performer'))
+            new_filename = new_filename.replace("$performer", scene_info["performer"])
 
     if "$title" in new_filename:
-        if scene_information.get('title') == "":
+        if scene_info.get('title') == "" or scene_info.get('title') is None:
             new_filename = re.sub('\$title\s*', '', new_filename)
         else:
-            new_filename = new_filename.replace("$title", scene_information.get('title'))
+            new_filename = new_filename.replace("$title", scene_info["title"])
 
     if "$studio" in new_filename:
-        if scene_information.get('studio') == "":
-            new_filename = re.sub('\[\$studio\]', '', new_filename)
+        if scene_info.get('studio') == "" or scene_info.get('studio') is None:
             new_filename = re.sub('\$studio\s*', '', new_filename)
         else:
-            new_filename = new_filename.replace("$studio", scene_information.get('studio'))
+            new_filename = new_filename.replace("$studio", scene_info["studio"])
 
     if "$height" in new_filename:
-        if scene_information.get('height') == "":
+        if scene_info.get('height') == "" or scene_info.get('height') is None:
             new_filename = re.sub('\$height\s*', '', new_filename)
         else:
-            new_filename = new_filename.replace("$height", scene_information.get('height'))
+            new_filename = new_filename.replace("$height", scene_info["height"])
+    new_filename = re.sub('^\s*-\s*', '', new_filename)
+    new_filename = re.sub('\s*-\s*$', '', new_filename)
+    new_filename = re.sub('\[\W*]', '', new_filename)
+    new_filename = re.sub('\s{2,}', ' ', new_filename)
     new_filename = new_filename.strip()
     return new_filename
 
 
-def edit_db(queryfilename,optionnal_query=None):
+def edit_db(query_filename, optionnal_query=None):
     query = "SELECT id,path,title,date,studio_id,height from scenes;"
     if optionnal_query is not None:
         query = "SELECT id,path,title,date,studio_id,height from scenes {};".format(optionnal_query)
     cursor.execute(query)
     record = cursor.fetchall()
     if len(record) == 0:
-        print("There is no scene to change with this query")
+        logPrint("[Warn] There is no scene to change with this query")
         return
-    print("Scenes numbers: {}".format(len(record)))
-    edit = 0
+    logPrint("Scenes numbers: {}".format(len(record)))
     progressbar_Index = 0
     progress = progressbar.ProgressBar(redirect_stdout=True).start(len(record))
     for row in record:
@@ -136,31 +148,16 @@ def edit_db(queryfilename,optionnal_query=None):
         progressbar_Index += 1
         scene_ID = str(row[0])
         # Fixing letter (X:Folder -> X:\Folder)
-        scene_fullPath =re.sub(r"^(.):\\*", r"\1:\\", str(row[1]))
-        scene_Directory = os.path.dirname(scene_fullPath)
-        scene_Extension = os.path.splitext(scene_fullPath)[1]
-        scene_Title = str(row[2])
-        scene_Date = str(row[3])
+        current_path = re.sub(r"^(.):\\*", r"\1:\\", str(row[1]))
+        current_directory = os.path.dirname(current_path)
+        current_filename = os.path.basename(current_path)
+        file_extension = os.path.splitext(current_path)[1]
+        scene_title = str(row[2])
+        scene_date = str(row[3])
         scene_Studio_id = str(row[4])
-        scene_height = str(row[5])
+        file_height = str(row[5])
         # By default, title contains extensions.
-        scene_Title = re.sub(scene_Extension + '$', '', scene_Title)
-
-        #  Look for duplicate title, if a other scene have same date and title it will skip it.
-        cursor.execute("SELECT path FROM scenes WHERE title=? AND date=? AND NOT id=?;", [scene_Title, scene_Date, scene_ID])
-        duplicateCheck = cursor.fetchall()
-        if (len(duplicateCheck) > 0):
-            problem = 0
-            for dupl_row in duplicateCheck:
-                if (os.path.dirname(str(dupl_row[0])) == scene_Directory):
-                    with open('output.txt', 'a', encoding='utf-8') as f:
-                        f.write('Duplicated title detected!\n')
-                        f.write('{} - {}\n'.format(scene_ID, scene_Title))
-                        f.write('{} - {}\n'.format(os.path.dirname(str(dupl_row[0])), scene_Directory))
-                        problem = 1
-            if (problem == 1):
-                print("\n")
-                continue
+        scene_title = re.sub(file_extension + '$', '', scene_title)
 
         performer_name = get_Perf_fromSceneID(scene_ID)
 
@@ -168,68 +165,92 @@ def edit_db(queryfilename,optionnal_query=None):
         if (scene_Studio_id and scene_Studio_id != "None"):
             studio_name = get_Studio_fromID(scene_Studio_id)
 
-        if scene_height == '4320':
-            scene_height='8k'
+        if file_height == '4320':
+            file_height = '8k'
         else:
-            if scene_height == '2160':
-                scene_height='4k'
+            if file_height == '2160':
+                file_height = '4k'
             else:
-                scene_height="{}p".format(scene_height)
+                file_height = "{}p".format(file_height)
 
-        scene_information = {
-            "title": scene_Title,
-            "date": scene_Date,
+        scene_info = {
+            "title": scene_title,
+            "date": scene_date,
             "performer": performer_name,
             "studio": studio_name,
-            "height": scene_height
+            "height": file_height
         }
-        #print("[DEBUG] INFO: {}".format(scene_information))
-        newfilename = makeFilename(scene_information, queryfilename) + scene_Extension
-        #print("[DEBUG] Name:{}".format(newfilename))
+        logPrint("[DEBUG] Scene information: {}".format(scene_info))
+        # Create the new filename
+        new_filename = makeFilename(scene_info, query_filename) + file_extension
+
         # Remove illegal character for Windows ('#' and ',' is not illegal you can remove it)
-        newfilename = re.sub('[\\/:"*?<>|#,]+', '', newfilename)
-        newpath = scene_Directory + "\\" + newfilename
-        if len(newpath) > 240:
-            print("The Path is too long...\n", newpath)
-            reducePath = len(scene_Directory) + len(scene_Date) + len(scene_Title) + len(scene_Extension) + 3
+        new_filename = re.sub('[\\/:"*?<>|#,]+', '', new_filename)
+
+        # Replace the old filename by the new in the filepath
+        new_path = current_path.replace(current_filename, new_filename)
+
+        if len(new_path) > 240:
+            logPrint("[Warn] The Path is too long ({})".format(new_path))
+            # We only use the date and title to get a shorter file (eg: 2017-04-27 - Oni Chichi.mp4)
+            if scene_info.get("date"):
+                reducePath = len(current_directory + scene_info["title"] + scene_info["date"] + file_extension) + 3
+            else:
+                reducePath = len(current_directory + scene_info["title"] + file_extension) + 3
             if reducePath < 240:
-                newpath = scene_Directory + "\\" + makeFilename(scene_information,"$date - $title") + scene_Extension
-                print("Reducing path to: ", newpath)
-        if (newpath == scene_fullPath):
-            #print("Files already renamed (Db).\n")
+                if scene_info.get("date"):
+                    new_filename = makeFilename(scene_info, "$date - $title") + file_extension
+                else:
+                    new_filename = makeFilename(scene_info, "$title") + file_extension
+                #new_path = re.sub('{}$'.format(current_filename), new_filename, current_path)
+                new_path = current_path.replace(current_filename, new_filename)
+                logPrint("Reduced filename to: {}", new_filename)
+            else:
+                logPrint("[Error] Can't manage to reduce the path, ID: {}".format(scene_ID))
+                continue
+
+        # Looking for duplicate filename
+        cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + new_filename, scene_ID])
+        dupl_check = cursor.fetchall()
+        if len(dupl_check) > 0:
+            for dupl_row in dupl_check:
+                logPrint("[Error] Same filename: [{}]".format(dupl_row[0]))
+                logPrint("[{}] - {}\n".format(dupl_row[0], new_filename),
+                      file=open("renamer_duplicate.txt", "a", encoding='utf-8'))
+            logPrint("\n")
+            continue
+
+        logPrint("[DEBUG] Filename: {} -> {}".format(current_filename, new_filename))
+        logPrint("[DEBUG] Path: {} -> {}".format(current_path, new_path))
+        if (new_path == current_path):
+            logPrint("[DEBUG] File already good.\n")
             continue
         else:
-            print("OLD Filename: ", os.path.basename(scene_fullPath))  # Get filename
-            print("NEW Filename: ", newfilename)
-            print("NEW Path: ", newpath)
-
             #
             # THIS PART WILL EDIT YOUR DATABASE, FILES (be careful and know what you do)
             #
             # Windows Rename
-            if (os.path.isfile(scene_fullPath) == True):
+            if (os.path.isfile(current_path) == True):
                 if DRY_RUN == False:
-                    os.rename(scene_fullPath, newpath)
-                    if (os.path.isfile(newpath) == True):
-                        print("File Renamed!")
+                    os.rename(current_path, new_path)
+                    if (os.path.isfile(new_path) == True):
+                        logPrint("[OS] File Renamed! ({})".format(current_filename))
                         if USING_LOG == True:
-                            print("{}|{}|{}\n".format(scene_ID,scene_fullPath,newpath), file=open("rename_log.txt", "a", encoding='utf-8'))
+                            logPrint("{}|{}|{}\n".format(scene_ID, current_path, new_path), file=open("rename_log.txt", "a", encoding='utf-8'))
+
                         # Database rename
-                        cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [newpath, scene_ID])
-                        edit += 1
-                        # I update the database every 10 files, you can change this number.
-                        if (edit > 10):
-                            sqliteConnection.commit()
-                            print("[Database] Datebase Updated!")
-                            edit = 0
+                        cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [new_path, scene_ID])
+                        sqliteConnection.commit()
+                        logPrint("[SQLITE] Datebase Updated!")
                     else:
-                        print("File failed to rename ?\n{}".format(newpath), file=open("output.txt", "a", encoding='utf-8'))
+                        logPrint("[OS] File failed to rename ? ({})".format(current_filename))
+                        logPrint("{} -> {}\n".format(current_path,new_path), file=open("renamer_fail.txt", "a", encoding='utf-8'))
                 else:
-                    print("[DRY_RUN] File should be renamed")
-                    print("{} -> {}\n".format(scene_fullPath,newpath), file=open("rename_dryrun.txt", "a", encoding='utf-8'))
+                    logPrint("[DRY_RUN][OS] File should be renamed")
+                    logPrint("{} -> {}\n".format(current_path, new_path), file=open("renamer_dryrun.txt", "a", encoding='utf-8'))
             else:
-                print("File don't exist in your Disk/Drive ({})".format(scene_fullPath))
-            print("\n")
+                logPrint("[OS] File don't exist in your Disk/Drive ({})".format(current_path))
+            logPrint("\n")
         # break
     progress.finish()
     if DRY_RUN == False:
@@ -240,13 +261,13 @@ def edit_db(queryfilename,optionnal_query=None):
 try:
     sqliteConnection = sqlite3.connect(DB_PATH)
     cursor = sqliteConnection.cursor()
-    print("Python successfully connected to SQLite\n")
+    logPrint("Python successfully connected to SQLite\n")
 except sqlite3.Error as error:
-    print("FATAL SQLITE Error: ", error)
+    logPrint("FATAL SQLITE Error: ", error)
     input("Press Enter to continue...")
-    exit(1)
+    sys.exit(1)
 
-## THIS PART IS PERSONAL THINGS, YOU SHOULD CHANGE THING BELOW :)
+# THIS PART IS PERSONAL THINGS, YOU SHOULD CHANGE THING BELOW :)
 
 # Select Scene with Specific Tags
 tags_dict = {
@@ -271,18 +292,18 @@ for _, dict_section in tags_dict.items():
     if id_tags is not None:
         id_scene = get_SceneID_fromTags(id_tags)
         option_sqlite_query = "WHERE id in ({}) AND path LIKE 'E:\\Film\\R18\\%'".format(id_scene)
-        edit_db(filename_template,option_sqlite_query)
-        print("====================")
+        edit_db(filename_template, option_sqlite_query)
+        logPrint("====================")
 
 # Select ALL scenes
 #edit_db("$date $performer - $title [$studio]")
 
-## END OF PERSONAL THINGS
+# END OF PERSONAL THINGS
 
 if DRY_RUN == False:
     sqliteConnection.commit()
 cursor.close()
 sqliteConnection.close()
-print("The SQLite connection is closed")
+logPrint("The SQLite connection is closed")
 # Input if you want to check the console.
 input("Press Enter to continue...")
