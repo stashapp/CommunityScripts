@@ -1,0 +1,21 @@
+name: GHScraper_Checker
+description: Check the community scraper repo.
+version: 0.1.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/GHScraper_Checker
+exec:
+  - python
+  - "{pluginDir}/GHScraper_Checker.py"
+interface: raw
+tasks:
+  - name: 'Status Check'
+    description: "Show in log if you don't have the scraper or a new version is available."
+    defaultArgs:
+      mode: CHECK
+  - name: 'Getting new files'
+    description: "Download scraper that don't exist in your scraper folder."
+    defaultArgs:
+      mode: NEWFILE
+#  - name: 'Overwrite everything'
+#    description: 'Replace your scraper by github version. Overwrite anything existing.'
+#    defaultArgs:
+#      mode: OVERWRITE
