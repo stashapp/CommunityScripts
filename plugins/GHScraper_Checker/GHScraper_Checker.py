@@ -25,6 +25,8 @@ if FRAGMENT_ARG == "NEWFILE":
 if FRAGMENT_ARG == "OVERWRITE":
     OVERWRITE = True
 
+# Don't write in log if the file don't exist locally.
+IGNORE_MISS_LOCAL = False
 
 def graphql_getScraperPath():
     query = """
@@ -91,12 +93,12 @@ def callGraphQL(query, variables=None):
 
 
 def file_getlastline(path):
-    line = bytes()
     with open(path, 'r', encoding="utf-8") as f:
         for line in f:
-            pass
-        last_line = line
-    return last_line
+            u_match = re.search(r"^\s*#\s*last updated", line.lower())
+            if u_match:
+                return line.strip()
+    return None
 
 
 def get_date(line):
@@ -122,21 +124,14 @@ with open(zip_path, "wb") as zip_file:
 with zipfile.ZipFile(zip_path) as z:
     for filename in z.namelist():
         #  Only care about the scrapers folders
-        if "/scrapers/" in filename:
+        if "/scrapers/" in filename and filename.endswith(".yml"):
             # read the file
             line = bytes()
-            with z.open(filename) as f:
-                for line in f:
-                    pass
-                last_line = line.decode().strip()
-            # Got last line
-            gh_last = last_line
-            if not gh_last:
-                continue
             # Filename abc.yml
             gh_file = os.path.basename(filename)
-            gh_date = get_date(gh_last)
             path_local = os.path.join(scraper_folder_path, gh_file)
+            gh_line = None
+            yml_script = None
             if OVERWRITE:
                 with z.open(filename) as f:
                     scraper_content = f.read()
@@ -144,14 +139,38 @@ with zipfile.ZipFile(zip_path) as z:
                         yml_file.write(scraper_content)
                         log.LogInfo("Replacing/Creating {}".format(gh_file))
                         continue
+            with z.open(filename) as f:
+                for line in f:
+                    script_match = re.search(r"action:\sscript", line.decode().lower())
+                    update_match = re.search(r"^\s*#\s*last updated", line.decode().lower())
+                    if script_match:
+                        yml_script = True
+                    if update_match:
+                        gh_line = line.decode().strip()
+                        break
+            # Got last line
+            if gh_line is None:
+                log.LogError("[Github] Line Error ({}) ".format(gh_file))
+                continue
+            gh_date = get_date(gh_line)
+            if gh_date is None:
+                log.LogError("[Github] Date Error ({}) ".format(gh_file))
+                continue
             elif os.path.exists(path_local):
-                local_updated = file_getlastline(path_local).strip()
-                local_date = get_date(local_updated)
-                if local_date is None or gh_date is None:
-                    log.LogError("[{}] Problem getting date (L:{}|Gh:{})".format(gh_file, local_date, gh_date))
+                # Local Part
+                local_line = file_getlastline(path_local)
+                if local_line is None:
+                    log.LogError("[Local] Line Error ({}) ".format(gh_file))
+                    continue
+                local_date = get_date(local_line.strip())
+                if local_date is None:
+                    log.LogError("[Local] Date Error ({}) ".format(gh_file))
                     continue
                 if gh_date > local_date and CHECK_LOG:
-                    log.LogInfo("[{}] New version on github".format(gh_file))
+                    if yml_script:
+                        log.LogInfo("[{}] New version on github (Can be any of the related files)".format(gh_file))
+                    else:
+                        log.LogInfo("[{}] New version on github".format(gh_file))
             elif GET_NEW_FILE:
                 # File don't exist local so we take the github version.
                 with z.open(filename) as f:
@@ -160,7 +179,7 @@ with zipfile.ZipFile(zip_path) as z:
                         yml_file.write(scraper_content)
                         log.LogInfo("Creating {}".format(gh_file))
                         continue
-            elif CHECK_LOG:
+            elif CHECK_LOG and IGNORE_MISS_LOCAL == False:
                 log.LogWarning("[{}] File don't exist locally".format(gh_file))
 
 os.remove(zip_path)
