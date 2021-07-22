@@ -1,0 +1,13 @@
+name: Set Scene Cover 
+description: sets scene cover from images files in the same folder as the scene
+version: 0.1
+url: https://github.com/stg-annon/CommunityScripts/tree/main/plugins/setSceneCoverFromFile
+exec:
+  - python
+  - "{pluginDir}/set_cover.py"
+interface: raw
+tasks:
+  - name: Scan Scenes
+    description: scan all scenes for images
+    defaultArgs:
+      mode: scan
