@@ -432,6 +432,8 @@ new_filename = makeFilename(scene_information, result_template) + file_extension
 
 # Remove illegal character for Windows ('#' and ',' is not illegal you can remove it)
 new_filename = re.sub('[\\/:"*?<>|#,]+', '', new_filename)
+# Using typewriter for Apostrophe
+new_filename = re.sub("[’‘]+", "'", new_filename)
 
 # Replace the old filename by the new in the filepath
 new_path = current_path.replace(current_filename,new_filename)
@@ -474,8 +476,7 @@ except sqlite3.Error as error:
     sys.exit(1)
 
 # Looking for duplicate filename
-sqlite_query = "SELECT id FROM scenes WHERE path LIKE '%{}%';".format(new_filename)
-cursor.execute(sqlite_query)
+cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + new_filename, FRAGMENT_SCENE_ID])
 dupl_check = cursor.fetchall()
 if len(dupl_check) > 0:
     for dupl_row in dupl_check:
