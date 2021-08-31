@@ -10,7 +10,6 @@ import log
 
 log.LogDebug("--Starting Hook 'Update' Plugin--")
 
-
 FRAGMENT = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = FRAGMENT["server_connection"]
 FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
@@ -20,7 +19,7 @@ FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
 # Blank or None if you don't want this file, or a working path like this: C:\Users\Winter\.stash\plugins\Hooks\rename_log.txt
 STASH_LOGFILE = r""
 
-# ! You have other things to change at line 351-369 !
+# ! You have other things to change at line 368-385 !
 
 def callGraphQL(query, variables=None):
     # Session cookie for authentication
@@ -341,6 +340,13 @@ def makeFilename(scene_information, query):
     new_filename = new_filename.strip()
     return new_filename
 
+def exit_plugin(msg=None, err=None):
+    if msg is None and err is None:
+        msg = "plugin ended"
+    output_json = {"output": msg, "error": err}
+    print(json.dumps(output_json))
+    sys.exit()
+
 
 scene_info = graphql_getscene(FRAGMENT_SCENE_ID)
 stash_config = graphql_configuration()
@@ -379,8 +385,7 @@ if scene_info.get("tags"):
 # END OF PERSONAL THINGS
 
 if result_template is None:
-    log.LogError("No template for this file.")
-    sys.exit(0)
+    exit_plugin("No template for this file.")
 else:
     log.LogDebug("Using this template: {}".format(result_template))
 
@@ -457,23 +462,20 @@ if len(new_path) > 240:
         #new_path = re.sub('{}$'.format(current_filename), new_filename, current_path)
         log.LogInfo("Reduced filename to: {}", new_filename)
     else:
-        log.LogError("Can't manage to reduce the path, operation aborted.")
-        sys.exit(1)
+        exit_plugin(err="Can't manage to reduce the path, operation aborted.")
 log.LogDebug("Filename: {} -> {}".format(current_filename,new_filename))
 log.LogDebug("Path: {} -> {}".format(current_path,new_path))
 
 if (new_path == current_path):
-    log.LogInfo("Don't need to rename because it's already correct!")
-    sys.exit(0)
+    exit_plugin("Filename already correct.")
 
 # Connect to the DB
 try:
     sqliteConnection = sqlite3.connect(stash_database)
     cursor = sqliteConnection.cursor()
-    print("Python successfully connected to SQLite\n")
+    log.LogDebug("Python successfully connected to SQLite\n")
 except sqlite3.Error as error:
-    print("FATAL SQLITE Error: {}".format(error))
-    sys.exit(1)
+    exit_plugin(err="FATAL SQLITE Error: {}".format(error))
 
 # Looking for duplicate filename
 cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + new_filename, FRAGMENT_SCENE_ID])
@@ -481,7 +483,7 @@ dupl_check = cursor.fetchall()
 if len(dupl_check) > 0:
     for dupl_row in dupl_check:
         log.LogError("Same filename: [{}]".format(dupl_row[0]))
-    sys.exit(1)
+    exit_plugin(err="Duplicate filename detected, check log!")
 
 # OS Rename
 if (os.path.isfile(current_path) == True):
@@ -493,11 +495,9 @@ if (os.path.isfile(current_path) == True):
             f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, current_path, new_path))
             f.close()
     else:
-        log.LogError("[OS] File failed to rename ? {}".format(new_path))
-        sys.exit(1)
+        exit_plugin(err="[OS] File failed to rename ? {}".format(new_path))
 else:
-    log.LogError("[OS] File don't exist in your Disk/Drive ({})".format(current_path))
-    sys.exit(1)
+    exit_plugin(err="[OS] File don't exist in your Disk/Drive ({})".format(current_path))
 
 # Database rename
 cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [new_path, FRAGMENT_SCENE_ID])
@@ -506,7 +506,4 @@ sqliteConnection.commit()
 cursor.close()
 sqliteConnection.close()
 log.LogInfo("[SQLITE] Database updated!")
-
-print("{'output':'Hook 'Update' Plugin finished.'}\n")
-
-# Last Updated July 02, 2021
+exit_plugin("Successful!")
