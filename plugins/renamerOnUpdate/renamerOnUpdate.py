@@ -491,9 +491,8 @@ if (os.path.isfile(current_path) == True):
     if (os.path.isfile(new_path) == True):
         log.LogInfo("[OS] File Renamed!")
         if STASH_LOGFILE:
-            f = open(STASH_LOGFILE, "a", encoding='utf-8')
-            f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, current_path, new_path))
-            f.close()
+            with open(STASH_LOGFILE, 'a', encoding='utf-8') as f:
+                f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, current_path, new_path))
     else:
         exit_plugin(err="[OS] File failed to rename ? {}".format(new_path))
 else:
