@@ -500,8 +500,9 @@ else:
 
 # Database rename
 cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [new_path, FRAGMENT_SCENE_ID])
-# Close DB
+# Save the UPDATE
 sqliteConnection.commit()
+# Close DB
 cursor.close()
 sqliteConnection.close()
 log.LogInfo("[SQLITE] Database updated!")
