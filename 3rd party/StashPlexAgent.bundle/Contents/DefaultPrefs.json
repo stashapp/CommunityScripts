@@ -1,0 +1,50 @@
+[
+    {
+        "id": "Hostname",
+        "label": "The host for Stash",
+        "type": "text",
+        "default": "127.0.0.1"
+    },
+    {
+        "id": "Port",
+        "label": "The port for Stash",
+        "type": "text",
+        "default": "9999"
+    },
+    {
+        "id": "UseHTTPS",
+        "label": "Use HTTPS instead of HTTP to connect",
+        "type": "bool",
+        "default": false
+    },
+    {
+        "id": "APIKey",
+        "label": "The API Key for Stash if Authentication is enabled",
+        "type": "text",
+        "default": ""
+    },
+    {
+        "id": "IgnoreTags",
+        "label": "Stash Tag ID numbers to ignore (comma separated, 0 to disable)",
+        "type": "text",
+        "default": "1,2"
+    },
+    {
+        "id": "CreateCollectionTags",
+        "label": "Auto create Plex Collection tags for Site and Studio",
+        "type": "bool",
+        "default": true
+    },    
+    {
+        "id": "CreateRatingTags",
+        "label": "Auto create Plex Collection tags for Stash star rating",
+        "type": "bool",
+        "default": false
+    },    
+    {
+        "id": "debug",
+        "label": "Use debug logging",
+        "type": "bool",
+        "default": false
+    },
+]
