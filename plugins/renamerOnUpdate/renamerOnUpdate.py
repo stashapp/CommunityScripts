@@ -7,6 +7,7 @@ import sys
 import requests
 
 import log
+import config
 
 log.LogDebug("--Starting Hook 'Update' Plugin--")
 
@@ -355,34 +356,22 @@ log.LogDebug("Scene ID: {}".format(FRAGMENT_SCENE_ID))
 #log.LogDebug("Scene Info: {}".format(scene_info))
 log.LogDebug("Database Path: {}".format(stash_database))
 result_template = None
-# -----------------------------------------------------------------
-# Available: $date $performer $title $studio $height $parent_studio
-# -----------------------------------------------------------------
-# e.g.:
-# $title                                    == SSNI-000.mp4
-# $date $title                              == 2017-04-27 Oni Chichi.mp4
-# $date $title $height                      == 2017-04-27 Oni Chichi 1080p.mp4
-# $date $performer - $title [$studio]       == 2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
-# $parent_studio $date $performer - $title  == Reality Kings 2016-12-29 Eva Lovia - Her Fantasy Ball.mp4
-# -----------------------------------------------------------------
-# START OF PERSONAL THINGS
+
+# If config forces a template for all files.
+if config.result_template:
+    result_template = config.result_template
 
 # Different template depending of tag present in the scene.
 if scene_info.get("tags"):
     for tag in scene_info["tags"]:
         if tag["name"] == "!1. Western":
-            result_template = "$date $performer - $title [$studio]"
+            result_template = config.western_result_template
         if tag["name"] == "!1. JAV":
-            result_template = "$title"
+            result_template = config.jav_result_template
         if tag["name"] == "!1. Anime":
-            result_template = "$date $title"
+            result_template = config.anime_result_template
         if result_template:
             break
-
-# IF YOU WANT TO FORCE A TEMPLATE FOR ANY FILE, UNCOMMENT BELOW
-#result_template = "$date $title"
-
-# END OF PERSONAL THINGS
 
 if result_template is None:
     exit_plugin("No template for this file.")
