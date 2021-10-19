@@ -79,6 +79,28 @@ class StashInterface:
             )
 
 
+
+    def get_scenes_id(self, filter={}):
+        query = """
+        query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {
+            findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {
+                count
+                scenes {
+                    id
+                }
+            }
+        }
+        """
+        variables = {
+            "filter": { "per_page": -1 },
+            "scene_filter": filter
+        }
+            
+        result = self.__callGraphQL(query, variables)
+        scene_ids = [s["id"] for s in result.get('findScenes').get('scenes')] 
+
+        return scene_ids
+
     def update_scene(self, scene_data):
         query = """
             mutation SceneUpdate($input:SceneUpdateInput!) {
