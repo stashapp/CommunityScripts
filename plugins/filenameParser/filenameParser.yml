@@ -1,0 +1,13 @@
+name: Filename parser
+description: Parses filename into studio, date, performers and title
+url:
+version: 0.1
+exec:
+  - filenameParser.js
+interface: js
+hooks:
+  - name: Prepopulates data based on filename
+    description:
+    triggeredBy:
+      - Scene.Create.Post
+      - Gallery.Create.Post
