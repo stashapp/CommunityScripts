@@ -79,7 +79,7 @@ class StashInterface:
             )
 
 
-    def update_scene_overwrite(self, scene_data):
+    def update_scene(self, scene_data):
         query = """
             mutation SceneUpdate($input:SceneUpdateInput!) {
                 sceneUpdate(input: $input) {
@@ -92,137 +92,24 @@ class StashInterface:
         result = self.__callGraphQL(query, variables)
         return result["sceneUpdate"]["id"]
 
-    def get_scenes_id(self, filter={}):
+    def get_root_paths(self):
         query = """
-        query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {
-            findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {
-                count
-                scenes {
-                    id
+            query Configuration {
+                configuration {
+                    general{
+                        stashes{
+                            path
+                            excludeVideo
+                        }
+                    }
                 }
             }
-        }
         """
-        variables = {
-            "filter": { "per_page": -1 },
-            "scene_filter": filter
-        }
-            
-        result = self.__callGraphQL(query, variables)
-        scenes = [s["id"] for s in result.get('findScenes').get('scenes')] 
+        result = self.__callGraphQL(query)
 
-        return scenes
+        stashes = result["configuration"]["general"]["stashes"]
+        paths = [s["path"] for s in stashes if not s["excludeVideo"]] 
 
-stash_gql_fragments = {
-    "stashScene":"""
-        fragment stashScene on Scene {
-          id
-          checksum
-          oshash
-          title
-          details
-          url
-          date
-          rating
-          organized
-          o_counter
-          path
-          tags {
-            ...stashTag
-          }
-          file {
-            size
-            duration
-            video_codec
-            audio_codec
-            width
-            height
-            framerate
-            bitrate
-          }
-          galleries {
-            id
-            checksum
-            path
-            title
-            url
-            date
-            details
-            rating
-            organized
-            studio {
-              id
-              name
-              url
-            }
-            image_count
-            tags {
-              ...stashTag
-            }
-          }
-          performers {
-            ...stashPerformer
-          }
-          studio{
-            id
-            name
-            url
-            stash_ids{
-                endpoint
-                stash_id
-            }
-          }
-          stash_ids{
-            endpoint
-            stash_id
-          }
-        }
-    """,
-    "stashPerformer":"""
-        fragment stashPerformer on Performer {
-            id
-            checksum
-            name
-            url
-            gender
-            twitter
-            instagram
-            birthdate
-            ethnicity
-            country
-            eye_color
-            height
-            measurements
-            fake_tits
-            career_length
-            tattoos
-            piercings
-            aliases
-            favorite
-            tags { ...stashTag }
-            image_path
-            scene_count
-            image_count
-            gallery_count
-            stash_ids {
-                stash_id
-                endpoint
-                __typename
-            }
-            rating
-            details
-            death_date
-            hair_color
-            weight
-            __typename
-        }
-    """,
-    "stashTag":"""
-        fragment stashTag on Tag {
-            id
-            name
-            image_path
-            scene_count
-        }
-    """
-}
+        return paths
+
+stash_gql_fragments = {}
