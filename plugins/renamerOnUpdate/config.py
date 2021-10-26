@@ -5,7 +5,7 @@
 # -note:
 # $studio_family: If parent studio exist use it, else use the studio name.
 # $performer: If more than * performers, this field will be ignored. Limit to fix at Settings section below (default: 3)
-# $resolution: SD/HD/FHD/VERTICAL (for phone) | $height: 720p 1080p 4k 8k
+# $resolution: SD/HD/UHD/VERTICAL (for phone) | $height: 720p 1080p 4k 8k
 # -----------------------------------------------------------------
 # e.g.:
 # $title                                    == Her Fantasy Ball
