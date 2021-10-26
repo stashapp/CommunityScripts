@@ -1,13 +1,34 @@
-name: Renamer_hook
-description: Hook for update scenes
+name: renamerOnUpdate
+description: Rename filename based to a template.
 url: https://github.com/stashapp/CommunityScripts
-version: 1.2
+version: 1.3
 exec:
   - python
   - "{pluginDir}/renamerOnUpdate.py"
 interface: raw
 hooks:
-  - name: Renamer
-    description: Rename files when you update
+  - name: hook_rename
+    description: Rename files when you update a scene.
     triggeredBy: 
       - Scene.Update.Post
+tasks:
+  - name: 'Dry-run short'
+    description: Trigger a fake update on 20 scenes (newest updated) but WON'T change anything, just show in log. Create a file with the possible change.
+    defaultArgs:
+      mode: dry_part_scenes
+  - name: 'Dry-run full'
+    description: Trigger a fake update on all scenes but WON'T change anything, just show in log. Create a file with the possible change.
+    defaultArgs:
+      mode: dry_all_scenes
+  - name: 'Check scene from dry-run file'
+    description: Trigger a fake update on scenes that got flag by dry-run. ! Don't do anything in Stash in same time !
+    defaultArgs:
+      mode: process_dry
+  - name: 'Check 20 scenes'
+    description: Trigger a fake update on 20 scenes (oldest updated) to trigger the hook. ! Don't do anything in Stash in same time !
+    defaultArgs:
+      mode: process_part
+  - name: 'Check all scenes'
+    description: Trigger a fake update on all scenes to trigger the hook. ! Don't do anything in Stash in same time !
+    defaultArgs:
+      mode: process_all
