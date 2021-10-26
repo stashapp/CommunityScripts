@@ -62,6 +62,7 @@ performer_splitchar  =  " "
 performer_limit  =  3
 ```
 The scene was just scanned, everything is default (Title = Filename).
+
 Current filename: `Slayed.21.09.02.Ariana.Marie.Emily.Willis.And.Eliza.Ibarra.XXX.1080p.mp4`
 
 |Stash Field  | Value | Filename | Trigger template |
