@@ -24,15 +24,6 @@ Using metadata from your stash to rename your file.
 	- Clicking the **Organized** button.
 	- Running a scan that **updates** the path.
 
-- You also have task (Settings > Task):
-	- **Dry-Run**: Don't edit any file, just show in log. It will create `renamer_scan.txt` that contains every edit.
-	  - **Dry-run short**: Check 20 scenes (by newest updated).
-	  - **Dry-run full**: Check all scenes.
-	- **Process**: Edit your files, **don't touch Stash while doing this task**.
-	  - **Check scene from dry-run file**: Read `renamer_scan.txt` instead of checking all scenes.
-	  - **Check all scenes**: Check all scenes.
-	  - **Check 20 scenes**:  Check 20 scenes (by oldest updated).
-
 ## Configuration
 
 - Read/Edit `config.py`
