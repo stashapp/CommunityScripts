@@ -11,7 +11,7 @@ tasks:
     description: Only check 10 scenes. Just show in log and create a file with the possible change.
     defaultArgs:
       mode: DRYRUN_test
-  - name: '[DRYRUN] Check all scenes '
+  - name: '[DRYRUN] Check all scenes'
     description: Check all scenes. Just show in log and create a file with the possible change.
     defaultArgs:
       mode: DRYRUN_full
