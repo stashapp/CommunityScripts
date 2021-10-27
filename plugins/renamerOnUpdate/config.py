@@ -48,11 +48,11 @@ log_file = r""
 ######################################
 #               Settings             #
 
-# Character to seperate performer. (Eva Lovia Dani Daniels)
+# Character to use as a performer separator.
 performer_splitchar = " "
-# Amount after the plugin ignore the performer field, the filename won't have any performer name inside.
+# Maximum number of performer names in the filename. If there are more than that in a scene the filename will not include any performer names!
 performer_limit = 3
-# ignore male performer
+# ignore male performers.
 performer_ignore_male = False
 
 # If $performer is before $title, prevent having duplicate text. 
@@ -61,7 +61,7 @@ performer_ignore_male = False
 # 2016 Dani Daniels - Dani Daniels in ***.mp4 --> 2016 Dani Daniels in ***.mp4
 prevent_title_performer = False
 
-# Only rename 'Organized' scene
+# Only rename 'Organized' scenes.
 only_organized = False
 # Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
 order_field = ["$video_codec", "$audio_codec", "$resolution", "$height", "$studio_family", "$studio", "$parent_studio","$performer"]
@@ -71,17 +71,18 @@ alt_diff_display = False
 ######################################
 #            Module Related          #
 
-# ! IT'S OPTIONAL, THEY ARE NOT NEEDED FOR WORKING !
+# ! OPTIONAL module settings. Not needed for basic operation !
 
 # = psutil module (https://pypi.org/project/psutil/) =
-# Will give a list of all process instead of stopping after the first one. Increase time
+# Gets a list of all processes instead of stopping after the first one. Enabling it slows down the plugin
 process_getall = False
 # If the file is used by a process, the plugin will kill it. IT CAN MAKE STASH CRASH TOO. 
 process_kill_attach = False
 # =========================
 
 # = Unidecode module (https://pypi.org/project/Unidecode/) =
-# Read site to understand what he do. 
-# TL;DR: Prevent having non common character by replacing it.
-use_ascii = False
+# Check site mentioned for more details. 
+# TL;DR: Prevent having non common characters by replacing them.
+# Warning: If you have non-latin characters (Cyrillic, Kanji, Arabic, ...), the result will be extremely different.
+use_ascii = False 
 # =========================
