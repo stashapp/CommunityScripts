@@ -15,14 +15,14 @@ Using metadata from your stash to rename your file.
 - Reload plugins (Settings > Plugins)
 - renamerOnUpdate should appear. 
 
-### :exclamation: You still need to configure it :exclamation:
+### :exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:
 
 ## Usage
 
-- Everytime you did a update on a scene, it will check/rename your file. A update is:
+- Everytime you update a scene, it will check/rename your file. An update can be:
 	- Saving in **Scene Edit**.
-	- Pressing **Organized** button.
-	- A scan that **update** the path.
+	- Clicking the **Organized** button.
+	- Running a scan that **updates** the path.
 
 - You also have task (Settings > Task):
 	- **Dry-Run**: Don't edit any file, just show in log. It will create `renamer_scan.txt` that contains every edit.
@@ -36,7 +36,7 @@ Using metadata from your stash to rename your file.
 ## Configuration
 
 - Read/Edit `config.py`
-	- I recommend set **log_file** as it can be useful to revert.
+	- I recommend setting the **log_file** as it can be useful to revert.
 
 ### Example
 
@@ -44,7 +44,7 @@ Using metadata from your stash to rename your file.
 
 The config will be:
 ```py
-# Change filename if scene from 'Vixen' or 'Slayed' studio.
+# Change filename for scenes from 'Vixen' or 'Slayed' studio.
 studio_templates  = {
 	"Slayed": "$date $performer - $title [$studio]",
 	"Vixen": "$performer - $title [$studio]"
@@ -56,9 +56,9 @@ tag_templates  = {
 # Change filename no matter what
 use_default_template  =  True
 default_template  =  "$date $title"
-# A space will seperate performer.
+# Use space as a performer separator
 performer_splitchar  =  " "
-# If more than 3 performers, the $performer field will be ignored.
+# If the scene has more than 3 performers, the $performer field will be ignored.
 performer_limit  =  3
 ```
 The scene was just scanned, everything is default (Title = Filename).
