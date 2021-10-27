@@ -276,19 +276,6 @@ def graphql_findScene(perPage,direc="DESC"):
     return result.get("findScenes")
 
 
-def graphql_fakeUpdateScene(scene_id):
-    query = """
-        mutation sceneUpdate($input:SceneUpdateInput!) {
-            sceneUpdate(input: $input) {
-                id
-            }
-        }
-    """
-    variables = {'input': {"id":scene_id}}
-    result = callGraphQL(query, variables)
-    return result
-
-
 def makeFilename(scene_information, query):
     new_filename = str(query)
     for field in TEMPLATE_FIELD:
@@ -361,75 +348,6 @@ def exit_plugin(msg=None, err=None):
     print(json.dumps(output_json))
     sys.exit()
 
-# File used to say we are doing a dry run.
-FILE_DRYRUN = os.path.join(PLUGIN_DIR, "plugin_dryrun.txt")
-# File that show what we will changed.
-FILE_DRYRUN_RESULT = os.path.join(PLUGIN_DIR, "renamer_scan.txt")
-
-# Task
-if PLUGIN_ARGS:
-    start_time = time.time()
-    search_perpage = 20
-    search_dir = "DESC"
-    progress = 0
-    if PLUGIN_ARGS == "process_dry":
-        if os.path.exists(FILE_DRYRUN_RESULT):
-            num_lines = sum(1 for _ in open(FILE_DRYRUN_RESULT))
-            progress_step = 1 / num_lines
-            with open(FILE_DRYRUN_RESULT, 'r') as f:
-                for line in f:
-                    scene_id = line.split("|")[0]
-                    graphql_fakeUpdateScene(scene_id)
-                    progress += progress_step
-                    log.LogProgress(progress)
-            os.remove(FILE_DRYRUN_RESULT)
-            log.LogInfo("Took {} seconds".format(round(time.time() - start_time)))
-            exit_plugin("Task finished, used {}".format(os.path.basename(FILE_DRYRUN_RESULT)))
-        else:
-            exit_plugin(err="Can't find the file from the dry-run ({})".format(FILE_DRYRUN_RESULT))
-    
-    if PLUGIN_ARGS in ["process_part","process_all"]:
-        search_dir = "ASC"
-        if PLUGIN_ARGS == "process_all":
-            search_perpage = -1
-        scenes = graphql_findScene(search_perpage,search_dir)
-        if not scenes:
-            exit_plugin(err="no scene")
-        log.LogDebug("Count scenes: {}".format(len(scenes["scenes"])))
-        progress_step = 1 / len(scenes["scenes"])
-        for scene in scenes["scenes"]:
-            graphql_fakeUpdateScene(scene["id"])
-            progress += progress_step
-            log.LogProgress(progress)
-
-    if PLUGIN_ARGS in ["dry_part_scenes","dry_all_scenes"]:
-        if PLUGIN_ARGS == "dry_all_scenes":
-            search_perpage = -1
-            search_dir = "ASC"
-        if os.path.exists(FILE_DRYRUN_RESULT):
-            os.remove(FILE_DRYRUN_RESULT)
-        scenes = graphql_findScene(search_perpage,search_dir)
-        if not scenes:
-            exit_plugin(err="no scene")
-        log.LogDebug("Count scenes: {}".format(len(scenes["scenes"])))
-        progress_step = 1 / len(scenes["scenes"])
-        # Using with open to prevent user to delete the file by accident.
-        with open(FILE_DRYRUN, "w") as f:
-            for scene in scenes["scenes"]:
-                graphql_fakeUpdateScene(scene["id"])
-                progress += progress_step
-                log.LogProgress(progress)
-        os.remove(FILE_DRYRUN)
-        num_lines = 0
-        if os.path.exists(FILE_DRYRUN_RESULT):
-            num_lines = sum(1 for _ in open(FILE_DRYRUN_RESULT))
-        if num_lines > 0:
-            log.LogInfo("There wil be {} file(s) changed. Check {} for more details".format(num_lines, FILE_DRYRUN_RESULT))
-        else:
-            log.LogInfo("No change to do.")
-    log.LogInfo("Took {} seconds".format(round(time.time() - start_time)))
-    exit_plugin("Task finished")
-
 STASH_SCENE = graphql_getScene(FRAGMENT_SCENE_ID)
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
@@ -439,10 +357,6 @@ TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $par
 #log.LogDebug("Scene Info: {}".format(STASH_SCENE))
 #log.LogDebug("Database Path: {}".format(STASH_DATABASE))
 filename_template = None
-
-DRY_RUN = False
-if os.path.isfile(FILE_DRYRUN):
-    DRY_RUN = True
 
 # READING CONFIG
 
@@ -605,11 +519,6 @@ if ALT_DIFF_DISPLAY:
 else:
     log.LogDebug("[OLD] Filename: {}".format(current_filename))
     log.LogDebug("[NEW] Filename: {}".format(new_filename))
-if DRY_RUN:
-    with open(FILE_DRYRUN_RESULT, 'a', encoding='utf-8') as f:
-        f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, current_filename, new_filename))
-    exit_plugin("dry run")
-
 
 # Connect to the DB
 try:
