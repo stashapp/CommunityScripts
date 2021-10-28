@@ -1,0 +1,12 @@
+name: Tag Graph
+description: Creates a visual of the Tag relations
+version: 0.1
+exec:
+  - python
+  - "{pluginDir}/tag_graph.py"
+interface: raw
+tasks:
+  - name: Generate Graph
+    description: generates graph from current tag data
+    defaultArgs:
+      mode: gen
