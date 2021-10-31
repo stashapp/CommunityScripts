@@ -439,8 +439,7 @@ if STASH_SCENE.get("performers"):
                     perf_list += perf["name"] + PERFORMER_SPLITCHAR
             else:
                 perf_list += perf["name"] + PERFORMER_SPLITCHAR
-        # Remove last character
-        perf_list = perf_list[:-1]
+        perf_list = perf_list[:-len(PERFORMER_SPLITCHAR)]
     scene_information["performer"] = perf_list
 
 # Grab Studio name
