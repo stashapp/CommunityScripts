@@ -67,7 +67,7 @@ def callGraphQL(query, variables=None, raise_exception=True):
     try:
         response = requests.post(graphql_url, json=json,headers=graphql_headers, cookies=graphql_cookies, timeout=20)
     except Exception as e:
-         exit_plugin(err="[FATAL] Error with the graphql request, are you sure the GraphQL endpoint ({}) is correct. {}".format(graphql_url, e))
+         exit_plugin(err="[FATAL] Exception with GraphQL request. {}".format(e))
     if response.status_code == 200:
         result = response.json()
         if result.get("error"):
