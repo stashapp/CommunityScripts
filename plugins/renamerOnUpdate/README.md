@@ -1,72 +1,69 @@
+
 # SQLITE Renamer for Stash
 Using metadata from your stash to rename your file.
 
 ## Requirement
-- Python (Tested on Python v3.9.1 64bit, Win10)
-- Request Module
 - Stash
+- Python 3+ (Tested on Python v3.9.1 64bit, Win10)
+- Request Module (https://pypi.org/project/requests/)
 - Windows 10 ? (No idea if this work for all OS)
-- Log.py
+
+## Installation
+
+- Download the whole folder 'renamerOnUpdate' (config.py, log.py, renamerOnUpdate.py/.yml)
+- Place it in your **plugins** folder (where the `config.yml` is)
+- Reload plugins (Settings > Plugins)
+- renamerOnUpdate should appear. 
+
+### :exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:
 
 ## Usage
 
-- Everytime you will update a scene, it will check/update your filename.
-- Replace things between [Line 354 - 370](renamerOnUpdate.py#L343)
-- You can set a path for [STASH_LOGFILE](renamerOnUpdate.py#L21), so you will have a file with all changes that the plugins made. Could be useful to revert.
+- Everytime you update a scene, it will check/rename your file. An update can be:
+	- Saving in **Scene Edit**.
+	- Clicking the **Organized** button.
+	- Running a scan that **updates** the path.
 
-## Filename template
-Available: `$date` `$performer` `$title` `$studio` `$height` `$parent_studio`
+## Configuration
 
-The script will replace these field with the data from the database.
-Exemple:
-| Template        | Result           
-| ------------- |:-------------:
-$title|Her Fantasy Ball.mp4
-$title $height|Her Fantasy Ball 1080p.mp4
-$date $title|2016-12-29 Her Fantasy Ball.mp4
-$date $performer - $title [$studio]|2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex].mp4
-$parent_studio $date $performer - $title|RealityKings 2016-12-29 Eva Lovia - Her Fantasy Ball.mp4
+- Read/Edit `config.py`
+	- I recommend setting the **log_file** as it can be useful to revert.
 
-Note: 
-- A regex will remove illegal character for Windows.
-- If you path will be more than 240 characters, the script will try to reduce it. It will only use Date + Title.
-- If your height of the video is 2160/4320, it will be replace by `4k`/`8k` else it will be `height + p` (240p,720p,1080p...)
-- If the scene contains more than 3 performers, $performer will be replace by nothing.
+### Example
 
-## Change scenes by tags
+> Note: The priority is Tag > Studio > Default
 
-If you want differents formats by tags:
+The config will be:
 ```py
-if scene_info.get("tags"):
-    for tag in scene_info["tags"]:
-        if tag["name"] == "WHOAAAA_TAGS1":
-            result_template = "$date $performer - $title [$studio]"
-        if tag["name"] == "WHOAAAA_TAGS2":
-            result_template = "$title"
-        if result_template:
-            break
+# Change filename for scenes from 'Vixen' or 'Slayed' studio.
+studio_templates  = {
+	"Slayed": "$date $performer - $title [$studio]",
+	"Vixen": "$performer - $title [$studio]"
+}
+# Change filename if the tag 'rename_tag' is present.
+tag_templates  = {
+	"rename_tag": "$year $title - $studio $resolution $video_codec",
+}
+# Change filename no matter what
+use_default_template  =  True
+default_template  =  "$date $title"
+# Use space as a performer separator
+performer_splitchar  =  " "
+# If the scene has more than 3 performers, the $performer field will be ignored.
+performer_limit  =  3
 ```
+The scene was just scanned, everything is default (Title = Filename).
 
-If you only want change 1 tag:
-```py
-if scene_info.get("tags"):
-    for tag in scene_info["tags"]:
-        if tag["name"] == "WHOAAAA_TAGS1":
-            result_template = "$date $performer - $title [$studio]"
-        if result_template:
-            break
-```
-If you want to change by studio:
-```py
-if scene_info.get("studio"):
-    if scene_info["studio"]["name"] == "STUDIO NAME":
-        result_template = "$date $performer - $title [$studio]"
-    if scene_info["studio"]["name"] == "STUDIO NAME 2":
-        result_template = "$parent_studio $date $performer - $title"
-```
+Current filename: `Slayed.21.09.02.Ariana.Marie.Emily.Willis.And.Eliza.Ibarra.XXX.1080p.mp4`
 
-## Change all scenes
+|Stash Field  | Value | Filename | Trigger template |
+|--|:---:|--|--|
+| - | *Default* |`Slayed.21.09.02.Ariana.Marie.Emily.Willis.And.Eliza.Ibarra.XXX.1080p.mp4` | default_template
+| ~Title| **Driver**| `Driver.mp4` | default_template
+| +Date| **2021-09-02**| `2021-09-02 Driver.mp4` | default_template
+| +Performer | **Ariana Marie<br>Emily Willis<br>Eliza Ibarra**| `2021-09-02 Driver.mp4` | default_template
+| +Studio | **Vixen**| `Ariana Marie Emily Willis Eliza Ibarra - Driver [Vixen].mp4` | studio_templates [Vixen]
+| ~Studio | **Slayed**| `2021-09-02 Ariana Marie Emily Willis Eliza Ibarra - Driver [Slayed].mp4` | studio_templates [Slayed]
+| +Performer | **Elsa Jean**| `2021-09-02 Driver [Slayed].mp4` | studio_templates [Slayed]<br>**Reach performer_limit**.
+| +Tag | **rename_tag**| `2021 Driver - Slayed HD h264.mp4` | tag_templates [rename_tag]
 
-```py
-result_template = "$date $title"
-```
