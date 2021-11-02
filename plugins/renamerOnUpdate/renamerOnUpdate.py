@@ -37,11 +37,12 @@ if FRAGMENT_SCENE_ID:
 PLUGIN_ARGS = FRAGMENT['args'].get("mode")
 
 if PLUGIN_ARGS:
-    log.LogDebug("--Starting Plugin 'Renammer'--")
+    log.LogDebug("--Starting Plugin 'Renamer'--")
 else:
-    log.LogDebug("--Starting Hook 'Renammer'--")
+    log.LogDebug("--Starting Hook 'Renamer'--")
 
 #log.LogDebug("{}".format(FRAGMENT))
+
 
 def callGraphQL(query, variables=None, raise_exception=True):
     # Session cookie for authentication
@@ -67,11 +68,18 @@ def callGraphQL(query, variables=None, raise_exception=True):
     try:
         response = requests.post(graphql_url, json=json,headers=graphql_headers, cookies=graphql_cookies, timeout=20)
     except Exception as e:
-         exit_plugin(err="[FATAL] Exception with GraphQL request. {}".format(e))
+        exit_plugin(err="[FATAL] Exception with GraphQL request. {}".format(e))
     if response.status_code == 200:
         result = response.json()
         if result.get("error"):
             for error in result["error"]["errors"]:
+                if raise_exception:
+                    raise Exception("GraphQL error: {}".format(error))
+                else:
+                    log.LogError("GraphQL error: {}".format(error))
+            return None
+        if result.get("errors"):
+            for error in result["errors"]:
                 if raise_exception:
                     raise Exception("GraphQL error: {}".format(error))
                 else:
@@ -94,21 +102,11 @@ def graphql_getScene(scene_id):
     }
     fragment SceneData on Scene {
         id
-        checksum
-        oshash
         title
-        details
-        url
         date
-        rating
-        o_counter
         organized
         path
-        phash
-        interactive
         file {
-            size
-            duration
             video_codec
             audio_codec
             width
@@ -118,12 +116,6 @@ def graphql_getScene(scene_id):
         }
         studio {
             ...SlimStudioData
-        }
-        movies {
-            movie {
-            ...MovieData
-            }
-            scene_index
         }
         tags {
             ...SlimTagData
@@ -139,23 +131,7 @@ def graphql_getScene(scene_id):
             id
             name
         }
-        details
-        rating
         aliases
-    }
-    fragment MovieData on Movie {
-        id
-        checksum
-        name
-        aliases
-        date
-        rating
-        director
-        studio {
-            ...SlimStudioData
-        }
-        synopsis
-        url
     }
     fragment SlimTagData on Tag {
         id
@@ -164,32 +140,8 @@ def graphql_getScene(scene_id):
     }
     fragment PerformerData on Performer {
         id
-        checksum
         name
-        url
         gender
-        twitter
-        instagram
-        birthdate
-        ethnicity
-        country
-        eye_color
-        height
-        measurements
-        fake_tits
-        career_length
-        tattoos
-        piercings
-        aliases
-        favorite
-        tags {
-            ...SlimTagData
-        }
-        rating
-        details
-        death_date
-        hair_color
-        weight
     }
     """
     variables = {
@@ -211,69 +163,6 @@ def graphql_getConfiguration():
     """
     result = callGraphQL(query)
     return result.get('configuration')
-
-
-def graphql_findScene(perPage,direc="DESC"):
-    query = """
-    query FindScenes($filter: FindFilterType) {
-        findScenes(filter: $filter) {
-            count
-            scenes {
-                ...SlimSceneData
-            }
-        }
-    }
-    fragment SlimSceneData on Scene {
-        id
-        checksum
-        oshash
-        title
-        details
-        url
-        date
-        rating
-        o_counter
-        organized
-        path
-        phash
-        interactive
-        scene_markers {
-            id
-            title
-            seconds
-        }
-        galleries {
-            id
-            path
-            title
-        }
-        studio {
-            id
-            name
-        }
-        movies {
-            movie {
-                id
-                name
-            }
-            scene_index
-        }
-        tags {
-            id
-            name
-        }
-        performers {
-            id
-            name
-            gender
-            favorite
-        }
-    }
-    """
-    # ASC DESC
-    variables = {'filter': {"direction": direc, "page": 1, "per_page": perPage, "sort": "updated_at"}}
-    result = callGraphQL(query, variables)
-    return result.get("findScenes")
 
 
 def makeFilename(scene_information, query):
@@ -348,6 +237,9 @@ def exit_plugin(msg=None, err=None):
     print(json.dumps(output_json))
     sys.exit()
 
+
+LOGFILE = config.log_file
+
 STASH_SCENE = graphql_getScene(FRAGMENT_SCENE_ID)
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
@@ -358,9 +250,10 @@ TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $par
 #log.LogDebug("Database Path: {}".format(STASH_DATABASE))
 filename_template = None
 
+
 # READING CONFIG
 
-LOGFILE = config.log_file
+
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
 PERFORMER_IGNORE_MALE = config.performer_ignore_male
@@ -490,10 +383,10 @@ else:
 # Replace the old filename by the new in the filepath
 new_path = current_path.rstrip(current_filename) + new_filename
 
-# Trying to prevent error with long path for Win10
+# Trying to prevent error with long paths for Win10
 # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
 if len(new_path) > 240:
-    log.LogWarning("The Path is too long ({})...".format(len(new_path)))
+    log.LogWarning("Resulting Path is too long ({})...".format(len(new_path)))
     for word in ORDER_SHORTFIELD:
         if word not in filename_template:
             continue
@@ -505,19 +398,21 @@ if len(new_path) > 240:
             log.LogInfo("Reduced filename to: {}".format(new_filename))
             break
     if len(new_path) > 240:
-        exit_plugin(err="Can't manage to reduce the path, operation aborted.")
+        exit_plugin(err="Can't shorten path, operation aborted.")
 
 #log.LogDebug("Filename: {} -> {}".format(current_filename,new_filename))
 #log.LogDebug("Path: {} -> {}".format(current_path,new_path))
 
 if (new_path == current_path):
-    exit_plugin("Filename already correct. ({})".format(current_filename))
+    exit_plugin("Filename already ok. ({})".format(current_filename))
 
 if ALT_DIFF_DISPLAY:
     find_diff_text(current_filename,new_filename)
 else:
     log.LogDebug("[OLD] Filename: {}".format(current_filename))
     log.LogDebug("[NEW] Filename: {}".format(new_filename))
+
+
 
 # Connect to the DB
 try:
@@ -533,14 +428,14 @@ cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + f
 dupl_check = cursor.fetchall()
 if len(dupl_check) > 0:
     for dupl_row in dupl_check:
-        log.LogError("Same path: [{}]".format(dupl_row[0]))
+        log.LogError("Identical path: [{}]".format(dupl_row[0]))
     exit_plugin(err="Duplicate path detected, check log!")
 
 cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + new_filename, FRAGMENT_SCENE_ID])
 dupl_check = cursor.fetchall()
 if len(dupl_check) > 0:
     for dupl_row in dupl_check:
-        log.LogInfo("Same filename: [{}]".format(dupl_row[0]))
+        log.LogInfo("Duplicate filename: [{}]".format(dupl_row[0]))
 
 # OS Rename
 if (os.path.isfile(current_path) == True):
@@ -548,20 +443,20 @@ if (os.path.isfile(current_path) == True):
         os.rename(current_path, new_path)
     except PermissionError as err:
         if "[WinError 32]" in str(err) and MODULE_PSUTIL:
-            log.LogWarning("A process use this file, trying to find it (Probably FFMPEG)")
-            # Find what process access the file, it's ffmpeg for sure...
+            log.LogWarning("A process is using this file (Probably FFMPEG), trying to find it ...")
+            # Find which process accesses the file, it's ffmpeg for sure...
             process_use = has_handle(current_path, PROCESS_ALLRESULT)
             if process_use:
                 # Terminate the process then try again to rename
-                log.LogDebug("Process that use this file: {}".format(process_use))
+                log.LogDebug("Process that uses this file: {}".format(process_use))
                 if PROCESS_KILL:
                     p = psutil.Process(process_use.pid)
                     p.terminate()
                     p.wait(10)
-                    # If we don't manage to close it, this will create a error again.
+                    # If process is not terminated, this will create an error again.
                     os.rename(current_path, new_path)
                 else:
-                    exit_plugin(err="A process prevent editing the file.")
+                    exit_plugin(err="A process prevents renaming the file.")
         else:
             log.LogError(err)
             sys.exit()
@@ -572,9 +467,9 @@ if (os.path.isfile(current_path) == True):
                 f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, current_path, new_path))
     else:
         # I don't think it's possible. 
-        exit_plugin(err="[OS] File failed to rename ? {}".format(new_path))
+        exit_plugin(err="[OS] Failed to rename the file ? {}".format(new_path))
 else:
-    exit_plugin(err="[OS] File don't exist in your Disk/Drive ({})".format(current_path))
+    exit_plugin(err="[OS] File doesn't exist in your Disk/Drive ({})".format(current_path))
 
 # Database rename
 cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [new_path, FRAGMENT_SCENE_ID])
@@ -583,5 +478,6 @@ sqliteConnection.commit()
 cursor.close()
 sqliteConnection.close()
 log.LogInfo("[SQLITE] Database updated and closed!")
+
 
 exit_plugin("Successful!")
