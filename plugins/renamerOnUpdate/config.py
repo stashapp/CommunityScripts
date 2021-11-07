@@ -63,8 +63,12 @@ prevent_title_performer = False
 
 # Only rename 'Organized' scenes.
 only_organized = False
+
+# If the new path is over 240 characters, the plugin will try to reduce it. Set to True to ignore that.
+ignore_path_length = False
 # Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
 order_field = ["$video_codec", "$audio_codec", "$resolution", "$height", "$studio_family", "$studio", "$parent_studio","$performer"]
+
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
 
