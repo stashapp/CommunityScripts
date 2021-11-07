@@ -252,12 +252,12 @@ filename_template = None
 
 
 # READING CONFIG
-
-
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
 PERFORMER_IGNORE_MALE = config.performer_ignore_male
 PREVENT_TITLE_PERF = config.prevent_title_performer
+
+IGNORE_PATH_LENGTH = config.ignore_path_length
 
 PROCESS_KILL = config.process_kill_attach
 PROCESS_ALLRESULT = config.process_getall
@@ -385,7 +385,7 @@ new_path = current_path.rstrip(current_filename) + new_filename
 
 # Trying to prevent error with long paths for Win10
 # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
-if len(new_path) > 240:
+if len(new_path) > 240 and not IGNORE_PATH_LENGTH:
     log.LogWarning("Resulting Path is too long ({})...".format(len(new_path)))
     for word in ORDER_SHORTFIELD:
         if word not in filename_template:
