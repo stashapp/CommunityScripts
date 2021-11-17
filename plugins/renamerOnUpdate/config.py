@@ -11,6 +11,7 @@
 #   $studio 
 #   $parent_studio 
 #   $studio_family 
+#   $rating
 #   $video_codec 
 #   $audio_codec
 #
@@ -77,10 +78,18 @@ performer_ignore_male = False
 # 2016 Dani Daniels - Dani Daniels in ***.mp4 --> 2016 Dani Daniels in ***.mp4
 prevent_title_performer = False
 
+# Rating indicator option to identify the number correctly in your OS file search
+# Separated from the template handling above to avoid having only "RTG" in the filename for scenes without ratings
+# e. g.:
+# "{}" with scene rating of 5       == 5
+# "RTG{}" with scene rating of 5    == RTG5
+# "{}-stars" with scene rating 3    == 3-stars
+rating_format = "{}"
+
 # Only rename 'Organized' scenes.
 only_organized = False
 # Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
-order_field = ["$video_codec", "$audio_codec", "$resolution", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
+order_field = ["$video_codec", "$audio_codec", "$resolution", "rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
 

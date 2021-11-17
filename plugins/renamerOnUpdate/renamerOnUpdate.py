@@ -104,6 +104,7 @@ def graphql_getScene(scene_id):
         id
         title
         date
+        rating
         organized
         path
         file {
@@ -243,7 +244,7 @@ LOGFILE = config.log_file
 STASH_SCENE = graphql_getScene(FRAGMENT_SCENE_ID)
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
-TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $video_codec $audio_codec".split(" ")
+TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $rating $video_codec $audio_codec".split(" ")
 
 #log.LogDebug("Scene ID: {}".format(FRAGMENT_SCENE_ID))
 #log.LogDebug("Scene Info: {}".format(STASH_SCENE))
@@ -258,6 +259,8 @@ PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
 PERFORMER_IGNORE_MALE = config.performer_ignore_male
 PREVENT_TITLE_PERF = config.prevent_title_performer
+
+RATING_FORMAT = config.rating_format
 
 PROCESS_KILL = config.process_kill_attach
 PROCESS_ALLRESULT = config.process_getall
@@ -319,6 +322,10 @@ if STASH_SCENE.get("title"):
 # Grab Date
 scene_information["date"] = STASH_SCENE.get("date")
 
+# Grab Rating
+if STASH_SCENE.get("rating"):
+    scene_information["rating"] = RATING_FORMAT.format(STASH_SCENE["rating"])
+
 # Grab Performer
 if STASH_SCENE.get("performers"):
     perf_list = ""
@@ -358,6 +365,7 @@ if STASH_SCENE["file"]["height"] >= 4320:
 if STASH_SCENE["file"]["height"] > STASH_SCENE["file"]["width"]:
     scene_information["resolution"] = 'VERTICAL'
 
+# Grab Video and Audio codec
 scene_information["video_codec"] = STASH_SCENE["file"]["video_codec"]
 scene_information["audio_codec"] = STASH_SCENE["file"]["audio_codec"]
 
