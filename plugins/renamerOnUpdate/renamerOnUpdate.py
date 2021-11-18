@@ -244,7 +244,7 @@ LOGFILE = config.log_file
 STASH_SCENE = graphql_getScene(FRAGMENT_SCENE_ID)
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
-TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $rating $video_codec $audio_codec".split(" ")
+TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $rating $tags $video_codec $audio_codec".split(" ")
 
 #log.LogDebug("Scene ID: {}".format(FRAGMENT_SCENE_ID))
 #log.LogDebug("Scene Info: {}".format(STASH_SCENE))
@@ -261,6 +261,10 @@ PERFORMER_IGNORE_MALE = config.performer_ignore_male
 PREVENT_TITLE_PERF = config.prevent_title_performer
 
 RATING_FORMAT = config.rating_format
+
+TAGS_SPLITCHAR = config.tags_splitchar
+TAGS_WHITELIST = config.tags_whitelist
+TAGS_BLACKLIST = config.tags_blacklist
 
 PROCESS_KILL = config.process_kill_attach
 PROCESS_ALLRESULT = config.process_getall
@@ -350,6 +354,26 @@ if STASH_SCENE.get("studio"):
     if STASH_SCENE["studio"].get("parent_studio"):
         scene_information["parent_studio"] = STASH_SCENE["studio"]["parent_studio"]["name"]
         scene_information["studio_family"] = scene_information["parent_studio"]
+
+# Grab Tags
+if STASH_SCENE.get("tags"):
+    tag_list = ""
+    for tag in STASH_SCENE["tags"]:
+        if tag["name"]:
+            if tag["name"] in TAGS_BLACKLIST:
+                continue
+            else:
+                if len(TAGS_WHITELIST) > 0:
+                    if tag["name"] in TAGS_WHITELIST:
+                        tag_list += tag["name"] + TAGS_SPLITCHAR
+                    else:
+                        continue
+                else:
+                    tag_list += tag["name"] + TAGS_SPLITCHAR   
+        else:
+            continue
+    tag_list = tag_list[:-len(TAGS_SPLITCHAR)]
+    scene_information["tags"] = tag_list
 
 # Grab Height (720p,1080p,4k...)
 scene_information["resolution"] = 'SD'

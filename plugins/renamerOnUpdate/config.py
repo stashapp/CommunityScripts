@@ -12,6 +12,7 @@
 #   $parent_studio 
 #   $studio_family 
 #   $rating
+#   $tags
 #   $video_codec 
 #   $audio_codec
 #
@@ -29,6 +30,7 @@
 # $year_$title-$height                      == 2016_Her Fantasy Ball-1080p
 # $date $performer - $title [$studio]       == 2016-12-29 Eva Lovia - Her Fantasy Ball [Sneaky Sex]
 # $parent_studio $date $performer - $title  == Reality Kings 2016-12-29 Eva Lovia - Her Fantasy Ball
+# $date $title - $tags                      == 2016-12-29 Her Fantasy Ball - Blowjob Cumshot Facial Tattoo
 #
 ####################################################################
 
@@ -85,6 +87,22 @@ prevent_title_performer = False
 # "RTG{}" with scene rating of 5    == RTG5
 # "{}-stars" with scene rating 3    == 3-stars
 rating_format = "{}"
+
+# Character to use as a tag separator.
+tags_splitchar = " "
+# Include and exclude tags
+# 	Tags will be compared strictly. "pantyhose" != "Pantyhose" and "panty hose" != "pantyhose"
+# Option 1: If you're using whitelist, every other tag which is not listed there will be ignored in the filename
+# Option 2: All tags in the tags_blacklist array will be ignored in the filename. Every other tag will be used.
+# Option 3: Leave both arrays empty if you're looking for every tag which is linked to the scene. 
+# 			Attention: Only recommended if the scene linked tags number is not that big due to maxiumum filename length
+tags_whitelist = [
+    # "Brunette", "Blowjob"
+]
+
+tags_blacklist = [
+	# ignored tags...
+]
 
 # Only rename 'Organized' scenes.
 only_organized = False
