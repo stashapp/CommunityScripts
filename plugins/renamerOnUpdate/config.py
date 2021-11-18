@@ -67,6 +67,13 @@ log_file = r""
 ######################################
 #               Settings             #
 
+# Character which replaces every space in the filename
+# Common values are "." and "_"
+# e. g.:
+# "."
+# 2016-12-29.Eva.Lovia.-.Her.Fantasy.Ball
+filename_splitchar = " "
+
 # Character to use as a performer separator.
 performer_splitchar = " "
 # Maximum number of performer names in the filename. If there are more than that in a scene the filename will not include any performer name!
@@ -107,7 +114,7 @@ tags_blacklist = [
 # Only rename 'Organized' scenes.
 only_organized = False
 # Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
-order_field = ["$video_codec", "$audio_codec", "$resolution", "rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
+order_field = ["$video_codec", "$audio_codec", "$resolution", "tags", "rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
 

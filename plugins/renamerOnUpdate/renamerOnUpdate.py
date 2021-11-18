@@ -190,6 +190,8 @@ def makeFilename(scene_information, query):
     new_filename = re.sub('(?:[\s_]-){2,}', ' -', new_filename)
     # Remove space at start/end
     new_filename = new_filename.strip(" -")
+    # Replace spaces with splitchar
+    new_filename = new_filename.replace(' ', FILENAME_SPLITCHAR)
     return new_filename
 
 
@@ -254,6 +256,7 @@ filename_template = None
 
 # READING CONFIG
 
+FILENAME_SPLITCHAR = config.filename_splitchar
 
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
