@@ -87,6 +87,12 @@ performer_ignore_male = False
 # 2016 Dani Daniels - Dani Daniels in ***.mp4 --> 2016 Dani Daniels in ***.mp4
 prevent_title_performer = False
 
+# Squeeze studio names removes all spaces in studio, parent studio and studio family name
+# e. g.:
+# Reality Kings --> RealityKings
+# Team Skeet Extras --> TeamSkeetExtras
+squeeze_studio_names = False
+
 # Rating indicator option to identify the number correctly in your OS file search
 # Separated from the template handling above to avoid having only "RTG" in the filename for scenes without ratings
 # e. g.:

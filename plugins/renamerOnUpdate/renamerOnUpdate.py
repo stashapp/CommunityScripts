@@ -263,6 +263,8 @@ PERFORMER_LIMIT = config.performer_limit
 PERFORMER_IGNORE_MALE = config.performer_ignore_male
 PREVENT_TITLE_PERF = config.prevent_title_performer
 
+SQUEEZE_STUDIO_NAMES = config.squeeze_studio_names
+
 RATING_FORMAT = config.rating_format
 
 TAGS_SPLITCHAR = config.tags_splitchar
@@ -351,11 +353,17 @@ if STASH_SCENE.get("performers"):
 
 # Grab Studio name
 if STASH_SCENE.get("studio"):
-    scene_information["studio"] = STASH_SCENE["studio"].get("name")
+    if SQUEEZE_STUDIO_NAMES:
+        scene_information["studio"] = STASH_SCENE["studio"].get("name").replace(' ', '')
+    else:
+        scene_information["studio"] = STASH_SCENE["studio"].get("name")
     scene_information["studio_family"] = scene_information["studio"]
     # Grab Parent name
     if STASH_SCENE["studio"].get("parent_studio"):
-        scene_information["parent_studio"] = STASH_SCENE["studio"]["parent_studio"]["name"]
+        if SQUEEZE_STUDIO_NAMES:
+            scene_information["parent_studio"] = STASH_SCENE["studio"]["parent_studio"]["name"].replace(' ', '')
+        else:
+            scene_information["parent_studio"] = STASH_SCENE["studio"]["parent_studio"]["name"]
         scene_information["studio_family"] = scene_information["parent_studio"]
 
 # Grab Tags
