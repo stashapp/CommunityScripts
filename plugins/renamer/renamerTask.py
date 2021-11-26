@@ -492,7 +492,7 @@ def renamer(scene_id):
     if DRY_RUN:
         with open(FILE_DRYRUN_RESULT, 'a', encoding='utf-8') as f:
             f.write("{}|{}|{}\n".format(scene_id, current_filename, new_filename))
-        return
+        return("[Dry-run] Writing in {}".format(FILE_DRYRUN_RESULT))
 
 
     # Connect to the DB
@@ -540,7 +540,7 @@ def renamer(scene_id):
                         return("A process prevent editing the file.")
             else:
                 log.LogError(err)
-                return
+                return ""
         if (os.path.isfile(new_path) == True):
             log.LogInfo("[OS] File Renamed!")
             if LOGFILE:
@@ -559,6 +559,7 @@ def renamer(scene_id):
     cursor.close()
     sqliteConnection.close()
     log.LogInfo("[SQLITE] Database updated and closed!")
+    return ""
 
 
 # File that show what we will changed.
@@ -616,7 +617,8 @@ progress_step = 1 / len(scenes["scenes"])
 
 for scene in scenes["scenes"]:
     msg = renamer(scene["id"])
-    log.LogDebug(msg)
+    if msg:
+        log.LogDebug(msg)
     progress += progress_step
     log.LogProgress(progress)
 
