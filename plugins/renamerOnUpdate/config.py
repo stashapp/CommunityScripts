@@ -43,7 +43,7 @@ default_template = "$date $title"
 # File to save what is renamed, can be useful if you need to revert changes.
 # Will look like: IDSCENE|OLD_PATH|NEW_PATH
 # Leave Blank ("") or use None if you don't want to use a log file, or a working path like: C:\Users\USERNAME\.stash\plugins\Hooks\rename_log.txt
-log_file = r""
+log_file = ""
 
 ######################################
 #               Settings             #
@@ -64,7 +64,7 @@ prevent_title_performer = False
 # Only rename 'Organized' scenes.
 only_organized = False
 # Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
-order_field = ["$video_codec", "$audio_codec", "$resolution", "$height", "$studio_family", "$studio", "$parent_studio","$performer"]
+order_field = ["$video_codec", "$audio_codec", "$resolution", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
 
