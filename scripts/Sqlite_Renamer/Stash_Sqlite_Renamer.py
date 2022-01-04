@@ -236,7 +236,7 @@ def edit_db(query_filename, optionnal_query=None):
                     if (os.path.isfile(new_path) == True):
                         logPrint("[OS] File Renamed! ({})".format(current_filename))
                         if USING_LOG == True:
-                            logPrint("{}|{}|{}\n".format(scene_ID, current_path, new_path), file=open("rename_log.txt", "a", encoding='utf-8'))
+                            print("{}|{}|{}\n".format(scene_ID, current_path, new_path), file=open("rename_log.txt", "a", encoding='utf-8'))
 
                         # Database rename
                         cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [new_path, scene_ID])
@@ -244,10 +244,10 @@ def edit_db(query_filename, optionnal_query=None):
                         logPrint("[SQLITE] Datebase Updated!")
                     else:
                         logPrint("[OS] File failed to rename ? ({})".format(current_filename))
-                        logPrint("{} -> {}\n".format(current_path,new_path), file=open("renamer_fail.txt", "a", encoding='utf-8'))
+                        print("{} -> {}\n".format(current_path,new_path), file=open("renamer_fail.txt", "a", encoding='utf-8'))
                 else:
                     logPrint("[DRY_RUN][OS] File should be renamed")
-                    logPrint("{} -> {}\n".format(current_path, new_path), file=open("renamer_dryrun.txt", "a", encoding='utf-8'))
+                    print("{} -> {}\n".format(current_path, new_path), file=open("renamer_dryrun.txt", "a", encoding='utf-8'))
             else:
                 logPrint("[OS] File don't exist in your Disk/Drive ({})".format(current_path))
             logPrint("\n")
