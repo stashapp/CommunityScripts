@@ -1,7 +1,4 @@
-import requests
-import sys
-import log
-import re
+import re, sys, requests
 
 class StashInterface:
     port = ""
@@ -16,6 +13,13 @@ class StashInterface:
     cookies = {}
 
     def __init__(self, conn, fragments={}):
+        global log
+
+        if conn.get("Logger"):
+            log = conn.get("Logger")
+        else:
+            raise Exception("No logger passed to StashInterface")
+
         self.port = conn['Port'] if conn.get('Port') else '9999'
         scheme = conn['Scheme'] if conn.get('Scheme') else 'http'
 
@@ -31,15 +35,22 @@ class StashInterface:
 
         # Stash GraphQL endpoint
         self.url = f'{scheme}://{domain}:{self.port}/graphql'
-        log.debug(f"Using stash GraphQl endpoint at {self.url}")
+
+        try:
+            self.get_stash_config()
+        except Exception:
+            log.error(f"Could not connect to Stash at {self.url}")
+            sys.exit()
+
+        log.info(f"Using Stash's GraphQl endpoint at {self.url}")
 
         self.fragments = fragments
 
     def __resolveFragments(self, query):
 
-        fragmentRefrences = list(set(re.findall(r'(?<=\.\.\.)\w+', query)))
+        fragmentReferences = list(set(re.findall(r'(?<=\.\.\.)\w+', query)))
         fragments = []
-        for ref in fragmentRefrences:
+        for ref in fragmentReferences:
             fragments.append({
                 "fragment": ref,
                 "defined": bool(re.search("fragment {}".format(ref), query))
@@ -69,14 +80,14 @@ class StashInterface:
 
             if result.get("errors"):
                 for error in result["errors"]:
-                    log.debug(f"GraphQL error: {error}")
+                    log.error(f"GraphQL error: {error}")
             if result.get("error"):
                 for error in result["error"]["errors"]:
-                    log.debug(f"GraphQL error: {error}")
+                    log.error(f"GraphQL error: {error}")
             if result.get("data"):
                 return result['data']
         elif response.status_code == 401:
-            sys.exit("HTTP Error 401, Unauthorised. Cookie authentication most likely failed")
+            sys.exit("HTTP Error 401, Unauthorized. Cookie authentication most likely failed")
         else:
             raise ConnectionError(
                 "GraphQL query failed:{} - {}. Query: {}. Variables: {}".format(
@@ -96,17 +107,38 @@ class StashInterface:
                     log.debug(f'matched "{search}" to "{alias}" ({item.id}) using alias')
                     item_matches[item.id] = item
         return list(item_matches.values())
-
-    def get_db_path(self):
+    
+    def get_stash_config(self):
         query = """
-            query Configuration {
-                configuration {
-                    general{
-                        databasePath
-                    }
+        query Configuration {
+            configuration { general { stashes{ path } } }
+        }
+        """
+        result = self.__callGraphQL(query)
+        return result['configuration']
+
+    def get_tags_with_relations(self):
+        query = """
+        query FindTags($filter: FindFilterType, $tag_filter: TagFilterType) {
+            findTags(filter: $filter, tag_filter: $tag_filter) {
+                count
+                tags {
+                    id
+                    name
+                  	parents { id }
+                  	children { id }
                 }
             }
+        }
         """
 
-        result = self.__callGraphQL(query)
-        return result['configuration']['general']['databasePath']
+        variables = {
+            "tag_filter":{
+                "child_count":{"modifier": "GREATER_THAN", "value": 0}, 
+                    "OR": {
+                "parent_count": {"modifier": "GREATER_THAN", "value": 0}}
+            },
+            "filter": {"q":"", "per_page":-1}
+        }
+        result = self.__callGraphQL(query, variables)
+        return result['findTags']['tags']
