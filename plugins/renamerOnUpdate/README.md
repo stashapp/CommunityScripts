@@ -1,6 +1,6 @@
 
 # SQLITE Renamer for Stash
-Using metadata from your Stash to rename your files.
+Using metadata from your Stash to rename your file.
 
 ## Requirement
 - Stash
@@ -13,7 +13,7 @@ Using metadata from your Stash to rename your files.
 - Download the whole folder 'renamerOnUpdate' (config.py, log.py, renamerOnUpdate.py/.yml)
 - Place it in your **plugins** folder (where the `config.yml` is)
 - Reload plugins (Settings > Plugins)
-- renamerOnUpdate should appears 
+- renamerOnUpdate appears 
 
 ### :exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:
 
@@ -26,7 +26,7 @@ Using metadata from your Stash to rename your files.
 
 ## Configuration
 
-- Read/Edit `config.py` for further information
+- Read/Edit `config.py`
 	- I recommend setting the **log_file** as it can be useful to revert.
 
 ### Example
