@@ -1,5 +1,5 @@
 name: renamerOnUpdate
-description: Rename filenames based on a template.
+description: Rename filename based on a template.
 url: https://github.com/stashapp/CommunityScripts
 version: 1.4
 exec:
@@ -8,6 +8,6 @@ exec:
 interface: raw
 hooks:
   - name: hook_rename
-    description: Rename files when you update a scene.
+    description: Rename file when you update a scene.
     triggeredBy: 
       - Scene.Update.Post
