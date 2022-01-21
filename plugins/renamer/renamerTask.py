@@ -605,7 +605,7 @@ if PLUGIN_ARGS == "Process_dry":
         with open(FILE_DRYRUN_RESULT, 'r') as f:
             for line in f:
                 scene_id_file = line.split("|")[0]
-                scenes["scenes"].append(scene_id_file)
+                scenes["scenes"].append({"id": scene_id_file})
     else:
         exit_plugin(err="Can't find the file from the dry-run ({}). Be sure to run a Dry-Run task before.".format(FILE_DRYRUN_RESULT))
 
