@@ -8,6 +8,6 @@ exec:
 interface: raw
 hooks:
   - name: hook_rename
-    description: Rename files when you update a scene.
+    description: Rename file when you update a scene.
     triggeredBy: 
       - Scene.Update.Post

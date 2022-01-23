@@ -104,6 +104,7 @@ def graphql_getScene(scene_id):
         id
         title
         date
+        rating
         organized
         path
         file {
@@ -189,6 +190,8 @@ def makeFilename(scene_information, query):
     new_filename = re.sub('(?:[\s_]-){2,}', ' -', new_filename)
     # Remove space at start/end
     new_filename = new_filename.strip(" -")
+    # Replace spaces with splitchar
+    new_filename = new_filename.replace(' ', FILENAME_SPLITCHAR)
     return new_filename
 
 
@@ -243,7 +246,7 @@ LOGFILE = config.log_file
 STASH_SCENE = graphql_getScene(FRAGMENT_SCENE_ID)
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
-TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $video_codec $audio_codec".split(" ")
+TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $rating $tags $video_codec $audio_codec".split(" ")
 
 #log.LogDebug("Scene ID: {}".format(FRAGMENT_SCENE_ID))
 #log.LogDebug("Scene Info: {}".format(STASH_SCENE))
@@ -252,12 +255,25 @@ filename_template = None
 
 
 # READING CONFIG
+
+FILENAME_SPLITCHAR = config.filename_splitchar
+
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
 PERFORMER_IGNORE_MALE = config.performer_ignore_male
 PREVENT_TITLE_PERF = config.prevent_title_performer
 
+
+SQUEEZE_STUDIO_NAMES = config.squeeze_studio_names
+
+RATING_FORMAT = config.rating_format
+
+TAGS_SPLITCHAR = config.tags_splitchar
+TAGS_WHITELIST = config.tags_whitelist
+TAGS_BLACKLIST = config.tags_blacklist
+
 IGNORE_PATH_LENGTH = config.ignore_path_length
+
 
 PROCESS_KILL = config.process_kill_attach
 PROCESS_ALLRESULT = config.process_getall
@@ -319,6 +335,10 @@ if STASH_SCENE.get("title"):
 # Grab Date
 scene_information["date"] = STASH_SCENE.get("date")
 
+# Grab Rating
+if STASH_SCENE.get("rating"):
+    scene_information["rating"] = RATING_FORMAT.format(STASH_SCENE["rating"])
+
 # Grab Performer
 if STASH_SCENE.get("performers"):
     perf_list = ""
@@ -337,12 +357,38 @@ if STASH_SCENE.get("performers"):
 
 # Grab Studio name
 if STASH_SCENE.get("studio"):
-    scene_information["studio"] = STASH_SCENE["studio"].get("name")
+    if SQUEEZE_STUDIO_NAMES:
+        scene_information["studio"] = STASH_SCENE["studio"].get("name").replace(' ', '')
+    else:
+        scene_information["studio"] = STASH_SCENE["studio"].get("name")
     scene_information["studio_family"] = scene_information["studio"]
     # Grab Parent name
     if STASH_SCENE["studio"].get("parent_studio"):
-        scene_information["parent_studio"] = STASH_SCENE["studio"]["parent_studio"]["name"]
+        if SQUEEZE_STUDIO_NAMES:
+            scene_information["parent_studio"] = STASH_SCENE["studio"]["parent_studio"]["name"].replace(' ', '')
+        else:
+            scene_information["parent_studio"] = STASH_SCENE["studio"]["parent_studio"]["name"]
         scene_information["studio_family"] = scene_information["parent_studio"]
+
+# Grab Tags
+if STASH_SCENE.get("tags"):
+    tag_list = ""
+    for tag in STASH_SCENE["tags"]:
+        if tag["name"]:
+            if tag["name"] in TAGS_BLACKLIST:
+                continue
+            else:
+                if len(TAGS_WHITELIST) > 0:
+                    if tag["name"] in TAGS_WHITELIST:
+                        tag_list += tag["name"] + TAGS_SPLITCHAR
+                    else:
+                        continue
+                else:
+                    tag_list += tag["name"] + TAGS_SPLITCHAR   
+        else:
+            continue
+    tag_list = tag_list[:-len(TAGS_SPLITCHAR)]
+    scene_information["tags"] = tag_list
 
 # Grab Height (720p,1080p,4k...)
 scene_information["resolution"] = 'SD'
@@ -358,6 +404,7 @@ if STASH_SCENE["file"]["height"] >= 4320:
 if STASH_SCENE["file"]["height"] > STASH_SCENE["file"]["width"]:
     scene_information["resolution"] = 'VERTICAL'
 
+# Grab Video and Audio codec
 scene_information["video_codec"] = STASH_SCENE["file"]["video_codec"]
 scene_information["audio_codec"] = STASH_SCENE["file"]["audio_codec"]
 
