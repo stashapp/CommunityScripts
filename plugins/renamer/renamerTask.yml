@@ -1,0 +1,29 @@
+name: renamerTask
+description: Rename filename based to a template.
+url: https://github.com/stashapp/CommunityScripts
+version: 1.1
+exec:
+  - python
+  - "{pluginDir}/renamerTask.py"
+interface: raw
+tasks:
+  - name: '[DRYRUN] Check 10 scenes'
+    description: Only check 10 scenes. Just show in log and create a file with the possible change.
+    defaultArgs:
+      mode: DRYRUN_test
+  - name: '[DRYRUN] Check all scenes'
+    description: Check all scenes. Just show in log and create a file with the possible change.
+    defaultArgs:
+      mode: DRYRUN_full
+  - name: 'Process scanned scene from Dry-Run task'
+    description: Edit scenes listed on the textfile from the Dry-Run task. ! Don't do anything in Stash in same time !
+    defaultArgs:
+      mode: Process_dry
+  - name: 'Process 10 scenes'
+    description: Edit the filename (if needed) for 10 scenes. ! Don't do anything in Stash in same time !
+    defaultArgs:
+      mode: Process_test
+  - name: 'Process all scenes'
+    description: Edit the filename (if needed) for all scenes. ! Don't do anything in Stash in same time !
+    defaultArgs:
+      mode: Process_full
