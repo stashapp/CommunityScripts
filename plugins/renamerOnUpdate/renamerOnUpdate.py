@@ -246,7 +246,7 @@ LOGFILE = config.log_file
 STASH_SCENE = graphql_getScene(FRAGMENT_SCENE_ID)
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
-TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $rating $tags $video_codec $audio_codec".split(" ")
+TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec".split(" ")
 
 #log.LogDebug("Scene ID: {}".format(FRAGMENT_SCENE_ID))
 #log.LogDebug("Scene Info: {}".format(STASH_SCENE))
