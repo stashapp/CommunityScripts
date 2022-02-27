@@ -295,12 +295,17 @@ if config.use_default_template:
 
 # Change by Studio
 if STASH_SCENE.get("studio") and config.studio_templates:
-    if config.studio_templates.get(STASH_SCENE["studio"]["name"]):
-        filename_template = config.studio_templates[STASH_SCENE["studio"]["name"]]
-    # by Parent
-    if STASH_SCENE["studio"].get("parent_studio"):
-        if config.studio_templates.get(STASH_SCENE["studio"]["name"]):
-            filename_template = config.studio_templates[STASH_SCENE["studio"]["name"]]
+    template_found = False
+    current_studio = STASH_SCENE.get("studio")
+    if config.studio_templates.get(current_studio["name"]):
+        filename_template = config.studio_templates[current_studio["name"]]
+        template_found = True
+    # by first Parent found
+    while current_studio.get("parent_studio") and not template_found:
+        if config.studio_templates.get(current_studio.get("parent_studio").get("name")):
+            filename_template = config.studio_templates[current_studio["parent_studio"]["name"]]
+            template_found = True
+        current_studio = current_studio.get("parent_studio")
 
 # Change by Tag
 if STASH_SCENE.get("tags") and config.tag_templates:
