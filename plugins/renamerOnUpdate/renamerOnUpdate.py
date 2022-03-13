@@ -165,6 +165,26 @@ def graphql_getConfiguration():
     result = callGraphQL(query)
     return result.get('configuration')
 
+def graphql_getStudio(studio_id):
+    query = """
+        query FindStudio($id:ID!) {
+            findStudio(id: $id) {
+                id
+                name
+                parent_studio {
+                    id
+                    name
+                    aliases
+                }
+                aliases
+            }
+        }
+    """
+    variables = {
+        "id": studio_id
+    }
+    result = callGraphQL(query, variables)
+    return result.get("findStudio")
 
 def makeFilename(scene_information, query):
     new_filename = str(query)
@@ -295,12 +315,17 @@ if config.use_default_template:
 
 # Change by Studio
 if STASH_SCENE.get("studio") and config.studio_templates:
-    if config.studio_templates.get(STASH_SCENE["studio"]["name"]):
-        filename_template = config.studio_templates[STASH_SCENE["studio"]["name"]]
-    # by Parent
-    if STASH_SCENE["studio"].get("parent_studio"):
-        if config.studio_templates.get(STASH_SCENE["studio"]["name"]):
-            filename_template = config.studio_templates[STASH_SCENE["studio"]["name"]]
+    template_found = False
+    current_studio = STASH_SCENE.get("studio")
+    if config.studio_templates.get(current_studio["name"]):
+        filename_template = config.studio_templates[current_studio["name"]]
+        template_found = True
+    # by first Parent found
+    while current_studio.get("parent_studio") and not template_found:
+        if config.studio_templates.get(current_studio.get("parent_studio").get("name")):
+            filename_template = config.studio_templates[current_studio["parent_studio"]["name"]]
+            template_found = True
+        current_studio = graphql_getStudio(current_studio.get("parent_studio")["id"])
 
 # Change by Tag
 if STASH_SCENE.get("tags") and config.tag_templates:
