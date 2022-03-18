@@ -88,7 +88,7 @@ class StashPlexAgent(Agent.Movies):
                     Log("Passed 'RequireURL' Check, continuing...")
                 if (Prefs["RequireStashID"] and len(data["stash_ids"])) or not Prefs["RequireStashID"]:
                     if DEBUG and Prefs["RequireStashID"]:
-                        Log("Passed 'RequireURL' Check, continuing...")
+                        Log("Passed 'RequireStashID' Check, continuing...")
                     allow_scrape = True
                 else:
                     Log("Failed 'RequireStashID' Check, stopping.")

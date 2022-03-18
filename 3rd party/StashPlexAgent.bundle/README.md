@@ -23,7 +23,7 @@ Also a bit of explanation for Sites vs Studios:
 
 I help out with TPDB, so I'm very much in the Site -> Studio -> Network mentality.  In Stash it is simply "Studio".
 
-For my thinking, a Stash studio that is directly connected to the scene is the "Site".  If that site has a parent studio, that is defined as "Studio".  If the scene studio has a grandparent, that would be "Network" (thgouh I'm not doign anything with that yet.
+For my thinking, a Stash studio that is directly connected to the scene is the "Site".  If that site has a parent studio, that is defined as "Studio".  If the scene studio has a grandparent, that would be "Network" (though I'm not doing anything with that yet.
 
 For example, in my Stash I have:  Mind Geek as the Parent of Brazzers which is the Parent of Brazzers Live.  
 
