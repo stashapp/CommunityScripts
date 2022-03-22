@@ -399,18 +399,27 @@ def renamer(scene_id):
     # Grab Performer
     if STASH_SCENE.get("performers"):
         perf_list = ""
-        if len(STASH_SCENE["performers"]) > PERFORMER_LIMIT:
+        perf_count = 0
+
+        for perf in STASH_SCENE["performers"]:
+            #log.LogDebug(performer)
+            if PERFORMER_IGNORE_MALE and perf["gender"] == "MALE":
+                continue
+
+            if perf_count > PERFORMER_LIMIT:
+                # We've already exceeded the limit. No need to keep checking
+                break
+
+            perf_list += perf["name"] + PERFORMER_SPLITCHAR
+            perf_count += 1
+
+        # Remove last character
+        perf_list = perf_list[:-len(PERFORMER_SPLITCHAR)]
+
+        if perf_count > PERFORMER_LIMIT:
             log.LogInfo("More than {} performer(s). Ignoring $performer".format(PERFORMER_LIMIT))
-        else:
-            for perf in STASH_SCENE["performers"]:
-                #log.LogDebug(performer)
-                if PERFORMER_IGNORE_MALE:
-                    if perf["gender"] != "MALE":
-                        perf_list += perf["name"] + PERFORMER_SPLITCHAR
-                else:
-                    perf_list += perf["name"] + PERFORMER_SPLITCHAR
-            # Remove last character
-            perf_list = perf_list[:-len(PERFORMER_SPLITCHAR)]
+            perf_list = ""
+
         scene_information["performer"] = perf_list
 
     # Grab Studio name
