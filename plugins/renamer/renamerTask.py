@@ -399,18 +399,27 @@ def renamer(scene_id):
     # Grab Performer
     if STASH_SCENE.get("performers"):
         perf_list = ""
-        if len(STASH_SCENE["performers"]) > PERFORMER_LIMIT:
+        perf_count = 0
+
+        for perf in STASH_SCENE["performers"]:
+            #log.LogDebug(performer)
+            if PERFORMER_IGNORE_MALE and perf["gender"] == "MALE":
+                continue
+
+            if perf_count > PERFORMER_LIMIT:
+                # We've already exceeded the limit. No need to keep checking
+                break
+
+            perf_list += perf["name"] + PERFORMER_SPLITCHAR
+            perf_count += 1
+
+        # Remove last character
+        perf_list = perf_list[:-len(PERFORMER_SPLITCHAR)]
+
+        if perf_count > PERFORMER_LIMIT:
             log.LogInfo("More than {} performer(s). Ignoring $performer".format(PERFORMER_LIMIT))
-        else:
-            for perf in STASH_SCENE["performers"]:
-                #log.LogDebug(performer)
-                if PERFORMER_IGNORE_MALE:
-                    if perf["gender"] != "MALE":
-                        perf_list += perf["name"] + PERFORMER_SPLITCHAR
-                else:
-                    perf_list += perf["name"] + PERFORMER_SPLITCHAR
-            # Remove last character
-            perf_list = perf_list[:-len(PERFORMER_SPLITCHAR)]
+            perf_list = ""
+
         scene_information["performer"] = perf_list
 
     # Grab Studio name
@@ -602,7 +611,7 @@ if PLUGIN_ARGS in ["DRYRUN_full","Process_full"]:
 if PLUGIN_ARGS == "Process_dry":
     if os.path.exists(FILE_DRYRUN_RESULT):
         scenes = {"scenes":[]}
-        with open(FILE_DRYRUN_RESULT, 'r') as f:
+        with open(FILE_DRYRUN_RESULT, 'r', encoding='utf-8') as f:
             for line in f:
                 scene_id_file = line.split("|")[0]
                 scenes["scenes"].append({"id": scene_id_file})
@@ -628,7 +637,7 @@ if PLUGIN_ARGS == "Process_dry":
 if DRY_RUN:
     num_lines = 0
     if os.path.exists(FILE_DRYRUN_RESULT):
-        num_lines = sum(1 for _ in open(FILE_DRYRUN_RESULT))
+        num_lines = sum(1 for _ in open(FILE_DRYRUN_RESULT, encoding='utf-8'))
     if num_lines > 0:
         log.LogInfo("[DRY-RUN] There wil be {} file(s) changed. Check {} for more details".format(num_lines, FILE_DRYRUN_RESULT))
     else:
