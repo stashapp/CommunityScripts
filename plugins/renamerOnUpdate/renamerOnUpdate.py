@@ -462,8 +462,8 @@ if STASH_SCENE["file"]["height"] > STASH_SCENE["file"]["width"]:
     scene_information["resolution"] = 'VERTICAL'
 
 # Grab Video and Audio codec
-scene_information["video_codec"] = STASH_SCENE["file"]["video_codec"]
-scene_information["audio_codec"] = STASH_SCENE["file"]["audio_codec"]
+scene_information["video_codec"] = STASH_SCENE["file"]["video_codec"].upper()
+scene_information["audio_codec"] = STASH_SCENE["file"]["audio_codec"].upper()
 
 if scene_information.get("date"):
     scene_information["year"] = scene_information["date"][0:4]
@@ -493,7 +493,7 @@ if MODULE_UNIDECODE and UNICODE_USE:
     new_filename = unidecode.unidecode(new_filename, errors='preserve')
 else:
     # Using typewriter for Apostrophe
-    new_filename = re.sub("[’‘]+", "'", new_filename)
+    new_filename = re.sub("[’‘”“]+", "'", new_filename)
 
 # Replace the old filename by the new in the filepath
 new_path = current_path.rstrip(current_filename) + new_filename
