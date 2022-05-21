@@ -3,28 +3,27 @@ import json
 import os
 import re
 import sqlite3
-import subprocess
 import sys
-import time
 
 import requests
 
 try:
     import psutil  # pip install psutil
     MODULE_PSUTIL = True
-except:
+except Exception:
     MODULE_PSUTIL = False
 
 try:
     import unidecode  # pip install Unidecode
     MODULE_UNIDECODE = True
-except:
+except Exception:
     MODULE_UNIDECODE = False
 
 import config
+
 import log
 
-
+DRY_RUN = False
 
 FRAGMENT = json.loads(sys.stdin.read())
 
@@ -37,8 +36,6 @@ if FRAGMENT_SCENE_ID:
 PLUGIN_ARGS = FRAGMENT['args'].get("mode")
 
 if PLUGIN_ARGS:
-    log.LogDebug("--Starting Plugin 'Renamer'--")
-else:
     log.LogDebug("--Starting Hook 'Renamer'--")
 
 #log.LogDebug("{}".format(FRAGMENT))
@@ -58,7 +55,7 @@ def callGraphQL(query, variables=None, raise_exception=True):
         "Connection": "keep-alive",
         "DNT": "1"
     }
-    graphql_domain = 'localhost'
+    graphql_domain = STASH_URL
     # Stash GraphQL endpoint
     graphql_url = graphql_scheme + "://" + graphql_domain + ":" + str(graphql_port) + "/graphql"
 
@@ -66,7 +63,7 @@ def callGraphQL(query, variables=None, raise_exception=True):
     if variables is not None:
         json['variables'] = variables
     try:
-        response = requests.post(graphql_url, json=json,headers=graphql_headers, cookies=graphql_cookies, timeout=20)
+        response = requests.post(graphql_url, json=json, headers=graphql_headers, cookies=graphql_cookies, timeout=20)
     except Exception as e:
         exit_plugin(err="[FATAL] Exception with GraphQL request. {}".format(e))
     if response.status_code == 200:
@@ -165,6 +162,7 @@ def graphql_getConfiguration():
     result = callGraphQL(query)
     return result.get('configuration')
 
+
 def graphql_getStudio(studio_id):
     query = """
         query FindStudio($id:ID!) {
@@ -186,28 +184,29 @@ def graphql_getStudio(studio_id):
     result = callGraphQL(query, variables)
     return result.get("findStudio")
 
+
 def makeFilename(scene_information, query):
     new_filename = str(query)
     for field in TEMPLATE_FIELD:
-        field_name = field.replace("$","")
+        field_name = field.replace("$", "")
         if field in new_filename:
             if scene_information.get(field_name):
                 if field == "$performer":
                     if re.search(r"\$performer[-\s_]*\$title", new_filename) and scene_information.get('title') and PREVENT_TITLE_PERF:
                         if re.search("^{}".format(scene_information["performer"]), scene_information["title"]):
                             log.LogInfo("Ignoring the performer field because it's already in start of title")
-                            new_filename = re.sub('\$performer[-\s_]*', '', new_filename)
+                            new_filename = re.sub(r'\$performer[-\s_]*', '', new_filename)
                             continue
                 new_filename = new_filename.replace(field, scene_information[field_name])
             else:
                 new_filename = re.sub('\${}[-\s_]*'.format(field_name), '', new_filename)
 
     # remove []
-    new_filename = re.sub('\[\W*]', '', new_filename)
+    new_filename = re.sub(r'\[\W*]', '', new_filename)
     # Remove multiple space/_ in row
-    new_filename = re.sub('[\s_]{2,}', ' ', new_filename)
+    new_filename = re.sub(r'[\s_]{2,}', ' ', new_filename)
     # Remove multiple - in row
-    new_filename = re.sub('(?:[\s_]-){2,}', ' -', new_filename)
+    new_filename = re.sub(r'(?:[\s_]-){2,}', ' -', new_filename)
     # Remove space at start/end
     new_filename = new_filename.strip(" -")
     # Replace spaces with splitchar
@@ -215,7 +214,7 @@ def makeFilename(scene_information, query):
     return new_filename
 
 
-def find_diff_text(a, b):
+def find_diff_text(a: str, b: str):
     addi = minus = stay = ""
     minus_ = addi_ = 0
     for _, s in enumerate(difflib.ndiff(a, b)):
@@ -230,15 +229,15 @@ def find_diff_text(a, b):
             addi += s[-1]
             addi_ += 1
     if minus_ > 20 or addi_ > 20:
-        log.LogDebug("Diff Checker: +{}; -{};".format(addi_,minus_))
+        log.LogDebug("Diff Checker: +{}; -{};".format(addi_, minus_))
         log.LogDebug("OLD: {}".format(a))
         log.LogDebug("NEW: {}".format(b))
     else:
         log.LogDebug("Original: {}\n- Charac: {}\n+ Charac: {}\n  Result: {}".format(a, minus, addi, b))
-    return 
+    return
 
 
-def has_handle(fpath,all_result=False):
+def has_handle(fpath, all_result=False):
     lst = []
     for proc in psutil.process_iter():
         try:
@@ -261,6 +260,7 @@ def exit_plugin(msg=None, err=None):
     sys.exit()
 
 
+STASH_URL = config.stash_url
 LOGFILE = config.log_file
 
 STASH_SCENE = graphql_getScene(FRAGMENT_SCENE_ID)
@@ -276,13 +276,17 @@ filename_template = None
 
 # READING CONFIG
 
+ASSOCIATED_EXT = config.associated_extension
+
+FIELD_WHITESPACE_SEP = config.field_whitespaceSeperator
+
+FILENAME_LOWER = config.lowercaseFilename
 FILENAME_SPLITCHAR = config.filename_splitchar
 
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
 PERFORMER_IGNORE_MALE = config.performer_ignore_male
 PREVENT_TITLE_PERF = config.prevent_title_performer
-
 
 SQUEEZE_STUDIO_NAMES = config.squeeze_studio_names
 
@@ -342,7 +346,7 @@ if not filename_template:
 
 #log.LogDebug("Using this template: {}".format(filename_template))
 
-current_path = STASH_SCENE["path"]
+current_path = str(STASH_SCENE["path"])
 # note: contain the dot (.mp4)
 file_extension = os.path.splitext(current_path)[1]
 # note: basename contains the extension
@@ -409,7 +413,7 @@ if STASH_SCENE.get("tags"):
                     else:
                         continue
                 else:
-                    tag_list += tag["name"] + TAGS_SPLITCHAR   
+                    tag_list += tag["name"] + TAGS_SPLITCHAR
         else:
             continue
     tag_list = tag_list[:-len(TAGS_SPLITCHAR)]
@@ -433,17 +437,26 @@ if STASH_SCENE["file"]["height"] > STASH_SCENE["file"]["width"]:
 scene_information["video_codec"] = STASH_SCENE["file"]["video_codec"]
 scene_information["audio_codec"] = STASH_SCENE["file"]["audio_codec"]
 
-log.LogDebug("[{}] Scene information: {}".format(FRAGMENT_SCENE_ID,scene_information))
-
 if scene_information.get("date"):
     scene_information["year"] = scene_information["date"][0:4]
+
+if FIELD_WHITESPACE_SEP:
+    for key, value in scene_information.items():
+        if type(value) is str:
+            scene_information[key] = value.replace(" ", FIELD_WHITESPACE_SEP)
+        elif type(value) is list:
+            scene_information[key] = [x.replace(" ", FIELD_WHITESPACE_SEP) for x in value]
+
+log.LogDebug("[{}] Scene information: {}".format(FRAGMENT_SCENE_ID, scene_information))
 
 
 # Create the new filename
 new_filename = makeFilename(scene_information, filename_template) + file_extension
+if FILENAME_LOWER:
+    new_filename = new_filename.lower()
 
-# Remove illegal character for Windows ('#' and ',' is not illegal you can remove it)
-new_filename = re.sub('[\\/:"*?<>|#,]+', '', new_filename)
+# Remove illegal character for Windows
+new_filename = re.sub('[\\/:"*?<>|]+', '', new_filename)
 
 # Trying to remove non standard character
 if MODULE_UNIDECODE and UNICODE_USE:
@@ -479,13 +492,13 @@ if (new_path == current_path):
     exit_plugin("Filename already ok. ({})".format(current_filename))
 
 if ALT_DIFF_DISPLAY:
-    find_diff_text(current_filename,new_filename)
+    find_diff_text(current_filename, new_filename)
 else:
     log.LogDebug("[OLD] Filename: {}".format(current_filename))
     log.LogDebug("[NEW] Filename: {}".format(new_filename))
 
-
-
+if DRY_RUN:
+    exit_plugin("Dry run")
 # Connect to the DB
 try:
     sqliteConnection = sqlite3.connect(STASH_DATABASE)
@@ -510,7 +523,7 @@ if len(dupl_check) > 0:
         log.LogInfo("Duplicate filename: [{}]".format(dupl_row[0]))
 
 # OS Rename
-if (os.path.isfile(current_path) == True):
+if (os.path.isfile(current_path)):
     try:
         os.rename(current_path, new_path)
     except PermissionError as err:
@@ -532,13 +545,13 @@ if (os.path.isfile(current_path) == True):
         else:
             log.LogError(err)
             sys.exit()
-    if (os.path.isfile(new_path) == True):
+    if (os.path.isfile(new_path)):
         log.LogInfo("[OS] File Renamed!")
         if LOGFILE:
             with open(LOGFILE, 'a', encoding='utf-8') as f:
                 f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, current_path, new_path))
     else:
-        # I don't think it's possible. 
+        # I don't think it's possible.
         exit_plugin(err="[OS] Failed to rename the file ? {}".format(new_path))
 else:
     exit_plugin(err="[OS] File doesn't exist in your Disk/Drive ({})".format(current_path))
@@ -551,5 +564,18 @@ cursor.close()
 sqliteConnection.close()
 log.LogInfo("[SQLITE] Database updated and closed!")
 
-
+for ext in ASSOCIATED_EXT:
+    p = os.path.splitext(current_path)[0] + "." + ext
+    p_new = os.path.splitext(new_path)[0] + "." + ext
+    if os.path.isfile(p):
+        try:
+            os.rename(p, p_new)
+        except Exception as err:
+            log.LogError("Something prevents renaming this file '{}' - err: {}".format(p, err))
+            continue
+    if os.path.isfile(p_new):
+        log.LogInfo("[OS] Associate file renamed ({})".format(p_new))
+        if LOGFILE:
+            with open(LOGFILE, 'a', encoding='utf-8') as f:
+                f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, p, p_new))
 exit_plugin("Successful!")
