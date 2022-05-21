@@ -92,7 +92,7 @@ performer_splitchar = " "
 # Maximum number of performer names in the filename. If there are more than that in a scene the filename will not include any performer name!
 performer_limit = 3
 # ignore certain gender
-performer_ignoreGender = ["MALE"]
+performer_ignoreGender = []
 
 # If $performer is before $title, prevent having duplicate text. 
 # e.g.:
