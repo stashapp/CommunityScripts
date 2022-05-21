@@ -547,7 +547,7 @@ if len(dupl_check) > 0:
         log.LogWarning("Duplicate filename: [{}]".format(dupl_row[0]))
 
 # OS Rename
-if (os.path.isfile(current_path)):
+if os.path.isfile(current_path):
     try:
         os.rename(current_path, new_path)
     except PermissionError as err:
@@ -569,7 +569,7 @@ if (os.path.isfile(current_path)):
         else:
             log.LogError(err)
             sys.exit()
-    if (os.path.isfile(new_path)):
+    if os.path.isfile(new_path):
         log.LogInfo("[OS] File Renamed!")
         if LOGFILE:
             with open(LOGFILE, 'a', encoding='utf-8') as f:
