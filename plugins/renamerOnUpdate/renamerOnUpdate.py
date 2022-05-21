@@ -307,8 +307,9 @@ ASSOCIATED_EXT = config.associated_extension
 
 FIELD_WHITESPACE_SEP = config.field_whitespaceSeperator
 
-FILENAME_LOWER = config.lowercaseFilename
+FILENAME_LOWER = config.lowercase_Filename
 FILENAME_SPLITCHAR = config.filename_splitchar
+FILENAME_REMOVECHARACTER = config.removecharac_Filename
 
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
@@ -484,6 +485,8 @@ if FILENAME_LOWER:
 
 # Remove illegal character for Windows
 new_filename = re.sub('[\\/:"*?<>|]+', '', new_filename)
+if FILENAME_REMOVECHARACTER:
+    new_filename = re.sub('[{}]+'.format(FILENAME_REMOVECHARACTER), '', new_filename)
 
 # Trying to remove non standard character
 if MODULE_UNIDECODE and UNICODE_USE:
