@@ -83,7 +83,9 @@ filename_splitchar = " "
 field_whitespaceSeperator = ""
 
 # put the filename in lowercase
-lowercaseFilename = False
+lowercase_Filename = False
+# remove these characters if there are present in the filename
+removecharac_Filename = ",#"
 
 # Character to use as a performer separator.
 performer_splitchar = " "
