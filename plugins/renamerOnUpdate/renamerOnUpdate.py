@@ -35,9 +35,6 @@ if FRAGMENT_SCENE_ID:
     FRAGMENT_SCENE_ID = FRAGMENT_SCENE_ID["id"]
 PLUGIN_ARGS = FRAGMENT['args'].get("mode")
 
-if PLUGIN_ARGS:
-    log.LogDebug("--Starting Hook 'Renamer'--")
-
 #log.LogDebug("{}".format(FRAGMENT))
 
 
@@ -252,6 +249,20 @@ def has_handle(fpath, all_result=False):
     return lst
 
 
+def config_edit(name: str, state: bool):
+    found = 0
+    with open(config.__file__, 'r') as file:
+        config_lines = file.readlines()
+    with open(config.__file__, 'w') as file_w:
+        for line in config_lines:
+            if name in line.split("=")[0].strip():
+                file_w.write("{} = {}\n".format(name, state))
+                found += 1
+            else:
+                file_w.write(line)
+    return found
+
+
 def exit_plugin(msg=None, err=None):
     if msg is None and err is None:
         msg = "plugin ended"
@@ -259,6 +270,22 @@ def exit_plugin(msg=None, err=None):
     print(json.dumps(output_json))
     sys.exit()
 
+if PLUGIN_ARGS:
+    log.LogDebug("--Starting Plugin 'Renamer'--")
+    if "enable" in PLUGIN_ARGS:
+        log.LogInfo("Enable hook")
+        success = config_edit("enable_hook", True)
+    elif "disable" in PLUGIN_ARGS:
+        log.LogInfo("Disable hook")
+        success = config_edit("enable_hook", False)
+    if not success:
+        log.LogError("Script failed to change the value of 'enable_hook' variable")
+    exit_plugin("script finished")
+else:
+    if not config.enable_hook:
+        exit_plugin("Hook disabled")
+    else:
+        log.LogDebug("--Starting Hook 'Renamer'--")
 
 STASH_URL = config.stash_url
 LOGFILE = config.log_file
