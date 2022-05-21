@@ -564,18 +564,19 @@ cursor.close()
 sqliteConnection.close()
 log.LogInfo("[SQLITE] Database updated and closed!")
 
-for ext in ASSOCIATED_EXT:
-    p = os.path.splitext(current_path)[0] + "." + ext
-    p_new = os.path.splitext(new_path)[0] + "." + ext
-    if os.path.isfile(p):
-        try:
-            os.rename(p, p_new)
-        except Exception as err:
-            log.LogError("Something prevents renaming this file '{}' - err: {}".format(p, err))
-            continue
-    if os.path.isfile(p_new):
-        log.LogInfo("[OS] Associate file renamed ({})".format(p_new))
-        if LOGFILE:
-            with open(LOGFILE, 'a', encoding='utf-8') as f:
-                f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, p, p_new))
+if ASSOCIATED_EXT:
+    for ext in ASSOCIATED_EXT:
+        p = os.path.splitext(current_path)[0] + "." + ext
+        p_new = os.path.splitext(new_path)[0] + "." + ext
+        if os.path.isfile(p):
+            try:
+                os.rename(p, p_new)
+            except Exception as err:
+                log.LogError("Something prevents renaming this file '{}' - err: {}".format(p, err))
+                continue
+        if os.path.isfile(p_new):
+            log.LogInfo("[OS] Associate file renamed ({})".format(p_new))
+            if LOGFILE:
+                with open(LOGFILE, 'a', encoding='utf-8') as f:
+                    f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, p, p_new))
 exit_plugin("Successful!")
