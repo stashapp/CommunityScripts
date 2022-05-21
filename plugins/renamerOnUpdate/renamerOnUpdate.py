@@ -552,7 +552,7 @@ cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + n
 dupl_check = cursor.fetchall()
 if len(dupl_check) > 0:
     for dupl_row in dupl_check:
-        log.LogInfo("Duplicate filename: [{}]".format(dupl_row[0]))
+        log.LogWarning("Duplicate filename: [{}]".format(dupl_row[0]))
 
 # OS Rename
 if (os.path.isfile(current_path)):
