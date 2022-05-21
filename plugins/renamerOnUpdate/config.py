@@ -91,8 +91,8 @@ removecharac_Filename = ",#"
 performer_splitchar = " "
 # Maximum number of performer names in the filename. If there are more than that in a scene the filename will not include any performer name!
 performer_limit = 3
-# Ignore male performers.
-performer_ignore_male = False
+# ignore certain gender
+performer_ignoreGender = ["MALE"]
 
 # If $performer is before $title, prevent having duplicate text. 
 # e.g.:
@@ -142,6 +142,8 @@ order_field = ["$video_codec", "$audio_codec", "$resolution", "tags", "rating", 
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
 
+# disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
+enable_hook = True
 ######################################
 #            Module Related          #
 
@@ -160,6 +162,4 @@ process_kill_attach = False
 # Warning: If you have non-latin characters (Cyrillic, Kanji, Arabic, ...), the result will be extremely different.
 use_ascii = False 
 # =========================
-# disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
-enable_hook = True
 
