@@ -33,6 +33,8 @@
 # $date $title - $tags                      == 2016-12-29 Her Fantasy Ball - Blowjob Cumshot Facial Tattoo
 #
 ####################################################################
+#                STASH               #
+stash_url = "localhost"
 
 #               TEMPLATE             #
 
@@ -67,12 +69,21 @@ log_file = r""
 ######################################
 #               Settings             #
 
+# rename associated file (subtitle, funscript) if present
+associated_extension = ["srt", "vtt", "funscript"]
+
 # Character which replaces every space in the filename
 # Common values are "." and "_"
 # e. g.:
 # "."
 # 2016-12-29.Eva.Lovia.-.Her.Fantasy.Ball
 filename_splitchar = " "
+
+# replace space for stash field (title, performer...), if you have a title 'I love Stash' it can become 'I_love_Stash'
+field_whitespaceSeperator = ""
+
+# put the filename in lowercase
+lowercaseFilename = False
 
 # Character to use as a performer separator.
 performer_splitchar = " "
@@ -122,8 +133,8 @@ only_organized = False
 
 # If the new path is over 240 characters, the plugin will try to reduce it. Set to True to ignore that.
 ignore_path_length = False
-# Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
 
+# Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
 order_field = ["$video_codec", "$audio_codec", "$resolution", "tags", "rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
 
 # Alternate way to show diff. Not useful at all.
