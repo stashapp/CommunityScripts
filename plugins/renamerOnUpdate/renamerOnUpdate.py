@@ -196,10 +196,11 @@ def makeFilename(scene_information, query):
                             continue
                 new_filename = new_filename.replace(field, scene_information[field_name])
             else:
-                new_filename = re.sub('\${}[-\s_]*'.format(field_name), '', new_filename)
-
+                new_filename = re.sub(r'\${}[-\s_]*'.format(field_name), '', new_filename)
+    # remove ()
+    new_filename = re.sub(r'\(\W*\)', '', new_filename)
     # remove []
-    new_filename = re.sub(r'\[\W*]', '', new_filename)
+    new_filename = re.sub(r'\[\W*\]', '', new_filename)
     # Remove multiple space/_ in row
     new_filename = re.sub(r'[\s_]{2,}', ' ', new_filename)
     # Remove multiple - in row
@@ -269,6 +270,7 @@ def exit_plugin(msg=None, err=None):
     output_json = {"output": msg, "error": err}
     print(json.dumps(output_json))
     sys.exit()
+
 
 if PLUGIN_ARGS:
     log.LogDebug("--Starting Plugin 'Renamer'--")
@@ -505,7 +507,7 @@ if len(new_path) > 240 and not IGNORE_PATH_LENGTH:
     for word in ORDER_SHORTFIELD:
         if word not in filename_template:
             continue
-        filename_template = re.sub('\{}[-\s_]*'.format(word), '', filename_template).strip()
+        filename_template = re.sub(r'\{}[-\s_]*'.format(word), '', filename_template).strip()
         log.LogDebug("Removing field: {}".format(word))
         new_filename = makeFilename(scene_information, filename_template) + file_extension
         new_path = current_path.rstrip(current_filename) + new_filename
