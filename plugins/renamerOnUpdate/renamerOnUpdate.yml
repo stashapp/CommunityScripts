@@ -11,3 +11,12 @@ hooks:
     description: Rename file when you update a scene.
     triggeredBy: 
       - Scene.Update.Post
+tasks:
+  - name: 'Disable'
+    description: Disable the hook
+    defaultArgs:
+      mode: disable
+  - name: 'Enable'
+    description: Enable the hook
+    defaultArgs:
+      mode: enable
