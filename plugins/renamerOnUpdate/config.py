@@ -160,3 +160,4 @@ use_ascii = False
 # =========================
 # disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
 enable_hook = True
+
