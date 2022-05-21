@@ -158,3 +158,5 @@ process_kill_attach = False
 # Warning: If you have non-latin characters (Cyrillic, Kanji, Arabic, ...), the result will be extremely different.
 use_ascii = False 
 # =========================
+# disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
+enable_hook = True
