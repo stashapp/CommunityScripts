@@ -304,7 +304,9 @@ filename_template = None
 
 
 # READING CONFIG
-
+if config.only_organized and not STASH_SCENE["organized"]:
+    exit_plugin("Scene ignored (not organized)")
+    
 ASSOCIATED_EXT = config.associated_extension
 
 FIELD_WHITESPACE_SEP = config.field_whitespaceSeperator
@@ -335,9 +337,6 @@ UNICODE_USE = config.use_ascii
 
 ORDER_SHORTFIELD = config.order_field
 ALT_DIFF_DISPLAY = config.alt_diff_display
-
-if config.only_organized and not STASH_SCENE["organized"]:
-    exit_plugin("Scene ignored (not organized)")
 
 # ================================================================ #
 #                       RENAMER                                    #
@@ -400,26 +399,24 @@ if STASH_SCENE.get("rating"):
 
 # Grab Performer
 if STASH_SCENE.get("performers"):
-    perf_list = ""
+    perf_list = []
     if len(STASH_SCENE["performers"]) > PERFORMER_LIMIT:
         log.LogInfo("More than {} performer(s). Ignoring $performer".format(PERFORMER_LIMIT))
     else:
         for perf in STASH_SCENE["performers"]:
-            #log.LogDebug(performer)
-            if PERFORMER_IGNORE_MALE:
-                if perf["gender"] != "MALE":
-                    perf_list += perf["name"] + PERFORMER_SPLITCHAR
-            else:
-                perf_list += perf["name"] + PERFORMER_SPLITCHAR
-        perf_list = perf_list[:-len(PERFORMER_SPLITCHAR)]
-    scene_information["performer"] = perf_list
+            if perf.get("gender"):
+                if perf["gender"] in PERFORMER_IGNOREGENDER:
+                    continue
+            perf_list.append(perf["name"])
+
+    scene_information["performer"] = PERFORMER_SPLITCHAR.join(perf_list)
 
 # Grab Studio name
 if STASH_SCENE.get("studio"):
     if SQUEEZE_STUDIO_NAMES:
-        scene_information["studio"] = STASH_SCENE["studio"].get("name").replace(' ', '')
+        scene_information["studio"] = STASH_SCENE["studio"]["name"].replace(' ', '')
     else:
-        scene_information["studio"] = STASH_SCENE["studio"].get("name")
+        scene_information["studio"] = STASH_SCENE["studio"]["name"]
     scene_information["studio_family"] = scene_information["studio"]
     # Grab Parent name
     if STASH_SCENE["studio"].get("parent_studio"):
@@ -431,23 +428,18 @@ if STASH_SCENE.get("studio"):
 
 # Grab Tags
 if STASH_SCENE.get("tags"):
-    tag_list = ""
+    tag_list = []
     for tag in STASH_SCENE["tags"]:
-        if tag["name"]:
-            if tag["name"] in TAGS_BLACKLIST:
-                continue
-            else:
-                if len(TAGS_WHITELIST) > 0:
-                    if tag["name"] in TAGS_WHITELIST:
-                        tag_list += tag["name"] + TAGS_SPLITCHAR
-                    else:
-                        continue
-                else:
-                    tag_list += tag["name"] + TAGS_SPLITCHAR
-        else:
+        # ignore tag in blacklist
+        if tag["name"] in TAGS_BLACKLIST:
             continue
-    tag_list = tag_list[:-len(TAGS_SPLITCHAR)]
-    scene_information["tags"] = tag_list
+        # check if there is a whilelist
+        if len(TAGS_WHITELIST) > 0:
+            if tag["name"] in TAGS_WHITELIST:
+                tag_list.append(tag["name"])
+        else:
+            tag_list.append(tag["name"])
+    scene_information["tags"] = TAGS_SPLITCHAR.join(tag_list)
 
 # Grab Height (720p,1080p,4k...)
 scene_information["resolution"] = 'SD'
@@ -531,6 +523,7 @@ else:
 
 if DRY_RUN:
     exit_plugin("Dry run")
+
 # Connect to the DB
 try:
     sqliteConnection = sqlite3.connect(STASH_DATABASE)
@@ -539,15 +532,14 @@ try:
 except sqlite3.Error as error:
     exit_plugin(err="FATAL SQLITE Error: {}".format(error))
 
-# Looking for duplicate filename
-folder_name = os.path.basename(os.path.dirname(new_path))
-cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + folder_name + "_" + new_filename, FRAGMENT_SCENE_ID])
+# Looking for duplicate path
+cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + current_directory + "_" + new_filename, FRAGMENT_SCENE_ID])
 dupl_check = cursor.fetchall()
 if len(dupl_check) > 0:
     for dupl_row in dupl_check:
         log.LogError("Identical path: [{}]".format(dupl_row[0]))
     exit_plugin(err="Duplicate path detected, check log!")
-
+# Looking for duplicate filename
 cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + new_filename, FRAGMENT_SCENE_ID])
 dupl_check = cursor.fetchall()
 if len(dupl_check) > 0:
@@ -609,6 +601,10 @@ if ASSOCIATED_EXT:
         if os.path.isfile(p_new):
             log.LogInfo("[OS] Associate file renamed ({})".format(p_new))
             if LOGFILE:
-                with open(LOGFILE, 'a', encoding='utf-8') as f:
-                    f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, p, p_new))
+                try:
+                    with open(LOGFILE, 'a', encoding='utf-8') as f:
+                        f.write("{}|{}|{}\n".format(FRAGMENT_SCENE_ID, p, p_new))
+                except Exception as err:
+                    os.rename(p_new, p)
+                    log.LogError("Restoring the original name, error writing the logfile: {}".format(err))
 exit_plugin("Successful!")
