@@ -110,33 +110,22 @@ def graphql_getScene(scene_id):
             bitrate
         }
         studio {
-            ...SlimStudioData
+          id
+          name
+          parent_studio {
+              id
+              name
+          }
         }
         tags {
-            ...SlimTagData
+          id
+          name
         }
         performers {
-            ...PerformerData
+          id
+          name
+          gender
         }
-    }
-    fragment SlimStudioData on Studio {
-        id
-        name
-        parent_studio {
-            id
-            name
-        }
-        aliases
-    }
-    fragment SlimTagData on Tag {
-        id
-        name
-        aliases
-    }
-    fragment PerformerData on Performer {
-        id
-        name
-        gender
     }
     """
     variables = {
@@ -169,9 +158,7 @@ def graphql_getStudio(studio_id):
                 parent_studio {
                     id
                     name
-                    aliases
                 }
-                aliases
             }
         }
     """
