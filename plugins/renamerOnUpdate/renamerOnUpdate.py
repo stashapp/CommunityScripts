@@ -304,7 +304,7 @@ FILENAME_REMOVECHARACTER = config.removecharac_Filename
 
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
-PERFORMER_IGNORE_MALE = config.performer_ignore_male
+PERFORMER_IGNOREGENDER = config.performer_ignoreGender
 PREVENT_TITLE_PERF = config.prevent_title_performer
 
 SQUEEZE_STUDIO_NAMES = config.squeeze_studio_names
