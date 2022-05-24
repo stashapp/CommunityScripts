@@ -222,7 +222,14 @@ class StashPlexAgent(Agent.Movies):
                     for genre in genres:
                         if not genre["id"] in ignore_tags and "ambiguous" not in genre["name"].lower():
                             metadata.genres.add(genre["name"])
-                            if genre["id"] in collection_tags:
+                            if not Prefs["CreateAllTagCollectionTags"] and genre["id"] in collection_tags:
+                                try:
+                                    if DEBUG:
+                                        Log("Adding Tag Collection: " + genre["name"])
+                                    metadata.collections.add(genre["name"])
+                                except:
+                                    pass
+                            elif Prefs["CreateAllTagCollectionTags"] and genre["id"] not in collection_tags:
                                 try:
                                     if DEBUG:
                                         Log("Adding Tag Collection: " + genre["name"])
