@@ -179,21 +179,25 @@ def makeFilename(scene_information, query):
                     if re.search(r"\$performer[-\s_]*\$title", new_filename) and scene_information.get('title') and PREVENT_TITLE_PERF:
                         if re.search("^{}".format(scene_information["performer"]), scene_information["title"]):
                             log.LogInfo("Ignoring the performer field because it's already in start of title")
-                            new_filename = re.sub(r'\$performer[-\s_]*', '', new_filename)
+                            new_filename = new_filename.replace(field, "")
                             continue
                 new_filename = new_filename.replace(field, scene_information[field_name])
             else:
-                new_filename = re.sub(r'\${}[-\s_]*'.format(field_name), '', new_filename)
-    # remove ()
-    new_filename = re.sub(r'\(\W*\)', '', new_filename)
-    # remove []
-    new_filename = re.sub(r'\[\W*\]', '', new_filename)
-    # Remove multiple space/_ in row
-    new_filename = re.sub(r'[\s_]{2,}', ' ', new_filename)
-    # Remove multiple - in row
-    new_filename = re.sub(r'(?:[\s_]-){2,}', ' -', new_filename)
+                new_filename = new_filename.replace(field, "")
+
+    # cleanup
+    new_filename = re.sub(r'[\s_-]+(?=\W{2})', ' ', new_filename)
+    # remove multi space
+    new_filename = re.sub(r'\s+', ' ', new_filename)
+    # remove thing like 'test - ]'
+    for c in ["[", "("]:
+        new_filename = re.sub(r'{}[_\s-]+'.format("\\" + c), c, new_filename)
+    for c in ["]", ")"]:
+        new_filename = re.sub(r'[_\s-]+{}'.format("\\" + c), c, new_filename)
+    # remove () []
+    new_filename = re.sub(r'\(\W*\)|\[\W*\]', '', new_filename)
     # Remove space at start/end
-    new_filename = new_filename.strip(" -")
+    new_filename = new_filename.strip(" -_")
     # Replace spaces with splitchar
     new_filename = new_filename.replace(' ', FILENAME_SPLITCHAR)
     return new_filename
