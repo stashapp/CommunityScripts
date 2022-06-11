@@ -45,7 +45,7 @@ class StashPlexAgent(Agent.Movies):
     name = 'Stash Plex Agent'
     languages = [Locale.Language.English]
     primary_provider = True
-    accepts_from = ['com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.phoenixadult', 'com.plexapp.agents.data18-phoenix', 'com.plexapp.agents.adultdvdempire']
+    accepts_from = ['com.plexapp.agents.localmedia', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.phoenixadult', 'com.plexapp.agents.data18-phoenix', 'com.plexapp.agents.adultdvdempire']
 
     def search(self, results, media, lang):
         DEBUG = Prefs['debug']
