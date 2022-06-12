@@ -1,0 +1,321 @@
+import json
+import sys
+import re
+import requests
+
+import log
+
+FRAGMENT = json.loads(sys.stdin.read())
+FRAGMENT_SERVER = FRAGMENT["server_connection"]
+PLUGINS_ARGS = FRAGMENT['args']['mode']
+
+
+def callGraphQL(query, variables=None, raise_exception=True):
+    # Session cookie for authentication
+    graphql_port = FRAGMENT_SERVER['Port']
+    graphql_scheme = FRAGMENT_SERVER['Scheme']
+    graphql_cookies = {
+        'session': FRAGMENT_SERVER.get('SessionCookie').get('Value')
+    }
+    graphql_headers = {
+        "Accept-Encoding": "gzip, deflate, br",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Connection": "keep-alive",
+        "DNT": "1"
+    }
+    graphql_domain = 'localhost'
+    # Stash GraphQL endpoint
+    graphql_url = graphql_scheme + "://" + graphql_domain + ":" + str(
+        graphql_port) + "/graphql"
+
+    json = {
+        'query': query
+    }
+    if variables is not None:
+        json['variables'] = variables
+    try:
+        response = requests.post(
+            graphql_url,
+            json=json,
+            headers=graphql_headers,
+            cookies=graphql_cookies,
+            timeout=20)
+    except Exception as e:
+        exit_plugin(err="[FATAL] Exception with GraphQL request. {}".format(e))
+    if response.status_code == 200:
+        result = response.json()
+        if result.get("error"):
+            for error in result["error"]["errors"]:
+                if raise_exception:
+                    raise Exception("GraphQL error: {}".format(error))
+                else:
+                    log.LogError("GraphQL error: {}".format(error))
+            return None
+        if result.get("errors"):
+            for error in result["errors"]:
+                if raise_exception:
+                    raise Exception("GraphQL error: {}".format(error))
+                else:
+                    log.LogError("GraphQL error: {}".format(error))
+            return None
+        if result.get("data"):
+            return result.get("data")
+    elif response.status_code == 401:
+        exit_plugin(err="HTTP Error 401, Unauthorised.")
+    else:
+        raise ConnectionError("GraphQL query failed:{} - {}".format(response.status_code, response.content))
+
+
+def graphql_duplicateScenes(distance: int) -> list:
+    query = """
+    query FindDuplicateScenes($distance: Int) {
+        findDuplicateScenes(distance: $distance) {
+            ...SlimSceneData
+        }
+    }
+    fragment SlimSceneData on Scene {
+        id
+        checksum
+        oshash
+        title
+        details
+        url
+        date
+        rating
+        o_counter
+        organized
+        path
+        phash
+        interactive
+        file_mod_time
+        file {
+            size
+            duration
+            video_codec
+            audio_codec
+            width
+            height
+            framerate
+            bitrate
+        }
+        paths {
+            screenshot
+            preview
+            stream
+            webp
+            vtt
+            chapters_vtt
+            sprite
+            funscript
+        }
+        scene_markers {
+            id
+            title
+            seconds
+        }
+        galleries {
+            id
+            path
+            title
+        }
+        studio {
+            id
+            name
+            image_path
+        }
+        movies {
+            movie {
+                id
+                name
+                front_image_path
+            }
+            scene_index
+        }
+        tags {
+            id
+            name
+        }
+        performers {
+            id
+            name
+            gender
+            favorite
+            image_path
+        }
+        stash_ids {
+            endpoint
+            stash_id
+        }
+    }
+
+    """
+    variables = {
+        "distance": distance
+    }
+    result = callGraphQL(query, variables)
+    return result["findDuplicateScenes"]
+
+
+def exit_plugin(msg=None, err=None):
+    if msg is None and err is None:
+        msg = "plugin ended"
+    output_json = {
+        "output": msg,
+        "error": err
+    }
+    print(json.dumps(output_json))
+    sys.exit()
+
+
+def humanbytes(B: int) -> str:
+    # https://stackoverflow.com/questions/12523586/python-format-size-application-converting-b-to-kb-mb-gb-tb
+    'Return the given bytes as a human friendly KB, MB, GB, or TB string'
+    B = float(B)
+    KB = float(1024)
+    MB = float(KB**2)  # 1,048,576
+    GB = float(KB**3)  # 1,073,741,824
+    TB = float(KB**4)  # 1,099,511,627,776
+
+    if B < KB:
+        return '{0} {1}'.format(B, 'Bytes' if 0 == B > 1 else 'Byte')
+    elif KB <= B < MB:
+        return '{0:.2f} KB'.format(B / KB)
+    elif MB <= B < GB:
+        return '{0:.2f} MB'.format(B / MB)
+    elif GB <= B < TB:
+        return '{0:.2f} GB'.format(B / GB)
+    elif TB <= B:
+        return '{0:.2f} TB'.format(B / TB)
+
+
+def createTagWithName(name):
+    query = """
+        mutation tagCreate($input:TagCreateInput!) {
+            tagCreate(input: $input){
+                id
+            }
+        }
+    """
+    variables = {'input': {
+        'name': name
+    }}
+
+    result = callGraphQL(query, variables)
+    return result["tagCreate"]["id"]
+
+
+def destroyTag(tag_id):
+    query = """
+        mutation tagDestroy($input: TagDestroyInput!) {
+            tagDestroy(input: $input)
+        }
+    """
+    variables = {'input': {
+        'id': tag_id
+    }}
+
+    callGraphQL(query, variables)
+
+
+def findTagIdWithName(name):
+    query = """
+        query {
+            allTags {
+            id
+            name
+            }
+        }
+    """
+
+    result = callGraphQL(query)
+
+    for tag in result["allTags"]:
+        if tag["name"] == name:
+            return tag["id"]
+    return None
+
+
+def tag_files(group):
+    tag_keep = findTagIdWithName('[Dupe: Keep]')
+    tag_remove = findTagIdWithName('[Dupe: Remove]')
+
+    log.LogInfo("==========")
+    scenelist = {"sceneid": 0, "height": 0, "size": 0, "file_mod_time": '', "title": '', "path": ''}
+
+    for scene in group:
+        scene['path'] = re.search(r'(.*/)', scene['path']).group(1)
+        # ~ log.LogInfo(scene['path'])
+        if scene['file']['height'] > scenelist['height']:
+            scenelist['sceneid'] = scene['id']
+            scenelist['file_mod_time'] = scene['file_mod_time']
+            scenelist['height'] = scene['file']['height']
+            scenelist['size'] = scene['file']['size']
+            scenelist['title'] = scene['title']
+            scenelist['path'] = scene['path']
+        elif scene['file']['height'] == scenelist['height']:
+            if scene['file']['size'] > scenelist['size']:
+                scenelist['sceneid'] = scene['id']
+                scenelist['file_mod_time'] = scene['file_mod_time']
+                scenelist['height'] = scene['file']['height']
+                scenelist['size'] = scene['file']['size']
+                scenelist['title'] = scene['title']
+                scenelist['path'] = scene['path']
+            elif scene['file']['size'] == scenelist['size']:
+                if scene['file_mod_time'] < scenelist['file_mod_time']:
+                    scenelist['sceneid'] = scene['id']
+                    scenelist['file_mod_time'] = scene['file_mod_time']
+                    scenelist['height'] = scene['file']['height']
+                    scenelist['size'] = scene['file']['size']
+                    scenelist['title'] = scene['title']
+                    scenelist['path'] = scene['path']
+    log.LogInfo(F"Keeping:  {str(scenelist)}")
+    keeptitle = f"[Dupe: {scenelist['sceneid']}K] {scenelist['title']}"
+    keepquery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + str(scenelist['sceneid']) + '], tag_ids:{ids: [' + str(tag_keep) + '], mode: ADD}, title: "' + keeptitle + '"}) {id}}'
+    callGraphQL(keepquery)
+    for scene in group:
+        if scene['id'] != scenelist['sceneid']:
+            scratchscene = {"sceneid": scene['id'], "height": scene['file']['height'], "size": scene['file']['size'], "file_mod_time": scene['file_mod_time'], "title": scene['title'], "path": scene['path']}
+            log.LogInfo(f"Removing: {str(scratchscene)}")
+            removetitle = f"[Dupe: {scenelist['sceneid']}R] {scenelist['title']}"
+            removequery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + str(scene['id']) + '], tag_ids:{ids: [' + str(tag_remove) + '], mode: ADD}, title: "' + removetitle + '"}) {id}}'
+            callGraphQL(removequery)
+            scratchscene.clear()
+    scenelist = {"sceneid": 0, "height": 0, "size": 0, "file_mod_time": '', "title": ''}
+
+
+def clean_titles():
+    cleanquery = 'query findScenes(){findScenes(scene_filter: {title: {value: "[Dupe: ", modifier: INCLUDES}}){scenes{id title}}}'
+    scenelist = callGraphQL(cleanquery)
+    scenelist = scenelist['findScenes']['scenes']
+    for scene in scenelist:
+        title = re.sub(r'\[Dupe: \d+[KR]\] ', '', scene['title'])
+        sceneid = scene['id']
+        log.LogInfo(f"Removing Dupe Title String from: [{sceneid}] {scene['title']}")
+        stripquery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + sceneid + '], title: "' + title + '"}) {id}}'
+        callGraphQL(stripquery)
+
+
+# Distance;
+DIST = 0
+if PLUGINS_ARGS == "create":
+    createTagWithName('[Dupe: Keep]')
+    createTagWithName('[Dupe: Remove]')
+
+if PLUGINS_ARGS == "remove":
+    tagid = findTagIdWithName('[Dupe: Keep]')
+    destroyTag(tagid)
+    tagid = findTagIdWithName('[Dupe: Remove]')
+    destroyTag(tagid)
+
+if PLUGINS_ARGS == "tag":
+    duplicate_list = graphql_duplicateScenes(DIST)
+    log.LogInfo("There is {} sets of duplicates found.".format(len(duplicate_list)))
+
+    for group in duplicate_list:
+        tag_files(group)
+
+if PLUGINS_ARGS == "cleantitle":
+    clean_titles()
+
+exit_plugin("Plugin ended correctly.")
