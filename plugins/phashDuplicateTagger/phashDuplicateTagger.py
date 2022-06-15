@@ -39,8 +39,8 @@ def callGraphQL(query, variables=None, raise_exception=True):
             graphql_url,
             json=json,
             headers=graphql_headers,
-            cookies=graphql_cookies,
-            timeout=20)
+            cookies=graphql_cookies
+            )
     except Exception as e:
         exit_plugin(err="[FATAL] Exception with GraphQL request. {}".format(e))
     if response.status_code == 200:
@@ -76,76 +76,12 @@ def graphql_duplicateScenes(distance: int) -> list:
     }
     fragment SlimSceneData on Scene {
         id
-        checksum
-        oshash
         title
-        details
-        url
-        date
-        rating
-        o_counter
-        organized
         path
-        phash
-        interactive
         file_mod_time
         file {
             size
-            duration
-            video_codec
-            audio_codec
-            width
             height
-            framerate
-            bitrate
-        }
-        paths {
-            screenshot
-            preview
-            stream
-            webp
-            vtt
-            chapters_vtt
-            sprite
-            funscript
-        }
-        scene_markers {
-            id
-            title
-            seconds
-        }
-        galleries {
-            id
-            path
-            title
-        }
-        studio {
-            id
-            name
-            image_path
-        }
-        movies {
-            movie {
-                id
-                name
-                front_image_path
-            }
-            scene_index
-        }
-        tags {
-            id
-            name
-        }
-        performers {
-            id
-            name
-            gender
-            favorite
-            image_path
-        }
-        stash_ids {
-            endpoint
-            stash_id
         }
     }
 
@@ -297,7 +233,6 @@ def clean_titles():
 
 
 # Distance;
-DIST = 0
 if PLUGINS_ARGS == "create":
     createTagWithName('[Dupe: Keep]')
     createTagWithName('[Dupe: Remove]')
@@ -308,8 +243,17 @@ if PLUGINS_ARGS == "remove":
     tagid = findTagIdWithName('[Dupe: Remove]')
     destroyTag(tagid)
 
-if PLUGINS_ARGS == "tag":
-    duplicate_list = graphql_duplicateScenes(DIST)
+if PLUGINS_ARGS == "tagexact":
+    distance = 0
+    duplicate_list = graphql_duplicateScenes(distance)
+    log.LogInfo("There is {} sets of duplicates found.".format(len(duplicate_list)))
+
+    for group in duplicate_list:
+        tag_files(group)
+
+if PLUGINS_ARGS == "taghigh":
+    distance = 3
+    duplicate_list = graphql_duplicateScenes(distance)
     log.LogInfo("There is {} sets of duplicates found.".format(len(duplicate_list)))
 
     for group in duplicate_list:

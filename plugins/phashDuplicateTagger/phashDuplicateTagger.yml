@@ -1,7 +1,7 @@
 # This plugin has four functions:
 #
 # 1) It will create two tags for review, [Dupe: Keep] and [Dupe: Remove]
-# 2) It will auto assign those tags to scenes with EXACT PHashes based on (and in this order):
+# 2) It will auto assign those tags to scenes with exact or high degree of matching PHashes based on (and in this order):
 #       a) Keep the larger resolution
 #       b) Keep the larger file size (if same resolution)
 #       c) Keep the older scene (if same file size.)
@@ -27,16 +27,23 @@ exec:
   - "{pluginDir}/phashDuplicateTagger.py"
 interface: raw
 tasks:
-  - name: 'Create Tags ([Dupe: Keep] and [Dupe: Remove])'
+  - name: 'Create [Dupe] Tags'
+    description: 'Create [Dupe: Keep] and [Dupe: Remove] scene tags for filtering '
     defaultArgs:
       mode: create
-  - name: 'Assign Duplicates Tags to Scenes'
+  - name: 'Set Dupe Tags (Exact)'
+    description: 'Assign duplicates tags to Exact Match (Dist 0) scenes'
     defaultArgs:
-      mode: tag
-  - name: 'Remove Duplicates Tags'
+      mode: tagexact
+  - name: 'Set Dupe Tags (Dist 3)'
+    description: 'Assign duplicates tags to High Match (Dist 3) scenes'
+    defaultArgs:
+      mode: taghigh
+  - name: 'Remove [Dupe] Tags'
+    description: 'Remove duplicates scene tags from Stash database'
     defaultArgs:
       mode: remove
-  - name: 'Clean Dupe String from Titles'
+  - name: 'Strip [Dupe] From Titles'
+    description: 'Clean prefixed Dupe string from scene titles'
     defaultArgs:
       mode: cleantitle
-
