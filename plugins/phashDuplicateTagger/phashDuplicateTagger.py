@@ -228,7 +228,7 @@ def clean_titles():
         title = re.sub(r'\[Dupe: \d+[KR]\] ', '', scene['title'])
         sceneid = scene['id']
         log.LogInfo(f"Removing Dupe Title String from: [{sceneid}] {scene['title']}")
-        stripquery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + sceneid + '], title: "' + title + '"}) {id}}'
+        stripquery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + sceneid + '], title: "' + title.replace('"', '\\"') + '"}) {id}}'
         callGraphQL(stripquery)
 
 
@@ -253,6 +253,14 @@ if PLUGINS_ARGS == "tagexact":
 
 if PLUGINS_ARGS == "taghigh":
     distance = 3
+    duplicate_list = graphql_duplicateScenes(distance)
+    log.LogInfo("There is {} sets of duplicates found.".format(len(duplicate_list)))
+
+    for group in duplicate_list:
+        tag_files(group)
+
+if PLUGINS_ARGS == "tagmid":
+    distance = 6
     duplicate_list = graphql_duplicateScenes(distance)
     log.LogInfo("There is {} sets of duplicates found.".format(len(duplicate_list)))
 
