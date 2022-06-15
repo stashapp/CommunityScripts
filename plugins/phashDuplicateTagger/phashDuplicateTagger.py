@@ -207,14 +207,14 @@ def tag_files(group):
                     scenelist['path'] = scene['path']
     log.LogInfo(F"Keeping:  {str(scenelist)}")
     keeptitle = f"[Dupe: {scenelist['sceneid']}K] {scenelist['title']}"
-    keepquery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + str(scenelist['sceneid']) + '], tag_ids:{ids: [' + str(tag_keep) + '], mode: ADD}, title: "' + keeptitle + '"}) {id}}'
+    keepquery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + str(scenelist['sceneid']) + '], tag_ids:{ids: [' + str(tag_keep) + '], mode: ADD}, title: "' + keeptitle.replace('"', '\\"') + '"}) {id}}'
     callGraphQL(keepquery)
     for scene in group:
         if scene['id'] != scenelist['sceneid']:
             scratchscene = {"sceneid": scene['id'], "height": scene['file']['height'], "size": scene['file']['size'], "file_mod_time": scene['file_mod_time'], "title": scene['title'], "path": scene['path']}
             log.LogInfo(f"Removing: {str(scratchscene)}")
             removetitle = f"[Dupe: {scenelist['sceneid']}R] {scenelist['title']}"
-            removequery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + str(scene['id']) + '], tag_ids:{ids: [' + str(tag_remove) + '], mode: ADD}, title: "' + removetitle + '"}) {id}}'
+            removequery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + str(scene['id']) + '], tag_ids:{ids: [' + str(tag_remove) + '], mode: ADD}, title: "' + removetitle.replace('"', '\\"') + '"}) {id}}'
             callGraphQL(removequery)
             scratchscene.clear()
     scenelist = {"sceneid": 0, "height": 0, "size": 0, "file_mod_time": '', "title": ''}
