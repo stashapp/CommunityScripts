@@ -285,7 +285,7 @@ def tag_files(group):
 
 
 def clean_titles():
-    cleanquery = 'query findScenes(){findScenes(scene_filter: {title: {value: "[Dupe: ", modifier: INCLUDES}}){scenes{id title}}}'
+    cleanquery = 'query findScenes(){findScenes(scene_filter: {title: {value: "[Dupe: ", modifier: INCLUDES}}, filter: {per_page: -1}){scenes{id title}}}'
     scenelist = callGraphQL(cleanquery)
     scenelist = scenelist['findScenes']['scenes']
     for scene in scenelist:
