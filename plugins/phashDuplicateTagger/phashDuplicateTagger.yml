@@ -42,7 +42,7 @@ tasks:
   - name: 'Set Dupe Tags (Dist 6)'
     description: 'Assign duplicates tags to Medium Match (Dist 6) scenes (BE CAREFUL WITH THIS LEVEL)'
     defaultArgs:
-      mode: taghigh
+      mode: tagmid
   - name: 'Remove [Dupe] Tags'
     description: 'Remove duplicates scene tags from Stash database'
     defaultArgs:
