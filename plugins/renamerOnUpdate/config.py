@@ -100,6 +100,10 @@ performer_ignoreGender = []
 # 2016 Dani Daniels - Dani Daniels in ***.mp4 --> 2016 Dani Daniels in ***.mp4
 prevent_title_performer = False
 
+# Removes prepositions from the beginning of titles
+prepositions_list = ['The', 'A', 'An']
+prepositions_removal = False
+
 # Squeeze studio names removes all spaces in studio, parent studio and studio family name
 # e. g.:
 # Reality Kings --> RealityKings
