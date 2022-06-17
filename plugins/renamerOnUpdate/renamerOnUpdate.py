@@ -311,6 +311,9 @@ PERFORMER_LIMIT = config.performer_limit
 PERFORMER_IGNOREGENDER = config.performer_ignoreGender
 PREVENT_TITLE_PERF = config.prevent_title_performer
 
+PREPOSITIONS_LIST = config.prepositions_list
+PREPOSITIONS_REMOVAL = config.prepositions_removal
+
 SQUEEZE_STUDIO_NAMES = config.squeeze_studio_names
 
 RATING_FORMAT = config.rating_format
@@ -379,7 +382,10 @@ scene_information = {}
 # Grab Title (without extension if present)
 if STASH_SCENE.get("title"):
     # Removing extension if present in title
-    scene_information["title"] = re.sub("{}$".format(file_extension), "", STASH_SCENE["title"])
+    scene_information["title"] = re.sub(r"{}$".format(file_extension), "", STASH_SCENE["title"])
+    if PREPOSITIONS_REMOVAL:
+        for word in PREPOSITIONS_LIST:
+            scene_information["title"] = re.sub(r"^{}[\s_-]".format(word), "", scene_information["title"])
 
 # Grab Date
 scene_information["date"] = STASH_SCENE.get("date")
