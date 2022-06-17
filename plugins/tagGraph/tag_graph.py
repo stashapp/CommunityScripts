@@ -39,7 +39,7 @@ def main():
 
 
 def create_graph():
-	G = Network(height="1080px",width="1080px")
+	G = Network(height="1080px",width="1080px", directed=True)
 
 	for relation in stash_db.get_tag_relations():
 		parent, child = relation
@@ -50,7 +50,7 @@ def create_graph():
 		G.add_node(parent_id, label=parent_name)
 		G.add_node(child_id, label=child_name)
 
-		G.add_edge(parent_id, child_id)
+		G.add_edge(child_id, parent_id)
 
 	curr_path = os.path.dirname(os.path.abspath(__file__))
 	save_path = os.path.join(curr_path, "tag_graph.html")
