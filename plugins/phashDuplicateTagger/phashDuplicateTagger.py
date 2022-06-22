@@ -21,14 +21,21 @@ SLIM_SCENE_FRAGMENT = """
 	title
 	path
 	file_mod_time
+	tags { id }
 	file {
 		size
 		height
 		bitrate
+		video_codec
 	}
 """
 
 def main():
+	if MODE == "create":
+		stash.find_tag('[Dupe: Keep]', create=True)
+		stash.find_tag('[Dupe: Remove]', create=True)
+		stash.find_tag('[Dupe: Ignore]', create=True)
+		
 	if MODE == "remove":
 		tag_id = stash.find_tag('[Dupe: Keep]').get("id")
 		stash.destroy_tag(tag_id)
@@ -113,10 +120,16 @@ class StashScene:
 
 
 def process_duplicates(duplicate_list):
+	ignore_tag = stash.find_tag('[Dupe: Ignore]', create=True).get("id")
 	total = len(duplicate_list)
 	log.info(f"There is {total} sets of duplicates found.")
 	for i, group in enumerate(duplicate_list):
-		tag_files(group)
+		filtered_group = []
+		for scene in group:
+			tag_ids = [ t['id'] for t in scene['tags'] ]
+			if ignore_tag not in tag_ids:
+				filtered_group.append(scene)
+		tag_files(filtered_group)
 		log.progress(i/total)
 
 def tag_files(group):
