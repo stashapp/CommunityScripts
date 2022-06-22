@@ -149,9 +149,9 @@ class StashScene:
 			return None, None
 		if self.codec != other.codec:
 			if self.codec < other.codec:
-				return self, f"Preferred Codec {CODEC_PRIORITY[self.codec]} better than {CODEC_PRIORITY[other.codec]} | {self.id} better than {other.id}"
+				return self, f"Preferred Codec {CODEC_PRIORITY[self.codec]} over {CODEC_PRIORITY[other.codec]} | {self.id} better than {other.id}"
 			else:
-				return other, f"Preferred Codec {CODEC_PRIORITY[other.codec]} better than {CODEC_PRIORITY[self.codec]} | {other.id} better than {self.id}"
+				return other, f"Preferred Codec {CODEC_PRIORITY[other.codec]} over {CODEC_PRIORITY[self.codec]} | {other.id} better than {self.id}"
 		return None, None
 
 
