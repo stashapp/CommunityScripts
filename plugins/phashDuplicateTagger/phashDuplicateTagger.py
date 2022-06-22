@@ -102,7 +102,7 @@ class StashScene:
 				if best:
 					return best, msg
 			except Exception as e:
-				log.error(f"Issue Comparing <{type}> {e}}")
+				log.error(f"Issue Comparing <{type}> {e}")
 		
 		return None, f"{self.id} worse than {other.id}"
 
