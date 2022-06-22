@@ -104,27 +104,6 @@ def exit_plugin(msg=None, err=None):
     sys.exit()
 
 
-def humanbytes(B: int) -> str:
-    # https://stackoverflow.com/questions/12523586/python-format-size-application-converting-b-to-kb-mb-gb-tb
-    'Return the given bytes as a human friendly KB, MB, GB, or TB string'
-    B = float(B)
-    KB = float(1024)
-    MB = float(KB**2)  # 1,048,576
-    GB = float(KB**3)  # 1,073,741,824
-    TB = float(KB**4)  # 1,099,511,627,776
-
-    if B < KB:
-        return '{0} {1}'.format(B, 'Bytes' if 0 == B > 1 else 'Byte')
-    elif KB <= B < MB:
-        return '{0:.2f} KB'.format(B / KB)
-    elif MB <= B < GB:
-        return '{0:.2f} MB'.format(B / MB)
-    elif GB <= B < TB:
-        return '{0:.2f} GB'.format(B / GB)
-    elif TB <= B:
-        return '{0:.2f} TB'.format(B / TB)
-
-
 def createTagWithName(name):
     query = """
         mutation tagCreate($input:TagCreateInput!) {
@@ -181,8 +160,9 @@ def tag_files(group):
 
     for scene in group:
         scene['path'] = re.search(r'(.*/)', scene['path']).group(1)
-        # ~ log.LogInfo(scene['path'])
         if scene['file']['height'] > scenelist['height']:
+            if scenelist['height']:
+                log.LogInfo(f"Selecting {scene['id']} due to Height ({scene['file']['height']} > {scenelist['height']})")
             scenelist['sceneid'] = scene['id']
             scenelist['file_mod_time'] = scene['file_mod_time']
             scenelist['height'] = scene['file']['height']
@@ -191,6 +171,9 @@ def tag_files(group):
             scenelist['path'] = scene['path']
         elif scene['file']['height'] == scenelist['height']:
             if scene['file']['size'] > scenelist['size']:
+                if scenelist['size']:
+                    log.LogInfo(f"Both files are same resolution ({scene['file']['height']}) so continuing")
+                    log.LogInfo(f"Selecting {scene['id']} due to Size ({scene['file']['size']} > {scenelist['size']})")
                 scenelist['sceneid'] = scene['id']
                 scenelist['file_mod_time'] = scene['file_mod_time']
                 scenelist['height'] = scene['file']['height']
@@ -199,12 +182,17 @@ def tag_files(group):
                 scenelist['path'] = scene['path']
             elif scene['file']['size'] == scenelist['size']:
                 if scene['file_mod_time'] < scenelist['file_mod_time']:
+                    if scenelist['file_mod_time']:
+                        log.LogInfo(f"Both files are same resolution ({scene['file']['height']}) and same size ({scene['file']['size']}) so continuing")
+                        log.LogInfo(f"Selecting {scene['id']} due to File Mod Time ({scene['file_mod_time']} < {scenelist['file_mod_time']})")
                     scenelist['sceneid'] = scene['id']
                     scenelist['file_mod_time'] = scene['file_mod_time']
                     scenelist['height'] = scene['file']['height']
                     scenelist['size'] = scene['file']['size']
                     scenelist['title'] = scene['title']
                     scenelist['path'] = scene['path']
+        if scenelist['sceneid'] != scene['id']:
+            log.LogInfo(f"Kept initial pick.  Rem: ({scene['file']['height']} / {scene['file']['size']} / {scene['file_mod_time']}) Kept: ({scenelist['height']} / {scenelist['size']} / {scenelist['file_mod_time']})")
     log.LogInfo(F"Keeping:  {str(scenelist)}")
     keeptitle = f"[Dupe: {scenelist['sceneid']}K] {scenelist['title']}"
     keepquery = 'mutation BulkSceneUpdate(){bulkSceneUpdate(input: {ids: [' + str(scenelist['sceneid']) + '], tag_ids:{ids: [' + str(tag_keep) + '], mode: ADD}, title: "' + keeptitle.replace('"', '\\"') + '"}) {id}}'
