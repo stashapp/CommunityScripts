@@ -15,7 +15,7 @@ except ModuleNotFoundError:
 
 PRIORITY = ['resolution', 'bitrate', 'size', 'age']
 
-CODEC_PRIORITY = ['H.265', 'HVEC', 'H.264']
+CODEC_PRIORITY = ['H265', 'HVEC', 'H264']
 
 FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT['args']['mode']
@@ -94,7 +94,7 @@ class StashScene:
 			return None, "Matching IDs {self.id}=={other.id}"
 
 		def compare_not_found():
-			raise Exception("comparason not found")
+			raise Exception("comparison not found")
 		for type in PRIORITY:
 			try:
 				compare_function = getattr(self, f'compare_{type}', compare_not_found)
@@ -138,6 +138,9 @@ class StashScene:
 			else:
 				return other, f"Choose Oldest: Δ:{self.mod_time-other.mod_time} | {other.id} older than {self.id}"
 		return None, None
+	def compare_encoding(self,other):
+		return None, None
+
 
 
 def process_duplicates(duplicate_list):
