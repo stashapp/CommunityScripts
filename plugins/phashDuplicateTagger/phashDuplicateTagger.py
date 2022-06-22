@@ -12,6 +12,11 @@ except ModuleNotFoundError:
     print("You need to install the stashapi module. (pip install stashapp-tools)",
      file=sys.stderr)
 
+
+PRIORITY = ['resolution', 'bitrate', 'size', 'age']
+
+CODEC_PRIORITY = ['H.265', 'HVEC', 'H.264']
+
 FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT['args']['mode']
 stash = StashInterface(FRAGMENT["server_connection"])
@@ -88,35 +93,47 @@ class StashScene:
 		if self.id == other.id:
 			return None, "Matching IDs {self.id}=={other.id}"
 
+		def compare_not_found():
+			raise Exception("comparason not found")
+		for type in PRIORITY:
+			try:
+				compare_function = getattr(self, f'compare_{type}', compare_not_found)
+				best, msg = compare_function(other)
+				if best:
+					return best, msg
+			except Exception as e:
+				log.error(f"Issue Comparing <{type}> {e}}")
+		
+		return None, f"{self.id} worse than {other.id}"
+
+	def compare_resolution(self, other):
 		# Checking Resolution
 		if self.height != other.height:
 			if self.height > other.height:
 				return self, f"Better Resolution {self.height} > {other.height} | {self.id}>{other.id}"
 			else:
 				return other, f"Better Resolution {other.height} > {self.height} | {other.id}>{self.id}"
-		
+	def compare_bitrate(self, other):
 		# Checking Bitrate
 		if self.bitrate != other.bitrate:
 			if self.bitrate > other.bitrate:
 				return self, f"Better Bitrate {human_bytes(self.bitrate)} > {human_bytes(other.bitrate)} Δ:({human_bytes(self.bitrate-other.bitrate)}) | {self.id}>{other.id}"
 			else:
 				return other, f"Better Bitrate {human_bytes(other.bitrate)} > {human_bytes(self.bitrate)} Δ:({human_bytes(other.bitrate-self.bitrate)}) | {other.id}>{self.id}"
-
+	def compare_size(self, other):
 		# Checking Size
 		if self.size != other.size:
 			if self.size > other.size:
 				return self, f"Better Size {human_bytes(self.size)} > {human_bytes(other.size)} Δ:({human_bytes(self.size-other.size)}) | {self.id} > {other.id}"
 			else:
 				return other, f"Better Size {human_bytes(other.size)} > {human_bytes(self.size)} Δ:({human_bytes(other.size-self.size)}) | {other.id} > {self.id}"
-
+	def compare_age(self, other):
 		# Checking Age
 		if self.mod_time != other.mod_time:
 			if self.mod_time < other.mod_time:
 				return self, f"Choose Oldest: Δ:{other.mod_time-self.mod_time} | {self.id} older than {other.id}"
 			else:
 				return other, f"Choose Oldest: Δ:{self.mod_time-other.mod_time} | {other.id} older than {self.id}"
-			
-		return None, f"{self.id} worse than {other.id}"
 
 
 def process_duplicates(duplicate_list):
@@ -124,6 +141,7 @@ def process_duplicates(duplicate_list):
 	total = len(duplicate_list)
 	log.info(f"There is {total} sets of duplicates found.")
 	for i, group in enumerate(duplicate_list):
+		log.progress(i/total)
 		filtered_group = []
 		for scene in group:
 			tag_ids = [ t['id'] for t in scene['tags'] ]
@@ -131,9 +149,8 @@ def process_duplicates(duplicate_list):
 				log.debug(f"Ignore {scene['id']} {scene['title']}")
 			else:
 				filtered_group.append(scene)
-			
-		tag_files(filtered_group)
-		log.progress(i/total)
+		if len(filtered_group) > 1:
+			tag_files(filtered_group)
 
 def tag_files(group):
 	tag_keep = stash.find_tag('[Dupe: Keep]', create=True).get("id")
