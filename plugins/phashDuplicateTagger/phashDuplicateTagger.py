@@ -75,7 +75,7 @@ class StashScene:
 		self.size = int(scene['file']['size'])
 		self.bitrate = int(scene['file']['bitrate'])
 		# replace any existing tagged title
-		self.title = re.sub(r'^\[Dupe: \d+[KR]\]', '', scene['title'])
+		self.title = re.sub(r'^\[Dupe: \d+[KR]\]\s+', '', scene['title'])
 		self.path = scene['path']
 
 		self.codec = scene['file']['video_codec'].upper()
