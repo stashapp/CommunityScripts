@@ -113,6 +113,7 @@ class StashScene:
 				return self, f"Better Resolution {self.height} > {other.height} | {self.id}>{other.id}"
 			else:
 				return other, f"Better Resolution {other.height} > {self.height} | {other.id}>{self.id}"
+		return None, None
 	def compare_bitrate(self, other):
 		# Checking Bitrate
 		if self.bitrate != other.bitrate:
@@ -120,6 +121,7 @@ class StashScene:
 				return self, f"Better Bitrate {human_bytes(self.bitrate)} > {human_bytes(other.bitrate)} Δ:({human_bytes(self.bitrate-other.bitrate)}) | {self.id}>{other.id}"
 			else:
 				return other, f"Better Bitrate {human_bytes(other.bitrate)} > {human_bytes(self.bitrate)} Δ:({human_bytes(other.bitrate-self.bitrate)}) | {other.id}>{self.id}"
+		return None, None
 	def compare_size(self, other):
 		# Checking Size
 		if self.size != other.size:
@@ -127,6 +129,7 @@ class StashScene:
 				return self, f"Better Size {human_bytes(self.size)} > {human_bytes(other.size)} Δ:({human_bytes(self.size-other.size)}) | {self.id} > {other.id}"
 			else:
 				return other, f"Better Size {human_bytes(other.size)} > {human_bytes(self.size)} Δ:({human_bytes(other.size-self.size)}) | {other.id} > {self.id}"
+		return None, None
 	def compare_age(self, other):
 		# Checking Age
 		if self.mod_time != other.mod_time:
@@ -134,6 +137,7 @@ class StashScene:
 				return self, f"Choose Oldest: Δ:{other.mod_time-self.mod_time} | {self.id} older than {other.id}"
 			else:
 				return other, f"Choose Oldest: Δ:{self.mod_time-other.mod_time} | {other.id} older than {self.id}"
+		return None, None
 
 
 def process_duplicates(duplicate_list):
