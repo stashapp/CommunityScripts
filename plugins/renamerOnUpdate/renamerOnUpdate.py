@@ -397,15 +397,14 @@ if STASH_SCENE.get("rating"):
 # Grab Performer
 if STASH_SCENE.get("performers"):
     perf_list = []
-    if len(STASH_SCENE["performers"]) > PERFORMER_LIMIT:
+    for perf in STASH_SCENE["performers"]:
+        if perf.get("gender"):
+            if perf["gender"] in PERFORMER_IGNOREGENDER:
+                continue
+        perf_list.append(perf["name"])
+    if len(perf_list) > PERFORMER_LIMIT:
         log.LogInfo("More than {} performer(s). Ignoring $performer".format(PERFORMER_LIMIT))
-    else:
-        for perf in STASH_SCENE["performers"]:
-            if perf.get("gender"):
-                if perf["gender"] in PERFORMER_IGNOREGENDER:
-                    continue
-            perf_list.append(perf["name"])
-
+        perf_list = []
     scene_information["performer"] = PERFORMER_SPLITCHAR.join(perf_list)
 
 # Grab Studio name
