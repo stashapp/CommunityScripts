@@ -13,9 +13,8 @@ except ModuleNotFoundError:
      file=sys.stderr)
 
 
-PRIORITY = ['resolution', 'bitrate', 'size', 'age']
-
-CODEC_PRIORITY = ['H265', 'HVEC', 'H264']
+PRIORITY = ['resolution', 'bitrate', 'size', 'age'] # 'encoding'
+CODEC_PRIORITY = ['H265','HEVC','H264','MPEG4']
 
 FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT['args']['mode']
@@ -79,6 +78,12 @@ class StashScene:
 		self.title = re.sub(r'^\[Dupe: \d+[KR]\]', '', scene['title'])
 		self.path = scene['path']
 
+		self.codec = scene['file']['video_codec'].upper()
+		if self.codec in CODEC_PRIORITY:
+			self.codec = CODEC_PRIORITY.index(self.codec)
+		else:
+			log.warning(f"could not find codec {self.codec}")
+
 	def __repr__(self) -> str:
 		return f'<StashScene ({self.id})>'
 
@@ -138,9 +143,16 @@ class StashScene:
 			else:
 				return other, f"Choose Oldest: Δ:{self.mod_time-other.mod_time} | {other.id} older than {self.id}"
 		return None, None
-	def compare_encoding(self,other):
+	def compare_encoding(self, other):
+		# could not find one of the codecs in priority list
+		if not isinstance(self.codec, int) or not isinstance(other.codec, int):
+			return None, None
+		if self.codec != other.codec:
+			if self.codec < other.codec:
+				return self, f"Preferred Codec {CODEC_PRIORITY[self.codec]} better than {CODEC_PRIORITY[other.codec]} | {self.id} better than {other.id}"
+			else:
+				return other, f"Preferred Codec {CODEC_PRIORITY[other.codec]} better than {CODEC_PRIORITY[self.codec]} | {other.id} better than {self.id}"
 		return None, None
-
 
 
 def process_duplicates(duplicate_list):
