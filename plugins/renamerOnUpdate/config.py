@@ -33,6 +33,8 @@
 # $date $title - $tags                      == 2016-12-29 Her Fantasy Ball - Blowjob Cumshot Facial Tattoo
 #
 ####################################################################
+#                STASH               #
+stash_url = "localhost"
 
 #               TEMPLATE             #
 
@@ -67,6 +69,9 @@ log_file = r""
 ######################################
 #               Settings             #
 
+# rename associated file (subtitle, funscript) if present
+associated_extension = ["srt", "vtt", "funscript"]
+
 # Character which replaces every space in the filename
 # Common values are "." and "_"
 # e. g.:
@@ -74,18 +79,30 @@ log_file = r""
 # 2016-12-29.Eva.Lovia.-.Her.Fantasy.Ball
 filename_splitchar = " "
 
+# replace space for stash field (title, performer...), if you have a title 'I love Stash' it can become 'I_love_Stash'
+field_whitespaceSeperator = ""
+
+# put the filename in lowercase
+lowercase_Filename = False
+# remove these characters if there are present in the filename
+removecharac_Filename = ",#"
+
 # Character to use as a performer separator.
 performer_splitchar = " "
 # Maximum number of performer names in the filename. If there are more than that in a scene the filename will not include any performer name!
 performer_limit = 3
-# Ignore male performers.
-performer_ignore_male = False
+# ignore certain gender. Available "MALE" "FEMALE" "TRANSGENDER_MALE" "TRANSGENDER_FEMALE" "INTERSEX" "NON_BINARY"
+performer_ignoreGender = []
 
 # If $performer is before $title, prevent having duplicate text. 
 # e.g.:
 # Template used: $year $performer - $title
 # 2016 Dani Daniels - Dani Daniels in ***.mp4 --> 2016 Dani Daniels in ***.mp4
 prevent_title_performer = False
+
+# Removes prepositions from the beginning of titles
+prepositions_list = ['The', 'A', 'An']
+prepositions_removal = False
 
 # Squeeze studio names removes all spaces in studio, parent studio and studio family name
 # e. g.:
@@ -122,13 +139,15 @@ only_organized = False
 
 # If the new path is over 240 characters, the plugin will try to reduce it. Set to True to ignore that.
 ignore_path_length = False
-# Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
 
+# Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
 order_field = ["$video_codec", "$audio_codec", "$resolution", "tags", "rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
 
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
 
+# disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
+enable_hook = True
 ######################################
 #            Module Related          #
 
@@ -147,3 +166,4 @@ process_kill_attach = False
 # Warning: If you have non-latin characters (Cyrillic, Kanji, Arabic, ...), the result will be extremely different.
 use_ascii = False 
 # =========================
+
