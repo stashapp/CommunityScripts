@@ -120,15 +120,18 @@ class StashScene:
 
 
 def process_duplicates(duplicate_list):
-	ignore_tag = stash.find_tag('[Dupe: Ignore]', create=True).get("id")
+	ignore_tag_id = stash.find_tag('[Dupe: Ignore]', create=True).get("id")
 	total = len(duplicate_list)
 	log.info(f"There is {total} sets of duplicates found.")
 	for i, group in enumerate(duplicate_list):
 		filtered_group = []
 		for scene in group:
 			tag_ids = [ t['id'] for t in scene['tags'] ]
-			if ignore_tag not in tag_ids:
+			if ignore_tag_id in tag_ids:
+				log.debug(f"Ignore {scene['id']} {scene['title']}")
+			else:
 				filtered_group.append(scene)
+			
 		tag_files(filtered_group)
 		log.progress(i/total)
 
