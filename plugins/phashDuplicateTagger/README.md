@@ -22,3 +22,6 @@ This plugin has four functions:
   (These last two options are obviously for after you have removed the scenes you don't want any longer)
 
 PS. This script is essentially a hack and slash job on scripts from Belley and WithoutPants, thanks guys!
+
+PPS. The original plugin has been rewritten by stg-annon, and does now require hos stashapp-tools module (pip install stashapp-tools)
+     (Yes, this works with the Stash Docker)
