@@ -31,15 +31,15 @@ tasks:
     description: 'Create [Dupe: Keep] and [Dupe: Remove] scene tags for filtering '
     defaultArgs:
       mode: create
-  - name: 'Set Dupe Tags (Exact)'
+  - name: 'Set Dupe Tags (EXACT)'
     description: 'Assign duplicates tags to Exact Match (Dist 0) scenes'
     defaultArgs:
       mode: tagexact
-  - name: 'Set Dupe Tags (Dist 3)'
+  - name: 'Set Dupe Tags (HIGH)'
     description: 'Assign duplicates tags to High Match (Dist 3) scenes'
     defaultArgs:
       mode: taghigh
-  - name: 'Set Dupe Tags (Dist 6)'
+  - name: 'Set Dupe Tags (MEDIUM)'
     description: 'Assign duplicates tags to Medium Match (Dist 6) scenes (BE CAREFUL WITH THIS LEVEL)'
     defaultArgs:
       mode: tagmid
