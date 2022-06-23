@@ -1,3 +1,7 @@
+*****  No longer the main repository for this.  stg-annon took the plugin and ran with it, you can find his fork at https://github.com/stg-annon/CommunityScripts/tree/suggested-changes/plugins/phashDuplicateTagger
+
+
+----------------------------------------------
 This plugin has four functions:
 
 1) It will create two tags for review, [Dupe: Keep] and [Dupe: Remove]
