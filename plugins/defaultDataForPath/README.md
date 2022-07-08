@@ -80,40 +80,40 @@ var jsonData = [
 		"name": "Instagram Root",
         	"studio": "Instagram",
 		"children": [
-		{
-			"name": "Celebrities",
-			"tags": [
-				"PERFORMER - Celebrity"
-			],
-			"children": [
-				{
-					"name": "Kim Kardashian",
-					"paths": [
-						"C:\\Users\\UserName\\Desktop\\Instagram\\kimkardashian"
-					],
-					"performers": [
-						"Kim Kardashian"
-					],
-					"tags": [
-						"PERFORMER - Armenian",
-						"PERFORMER - Big Ass"
-					]
-				},
-				{
-					"name": "Katy Perry",
-					"paths": [
-						"C:\\Users\\UserName\\Desktop\\Instagram\\katyperry"
-					],
-					"performers": [
-						"Katy Perry"
-					],
-					"tags": [
-						"PERFORMER - Caucasian,
-						"PERFORMER - Big Tits"
-					]
-				}
-			]
-		},
+			{
+				"name": "Celebrities",
+				"tags": [
+					"PERFORMER - Celebrity"
+				],
+				"children": [
+					{
+						"name": "Kim Kardashian",
+						"paths": [
+							"C:\\Users\\UserName\\Desktop\\Instagram\\kimkardashian"
+						],
+						"performers": [
+							"Kim Kardashian"
+						],
+						"tags": [
+							"PERFORMER - Armenian",
+							"PERFORMER - Big Ass"
+						]
+					},
+					{
+						"name": "Katy Perry",
+						"paths": [
+							"C:\\Users\\UserName\\Desktop\\Instagram\\katyperry"
+						],
+						"performers": [
+							"Katy Perry"
+						],
+						"tags": [
+							"PERFORMER - Caucasian,
+							"PERFORMER - Big Tits"
+						]
+					}
+				]
+			},
 			{
 				"name": "Pornstars",
 				"tags": [
