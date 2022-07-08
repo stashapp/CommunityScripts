@@ -53,21 +53,18 @@ var jsonData = [
 ```
 
 > This config introduces a new concept. Note the _'Instagram Root'_ config object has no paths. It defines a studio and then children. This means all child config object of this will recieve the Studio _'Instagram'_ (it will overwrite any child config object studio definitions if different). You may also specify Performers and Tags in this way, those will be appended to child config objects definitions. See the _'Celebrities_' config object is used in a similar way to add the tag _'PERFORMER - Celebrity_' to its underlying children (which also recieve the _Instagram_ studio as it is their ancestor). It saves you from having to add the tag to each config object seperately and allows for more logical config groupings to be created. 
-<br>
-<br>
-If you also add a **_'paths'_** value to _'Instagram Root'_, then the data specified on _'Instagram Root'_ config object will be applied to files in that path as well. Data from children will not be carried over. For example, _'PornHub Root'_ applies studio PornHub to all files in **_"C:\\Users\\UserName\\Desktop\\Pornhub"_**, and has children objects with more specific config. Instagram Root does not have such a paths specification. So a file in path **_"C:\\Users\\UserName\\Desktop\\Pornhub\\SweetBunny"_** will have Studio PornHub added while a file in **_"C:\\Users\\UserName\\Desktop\\Instagram\\Kylie Jenner"_** will not have Studio Instagram added.
-<br>
-<br>
-So say a file is scanned that has file path **_"C:\\Users\\UserName\\Desktop\\Instagram\\alexisfawx\\video1.mp4"_**. The data added will be:
-<br> **Studio:** _Instagram_ - because the "Alexis Fawx" Config object is a descendant of the Instagram config object, and the scanned file matches "Alexis Fawx" Config object paths.
-<br> **Tag:** _ORGANIZED - Unorganized_ - because the scanned file matches "Default Tag - Matches all scanned files" Config object paths.
-<br> **Tag:** _PERFORMER - Pornstar_ - because the "Alexis Fawx" Config object is a child of the Pornstars config object, and the scanned file matches "Alexis Fawx" Config object paths.
-<br> **Tag:** _PERFORMER - Caucasian_ - beacause the scanned file matches "Alexis Fawx" Config object paths.
-<br> **Tag:** _PERFORMER - Fake Tits_ - beacause the scanned file matches "Alexis Fawx" Config object paths.
-<br> **Performer:** _Alexis Fawx_ - beacause the scanned file matches "Alexis Fawx" Config object paths.
-<br>
-<br>
-It becomes helpful to have collapsing as this jsonData array grows so you can focus on one part at a time.
+
+> If you also add a **_'paths'_** value to _'Instagram Root'_, then the data specified on _'Instagram Root'_ config object will be applied to files in that path as well. Data from children will not be carried over. For example, _'PornHub Root'_ applies studio PornHub to all files in **_"C:\\Users\\UserName\\Desktop\\Pornhub"_**, and has children objects with more specific config. Instagram Root does not have such a paths specification. So a file in path **_"C:\\Users\\UserName\\Desktop\\Pornhub\\SweetBunny"_** will have Studio PornHub added while a file in **_"C:\\Users\\UserName\\Desktop\\Instagram\\Kylie Jenner"_** will not have Studio Instagram added.
+
+> So say a file is scanned that has file path **_"C:\\Users\\UserName\\Desktop\\Instagram\\alexisfawx\\video1.mp4"_**. The data added will be:
+<br /> **Studio:** _Instagram_ - because the "Alexis Fawx" Config object is a descendant of the Instagram config object, and the scanned file matches "Alexis Fawx" Config object paths.
+<br /> **Tag:** _ORGANIZED - Unorganized_ - because the scanned file matches "Default Tag - Matches all scanned files" Config object paths.
+<br /> **Tag:** _PERFORMER - Pornstar_ - because the "Alexis Fawx" Config object is a child of the Pornstars config object, and the scanned file matches "Alexis Fawx" Config object paths.
+<br /> **Tag:** _PERFORMER - Caucasian_ - beacause the scanned file matches "Alexis Fawx" Config object paths.
+<br /> **Tag:** _PERFORMER - Fake Tits_ - beacause the scanned file matches "Alexis Fawx" Config object paths.
+<br /> **Performer:** _Alexis Fawx_ - beacause the scanned file matches "Alexis Fawx" Config object paths.
+<br />
+
 ```
 var jsonData = [
 
