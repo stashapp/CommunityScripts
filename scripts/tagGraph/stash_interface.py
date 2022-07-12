@@ -23,8 +23,11 @@ class StashInterface:
         self.port = conn['Port'] if conn.get('Port') else '9999'
         scheme = conn['Scheme'] if conn.get('Scheme') else 'http'
 
-        # Session cookie for authentication
+        api_key = conn.get("ApiKey")
+        if api_key:
+            self.headers["ApiKey"] = api_key
 
+        # Session cookie for authentication
         self.cookies = {}
         if conn.get('SessionCookie'):
             self.cookies.update({

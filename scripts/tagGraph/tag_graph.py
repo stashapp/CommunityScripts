@@ -14,6 +14,7 @@ STASH_SETTINGS = {
 	"Domain": "localhost",
 	"Port": "9999",
 	"Logger": log,
+	# "ApiKey": "YOUR_API_KEY_HERE",
 }
 SHOW_OPTIONS = False
 
