@@ -54,6 +54,12 @@
         "default": "0"
     },
     {
+        "id": "CreateAllTagCollectionTags",
+        "label": "Create Collections from ALL Tags (If TRUE then option above will exclude instead of include tags)",
+        "type": "bool",
+        "default": false
+    },
+    {
         "id": "CreateSiteCollectionTags",
         "label": "Auto create Plex Collection tags for scene Site",
         "type": "bool",
