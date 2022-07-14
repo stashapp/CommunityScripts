@@ -3,7 +3,7 @@ description: Creates a visual of the Tag relations
 version: 0.2
 exec:
   - python
-  - "{pluginDir}/deps/plugin_init.py"
+  - "{pluginDir}/tag_graph.py"
 interface: raw
 tasks:
   - name: Generate Graph
