@@ -296,9 +296,15 @@ function addAllData(obj, lowerItemPath, defaultData, pTags, pPerformers, pStudio
             if(containsPath(paths, lowerItemPath)) {
                 // inject data from parent if avail
                 if(pTags) {
+			if(!obj.tags) {
+				obj.tags = [];	
+			}
                     obj.tags = obj.tags.concat(pTags)
                 }
                 if(pPerformers) {
+			if(!obj.performers) {
+				obj.performers = [];	
+			}
                     obj.performers = obj.performers.concat(pPerformers)
                 }
                 if(pStudio) {
