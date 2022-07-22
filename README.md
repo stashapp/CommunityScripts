@@ -3,7 +3,7 @@
 This repository contains plugin and utility scripts created by the Stash community and hosted on the official GitHub repo.  There is also [a list of third-party plugins on our wiki page](https://github.com/stashapp/stash/wiki/Plugins-&--Scripts).
 
 ## How To Install
-To download a plugin, either clone the git repo, or download the files directly. 
+To download a plugin, either clone the git repo, or download the files directly.
 
 It is recommended that plugins are placed in their own subdirectory of your `plugins` directory. The `plugins` directory should be created as a subdirectory in the directory containing your `config.yml` file. This will be in `$HOME/.stash` by default.
 
@@ -25,6 +25,12 @@ Scenes|SceneMarker.Create<br />SceneMarker.Update|[markerTagToScene](plugins/mar
 Scanning|Scene.Create<br />Gallery.Create<br />Image.Create|[defaultDataForPath](plugins/defaultDataForPath)|Adds configured Tags, Performers and/or Studio to all newly scanned Scenes, Images and Galleries..|v0.8
 Scanning|Scene.Create<br />Gallery.Create|[filenameParser](plugins/filenameParser)|Tries to parse filenames, primarily in {studio}.{year}.{month}.{day}.{performer1firstname}.{performer1lastname}.{performer2}.{title} format, into the respective fields|v0.10
 Reporting||[TagGraph](plugins/taggrap)|Creates a visual of the Tag relations.|v0.7
+
+## Utility Scripts
+
+|Category|Userscript Name|Description|
+---------|---------------|-----------|
+StashDB  |[StashDB Submission Helper](/userscripts/StashDB_Submission_Helper)|Adds handy functions for StashDB submissions like buttons to add aliases in bulk to a performer|
 
 ## Utility Scripts
 
