@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        StashDB Submission Helper
 // @author      halorrr
-// @version     0.6
+// @version     0.7
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/stashapp/stash/develop/ui/v2.5/public/favicon.png
 // @namespace   https://github.com/halorrr
@@ -92,7 +92,7 @@ function formTab(tabName) {
 };
 
 function addAlias(alias) {
-  var alias = alias.trim()
+  alias = alias.trim()
   const existingAliases = Array.from(document.querySelectorAll('label[for="aliases"] + div .react-select__multi-value__label'));
   let aliasMatch = existingAliases.find(element => { return element.innerText == alias; });
   if (typeof aliasMatch !== 'undefined') {
@@ -122,17 +122,57 @@ function existingUrlObjects() {
 
 function urlSite(url) {
   let site;
-  if (/(https?:\/\/www.iafd.com\/[^?]+)\??/.test(url)) {
-    site = 'IAFD';
-  } else if (/(https?:\/\/www.indexxx.com\/[^?]+)\??/.test(url)) {
-    site = 'Indexxx';
+  if (/(^https?:\/\/(?:www\.)?adultfilmdatabase\.com\/(?:video|studio|actor)\/.+)\??/.test(url)) {
+    site = 'AFDB'
+  } else if (/(https?:\/\/www.babepedia.com\/babe\/[^?]+)\??/.test(url)) {
+    site = 'Babepedia'
+  } else if (/(^https?:\/\/(?:www\.)?bgafd\.co\.uk\/(?:films|actresses)\/details.php\/id\/[^?]+)\??/.test(url)) {
+    site = 'BGAFD'
+  } else if (/(https?:\/\/www.boobpedia.com\/boobs\/[^?]+)\??/.test(url)) {
+    site = 'Boobpedia'
   } else if (/(https?:\/\/www.data18.com\/[^?]+)\??/.test(url)) {
-    site = 'DATA18';
+    site = 'DATA18'
+  } else if (/(^https?:\/\/(?:www\.)?egafd\.com\/(?:films|actresses)\/details.php\/id\/[^?]+)\??/.test(url)) {
+    site = 'EGAFD'
+  } else if (/(https?:\/\/(www\.)?eurobabeindex.com\/sbandoindex\/.*?.html)/.test(url)) {
+    site = 'Eurobabeindex'
+  } else if (/(^https?:\/\/(?:www.)?facebook\.com\/[^?]+)/.test(url)) {
+    site = 'Facebook'
+  } else if (/(https?:\/\/www.freeones.com\/[^/?]+)\??/.test(url)) {
+    site = 'FreeOnes'
+  } else if (/(https?:\/\/www.iafd.com\/[^?]+)\??/.test(url)) {
+    site = 'IAFD'
+  } else if (/(^https?:\/\/(?:www\.)?imdb\.com\/(?:name|title)\/[^?]+)\/?/.test(url)) {
+    site = 'IMDB'
+  } else if (/(https?:\/\/www.indexxx.com\/[^?]+)\??/.test(url)) {
+    site = 'Indexxx'
+  } else if (/(https?:\/\/www.instagram.com\/[^/?]+)\??/.test(url)) {
+    site = 'Instagram'
+  } else if (/(https?:\/\/www.manyvids.com\/[^?]+)\??/.test(url)) {
+    site = 'ManyVids'
+  } else if (/(^https?:\/\/(?:www.)?minnano-av\.com\/actress\d+.html)/.test(url)) {
+    site = 'Minnano-av'
+  } else if (/(^https?:\/\/(?:www.)?myspace\.com\/[^?]+)/.test(url)) {
+    site = 'Myspace'
+  } else if (/(https?:\/\/onlyfans.com\/[^?]+)\??/.test(url)) {
+    site = 'OnlyFans'
+  } else if (/(https?:\/\/www.thenude.com\/[^?]+\.htm)/.test(url)) {
+    site = 'theNude'
+  } else if (/(^https?:\/\/(?:www.)?tiktok\.com\/@[^?]+)/.test(url)) {
+    site = 'TikTok'
   } else if (/(https?:\/\/twitter.com\/[^?]+)\??/.test(url)) {
-    site = 'Twitter';
+    site = 'Twitter'
+  } else if (/(^https?:\/\/(www\.)?wikidata.org\/wiki\/[^?]+)/.test(url)) {
+    site = 'Wikidata'
+  } else if (/(^https?:\/\/(?:\w+\.)?wikipedia\.org\/wiki\/[^?]+)/.test(url)) {
+    site = 'Wikipedia'
+  } else if (/(^https?:\/\/xslist\.org\/en\/model\/\d+\.html)/.test(url)) {
+    site = 'XsList'
+  } else if (/(^https?:\/\/(?:www.)?youtube\.com\/(?:c(?:hannel)?|user)\/[^?]+)/.test(url)) {
+    site = 'YouTube'
   } else {
     return;
-  }
+  };
 
   return site;
 };
@@ -234,7 +274,7 @@ function createUrlsButton(unmatched, element) {
 };
 
 function isValidMeasurements(measurements) {
-  const measurementsRegex = /(\d\d\w\w?\w?\s?)(-\s?\d\d\s?)?(-\s?\d\d)?/;
+  const measurementsRegex = /(\d\d\w?\w?\w?\s?)(-\s?\d\d\s?)?(-\s?\d\d)?/;
   const isValid = measurementsRegex.test(measurements);
   if (!isValid) { console.warn("Measurement format '" + measurements + "' is invalid and cannot be automatically added.") };
   return measurementsRegex.test(measurements);
@@ -265,7 +305,7 @@ function addAliasInputContainer() {
     event.preventDefault();
     const aliasField = document.getElementById("aliasField");
     if (aliasField.value != '') {
-      aliasField.value.split(",").forEach(addAlias);
+      aliasField.value.split(/,|\/|\sor\s/).forEach(addAlias);
       aliasField.value = "";
     };
   });
@@ -274,7 +314,7 @@ function addAliasInputContainer() {
 function performerEditPage() {
   const aliasValues = unmatchedTargetValue("Aliases");
   if (aliasValues != null) {
-    const unmatchedAliases = aliasValues.split(",");
+    const unmatchedAliases = aliasValues.split(/,|\/|\sor\s/);
     const aliasElement = unmatchedTargetButton("Aliases");
     createAliasButton(unmatchedAliases, aliasElement);
   };
