@@ -30,7 +30,7 @@ Reporting||[TagGraph](plugins/taggrap)|Creates a visual of the Tag relations.|v0
 
 Theme Name|Description                                 |
 ----------|--------------------------------------------|
-Plex      |Theme inspired by the popular Plex Interface|
+[Plex](themes/plex)      |Theme inspired by the popular Plex Interface|
 
 ## Utility Scripts
 
