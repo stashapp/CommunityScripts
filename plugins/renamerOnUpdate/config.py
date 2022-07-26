@@ -82,6 +82,15 @@ filename_splitchar = " "
 # replace space for stash field (title, performer...), if you have a title 'I love Stash' it can become 'I_love_Stash'
 field_whitespaceSeperator = ""
 
+# Match and replace. ("match": ["replace with", "system"])
+# the second element of the list determine the system used. If you don't put this element, the default is word
+# regex: match a regex, word: match a word, any: match a term
+# difference between 'word' & 'any': word is between seperator (space, _, -), any is anything ('ring' would replace 'during')
+# ex:   "Scene": ["Sc.", "word"]    - Replace Scene by Sc.
+#       r"S\d+:E\d+": ["", "regex"] - Remove Sxx:Ex (x is a digit)
+replace_words = {
+}
+
 # put the filename in lowercase
 lowercase_Filename = False
 # remove these characters if there are present in the filename
