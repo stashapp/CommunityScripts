@@ -265,9 +265,9 @@ def has_handle(fpath, all_result=False):
 
 def config_edit(name: str, state: bool):
     found = 0
-    with open(config.__file__, 'r') as file:
+    with open(config.__file__, 'r', encoding='utf8') as file:
         config_lines = file.readlines()
-    with open(config.__file__, 'w') as file_w:
+    with open(config.__file__, 'w', encoding='utf8') as file_w:
         for line in config_lines:
             if name in line.split("=")[0].strip():
                 file_w.write("{} = {}\n".format(name, state))
