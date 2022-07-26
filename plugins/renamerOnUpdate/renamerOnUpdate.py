@@ -185,6 +185,28 @@ def makeFilename(scene_information, query):
             else:
                 new_filename = new_filename.replace(field, "")
 
+    if FILENAME_REPLACEWORDS:
+        for old, new in FILENAME_REPLACEWORDS.items():
+            if type(new) is str:
+                new = [new]
+            if len(new) > 1:
+                if new[1] == "regex":
+                    tmp = re.sub(old, new[0], new_filename)
+                    if tmp != new_filename:
+                        log.LogDebug(f"Regex matched: {new_filename} -> {tmp}")
+                else:
+                    if new[1] == "word":
+                        tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', new_filename)
+                    elif new[1] == "any":
+                        tmp = new_filename.replace(old, new[0])
+                    if tmp != new_filename:
+                        log.LogDebug(f"'{old}' changed with '{new[0]}'")
+            else:
+                tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', new_filename)
+                if tmp != new_filename:
+                    log.LogDebug(f"'{old}' changed with '{new[0]}'")
+            new_filename = tmp    
+
     # cleanup
     new_filename = re.sub(r'[\s_-]+(?=\W{2})', ' ', new_filename)
     # remove multi space
@@ -305,6 +327,7 @@ FIELD_WHITESPACE_SEP = config.field_whitespaceSeperator
 FILENAME_LOWER = config.lowercase_Filename
 FILENAME_SPLITCHAR = config.filename_splitchar
 FILENAME_REMOVECHARACTER = config.removecharac_Filename
+FILENAME_REPLACEWORDS = config.replace_words
 
 PERFORMER_SPLITCHAR = config.performer_splitchar
 PERFORMER_LIMIT = config.performer_limit
