@@ -74,7 +74,6 @@ default_template = "$date $title"
 # "tagname": "path"
 # ex: "plugin_move": r"E:\Movies\R18\$studio_hierarchy"
 p_tag_templates = {
-    "plugin_move_atrier": r"E:\Film\R18\2. Test\$studio_hierarchy"
 }
 
 
