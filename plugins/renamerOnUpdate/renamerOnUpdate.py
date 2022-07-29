@@ -634,7 +634,7 @@ def makePath(scene_information: dict, query: str) -> str:
             if scene_information.get(field_name):
                 new_filename = new_filename.replace(field, scene_information[field_name])
             else:
-                new_filename = new_filename.replace(field, "")
+                new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
     new_filename = cleanup_text(new_filename)
     return new_filename
 
@@ -699,6 +699,9 @@ def create_new_path(scene_info: dict, template: dict):
         path_split = scene_info['current_path_split']
 
     path_edited = os.sep.join(path_split)
+
+    if FILENAME_REMOVECHARACTER:
+        path_edited = re.sub(f'[{FILENAME_REMOVECHARACTER}]+', '', path_edited)
 
     # Using typewriter for Apostrophe
     new_path = re.sub("[’‘”“]+", "'", path_edited)
@@ -1024,6 +1027,7 @@ ALT_DIFF_DISPLAY = config.alt_diff_display
 
 PATH_NOPERFORMER_FOLDER = config.path_noperformer_folder
 PATH_KEEP_ALRPERF = config.path_keep_alrperf
+PATH_NON_ORGANIZED = config.p_non_organized
 
 if PLUGIN_ARGS:
     if "bulk" in PLUGIN_ARGS:
