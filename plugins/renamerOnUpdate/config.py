@@ -95,6 +95,7 @@ p_default_template = r"^*\$performer"
 # "tagname": [option]
 # clean_tag: remove the tag after the rename
 # inverse_performer: change the last/first name (Jane Doe -> Doe Jane)
+# dry_run: activate dry_run for this scene
 # ex: "plugin_move": ["clean_tag"]
 p_tag_option = {
 }
