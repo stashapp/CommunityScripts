@@ -48,6 +48,7 @@ stash_url = "localhost"
 
 # Templates to use for given tags
 # Add or remove as needed or leave it empty/comment out
+# you can specific group with {}. exemple: [$studio] {$date -} $title, the '-' will be removed if no date
 tag_templates = {
     # "!1. Western": "$date $performer - $title [$studio]",
     # "!1. JAV": "$title",
@@ -90,6 +91,9 @@ p_path_templates = {
 p_use_default_template = False
 # default template, adjust as needed
 p_default_template = r"^*\$performer"
+
+# if unorganized, ignore other templates, use this path
+p_non_organized = r""
 
 # option if tag is present
 # "tagname": [option]
