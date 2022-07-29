@@ -867,7 +867,7 @@ def renamer(scene_id, db_conn=None):
         template["filename"] = config.default_template
 
     if not template["filename"] and not template["path"]:
-        log.LogWarning("[{scene_id}] No template for this scene.")
+        log.LogWarning(f"[{scene_id}] No template for this scene.")
         return
 
     #log.LogDebug("Using this template: {}".format(filename_template))
