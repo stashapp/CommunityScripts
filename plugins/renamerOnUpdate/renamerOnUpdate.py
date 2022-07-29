@@ -327,9 +327,9 @@ def get_template_filename(scene: dict):
 
     # Change by Tag
     if scene.get("tags") and config.tag_templates:
-        for tag in scene['tags']:
-            if config.tag_templates.get(tag['name']):
-                template = config.tag_templates[tag['name']]
+        for match, job in config.tag_templates.items():
+            if match in scene["tags"]:
+                template = job
                 break
     return template
 
@@ -354,9 +354,9 @@ def get_template_path(scene: dict):
 
     # Change by Tag
     if scene.get("tags") and config.p_tag_templates:
-        for tag in scene["tags"]:
-            if config.p_tag_templates.get(tag["name"]):
-                template["destination"] = config.p_tag_templates[tag["name"]]
+        for match, job in config.p_tag_templates.items():
+            if match in scene["tags"]:
+                template["destination"] = job
                 break
 
     if scene.get("tags") and config.p_tag_option:
@@ -369,6 +369,8 @@ def get_template_path(scene: dict):
                         template["opt_details"]["clean_tag"].append(tag["id"])
                     else:
                         template["opt_details"] = {"clean_tag": [tag["id"]]}
+    if not scene['organized'] and PATH_NON_ORGANIZED:
+        template["destination"] = PATH_NON_ORGANIZED
     return template
 
 
@@ -565,6 +567,10 @@ def cleanup_text(text: str):
         new_filename = re.sub(r'[_\s-]+{}'.format("\\" + c), c, new_filename)
     # remove () []
     new_filename = re.sub(r'\(\W*\)|\[\W*\]', '', new_filename)
+    # remove {}
+    new_filename = re.sub(r'[{}]', '', new_filename)
+    # remove multi space
+    new_filename = re.sub(r'\s+', ' ', new_filename)
     # Remove space at start/end
     new_filename = new_filename.strip(" -_")
     return new_filename
@@ -579,17 +585,17 @@ def makeFilename(scene_information: dict, query: str) -> str:
                 if scene_information.get("movie_index"):
                     new_filename = new_filename.replace(field, f"scene {scene_information['movie_index']}")
                 else:
-                    new_filename = new_filename.replace(field, "")
+                    new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
             elif scene_information.get(field_name):
                 if field == "$performer":
                     if re.search(r"\$performer[-\s_]*\$title", new_filename) and scene_information.get('title') and PREVENT_TITLE_PERF:
                         if re.search(f"^{scene_information['performer']}", scene_information['title']):
                             log.LogInfo("Ignoring the performer field because it's already in start of title")
-                            new_filename = new_filename.replace(field, "")
+                            new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
                             continue
                 new_filename = new_filename.replace(field, scene_information[field_name])
             else:
-                new_filename = new_filename.replace(field, "")
+                new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
 
     if FILENAME_REPLACEWORDS:
         for old, new in FILENAME_REPLACEWORDS.items():
@@ -834,7 +840,7 @@ def renamer(scene_id, db_conn=None):
     elif type(scene_id) is int:
         stash_scene = graphql_getScene(scene_id)
 
-    if config.only_organized and not stash_scene['organized']:
+    if config.only_organized and not stash_scene['organized'] and not PATH_NON_ORGANIZED:
         log.LogDebug(f"[{scene_id}] Scene ignored (not organized)")
         return
 
