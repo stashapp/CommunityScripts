@@ -554,7 +554,7 @@ def extract_info(scene: dict, template: None):
 
 def cleanup_text(text: str):
     # cleanup
-    new_filename = re.sub(r'[\s_-]+(?=\W{2})', ' ', text)
+    new_filename = re.sub(r'[\s_-]+(?=[^a-zA-Z0-9_#]{2})', ' ', text)
     # remove multi space
     new_filename = re.sub(r'\s+', ' ', new_filename)
     # remove thing like 'test - ]'
@@ -826,6 +826,7 @@ def associated_rename(scene_info: dict):
 
 
 def renamer(scene_id, db_conn=None):
+    option_dryrun = False
     if type(scene_id) is dict:
         stash_scene = scene_id
         scene_id = stash_scene['id']
@@ -846,6 +847,11 @@ def renamer(scene_id, db_conn=None):
             template["path"] = {"destination": config.p_default_template, "option": [], "opt_details": {}}
         else:
             template["path"] = None
+    else:
+        if template["path"].get("option"):
+            if "dry_run" in template["path"]["option"] and not DRY_RUN:
+                log.LogInfo("Dry-Run on (activate by option)")
+                option_dryrun = True
     if not template["filename"] and config.use_default_template:
         log.LogDebug("[FILENAME] Using default template")
         template["filename"] = config.default_template
@@ -867,7 +873,7 @@ def renamer(scene_id, db_conn=None):
     scene_information['final_path'] = os.path.join(scene_information['new_path'], scene_information['new_filename'])
     # check length of path
     if check_longpath(scene_information['final_path']):
-        if DRY_RUN:
+        if DRY_RUN or option_dryrun:
             with open("dryrun_renamerOnUpdate.txt", 'a', encoding='utf-8') as f:
                 f.write(f"[LENGTH LIMIT] {scene_information['scene_id']}|{scene_information['final_path']}\n")
         return
@@ -892,7 +898,7 @@ def renamer(scene_id, db_conn=None):
             log.LogDebug(f"[OLD filename] {scene_information['current_filename']}")
             log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
 
-    if DRY_RUN:
+    if DRY_RUN or option_dryrun:
         with open("dryrun_renamerOnUpdate.txt", 'a', encoding='utf-8') as f:
             f.write(f"{scene_information['scene_id']}|{scene_information['current_path']}|{scene_information['final_path']}\n")
         return
