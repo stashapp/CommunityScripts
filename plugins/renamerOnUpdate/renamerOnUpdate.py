@@ -840,7 +840,6 @@ def renamer(scene_id, db_conn=None):
     template = {}
     template["filename"] = get_template_filename(stash_scene)
     template["path"] = get_template_path(stash_scene)
-    log.LogDebug(template)
     if not template["path"].get("destination"):
         if config.p_use_default_template:
             log.LogDebug("[PATH] Using default template")
@@ -858,6 +857,7 @@ def renamer(scene_id, db_conn=None):
     #log.LogDebug("Using this template: {}".format(filename_template))
     scene_information = extract_info(stash_scene, template)
     log.LogDebug(f"[{scene_id}] Scene information: {scene_information}")
+    log.LogDebug(f"[{scene_id}] Template: {template}")
 
     scene_information['scene_id'] = scene_id
     scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
