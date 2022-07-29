@@ -476,7 +476,6 @@ def extract_info(scene: dict, template: None):
         scene_information['performer'] = PERFORMER_SPLITCHAR.join(perf_list)
     elif PATH_NOPERFORMER_FOLDER:
         scene_information['performer_path'] = "NoPerformer"
-        scene_information["performer"] = "NoPerformer"
 
     # Grab Studio name
     if scene.get("studio"):
