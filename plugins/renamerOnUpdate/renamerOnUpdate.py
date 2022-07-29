@@ -873,7 +873,10 @@ def renamer(scene_id, db_conn=None):
     log.LogDebug(f"[{scene_id}] Template: {template}")
 
     scene_information['scene_id'] = scene_id
-    scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+    if template["filename"]:
+        scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+    else:
+        scene_information['new_filename'] = scene_information['current_filename']
     scene_information['new_path'] = create_new_path(scene_information, template)
     if scene_information['new_path'] is None:
         return
