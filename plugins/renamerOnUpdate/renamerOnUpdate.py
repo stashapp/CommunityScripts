@@ -671,9 +671,9 @@ def create_new_path(scene_info: dict, template: dict):
         for part in path_split:
             if part == "$studio_hierarchy" and scene_info.get("studio_hierarchy"):
                 for p in scene_info["studio_hierarchy"]:
-                    path_list.append(re.sub('["*?<>|#,]+', '', p).strip())
+                    path_list.append(re.sub('[\\/:"*?<>|]+', '', p).strip())
             else:
-                path_list.append(re.sub('["*?<>|#,]+', '', makePath(scene_info, part)).strip())
+                path_list.append(re.sub('[\\/:"*?<>|]+', '', makePath(scene_info, part)).strip())
         # Remove blank, empty string
         path_split = [x for x in path_list if x]
         # The first character was a seperator, so put it back.
@@ -843,7 +843,7 @@ def renamer(scene_id, db_conn=None):
     if not template["path"].get("destination"):
         if config.p_use_default_template:
             log.LogDebug("[PATH] Using default template")
-            template["path"] = {"destination": config.default_template, "option": [], "opt_details": {}}
+            template["path"] = {"destination": config.p_default_template, "option": [], "opt_details": {}}
         else:
             template["path"] = None
     if not template["filename"] and config.use_default_template:
