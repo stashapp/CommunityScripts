@@ -781,7 +781,11 @@ def file_rename(scene_info: dict, template: dict):
                     p.terminate()
                     p.wait(10)
                     # If process is not terminated, this will create an error again.
-                    os.rename(scene_info['current_path'], scene_info['final_path'])
+                    try:
+                        shutil.move(scene_info['current_path'], scene_info['final_path'])
+                    except Exception as err:
+                        log.LogError(f"Something still prevents renaming the file. {err}")
+                        return 1
                 else:
                     log.LogError("A process prevents renaming the file.")
                     return 1
@@ -796,7 +800,7 @@ def file_rename(scene_info: dict, template: dict):
                 with open(LOGFILE, 'a', encoding='utf-8') as f:
                     f.write(f"{scene_info['scene_id']}|{scene_info['current_path']}|{scene_info['final_path']}|{scene_info['hash']}\n")
             except Exception as err:
-                os.rename(scene_info['final_path'], scene_info['current_path'])
+                shutil.move(scene_info['final_path'], scene_info['current_path'])
                 log.LogError(f"Restoring the original path, error writing the logfile: {err}")
                 return 1
         if REMOVE_EMPTY_FOLDER:
@@ -823,7 +827,7 @@ def associated_rename(scene_info: dict):
             p_new = os.path.splitext(scene_info['final_path'])[0] + "." + ext
             if os.path.isfile(p):
                 try:
-                    os.rename(p, p_new)
+                    shutil.move(p, p_new)
                 except Exception as err:
                     log.LogError(f"Something prevents renaming this file '{p}' - err: {err}")
                     continue
@@ -834,7 +838,7 @@ def associated_rename(scene_info: dict):
                         with open(LOGFILE, 'a', encoding='utf-8') as f:
                             f.write(f"{scene_info['scene_id']}|{p}|{p_new}\n")
                     except Exception as err:
-                        os.rename(p_new, p)
+                        shutil.move(p_new, p)
                         log.LogError(f"Restoring the original name, error writing the logfile: {err}")
 
 
