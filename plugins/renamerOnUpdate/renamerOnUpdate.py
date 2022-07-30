@@ -326,9 +326,10 @@ def get_template_filename(scene: dict):
             current_studio = graphql_getStudio(current_studio.get("parent_studio")['id'])
 
     # Change by Tag
+    tags = [x["name"] for x in scene["tags"]]
     if scene.get("tags") and config.tag_templates:
         for match, job in config.tag_templates.items():
-            if match in scene["tags"]:
+            if match in tags:
                 template = job
                 break
     return template
@@ -353,9 +354,10 @@ def get_template_path(scene: dict):
                 template["destination"] = config.p_studio_templates[scene["studio"]["name"]]
 
     # Change by Tag
+    tags = [x["name"] for x in scene["tags"]]
     if scene.get("tags") and config.p_tag_templates:
         for match, job in config.p_tag_templates.items():
-            if match in scene["tags"]:
+            if match in tags:
                 template["destination"] = job
                 break
 
@@ -671,32 +673,29 @@ def remove_consecutive(liste: list):
 def create_new_path(scene_info: dict, template: dict):
     # Create the new path
     # Split the template path
-    if template.get("path"):
-        path_split = scene_info['template_split']
-        path_list = []
-        for part in path_split:
-            if ":" in part and path_split[0]:
-                path_list.append(part)
-            elif part == "$studio_hierarchy" and scene_info.get("studio_hierarchy"):
-                for p in scene_info["studio_hierarchy"]:
-                    path_list.append(re.sub('[\\/:"*?<>|]+', '', p).strip())
-            else:
-                path_list.append(re.sub('[\\/:"*?<>|]+', '', makePath(scene_info, part)).strip())
-        # Remove blank, empty string
-        path_split = [x for x in path_list if x]
-        # The first character was a seperator, so put it back.
-        if path_list[0] == "":
-            path_split.insert(0, "")
+    path_split = scene_info['template_split']
+    path_list = []
+    for part in path_split:
+        if ":" in part and path_split[0]:
+            path_list.append(part)
+        elif part == "$studio_hierarchy" and scene_info.get("studio_hierarchy"):
+            for p in scene_info["studio_hierarchy"]:
+                path_list.append(re.sub('[\\/:"*?<>|]+', '', p).strip())
+        else:
+            path_list.append(re.sub('[\\/:"*?<>|]+', '', makePath(scene_info, part)).strip())
+    # Remove blank, empty string
+    path_split = [x for x in path_list if x]
+    # The first character was a seperator, so put it back.
+    if path_list[0] == "":
+        path_split.insert(0, "")
 
-        if PREVENT_CONSECUTIVE:
-            # remove consecutive (/FolderName/FolderName/video.mp4 -> FolderName/video.mp4
-            path_split = remove_consecutive(path_split)
+    if PREVENT_CONSECUTIVE:
+        # remove consecutive (/FolderName/FolderName/video.mp4 -> FolderName/video.mp4
+        path_split = remove_consecutive(path_split)
 
-        if "^*" in template["path"]["destination"]:
-            if scene_info['current_directory'] != os.sep.join(path_split):
-                path_split.pop(len(scene_info['current_directory']))
-    else:
-        path_split = scene_info['current_path_split']
+    if "^*" in template["path"]["destination"]:
+        if scene_info['current_directory'] != os.sep.join(path_split):
+            path_split.pop(len(scene_info['current_directory']))
 
     path_edited = os.sep.join(path_split)
 
@@ -880,9 +879,10 @@ def renamer(scene_id, db_conn=None):
         scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
     else:
         scene_information['new_filename'] = scene_information['current_filename']
-    scene_information['new_path'] = create_new_path(scene_information, template)
-    if scene_information['new_path'] is None:
-        return
+    if template.get("path"):
+        scene_information['new_path'] = create_new_path(scene_information, template)
+    else:
+        scene_information['new_path'] = scene_information['current_path']
     scene_information['final_path'] = os.path.join(scene_information['new_path'], scene_information['new_filename'])
     # check length of path
     if check_longpath(scene_information['final_path']):
