@@ -808,8 +808,9 @@ def file_rename(scene_info: dict, template: dict):
         # I don't think it's possible.
         log.LogError(f"[OS] Failed to rename the file ? {scene_info['final_path']}")
         return 1
-    if "clean_tag" in template["option"]:
-        graphql_removeScenesTag([scene_info['scene_id']], template["opt_details"]["clean_tag"])
+    if template.get("path"):
+        if "clean_tag" in template["path"]["option"]:
+            graphql_removeScenesTag([scene_info['scene_id']], template["path"]["opt_details"]["clean_tag"])
 
 
 def associated_rename(scene_info: dict):
