@@ -489,6 +489,7 @@ def extract_info(scene: dict, template: None):
         else:
             scene_information['studio'] = scene['studio']['name']
         scene_information['studio_family'] = scene_information['studio']
+        studio_hierarchy = [scene_information['studio']]
         # Grab Parent name
         if scene['studio'].get("parent_studio"):
             if SQUEEZE_STUDIO_NAMES:
@@ -498,13 +499,12 @@ def extract_info(scene: dict, template: None):
             scene_information['studio_family'] = scene_information['parent_studio']
 
             studio_p = scene['studio']
-            studio_hierarchy = [scene_information['studio']]
             while studio_p.get("parent_studio"):
                 studio_p = graphql_getStudio(studio_p['parent_studio']['id'])
                 if studio_p:
                     studio_hierarchy.append(studio_p['name'])
             studio_hierarchy.reverse()
-            scene_information['studio_hierarchy'] = studio_hierarchy
+        scene_information['studio_hierarchy'] = studio_hierarchy
     # Grab Tags
     if scene.get("tags"):
         tag_list = []
