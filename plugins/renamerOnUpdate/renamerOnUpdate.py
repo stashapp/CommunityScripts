@@ -803,7 +803,10 @@ def file_rename(scene_info: dict, template: dict):
             with os.scandir(scene_info['current_directory']) as it:
                 if not any(it):
                     log.LogInfo(f"Removing empty folder ({scene_info['current_directory']})")
-                    os.remove(scene_info['current_directory'])
+                    try:
+                        os.rmdir(scene_info['current_directory'])
+                    except Exception as err:
+                        log.logWarning(f"Fail to delete empty folder {scene_info['current_directory']} - {err}")
     else:
         # I don't think it's possible.
         log.LogError(f"[OS] Failed to rename the file ? {scene_info['final_path']}")
