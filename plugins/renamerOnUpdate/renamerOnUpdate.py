@@ -26,9 +26,14 @@ import config
 import log
 
 DRY_RUN = config.dry_run
+
+if config.log_file:
+    DRY_RUN_FILE = os.path.join(os.path.dirname(config.log_file), "dryrun_renamerOnUpdate.txt")
+
 if DRY_RUN:
-    if os.path.exists("dryrun_renamerOnUpdate.txt"):
-        os.remove("dryrun_renamerOnUpdate.txt")
+    if DRY_RUN_FILE:
+        if os.path.exists(DRY_RUN_FILE):
+            os.remove(DRY_RUN_FILE)
     log.LogInfo("Dry mode on")
 
 START_TIME = time.time()
@@ -894,8 +899,8 @@ def renamer(scene_id, db_conn=None):
     scene_information['final_path'] = os.path.join(scene_information['new_path'], scene_information['new_filename'])
     # check length of path
     if check_longpath(scene_information['final_path']):
-        if DRY_RUN or option_dryrun:
-            with open("dryrun_renamerOnUpdate.txt", 'a', encoding='utf-8') as f:
+        if (DRY_RUN or option_dryrun) and LOGFILE:
+            with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
                 f.write(f"[LENGTH LIMIT] {scene_information['scene_id']}|{scene_information['final_path']}\n")
         return
 
@@ -919,8 +924,8 @@ def renamer(scene_id, db_conn=None):
             log.LogDebug(f"[OLD filename] {scene_information['current_filename']}")
             log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
 
-    if DRY_RUN or option_dryrun:
-        with open("dryrun_renamerOnUpdate.txt", 'a', encoding='utf-8') as f:
+    if (DRY_RUN or option_dryrun) and LOGFILE:
+        with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
             f.write(f"{scene_information['scene_id']}|{scene_information['current_path']}|{scene_information['final_path']}\n")
         return
     # connect to the db
