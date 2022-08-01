@@ -292,16 +292,19 @@ def has_handle(fpath, all_result=False):
 
 def config_edit(name: str, state: bool):
     found = 0
-    with open(config.__file__, 'r', encoding='utf8') as file:
-        config_lines = file.readlines()
-    with open(config.__file__, 'w', encoding='utf8') as file_w:
-        for line in config_lines:
-            if len(line.split("=")) > 1:
-                if name in line.split("=")[0].strip():
-                    file_w.write(f"{name} = {state}\n")
-                    found += 1
-                    continue
-            file_w.write(line)
+    try:
+        with open(config.__file__, 'r', encoding='utf8') as file:
+            config_lines = file.readlines()
+        with open(config.__file__, 'w', encoding='utf8') as file_w:
+            for line in config_lines:
+                if len(line.split("=")) > 1:
+                    if name in line.split("=")[0].strip():
+                        file_w.write(f"{name} = {state}\n")
+                        found += 1
+                        continue
+                file_w.write(line)
+    except PermissionError as err:
+        log.LogError(f"You don't have the permission to edit config.py ({err})")
     return found
 
 
