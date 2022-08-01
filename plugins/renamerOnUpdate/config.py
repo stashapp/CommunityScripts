@@ -219,7 +219,8 @@ batch_number_scene = -1
 
 # disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
 enable_hook = True
-# disable/enable dry mode. This prevent any change, it will only show in log. You can edit this value in 'Plugin Tasks' inside of Stash.
+# disable/enable dry mode. Do a trial run with no permanent changes. Can write into a file (dryrun_renamerOnUpdate.txt), set a path for log_file. 
+# You can edit this value in 'Plugin Tasks' inside of Stash.
 dry_run = False
 ######################################
 #            Module Related          #
