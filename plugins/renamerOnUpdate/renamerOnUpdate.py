@@ -586,6 +586,29 @@ def cleanup_text(text: str):
     return new_filename
 
 
+def replace_text(text: str):
+    for old, new in FILENAME_REPLACEWORDS.items():
+        if type(new) is str:
+            new = [new]
+        if len(new) > 1:
+            if new[1] == "regex":
+                tmp = re.sub(old, new[0], text)
+                if tmp != text:
+                    log.LogDebug(f"Regex matched: {text} -> {tmp}")
+            else:
+                if new[1] == "word":
+                    tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', text)
+                elif new[1] == "any":
+                    tmp = text.replace(old, new[0])
+                if tmp != text:
+                    log.LogDebug(f"'{old}' changed with '{new[0]}'")
+        else:
+            tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', text)
+            if tmp != text:
+                log.LogDebug(f"'{old}' changed with '{new[0]}'")
+    return tmp
+
+
 def makeFilename(scene_information: dict, query: str) -> str:
     new_filename = str(query)
     for field in TEMPLATE_FIELD:
@@ -606,28 +629,11 @@ def makeFilename(scene_information: dict, query: str) -> str:
                 new_filename = new_filename.replace(field, scene_information[field_name])
             else:
                 new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
+            if FIELD_REPLACER.get(field):
+                new_filename = new_filename.replace(FIELD_REPLACER[field]["replace"], FIELD_REPLACER[field]["with"])
 
     if FILENAME_REPLACEWORDS:
-        for old, new in FILENAME_REPLACEWORDS.items():
-            if type(new) is str:
-                new = [new]
-            if len(new) > 1:
-                if new[1] == "regex":
-                    tmp = re.sub(old, new[0], new_filename)
-                    if tmp != new_filename:
-                        log.LogDebug(f"Regex matched: {new_filename} -> {tmp}")
-                else:
-                    if new[1] == "word":
-                        tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', new_filename)
-                    elif new[1] == "any":
-                        tmp = new_filename.replace(old, new[0])
-                    if tmp != new_filename:
-                        log.LogDebug(f"'{old}' changed with '{new[0]}'")
-            else:
-                tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', new_filename)
-                if tmp != new_filename:
-                    log.LogDebug(f"'{old}' changed with '{new[0]}'")
-            new_filename = tmp
+        new_filename = replace_text(new_filename)
 
     new_filename = cleanup_text(new_filename)
     # Replace spaces with splitchar
@@ -645,15 +651,23 @@ def makePath(scene_information: dict, query: str) -> str:
                 new_filename = new_filename.replace(field, scene_information[field_name])
             else:
                 new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
+            if FIELD_REPLACER.get(field):
+                new_filename = new_filename.replace(FIELD_REPLACER[field]["replace"], FIELD_REPLACER[field]["with"])
     new_filename = cleanup_text(new_filename)
     return new_filename
+
+
+def capitalizeWords(s: str):
+    # thanks to BCFC_1982 for it
+    return re.sub(r"[A-Za-z]+('[A-Za-z]+)?", lambda word: word.group(0).capitalize(), s)
 
 
 def create_new_filename(scene_info: dict, template: str):
     new_filename = makeFilename(scene_info, template) + scene_info['file_extension']
     if FILENAME_LOWER:
         new_filename = new_filename.lower()
-
+    if FILENAME_TITLECASE:
+        new_filename = capitalizeWords(new_filename)
     # Remove illegal character for Windows
     new_filename = re.sub('[\\/:"*?<>|]+', '', new_filename)
 
@@ -1005,8 +1019,10 @@ TEMPLATE_FIELD = "$date $year $performer_path $performer $title $height $resolut
 ASSOCIATED_EXT = config.associated_extension
 
 FIELD_WHITESPACE_SEP = config.field_whitespaceSeperator
+FIELD_REPLACER = config.field_replacer
 
 FILENAME_LOWER = config.lowercase_Filename
+FILENAME_TITLECASE = config.titlecase_Filename
 FILENAME_SPLITCHAR = config.filename_splitchar
 FILENAME_REMOVECHARACTER = config.removecharac_Filename
 FILENAME_REPLACEWORDS = config.replace_words
