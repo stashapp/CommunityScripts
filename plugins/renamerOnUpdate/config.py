@@ -126,6 +126,11 @@ filename_splitchar = " "
 
 # replace space for stash field (title, performer...), if you have a title 'I love Stash' it can become 'I_love_Stash'
 field_whitespaceSeperator = ""
+# Remove/Replace character from field (not using regex)
+# "field": {"replace": "foo","with": "bar"}
+# ex: "$studio": {"replace": "'","with": ""} My Dad's Hot Girlfriend --> My Dads Hot Girlfriend
+field_replacer = {
+}
 
 # Match and replace.
 # "match": ["replace with", "system"] the second element of the list determine the system used. If you don't put this element, the default is word
@@ -138,6 +143,8 @@ replace_words = {
 
 # put the filename in lowercase
 lowercase_Filename = False
+# filename in title case (Capitalises each word and lowercases the rest)
+titlecase_Filename = False
 # remove these characters if there are present in the filename
 removecharac_Filename = ",#"
 
