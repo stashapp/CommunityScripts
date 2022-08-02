@@ -896,10 +896,10 @@ def renamer(scene_id, db_conn=None):
     else:
         scene_information['new_filename'] = scene_information['current_filename']
     if template.get("path"):
-        scene_information['new_path'] = create_new_path(scene_information, template)
+        scene_information['new_directory'] = create_new_path(scene_information, template)
     else:
-        scene_information['new_path'] = scene_information['current_path']
-    scene_information['final_path'] = os.path.join(scene_information['new_path'], scene_information['new_filename'])
+        scene_information['new_directory'] = scene_information['current_directory']
+    scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
     # check length of path
     if check_longpath(scene_information['final_path']):
         if (DRY_RUN or option_dryrun) and LOGFILE:
@@ -908,13 +908,13 @@ def renamer(scene_id, db_conn=None):
         return
 
     #log.LogDebug(f"Filename: {scene_information['current_filename']} -> {scene_information['new_filename']}")
-    #log.LogDebug(f"Path: {scene_information['current_path']} -> {scene_information['new_path']}")
+    #log.LogDebug(f"Path: {scene_information['current_directory']} -> {scene_information['new_directory']}")
 
     if scene_information['final_path'] == scene_information['current_path']:
         log.LogInfo(f"Everything is ok. ({scene_information['current_filename']})")
         return
 
-    if scene_information['current_directory'] != scene_information['new_path']:
+    if scene_information['current_directory'] != scene_information['new_directory']:
         log.LogInfo("File will be moved to another directory")
         log.LogDebug(f"[OLD path] {scene_information['current_path']}")
         log.LogDebug(f"[NEW path] {scene_information['final_path']}")
