@@ -487,6 +487,8 @@ def extract_info(scene: dict, template: None):
                 log.LogInfo(f"Limited the amount of performer to {PERFORMER_LIMIT}")
                 perf_list = perf_list[0: PERFORMER_LIMIT]
         scene_information['performer'] = PERFORMER_SPLITCHAR.join(perf_list)
+        if not PATH_ONEPERFORMER:
+            scene_information['performer_path'] = PERFORMER_SPLITCHAR.join(perf_list)
     elif PATH_NOPERFORMER_FOLDER:
         scene_information['performer_path'] = "NoPerformer"
 
@@ -1068,6 +1070,7 @@ ALT_DIFF_DISPLAY = config.alt_diff_display
 PATH_NOPERFORMER_FOLDER = config.path_noperformer_folder
 PATH_KEEP_ALRPERF = config.path_keep_alrperf
 PATH_NON_ORGANIZED = config.p_non_organized
+PATH_ONEPERFORMER = config.path_one_performer
 
 if PLUGIN_ARGS:
     if "bulk" in PLUGIN_ARGS:
