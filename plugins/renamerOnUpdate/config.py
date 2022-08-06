@@ -170,6 +170,8 @@ prevent_title_performer = False
 prevent_consecutive = True
 # check when the file has moved that the old directory is empty, if empty it will remove it.
 remove_emptyfolder = True
+# the folder will only contains 1 performer name
+path_one_performer = True
 # if there is no performer on the scene, the $performer field will be replaced by "NoPerformer" so a folder "NoPerformer" will be created
 path_noperformer_folder = False
 # if the folder already have a performer name, it won't change it
