@@ -700,7 +700,9 @@ def create_new_path(scene_info: dict, template: dict):
     for part in path_split:
         if ":" in part and path_split[0]:
             path_list.append(part)
-        elif part == "$studio_hierarchy" and scene_info.get("studio_hierarchy"):
+        elif part == "$studio_hierarchy":
+            if not scene_info.get("studio_hierarchy"):
+                continue
             for p in scene_info["studio_hierarchy"]:
                 path_list.append(re.sub('[\\/:"*?<>|]+', '', p).strip())
         else:
