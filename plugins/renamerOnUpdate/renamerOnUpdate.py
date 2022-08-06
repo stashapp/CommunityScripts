@@ -952,16 +952,22 @@ def renamer(scene_id, db_conn=None):
             return
     else:
         stash_db = db_conn
-    # check if there is already a file where the new path is
-    err = checking_duplicate_db(stash_db, scene_information)
-    if err:
+    try:
+        # check if there is already a file where the new path is
+        err = checking_duplicate_db(stash_db, scene_information)
+        if err:
+            return
+        # rename file on your disk
+        err = file_rename(scene_information, template)
+        if err:
+            return
+        # rename file on your db
+        db_rename(stash_db, scene_information)
+    except Exception as err:
+        log.LogError(f"Error during database operation ({err})")
+        if not db_conn:
+            stash_db.close()
         return
-    # rename file on your disk
-    err = file_rename(scene_information, template)
-    if err:
-        return
-    # rename file on your db
-    db_rename(stash_db, scene_information)
     if not db_conn:
         stash_db.close()
         log.LogInfo("[SQLITE] Database updated and closed!")
