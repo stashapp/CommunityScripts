@@ -374,7 +374,7 @@ def get_template_path(scene: dict):
             if config.p_tag_option.get(tag["name"]):
                 opt = config.p_tag_option[tag["name"]]
                 template["option"].extend(opt)
-                if opt == "clean_tag":
+                if "clean_tag" in opt:
                     if template["opt_details"].get("clean_tag"):
                         template["opt_details"]["clean_tag"].append(tag["id"])
                     else:
