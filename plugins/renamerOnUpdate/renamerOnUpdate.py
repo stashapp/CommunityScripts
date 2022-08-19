@@ -736,7 +736,7 @@ def create_new_path(scene_info: dict, template: dict):
 
 def connect_db(path: str):
     try:
-        sqliteConnection = sqlite3.connect(path)
+        sqliteConnection = sqlite3.connect(path, timeout=10)
         log.LogDebug("Python successfully connected to SQLite")
     except sqlite3.Error as error:
         log.LogError(f"FATAL SQLITE Error: {error}")
@@ -750,6 +750,7 @@ def checking_duplicate_db(stash_db: sqlite3.Connection, scene_info: dict):
     cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + scene_info['current_directory'] + "_" + scene_info['new_filename'], scene_info['scene_id']])
     dupl_check = cursor.fetchall()
     if len(dupl_check) > 0:
+        cursor.close()
         for dupl_row in dupl_check:
             log.LogError(f"Identical path: [{dupl_row[0]}]")
         log.LogError("Duplicate path detected, check log!")
@@ -765,12 +766,11 @@ def checking_duplicate_db(stash_db: sqlite3.Connection, scene_info: dict):
     # Looking for exact path
     cursor.execute("SELECT id FROM scenes WHERE path=? AND NOT id=?;", [scene_info['final_path'], scene_info['scene_id']])
     dupl_check = cursor.fetchall()
+    cursor.close()
     if len(dupl_check) > 0:
         for dupl_row in dupl_check:
             log.LogError(f"Same path: [{dupl_row[0]}]")
         return 1
-
-    cursor.close()
 
 
 def db_rename(stash_db: sqlite3.Connection, scene_info):
@@ -1087,7 +1087,7 @@ if PLUGIN_ARGS:
             try:
                 renamer(scene, stash_db)
             except Exception as err:
-                log.LogError(f"error {err}")
+                log.LogError(f"main function error: {err}")
             progress += progress_step
             log.LogProgress(progress)
         stash_db.close()
