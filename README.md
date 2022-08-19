@@ -24,7 +24,7 @@ Maintenance|Set Scene Cover|[setSceneCoverFromFile](plugins/setSceneCoverFromFil
 Scenes|SceneMarker.Create<br />SceneMarker.Update|[markerTagToScene](plugins/markerTagToScene)|Adds primary tag of Scene Marker to the Scene on marker create/update.|v0.8 ([46bbede](https://github.com/stashapp/stash/commit/46bbede9a07144797d6f26cf414205b390ca88f9))
 Scanning|Scene.Create<br />Gallery.Create<br />Image.Create|[defaultDataForPath](plugins/defaultDataForPath)|Adds configured Tags, Performers and/or Studio to all newly scanned Scenes, Images and Galleries..|v0.8
 Scanning|Scene.Create<br />Gallery.Create|[filenameParser](plugins/filenameParser)|Tries to parse filenames, primarily in {studio}.{year}.{month}.{day}.{performer1firstname}.{performer1lastname}.{performer2}.{title} format, into the respective fields|v0.10
-Reporting||[TagGraph](plugins/taggrap)|Creates a visual of the Tag relations.|v0.7
+Reporting||[TagGraph](plugins/taggraph)|Creates a visual of the Tag relations.|v0.7
 Star Identifier|Task|[starIdentifier](plugins/starIdentifier/)|Automatically identify who is in images or scene screenshots from performers in your library.|v1.0
 
 ## Themes
