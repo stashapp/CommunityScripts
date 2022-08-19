@@ -25,6 +25,7 @@ Scenes|SceneMarker.Create<br />SceneMarker.Update|[markerTagToScene](plugins/mar
 Scanning|Scene.Create<br />Gallery.Create<br />Image.Create|[defaultDataForPath](plugins/defaultDataForPath)|Adds configured Tags, Performers and/or Studio to all newly scanned Scenes, Images and Galleries..|v0.8
 Scanning|Scene.Create<br />Gallery.Create|[filenameParser](plugins/filenameParser)|Tries to parse filenames, primarily in {studio}.{year}.{month}.{day}.{performer1firstname}.{performer1lastname}.{performer2}.{title} format, into the respective fields|v0.10
 Reporting||[TagGraph](plugins/taggrap)|Creates a visual of the Tag relations.|v0.7
+Star Identifier|Task|[starIdentifier](plugins/starIdentifier/)|Automatically identify who is in images or scene screenshots from performers in your library.|v1.0
 
 ## Themes
 
