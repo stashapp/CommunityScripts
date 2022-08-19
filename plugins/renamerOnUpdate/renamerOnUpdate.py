@@ -970,6 +970,7 @@ def renamer(scene_id, db_conn=None):
     except Exception as err:
         log.LogError(f"Error during database operation ({err})")
         if not db_conn:
+            log.LogDebug("[SQLITE] Database closed")
             stash_db.close()
         return
     if not db_conn:
