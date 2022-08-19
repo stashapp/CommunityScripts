@@ -960,11 +960,11 @@ def renamer(scene_id, db_conn=None):
         # check if there is already a file where the new path is
         err = checking_duplicate_db(stash_db, scene_information)
         if err:
-            return
+            raise Exception("duplicate")
         # rename file on your disk
         err = file_rename(scene_information, template)
         if err:
-            return
+            raise Exception("rename")
         # rename file on your db
         db_rename(stash_db, scene_information)
     except Exception as err:
