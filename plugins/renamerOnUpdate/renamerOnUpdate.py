@@ -624,7 +624,7 @@ def makeFilename(scene_information: dict, query: str) -> str:
             elif scene_information.get(field_name):
                 if field == "$performer":
                     if re.search(r"\$performer[-\s_]*\$title", new_filename) and scene_information.get('title') and PREVENT_TITLE_PERF:
-                        if re.search(f"^{scene_information['performer']}", scene_information['title']):
+                        if re.search(f"^{scene_information['performer'].lower()}", scene_information['title'].lower()):
                             log.LogInfo("Ignoring the performer field because it's already in start of title")
                             new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
                             continue
