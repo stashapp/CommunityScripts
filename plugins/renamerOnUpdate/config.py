@@ -8,6 +8,7 @@
 #   $title 
 #   $height 
 #   $resolution 
+#   $bitrate
 #   $studio 
 #   $parent_studio 
 #   $studio_family 
