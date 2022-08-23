@@ -531,7 +531,7 @@ def extract_info(scene: dict, template: None):
         scene_information['tags'] = TAGS_SPLITCHAR.join(tag_list)
 
     # Grab Height (720p,1080p,4k...)
-    scene_information['bitrate'] = round(int(scene['file']['bitrate']) / 1000000, 2)
+    scene_information['bitrate'] = str(round(int(scene['file']['bitrate']) / 1000000, 2))
     scene_information['resolution'] = 'SD'
     scene_information['height'] = f"{scene['file']['height']}p"
     if scene['file']['height'] >= 720:
