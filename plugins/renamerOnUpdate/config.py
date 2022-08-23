@@ -8,7 +8,7 @@
 #   $title 
 #   $height 
 #   $resolution 
-#   $bitrate
+#   $bitrate (megabits per second)
 #   $studio 
 #   $parent_studio 
 #   $studio_family 
