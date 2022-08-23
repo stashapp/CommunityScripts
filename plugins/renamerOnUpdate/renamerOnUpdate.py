@@ -531,6 +531,7 @@ def extract_info(scene: dict, template: None):
         scene_information['tags'] = TAGS_SPLITCHAR.join(tag_list)
 
     # Grab Height (720p,1080p,4k...)
+    scene_information['bitrate'] = round(int(scene['file']['bitrate']) / 1000000, 2)
     scene_information['resolution'] = 'SD'
     scene_information['height'] = f"{scene['file']['height']}p"
     if scene['file']['height'] >= 720:
@@ -1023,7 +1024,7 @@ LOGFILE = config.log_file
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG['general']['databasePath']
-TEMPLATE_FIELD = "$date $year $performer_path $performer $title $height $resolution $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene".split(" ")
+TEMPLATE_FIELD = "$date $year $performer_path $performer $title $height $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene".split(" ")
 
 # READING CONFIG
 
