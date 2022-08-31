@@ -5,6 +5,7 @@ import json
 import sys
 import os
 import pathlib
+from concurrent.futures import ProcessPoolExecutor
 
 # external
 import urllib.request
@@ -130,8 +131,6 @@ def debug_func(client):
 #
 
 def export_known(client):
-  # This would be faster multi-threaded, but that seems to break face_recognition
-
   log.LogInfo('Getting all performer images...')
   
   performers = client.getPerformerImages()
@@ -151,19 +150,24 @@ def export_known(client):
 
   log.LogInfo('Starting performer image export (this might take a while)')
 
-  for performer in performers:
-    log.LogProgress(count / total)
+  futures_list = []
 
-    image = face_recognition.load_image_file(urllib.request.urlopen(performer['image_path']))
-    try:
-      encoding = face_recognition.face_encodings(image)[0]
-      outputDict[performer['id']] = encoding
-    except IndexError:
-      log.LogInfo(f"No face found for {performer['name']}")
-      errorList.append(performer)
+  with ProcessPoolExecutor(max_workers=10) as executor:
+    for performer in performers:
+      futures_list.append(executor.submit(encode_performer_from_url, performer))
 
-    count += 1
+    for future in futures_list:
+      log.LogProgress(count / total)
 
+      try:
+        result = future.result()
+        outputDict[result['id']] = result['encodings']
+      except IndexError:
+        log.LogInfo(f"No face found for {result['name']}")
+        errorList.append({ 'id': result['id'], 'name': result['name'] })
+
+      count += 1
+        
   np.savez(encodings_path, **outputDict)
   json_print(errorList, errors_path)
 
@@ -179,13 +183,26 @@ def export_known(client):
 # Facial recognition functions
 #
 
+# Encoding
 
-def get_recognized_ids_from_path(image_path, known_face_encodings, ids):
-  return get_recognized_ids(face_recognition.load_image_file(image_path), known_face_encodings, ids)
+def encode_performer_from_url(performer):
+  image = face_recognition.load_image_file(urllib.request.urlopen(performer['image_path']))
+  performer['encodings'] = face_recognition.face_encodings(image)[0]
+  return performer
 
-def get_recognized_ids_from_url(image_url, known_face_encodings, ids):
-  image = urllib.request.urlopen(image_url)
-  return get_recognized_ids(face_recognition.load_image_file(image), known_face_encodings, ids)
+
+# Matching
+
+def get_recognized_ids_from_image(image, known_face_encodings, ids):
+  image['matched_ids'] = get_recognized_ids(face_recognition.load_image_file(image['path']), known_face_encodings, ids)
+
+  return image
+
+def get_recognized_ids_from_scene_screenshot(scene, known_face_encodings, ids):
+  image = urllib.request.urlopen(scene['paths']['screenshot'])
+  scene['matched_ids'] = get_recognized_ids(face_recognition.load_image_file(image), known_face_encodings, ids)
+
+  return scene
 
 def get_recognized_ids(image_file, known_face_encodings, ids):
   unknown_face_encodings = face_recognition.face_encodings(image_file)
@@ -193,11 +210,41 @@ def get_recognized_ids(image_file, known_face_encodings, ids):
   recognized_ids = np.empty((0,0), int)
 
   for unknown_face in unknown_face_encodings:
-    results = face_recognition.compare_faces(known_face_encodings, unknown_face)
+    results = face_recognition.compare_faces(known_face_encodings, unknown_face, tolerance=config.tolerance)
 
     recognized_ids = np.append(recognized_ids, [ids[i] for i in range(len(results)) if results[i] == True])
 
   return np.unique(recognized_ids).tolist()
+
+# Execution
+
+def execute_identification_list(known_face_encodings, ids, args):
+  count = 0
+  futures_list = []
+
+  with ProcessPoolExecutor(max_workers=10) as executor:
+    for item in args['items']:
+      futures_list.append(executor.submit(args['executor_func'], *[item, known_face_encodings, ids]))
+
+    for future in futures_list:
+      log.LogProgress(count / args['total'])
+
+      debug_print(future)
+
+      try:
+        result = future.result()
+
+        if not len(result['matched_ids']):
+          log.LogInfo(f"No matching performer found for {args['name']} id {result['id']}. Moving on to next {args['name']}...")
+        else:
+          log.LogDebug(f"updating {args['name']} {result['id']} with ")
+          args['submit_func'](result['id'], result['matched_ids'])
+      except IndexError:
+        log.LogError(f"No face found in tagged {args['name']} id {result['id']}. Moving on to next {args['name']}...")
+      except:
+        log.LogError(f"Unknown error comparing tagged {args['name']} id {result['id']}. Moving on to next {args['name']}...")
+
+      count += 1
 
 # Imgs
 
@@ -205,7 +252,6 @@ def identify_imgs(client, ids, known_face_encodings):
   log.LogInfo(f"Getting images tagged with '{config.tag_name_identify}'...")
 
   images = client.findImages(get_scrape_tag_filter(client))
-  count = 0
   total = len(images)
 
   if not total:
@@ -214,28 +260,19 @@ def identify_imgs(client, ids, known_face_encodings):
   
   log.LogInfo(f"Found {total} tagged images. Starting identification...")
 
-  for image in images:
-    log.LogProgress(count / total)
+  execution_args = {
+    'name': 'image',
+    'items': images,
+    'total': total,
+    'executor_func': get_recognized_ids_from_image,
+    'submit_func': client.addPerformersToImage
+  }
 
-    try:
-      matching_performer_ids = get_recognized_ids_from_path(image['path'], known_face_encodings, ids)
-    except IndexError:
-      log.LogError(f"No face found in tagged image id {image['id']}. Moving on to next image...")
-      continue
-    except:
-      log.LogError(f"Unknown error comparing tagged image id {image['id']}. Moving on to next image...")
-      continue
-
-    if not len(matching_performer_ids):
-      log.LogInfo(f"No matching performer found for image id {image['id']}. Moving on to next image...")
-      continue
-
-    client.updateImage({
-      'id': image['id'],
-      'performer_ids': matching_performer_ids
-    })
-
-    count += 1
+  execute_identification_list(
+    known_face_encodings, 
+    ids,
+    execution_args
+    )
   
   log.LogInfo('Image identification complete!')
 
@@ -245,7 +282,6 @@ def identify_scene_screenshots(client, ids, known_face_encodings):
   log.LogInfo(f"Getting scenes tagged with '{config.tag_name_identify}'...")
 
   scenes = client.getScenePaths(get_scrape_tag_filter(client))
-  count = 0
   total = len(scenes)
 
   if not total:
@@ -254,34 +290,24 @@ def identify_scene_screenshots(client, ids, known_face_encodings):
   
   log.LogInfo(f"Found {total} tagged scenes. Starting identification...")
 
-  for scene in scenes:
-    log.LogProgress(count / total)
+  execution_args = {
+    'name': 'scene',
+    'items': scenes,
+    'total': total,
+    'executor_func': get_recognized_ids_from_scene_screenshot,
+    'submit_func': client.addPerformersToScene
+  }
 
-    matching_performer_ids = np.empty((0,0), int)
-    screenshot = scene['paths']['screenshot']
+  execute_identification_list(
+    known_face_encodings, 
+    ids,
+    execution_args
+    )
 
-    try:
-      matches = get_recognized_ids_from_url(screenshot, known_face_encodings, ids)
-      log.LogInfo(f"{len(matches)} performers identified in scene id {scene['id']}'s screenshot")
-      matching_performer_ids = np.append(matching_performer_ids, matches)
-    except IndexError:
-      log.LogError(f"No face found in screenshot for scene id {scene['id']}. Moving on to next image...")
-      continue
-    except Exception as error:
-      log.LogError(f"Error type = {type(error).__name__} comparing screenshot for scene id {scene['id']}. Moving on to next image...")
-      continue
+  log.LogInfo("Scene screenshot identification complete!")
 
-    matching_performer_ids = np.unique(matching_performer_ids).tolist()
-
-    log.LogDebug(f"Found performers in scene id {scene['id']} : {matching_performer_ids}")
-
-    client.addPerformersToScene(scene['id'], matching_performer_ids)
-
-    count += 1
-  
-  log.LogInfo("Screenshot identification complete!")
-
-main()
+if __name__ == "__main__":
+  main()
 
 
 # https://github.com/ageitgey/face_recognition

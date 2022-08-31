@@ -9,6 +9,7 @@ Star Identifier uses [facial recognition](https://github.com/ageitgey/face_recog
 ## Requirements
 
 ### Python3
+__version: 3.10.x +__
 
 #### Installing Python
 
@@ -66,6 +67,10 @@ Star Identifier uses a tag to find images or scenes you would like identified. B
 
 Since the recognition is based on a single performer image, that image needs to have a pretty clear front-facing view of the performer's face. If face_recognition fails to find a performer's face, Star Identifier will tag that performer with `star identifier performer error` by default.
 
+### Star Identifier Settings
+
+You can adjust the tolerance for identification here. `0.6` is default and typical, but I've found `0.5` to work well. Lower is more strict.
+
 ## Running
 
 ### Export Performers
@@ -80,4 +85,8 @@ This loads all images in the stash database tagged with `star identifier` (by de
 
 ### Identify Scene Screenshots
 
-This loads all scene screenshots in the stash database tagged with `star identifier` (by default), compares the recognized faces to the exported face database, and then adds all potential matches to those scenes as performers.
+This loads the screenshot for every scene in the stash database tagged with `star identifier` (by default), compares the recognized faces to the exported face database, and then adds all potential matches to those scenes as performers.
+
+## Upcoming roadmap
+
+See [issues](https://github.com/axxeman23/star_identifier/issues)

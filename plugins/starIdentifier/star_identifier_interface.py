@@ -257,6 +257,12 @@ class IdentifierStashInterface:
 
 		self.__callGraphQL(query, variables)
 
+	def addPerformersToImage(self, image_id, performer_ids):
+		self.updateImage({
+			'id': image_id,
+			'performer_ids': performer_ids
+		})
+
 	def bulkPerformerAddTags(self, performer_ids, tag_ids):
 		query = """
 		mutation($ids: [ID!], $tag_ids: BulkUpdateIds) {
