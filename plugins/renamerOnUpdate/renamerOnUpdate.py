@@ -821,7 +821,7 @@ def file_rename(scene_info: dict, template: dict):
             return 1
     # checking if the move/rename work correctly
     if os.path.isfile(scene_info['final_path']):
-        log.LogInfo("[OS] File Renamed!")
+        log.LogInfo(f"[OS] File Renamed! ({scene_info['current_path']} -> {scene_info['final_path']})")
         if LOGFILE:
             try:
                 with open(LOGFILE, 'a', encoding='utf-8') as f:
@@ -967,7 +967,18 @@ def renamer(scene_id, db_conn=None):
         if err:
             raise Exception("rename")
         # rename file on your db
-        db_rename(stash_db, scene_information)
+        try:
+            db_rename(stash_db, scene_information)
+        except Exception as err:
+            log.LogError(f"error when trying to update the database ({err}), revert the move...")
+            tmp = scene_information['final_path']
+            scene_information['final_path'] = scene_information['current_path']
+            scene_information['current_path'] = tmp
+            scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
+            err = file_rename(scene_information, template)
+            if err:
+                raise Exception("rename")
+            raise Exception("database update")
     except Exception as err:
         log.LogError(f"Error during database operation ({err})")
         if not db_conn:
