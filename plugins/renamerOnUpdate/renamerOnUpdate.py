@@ -1026,7 +1026,6 @@ else:
     FRAGMENT_HOOK_TYPE = FRAGMENT["args"]["hookContext"]["type"]
     FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
 
-STASH_URL = config.stash_url
 LOGFILE = config.log_file
 
 #Gallery.Update.Post
