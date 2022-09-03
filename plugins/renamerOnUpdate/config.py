@@ -38,9 +38,6 @@
 # $parent_studio $date $performer - $title  == Reality Kings 2016-12-29 Eva Lovia - Her Fantasy Ball
 # $date $title - $tags                      == 2016-12-29 Her Fantasy Ball - Blowjob Cumshot Facial Tattoo
 #
-####################################################################
-#                STASH               #
-stash_url = "localhost"
 
 ####################################################################
 #           TEMPLATE FILENAME (Rename your files)
