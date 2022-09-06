@@ -539,6 +539,10 @@ def extract_info(scene: dict, template: None):
     if scene['file']['height'] >= 2160:
         scene_information['height'] = '4k'
         scene_information['resolution'] = 'UHD'
+    if scene['file']['height'] >= 2880:
+        scene_information['height'] = '5k'
+    if scene['file']['height'] >= 3384:
+        scene_information['height'] = '6k'
     if scene['file']['height'] >= 4320:
         scene_information['height'] = '8k'
     # For Phone ?
