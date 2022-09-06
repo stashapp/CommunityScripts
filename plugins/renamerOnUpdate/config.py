@@ -2,6 +2,8 @@
 #       General information         #
 # -----------------------------------------------------------------
 # Available elements for renaming:
+#   $oshash 
+#   $checksum 
 #   $date 
 #   $year 
 #   $performer 
@@ -24,7 +26,7 @@
 # Note:
 # $studio_family: If parent studio exists use it, else use the studio name.
 # $performer: If more than * performers linked to the scene, this field will be ignored. Limit this number at Settings section below (default: 3)
-# $resolution: SD/HD/UHD/VERTICAL (for phone) | $height: 720p 1080p 4k 8k
+# $resolution: SD/HD/UHD/VERTICAL (for phone) | $height: 720p 1080p 4k 5k 6k 8k
 # $movie_scene: "scene #" # = index scene
 # -----------------------------------------------------------------
 # Example templates:
