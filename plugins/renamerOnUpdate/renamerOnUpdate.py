@@ -97,6 +97,7 @@ def graphql_getScene(scene_id):
     fragment SceneData on Scene {
         id
         oshash
+        checksum
         title
         date
         rating
@@ -158,6 +159,7 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
     fragment SlimSceneData on Scene {
         id
         oshash
+        checksum
         title
         date
         rating
@@ -404,7 +406,8 @@ def extract_info(scene: dict, template: None):
     # note: basename contains the extension
     scene_information['current_filename'] = os.path.basename(scene_information['current_path'])
     scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
-    scene_information['hash'] = scene['oshash']
+    scene_information['oshash'] = scene['oshash']
+    scene_information['checksum'] = scene.get("checksum")
 
     if template.get("path"):
         if "^*" in template["path"]["destination"]:
@@ -829,7 +832,7 @@ def file_rename(scene_info: dict, template: dict):
         if LOGFILE:
             try:
                 with open(LOGFILE, 'a', encoding='utf-8') as f:
-                    f.write(f"{scene_info['scene_id']}|{scene_info['current_path']}|{scene_info['final_path']}|{scene_info['hash']}\n")
+                    f.write(f"{scene_info['scene_id']}|{scene_info['current_path']}|{scene_info['final_path']}|{scene_info['oshash']}\n")
             except Exception as err:
                 shutil.move(scene_info['final_path'], scene_info['current_path'])
                 log.LogError(f"Restoring the original path, error writing the logfile: {err}")
@@ -1038,7 +1041,7 @@ LOGFILE = config.log_file
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG['general']['databasePath']
-TEMPLATE_FIELD = "$date $year $performer_path $performer $title $height $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene".split(" ")
+TEMPLATE_FIELD = "$date $year $performer_path $performer $title $height $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum".split(" ")
 
 # READING CONFIG
 
