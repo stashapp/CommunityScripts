@@ -452,7 +452,9 @@ def renamer(scene_id):
 
     if scene_information.get("date"):
         scene_information["year"] = scene_information["date"][0:4]
-
+        scene_information["twodigityear"] = scene_information["date"][2:4]
+        scene_information["month"] = scene_information["date"][5:7]
+        scene_information["day"] = scene_information["date"][8:10]
 
     # Create the new filename
     new_filename = makeFilename(scene_information, filename_template) + file_extension
@@ -576,7 +578,7 @@ FILE_DRYRUN_RESULT = os.path.join(PLUGIN_DIR, "renamer_scan.txt")
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
-TEMPLATE_FIELD = "$date $year $performer $title $height $resolution $studio $parent_studio $studio_family $video_codec $audio_codec".split(" ")
+TEMPLATE_FIELD = "$date $year $twodigityear $month $day $performer $title $height $resolution $studio $parent_studio $studio_family $video_codec $audio_codec".split(" ")
 
 # READING CONFIG
 

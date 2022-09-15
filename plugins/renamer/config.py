@@ -1,7 +1,7 @@
 ###################################################################
 #
 # -----------------------------------------------------------------
-# Available: $date $year $performer $title $height $resolution $studio $parent_studio $studio_family $video_codec $audio_codec
+# Available: $date $year $twodigityear $month $day $performer $title $height $resolution $studio $parent_studio $studio_family $video_codec $audio_codec
 # -note:
 # $studio_family: If parent studio exist use it, else use the studio name.
 # $performer: If more than * performers, this field will be ignored. Limit to fix at Settings section below (default: 3)

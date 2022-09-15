@@ -4,6 +4,9 @@
 # Available elements for renaming:
 #   $date 
 #   $year 
+#   $twodigityear 
+#   $month 
+#   $day 
 #   $performer 
 #   $title 
 #   $height 
