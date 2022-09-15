@@ -3,25 +3,34 @@ Using metadata from your Stash to rename/move your file.
 
 ## Table of Contents  
 
+- [*renamerOnUpdate*](#renameronupdate)
+	- [Table of Contents](#table-of-contents)
 - [Requirement](#requirement)
 - [Installation](#installation)
+		- [:exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:](#exclamation-make-sure-to-configure-the-plugin-by-editing-configpy-before-running-it-exclamation)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Config.py explained](#configpy-explained)
-  * [Template](#template)
-  * [Filename (Renamer)](#filename)
-    + [- Based on a Tag](#--based-on-a-tag)
-    + [- Based on a Studio](#--based-on-a-studio)
-    + [- Change filename no matter what](#--change-filename-no-matter-what)
-  * [Path (Mover)](#path)
-    + [- Based on a Tag](#--based-on-a-tag-1)
-    + [- Based on a Studio](#--based-on-a-studio-1)
-    + [- Based on a Path](#--based-on-a-path)
-    + [- Change path no matter what](#--change-path-no-matter-what)
-    + [- Special Variables](#--special-variables)
-  * [Advanced](#advanced)
-    + [Groups](#groups)
-  * [Option](#option)
+	- [Template](#template)
+	- [- You can find the list of available variables in `config.py`](#--you-can-find-the-list-of-available-variables-in-configpy)
+	- [Filename](#filename)
+		- [- Based on a Tag](#--based-on-a-tag)
+		- [- Based on a Studio](#--based-on-a-studio)
+		- [- Change filename no matter what](#--change-filename-no-matter-what)
+	- [Path](#path)
+		- [- Based on a Tag](#--based-on-a-tag-1)
+		- [- Based on a Studio](#--based-on-a-studio-1)
+		- [- Based on a Path](#--based-on-a-path)
+		- [- Change path no matter what](#--change-path-no-matter-what)
+		- [- Special Variables](#--special-variables)
+	- [Advanced](#advanced)
+		- [Groups](#groups)
+	- [Option](#option)
+		- [*p_tag_option*](#p_tag_option)
+		- [*field_replacer*](#field_replacer)
+		- [*replace_words*](#replace_words)
+		- [*removecharac_Filename*](#removecharac_filename)
+		- [*performer_limit*](#performer_limit)
 
 # Requirement
 - Stash (v0.15+)
@@ -47,7 +56,7 @@ Using metadata from your Stash to rename/move your file.
 
 - By pressing the button in the Task menu.
     - It will go through each of your scenes. 
-    - `:warning:` It's recommend to understand correctly how this plugin work, and use **DryRun** first.
+    - `:warning:` It's recommended to understand correctly how this plugin works, and use **DryRun** first.
 
 # Configuration
 
@@ -55,28 +64,28 @@ Using metadata from your Stash to rename/move your file.
 	- Change template filename/path
 	- Add `log_file` path
 
-- There is multiple button in Task menu:
+- There are multiple buttons in Task menu:
 	- Enable: (default) Enable the trigger update
 	- Disable: Disable the trigger update
 	- Dry-run: A switch to enable/disable dry-run mode
 
 - Dry-run mode:
-	- It prevent editing the file, only show in your log.
+	- It prevents editing the file, only shows in your log.
 	- This mode can write into a file (`dryrun_renamerOnUpdate.txt`), the change that the plugin will do.
 		- You need to set a path for `log_file` in `config.py`
 		- The format will be: `scene_id|current path|new path`. (e.g. `100|C:\Temp\foo.mp4|C:\Temp\bar.mp4`)
-		- This file will be re-write everytime the plugin is trigger.
+		- This file will be overwritten everytime the plugin is triggered.
 
 # Config.py explained
 ## Template
-To modify your path/filename, you can use **variables**. There are elements that will change based on your **metadata**.
+To modify your path/filename, you can use **variables**. These are elements that will change based on your **metadata**.
 
- - Variable are represented with a word preceded with a `$` symbol. (E.g. `$date`)
- - If the metadata exist, this term will be replaced by it:
+ - Variables are represented with a word preceded with a `$` symbol. (E.g. `$date`)
+ - If the metadata exists, this term will be replaced by it:
 	 - Scene date = 2006-01-02, `$date` = 2006-01-02
  - You can find the list of available variables in `config.py`
 -----
-In the exemple below, we will use:
+In the example below, we will use:
 - Path: `C:\Temp\QmlnQnVja0J1bm55.mp4`
 - This file is [Big Buck Bunny](https://en.wikipedia.org/wiki/Big_Buck_Bunny).
 
@@ -173,22 +182,25 @@ The file is moved to: `D:\Video\QmlnQnVja0J1bm55.mp4`
 `^*` - The current directory of the file.
 Explanation:
  - **If**: `p_default_template = r"^*\$performer"`
- - It add a folder with a performer name in the current directory where the file is.
+ - It creates a folder with a performer name in the current directory where the file is.
  - `C:\Temp\video.mp4` so  `^*=C:\Temp\`, result: `C:\Temp\Jane Doe\video.mp4`
  - If you don't use `prevent_consecutive` option, the plugin will create a new folder everytime (`C:\Temp\Jane Doe\Jane Doe\...\video.mp4`).
 
 ## Advanced
 
 ### Groups
-You can specific group of element in the template with `{}`, it's used when you want to remove a character if a variable is null.
-Exemple:
+You can group elements in the template with `{}`, it's used when you want to remove a character if a variable is null.
+
+Example:
+
+
 **With** date in Stash:
  - `[$studio] $date - $title` -> `[Blender] 2008-05-20 - Big Buck Bunny`
  
 **Without** date in Stash:
  - `[$studio] $date - $title` -> `[Blender] - Big Buck Bunny`
  
-If you want to the `-` only when you have the date, you can group the `-` with `$date`
+If you want to use the `-` only when you have the date, you can group the `-` with `$date`
 **Without** date in Stash:
  - `[$studio] {$date -} $title` -> `[Blender] Big Buck Bunny`
 
