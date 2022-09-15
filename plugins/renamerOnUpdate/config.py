@@ -2,12 +2,15 @@
 #       General information         #
 # -----------------------------------------------------------------
 # Available elements for renaming:
+#   $oshash 
+#   $checksum 
 #   $date 
 #   $year 
 #   $performer 
 #   $title 
 #   $height 
 #   $resolution 
+#   $bitrate (megabits per second)
 #   $studio 
 #   $parent_studio 
 #   $studio_family 
@@ -15,11 +18,16 @@
 #   $tags
 #   $video_codec 
 #   $audio_codec
+#   $movie_scene
+#   $movie_title
+#   $movie_year
+#   $movie_scene
 #
 # Note:
 # $studio_family: If parent studio exists use it, else use the studio name.
 # $performer: If more than * performers linked to the scene, this field will be ignored. Limit this number at Settings section below (default: 3)
-# $resolution: SD/HD/UHD/VERTICAL (for phone) | $height: 720p 1080p 4k 8k
+# $resolution: SD/HD/UHD/VERTICAL (for phone) | $height: 720p 1080p 4k 5k 6k 8k
+# $movie_scene: "scene #" # = index scene
 # -----------------------------------------------------------------
 # Example templates:
 # 
@@ -32,16 +40,15 @@
 # $parent_studio $date $performer - $title  == Reality Kings 2016-12-29 Eva Lovia - Her Fantasy Ball
 # $date $title - $tags                      == 2016-12-29 Her Fantasy Ball - Blowjob Cumshot Facial Tattoo
 #
-####################################################################
-#                STASH               #
-stash_url = "localhost"
 
-#               TEMPLATE             #
+####################################################################
+#           TEMPLATE FILENAME (Rename your files)
 
 # Priority : Tags > Studios > Default
 
 # Templates to use for given tags
 # Add or remove as needed or leave it empty/comment out
+# you can specific group with {}. exemple: [$studio] {$date -} $title, the '-' will be removed if no date
 tag_templates = {
     # "!1. Western": "$date $performer - $title [$studio]",
     # "!1. JAV": "$title",
@@ -58,6 +65,44 @@ use_default_template = False
 # Default template, adjust as needed
 default_template = "$date $title"
 
+####################################################################
+#           TEMPLATE PATH  (Move your files)
+
+# $studio_hierarchy: create the whole hierarchy folder (MindGeek/Brazzers/Hot And Mean/video.mp4)
+# ^* = parent of folder (E:\Movies\video.mp4 -> E:\Movies\)
+
+# trigger with a specific tag
+# "tagname": "path"
+# ex: "plugin_move": r"E:\Movies\R18\$studio_hierarchy"
+p_tag_templates = {
+}
+
+
+p_studio_templates = {
+}
+
+# match a path
+# "match path": "destination"
+# ex: r"E:\Film\R18\2. Test\A trier": r"E:\Film\R18\2. Test\A trier\$performer",
+p_path_templates = {
+}
+
+# change to True to use the default template if no specific tag/studio is found
+p_use_default_template = False
+# default template, adjust as needed
+p_default_template = r"^*\$performer"
+
+# if unorganized, ignore other templates, use this path
+p_non_organized = r""
+
+# option if tag is present
+# "tagname": [option]
+# clean_tag: remove the tag after the rename
+# inverse_performer: change the last/first name (Jane Doe -> Doe Jane)
+# dry_run: activate dry_run for this scene
+# ex: "plugin_move": ["clean_tag"]
+p_tag_option = {
+}
 ######################################
 #               Logging              #
 
@@ -81,9 +126,25 @@ filename_splitchar = " "
 
 # replace space for stash field (title, performer...), if you have a title 'I love Stash' it can become 'I_love_Stash'
 field_whitespaceSeperator = ""
+# Remove/Replace character from field (not using regex)
+# "field": {"replace": "foo","with": "bar"}
+# ex: "$studio": {"replace": "'","with": ""} My Dad's Hot Girlfriend --> My Dads Hot Girlfriend
+field_replacer = {
+}
+
+# Match and replace.
+# "match": ["replace with", "system"] the second element of the list determine the system used. If you don't put this element, the default is word
+# regex: match a regex, word: match a word, any: match a term
+# difference between 'word' & 'any': word is between seperator (space, _, -), any is anything ('ring' would replace 'during')
+# ex:   "Scene": ["Sc.", "word"]    - Replace Scene by Sc.
+#       r"S\d+:E\d+": ["", "regex"] - Remove Sxx:Ex (x is a digit)
+replace_words = {
+}
 
 # put the filename in lowercase
 lowercase_Filename = False
+# filename in title case (Capitalises each word and lowercases the rest)
+titlecase_Filename = False
 # remove these characters if there are present in the filename
 removecharac_Filename = ",#"
 
@@ -91,6 +152,10 @@ removecharac_Filename = ",#"
 performer_splitchar = " "
 # Maximum number of performer names in the filename. If there are more than that in a scene the filename will not include any performer name!
 performer_limit = 3
+# The filename with have the name of performer before reaching the limit (if limit=3, the filename can contains 3 performers for a 4 performers scenes)
+performer_limit_keep = False
+# sorting performer (name, id, rating, favorite, mix (favorite > rating > name), mixid (..>..> id))
+performer_sort = "id"
 # ignore certain gender. Available "MALE" "FEMALE" "TRANSGENDER_MALE" "TRANSGENDER_FEMALE" "INTERSEX" "NON_BINARY"
 performer_ignoreGender = []
 
@@ -99,6 +164,18 @@ performer_ignoreGender = []
 # Template used: $year $performer - $title
 # 2016 Dani Daniels - Dani Daniels in ***.mp4 --> 2016 Dani Daniels in ***.mp4
 prevent_title_performer = False
+
+## Path mover related
+# remove consecutive (/FolderName/FolderName/video.mp4 -> FolderName/video.mp4
+prevent_consecutive = True
+# check when the file has moved that the old directory is empty, if empty it will remove it.
+remove_emptyfolder = True
+# the folder only contains 1 performer name. Else it will look the same as for filename
+path_one_performer = True
+# if there is no performer on the scene, the $performer field will be replaced by "NoPerformer" so a folder "NoPerformer" will be created
+path_noperformer_folder = False
+# if the folder already have a performer name, it won't change it
+path_keep_alrperf = True
 
 # Removes prepositions from the beginning of titles
 prepositions_list = ['The', 'A', 'An']
@@ -146,8 +223,14 @@ order_field = ["$video_codec", "$audio_codec", "$resolution", "tags", "rating", 
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
 
+# number of scene process by the task renamer. -1 = all scenes
+batch_number_scene = -1
+
 # disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
 enable_hook = True
+# disable/enable dry mode. Do a trial run with no permanent changes. Can write into a file (dryrun_renamerOnUpdate.txt), set a path for log_file. 
+# You can edit this value in 'Plugin Tasks' inside of Stash.
+dry_run = False
 ######################################
 #            Module Related          #
 
