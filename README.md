@@ -34,6 +34,12 @@ Theme Name|Description                                 |
 
 ## Utility Scripts
 
+|Category|Userscript Name|Description|
+---------|---------------|-----------|
+StashDB  |[StashDB Submission Helper](/userscripts/StashDB_Submission_Helper)|Adds handy functions for StashDB submissions like buttons to add aliases in bulk to a performer|
+
+## Utility Scripts
+
 Category|Plugin Name|Description|Minimum Stash version
 --------|-----------|-----------|---------------------
 Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with Kodi.|v0.7
