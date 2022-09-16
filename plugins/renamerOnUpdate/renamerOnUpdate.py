@@ -26,6 +26,7 @@ import config
 import log
 
 DRY_RUN = config.dry_run
+DRY_RUN_FILE = None
 
 if config.log_file:
     DRY_RUN_FILE = os.path.join(os.path.dirname(config.log_file), "dryrun_renamerOnUpdate.txt")
