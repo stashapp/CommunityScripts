@@ -6,6 +6,7 @@ import shutil
 import sqlite3
 import sys
 import time
+import traceback
 from datetime import datetime
 
 import requests
@@ -1005,7 +1006,7 @@ def renamer(scene_id, db_conn=None):
         scene_files = stash_scene["files"]
         del stash_scene["files"]
     stash_db = None
-    for i in range(0, scene_files):
+    for i in range(0, len(scene_files)):
         scene_file = scene_files[i]
         # refractor file support
         for f in scene_file["fingerprints"]:
@@ -1286,5 +1287,6 @@ else:
         renamer(FRAGMENT_SCENE_ID)
     except Exception as err:
         log.LogError(f"main function error: {err}")
+        traceback.print_exc()
 
 exit_plugin("Successful!")
