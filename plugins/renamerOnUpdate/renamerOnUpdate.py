@@ -829,10 +829,8 @@ def db_rename(stash_db: sqlite3.Connection, scene_info):
 
 def db_rename_refactor(stash_db: sqlite3.Connection, scene_info):
     cursor = stash_db.cursor()
-    # 2022-09-17 11:25:52+02:00
-    mod_time = datetime.now().astimezone().isoformat(' ', 'seconds')
-    # 2022-09-17 11:25:52.423943+02:00
-    other_time = datetime.now().astimezone()
+    # 2022-09-17T11:25:52+02:00
+    mod_time = datetime.now().astimezone().isoformat('T', 'seconds')
 
     # get the next id that we should use if needed
     cursor.execute("SELECT MAX(id) from folders")
@@ -858,7 +856,7 @@ def db_rename_refactor(stash_db: sqlite3.Connection, scene_info):
                     "INSERT INTO 'main'.'folders'('id', 'path', 'parent_folder_id', 'mod_time', 'created_at', 'updated_at', 'zip_file_id') VALUES (?, ?, ?, ?, ?, ?, ?);",
                     [
                         new_id, scene_info['new_directory'], parent_id[0][0],
-                        mod_time, other_time, other_time, None
+                        mod_time, mod_time, mod_time, None
                     ])
                 stash_db.commit()
                 folder_id = new_id
@@ -878,8 +876,8 @@ def db_rename_refactor(stash_db: sqlite3.Connection, scene_info):
                 file_id = f[0]
                 break
         if file_id:
-            log.LogDebug(f"UPDATE files SET basename={scene_info['new_filename']}, parent_folder_id={folder_id}, updated_at={other_time} WHERE id={file_id};")
-            cursor.execute("UPDATE files SET basename=?, parent_folder_id=?, updated_at=? WHERE id=?;", [scene_info['new_filename'], folder_id, other_time, file_id])
+            log.LogDebug(f"UPDATE files SET basename={scene_info['new_filename']}, parent_folder_id={folder_id}, updated_at={mod_time} WHERE id={file_id};")
+            cursor.execute("UPDATE files SET basename=?, parent_folder_id=?, updated_at=? WHERE id=?;", [scene_info['new_filename'], folder_id, mod_time, file_id])
             cursor.close()
             stash_db.commit()
         else:
