@@ -1,0 +1,12 @@
+name: titleDiff
+description: Tag Scenes where scene title differs from filename
+url: https://github.com/stashapp/CommunityScripts
+version: 1.0
+exec:
+  - titleDiff.js
+interface: js
+tasks:
+  - name: Diff title <-> filename
+    description: 'Run'
+    defaultArgs:
+      mode: diff
