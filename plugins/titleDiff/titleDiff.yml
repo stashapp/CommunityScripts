@@ -6,7 +6,7 @@ exec:
   - titleDiff.js
 interface: js
 tasks:
-  - name: Diff title <-> filename
-    description: 'Run'
+  - name: Run diff
+    description: 'Tag scenes where title differs from filename'
     defaultArgs:
       mode: diff
