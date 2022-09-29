@@ -280,23 +280,20 @@ def graphql_removeScenesTag(id_scenes: list, id_tags: list):
 def graphql_getBuild():
     query = """
         {
-            version {
-                version
-                build_time
+            systemStatus {
+                appSchema
             }
         }
     """
     result = callGraphQL(query)
-    return result['version']['build_time']
+    return result['systemStatus']['appSchema']
 
 
 def check_version(current: str):
-    current_built = datetime.strptime(current, r"%Y-%m-%d %H:%M:%S")
-    before_filerefactor = datetime.strptime("2022-09-07", "%Y-%m-%d")
-    if current_built > before_filerefactor:
+    # > 31: FileRefactor
+    if current > 31:
         return True
-    else:
-        return False
+    return False
 
 
 def find_diff_text(a: str, b: str):
