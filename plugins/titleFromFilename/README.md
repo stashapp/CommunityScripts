@@ -1,5 +1,5 @@
 
-#  Title from filename
+#  titleFromFilename
 Sets a scene's title
 
 ## Requirements
@@ -9,7 +9,7 @@ Sets a scene's title
 
 ## Installation
 
-- Download the whole folder 'titleFromFilename'
+- Download the whole folder `titleFromFilename`
 - Place it in your **plugins** folder (where the `config.yml` is). If its not there create it
 - Reload plugins from stash (Settings > Plugins -> Reload Plugins)
 - titleFromFilename should appear
