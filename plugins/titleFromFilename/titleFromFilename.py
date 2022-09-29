@@ -23,7 +23,7 @@ FRAGMENT_SCENE_ID = FRAGMENT["args"].get("hookContext")
 if FRAGMENT_SCENE_ID:
     scene_id = FRAGMENT_SCENE_ID["id"]
 else:
-    exit_plugin(f"No ID found")
+    exit_plugin("No ID found")
 
 
 graphql_port = FRAGMENT_SERVER['Port']
@@ -47,7 +47,7 @@ if basename is None:
     exit_plugin("No basename found") # shouldn't happen
 
 if  config.STRIP_EXT:
-    basename = os.splitext(basename)[0]
+    basename = os.path.splitext(basename)[0]
 
 updated_scene = graphql.update_scene_title(scene_id, basename, port=graphql_port, session=graphql_session, scheme=graphql_scheme)
 
