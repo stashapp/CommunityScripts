@@ -457,7 +457,7 @@ def extract_info(scene: dict, template: None):
         scene_information['template_split'] = os.path.normpath(template["path"]["destination"]).split(os.sep)
     scene_information['current_path_split'] = os.path.normpath(scene_information['current_path']).split(os.sep)
 
-    if not scene.get("title"):
+    if FILENAME_ASTITLE and not scene.get("title"):
         scene["title"] = scene_information['current_filename']
 
     # Grab Title (without extension if present)
@@ -1182,6 +1182,7 @@ ASSOCIATED_EXT = config.associated_extension
 FIELD_WHITESPACE_SEP = config.field_whitespaceSeperator
 FIELD_REPLACER = config.field_replacer
 
+FILENAME_ASTITLE = config.filename_as_title
 FILENAME_LOWER = config.lowercase_Filename
 FILENAME_TITLECASE = config.titlecase_Filename
 FILENAME_SPLITCHAR = config.filename_splitchar
