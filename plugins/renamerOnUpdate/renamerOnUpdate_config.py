@@ -118,6 +118,10 @@ log_file = r""
 # rename associated file (subtitle, funscript) if present
 associated_extension = ["srt", "vtt", "funscript"]
 
+# use filename as title if no title is set
+# it will cause problem if you update multiple time the same scene without title.
+filename_as_title = False
+
 # Character which replaces every space in the filename
 # Common values are "." and "_"
 # e. g.:
