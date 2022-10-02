@@ -474,6 +474,12 @@ def extract_info(scene: dict, template: None):
         date_scene = datetime.strptime(scene_information['date'], r"%Y-%m-%d")
         scene_information['date_format'] = datetime.strftime(date_scene, config.date_format)
 
+    # Grab Duration
+    scene_information['duration'] = scene['file']['duration']
+    if config.duration_format:
+        scene_information['duration'] = time.strftime(config.duration_format, time.gmtime(scene_information['duration']))
+    else:
+        scene_information['duration'] = str(scene_information['duration'])
 
     # Grab Rating
     if scene.get("rating"):
@@ -1173,7 +1179,7 @@ LOGFILE = config.log_file
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG['general']['databasePath']
-TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum".split(" ")
+TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $duration $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum".split(" ")
 
 # READING CONFIG
 
@@ -1238,6 +1244,7 @@ if FILE_REFACTOR:
                 width
                 height
                 frame_rate
+                duration
                 bit_rate
                 fingerprints {
                     type
@@ -1255,6 +1262,7 @@ else:
                 height
                 framerate
                 bitrate
+                duration
             }
     """
 
