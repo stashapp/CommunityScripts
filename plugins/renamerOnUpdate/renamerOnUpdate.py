@@ -281,7 +281,7 @@ def graphql_getBuild():
     query = """
         {
             systemStatus {
-                appSchema
+                databaseSchema
             }
         }
     """
