@@ -286,7 +286,7 @@ def graphql_getBuild():
         }
     """
     result = callGraphQL(query)
-    return result['systemStatus']['appSchema']
+    return result['systemStatus']['databaseSchema']
 
 
 def check_version(current: str):
