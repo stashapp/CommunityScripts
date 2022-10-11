@@ -122,6 +122,8 @@ with open(zip_path, "wb") as zip_file:
     zip_file.write(r.content)
 
 with zipfile.ZipFile(zip_path) as z:
+    change_detected = False
+
     for filename in z.namelist():
         #  Only care about the scrapers folders
         if "/scrapers/" in filename and filename.endswith(".yml"):
@@ -180,11 +182,14 @@ with zipfile.ZipFile(zip_path) as z:
                     log.LogError("[Local] Date Error ({}) ".format(gh_file))
                     continue
                 if gh_date > local_date and CHECK_LOG:
+                    change_detected = True
+
                     if yml_script:
                         log.LogInfo("[{}] New version on github (Can be any of the related files)".format(gh_file))
                     else:
                         log.LogInfo("[{}] New version on github".format(gh_file))
             elif GET_NEW_FILE:
+                change_detected = True
                 # File don't exist local so we take the github version.
                 with z.open(filename) as f:
                     scraper_content = f.read()
@@ -193,6 +198,11 @@ with zipfile.ZipFile(zip_path) as z:
                         log.LogInfo("Creating {}".format(gh_file))
                         continue
             elif CHECK_LOG and IGNORE_MISS_LOCAL == False:
+                change_detected = True
+
                 log.LogWarning("[{}] File don't exist locally".format(gh_file))
+
+if change_detected == False:
+    log.LogInfo("Scrapers appear to be in sync with GitHub version.")
 
 os.remove(zip_path)
