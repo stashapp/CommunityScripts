@@ -129,6 +129,19 @@ with zipfile.ZipFile(zip_path) as z:
             line = bytes()
             # Filename abc.yml
             gh_file = os.path.basename(filename)
+
+            # Filename /scrapers/<subdir>/abc.yml
+            if filename.endswith(f"/scrapers/{gh_file}") == False:
+                log.LogDebug("Subdirectory detected: " + filename)
+                subdir = re.findall('\/scrapers\/(.*)\/.*\.yml', filename)
+
+                if len(subdir) != 1:
+                    log.LogError(f"Unexpected number of matching subdirectories found. Expected 1. Found {len(subdir)}.")
+                    exit(1)
+
+                gh_file = subdir[0] + "/" + gh_file
+
+            log.LogDebug(gh_file)
             path_local = os.path.join(scraper_folder_path, gh_file)
             gh_line = None
             yml_script = None
