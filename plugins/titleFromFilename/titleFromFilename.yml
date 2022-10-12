@@ -3,7 +3,7 @@ description: Set a scene's title from it's filename
 url: https://github.com/stashapp/CommunityScripts
 version: 1.0
 exec:
-  - python3
+  - python
   - "{pluginDir}/titleFromFilename.py"
 interface: raw
 hooks:
