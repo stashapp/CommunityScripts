@@ -32,8 +32,9 @@ def processScene(s):
 
 
 def processAll():
-
+    log.info('Getting scene count')
     count=stash.find_scenes(f={"stash_id":{"value":"","modifier":"NOT_NULL"},"has_markers":"false"},filter={"per_page": 1},get_count=True)[0]
+    log.info(str(count)+' scenes to submit.')
     for r in range(1,int(count/per_page)+1):
         log.info('processing '+str(r*per_page)+ ' - '+str(count))
         scenes=stash.find_scenes(f={"stash_id":{"value":"","modifier":"NOT_NULL"},"has_markers":"false"},filter={"page":r,"per_page": per_page})
@@ -46,6 +47,22 @@ def submit():
         log.info('processing ' + str((r - 1) * per_page) + ' - ' + str(r * per_page) + ' / ' + str(count))
         scenes = stash.find_scenes(f={"has_markers": "true"}, filter={"page": r, "per_page": per_page})
         for s in scenes:
+            # Cleanup, remove fields that are not needed by the api like ratings, file paths etc
+            for x in ['id', 'checksum', 'oshash', 'phash', 'rating', 'organized', 'o_counter', 'file','path', 'galleries']:
+                s.pop(x, None)
+            for t in s['tags']:
+                for x in ['id', 'image_path', 'scene_count', 'primary_tag']:
+                    t.pop(x, None)
+            for t in s['performers']:
+                for x in ['id', 'checksum', 'scene_count', 'image_path', 'image_count', 'gallery_count', 'favorite',
+                          'tags']:
+                    t.pop(x, None)
+            for m in s['scene_markers']:
+                for x in ['id', 'scene', 'tags']:
+                    m.pop(x, None)
+                for x in ['id', 'aliases', 'image_path', 'scene_count']:
+                    m['primary_tag'].pop(x, None)
+
             print("submitting scene: " + str(s))
             requests.post('https://timestamp.trade/submit-stash', json=s)
 
