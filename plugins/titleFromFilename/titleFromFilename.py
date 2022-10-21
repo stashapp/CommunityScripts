@@ -44,7 +44,7 @@ else:
     exit_plugin(f"Stash with API version:{api_version} is not supported. You need at least {API_VERSION_BF_FILES}")
 
 if basename is None:
-    exit_plugin("No basename found") # shouldn't happen
+    exit_plugin("No basename found") # file-less scene
 
 if  config.STRIP_EXT:
     basename = os.path.splitext(basename)[0]
