@@ -6,6 +6,8 @@ import shutil
 import sqlite3
 import sys
 import time
+import traceback
+from datetime import datetime
 
 import requests
 
@@ -22,14 +24,17 @@ except Exception:
     MODULE_UNIDECODE = False
 
 
-import config
+try:
+    import renamerOnUpdate_config as config
+except Exception:
+    import config
 import log
 
 DRY_RUN = config.dry_run
 DRY_RUN_FILE = None
 
 if config.log_file:
-    DRY_RUN_FILE = os.path.join(os.path.dirname(config.log_file), "dryrun_renamerOnUpdate.txt")
+    DRY_RUN_FILE = os.path.join(os.path.dirname(config.log_file), "renamerOnUpdate_dryrun.txt")
 
 if DRY_RUN:
     if DRY_RUN_FILE:
@@ -102,16 +107,7 @@ def graphql_getScene(scene_id):
         title
         date
         rating
-        organized
-        path
-        file {
-            video_codec
-            audio_codec
-            width
-            height
-            framerate
-            bitrate
-        }
+        organized""" + FILE_QUERY + """
         studio {
           id
           name
@@ -147,6 +143,7 @@ def graphql_getScene(scene_id):
     return result.get('findScene')
 
 
+# used for bulk
 def graphql_findScene(perPage, direc="DESC") -> dict:
     query = """
     query FindScenes($filter: FindFilterType) {
@@ -165,15 +162,7 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
         date
         rating
         organized
-        path
-        file {
-            video_codec
-            audio_codec
-            width
-            height
-            framerate
-            bitrate
-        }
+    """ + FILE_QUERY + """
         studio {
           id
           name
@@ -206,6 +195,39 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
     variables = {'filter': {"direction": direc, "page": 1, "per_page": perPage, "sort": "updated_at"}}
     result = callGraphQL(query, variables)
     return result.get("findScenes")
+
+
+# used to find duplicate
+def graphql_findScenebyPath(path, modifier) -> dict:
+    query = """
+    query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType) {
+        findScenes(filter: $filter, scene_filter: $scene_filter) {
+            count
+            scenes {
+                id
+                title
+            }
+        }
+    }
+    """
+    # ASC DESC
+    variables = {
+        'filter': {
+            "direction": "ASC",
+            "page": 1,
+            "per_page": 40,
+            "sort": "updated_at"
+        },
+        "scene_filter": {
+            "path": {
+                "modifier": modifier,
+                "value": path
+            }
+        }
+    }
+    result = callGraphQL(query, variables)
+    return result.get("findScenes")
+
 
 
 def graphql_getConfiguration():
@@ -253,6 +275,25 @@ def graphql_removeScenesTag(id_scenes: list, id_tags: list):
     variables = {'input': {"ids": id_scenes, "tag_ids": {"ids": id_tags, "mode": "REMOVE"}}}
     result = callGraphQL(query, variables)
     return result
+
+
+def graphql_getBuild():
+    query = """
+        {
+            systemStatus {
+                databaseSchema
+            }
+        }
+    """
+    result = callGraphQL(query)
+    return result['systemStatus']['databaseSchema']
+
+
+def check_version(current: str):
+    # > 31: FileRefactor
+    if current > 31:
+        return True
+    return False
 
 
 def find_diff_text(a: str, b: str):
@@ -316,7 +357,7 @@ def check_longpath(path: str):
     # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
     #TODO remove part until good
     if len(path) > 240 and not IGNORE_PATH_LENGTH:
-        log.LogError(f"The path is too long {len(path)}")
+        log.LogError(f"The path is too long ({len(path)} > 240)")
         return 1
 
 
@@ -416,6 +457,9 @@ def extract_info(scene: dict, template: None):
         scene_information['template_split'] = os.path.normpath(template["path"]["destination"]).split(os.sep)
     scene_information['current_path_split'] = os.path.normpath(scene_information['current_path']).split(os.sep)
 
+    if FILENAME_ASTITLE and not scene.get("title"):
+        scene["title"] = scene_information['current_filename']
+
     # Grab Title (without extension if present)
     if scene.get("title"):
         # Removing extension if present in title
@@ -426,6 +470,16 @@ def extract_info(scene: dict, template: None):
 
     # Grab Date
     scene_information['date'] = scene.get("date")
+    if scene_information['date']:
+        date_scene = datetime.strptime(scene_information['date'], r"%Y-%m-%d")
+        scene_information['date_format'] = datetime.strftime(date_scene, config.date_format)
+
+    # Grab Duration
+    scene_information['duration'] = scene['file']['duration']
+    if config.duration_format:
+        scene_information['duration'] = time.strftime(config.duration_format, time.gmtime(scene_information['duration']))
+    else:
+        scene_information['duration'] = str(scene_information['duration'])
 
     # Grab Rating
     if scene.get("rating"):
@@ -674,7 +728,7 @@ def capitalizeWords(s: str):
 
 
 def create_new_filename(scene_info: dict, template: str):
-    new_filename = makeFilename(scene_info, template) + scene_info['file_extension']
+    new_filename = makeFilename(scene_info, template) + DUPLICATE_SUFFIX[scene_info['file_index']] + scene_info['file_extension']
     if FILENAME_LOWER:
         new_filename = new_filename.lower()
     if FILENAME_TITLECASE:
@@ -753,33 +807,18 @@ def connect_db(path: str):
     return sqliteConnection
 
 
-def checking_duplicate_db(stash_db: sqlite3.Connection, scene_info: dict):
-    cursor = stash_db.cursor()
-    # Looking for duplicate path
-    cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + scene_info['current_directory'] + "_" + scene_info['new_filename'], scene_info['scene_id']])
-    dupl_check = cursor.fetchall()
-    if len(dupl_check) > 0:
-        cursor.close()
-        for dupl_row in dupl_check:
-            log.LogError(f"Identical path: [{dupl_row[0]}]")
-        log.LogError("Duplicate path detected, check log!")
+def checking_duplicate_db(scene_info: dict):
+    scenes = graphql_findScenebyPath(scene_info['final_path'], "EQUALS")
+    if scenes["count"] > 0:
+        log.LogError("Duplicate path detected")
+        for dupl_row in scenes["scenes"]:
+            log.LogWarning(f"Identical path: [{dupl_row['id']}]")
         return 1
-
-    # Looking for duplicate filename
-    cursor.execute("SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;", ["%" + scene_info['new_filename'], scene_info['scene_id']])
-    dupl_check = cursor.fetchall()
-    if len(dupl_check) > 0:
-        for dupl_row in dupl_check:
-            log.LogWarning(f"Duplicate filename: [{dupl_row[0]}]")
-
-    # Looking for exact path
-    cursor.execute("SELECT id FROM scenes WHERE path=? AND NOT id=?;", [scene_info['final_path'], scene_info['scene_id']])
-    dupl_check = cursor.fetchall()
-    cursor.close()
-    if len(dupl_check) > 0:
-        for dupl_row in dupl_check:
-            log.LogError(f"Same path: [{dupl_row[0]}]")
-        return 1
+    scenes = graphql_findScenebyPath(scene_info['new_filename'], "EQUALS")
+    if scenes["count"] > 0:
+        for dupl_row in scenes["scenes"]:
+            if dupl_row['id'] != scene_info['scene_id']:
+                log.LogWarning(f"Duplicate filename: [{dupl_row['id']}]")
 
 
 def db_rename(stash_db: sqlite3.Connection, scene_info):
@@ -791,23 +830,84 @@ def db_rename(stash_db: sqlite3.Connection, scene_info):
     cursor.close()
 
 
-def file_rename(scene_info: dict, template: dict):
+def db_rename_refactor(stash_db: sqlite3.Connection, scene_info):
+    cursor = stash_db.cursor()
+    # 2022-09-17T11:25:52+02:00
+    mod_time = datetime.now().astimezone().isoformat('T', 'seconds')
+
+    # get the next id that we should use if needed
+    cursor.execute("SELECT MAX(id) from folders")
+    new_id = cursor.fetchall()[0][0] + 1
+
+    # get the old folder id
+    cursor.execute("SELECT id FROM folders WHERE path=?", [scene_info['current_directory']])
+    old_folder_id = cursor.fetchall()[0][0]
+
+    # check if the folder of file is created in db
+    cursor.execute("SELECT id FROM folders WHERE path=?", [scene_info['new_directory']])
+    folder_id = cursor.fetchall()
+    if not folder_id:
+        dir = scene_info['new_directory']
+        # reduce the path to find a parent folder
+        for _ in range(1, len(scene_info['new_directory'].split(os.sep))):
+            dir = os.path.dirname(dir)
+            cursor.execute("SELECT id FROM folders WHERE path=?", [dir])
+            parent_id = cursor.fetchall()
+            if parent_id:
+                # create a new row with the new folder with the parent folder find above
+                cursor.execute(
+                    "INSERT INTO 'main'.'folders'('id', 'path', 'parent_folder_id', 'mod_time', 'created_at', 'updated_at', 'zip_file_id') VALUES (?, ?, ?, ?, ?, ?, ?);",
+                    [
+                        new_id, scene_info['new_directory'], parent_id[0][0],
+                        mod_time, mod_time, mod_time, None
+                    ])
+                stash_db.commit()
+                folder_id = new_id
+                break
+    else:
+        folder_id = folder_id[0][0]
+    if folder_id:
+        cursor.execute("SELECT file_id from scenes_files WHERE scene_id=?", [scene_info['scene_id']])
+        file_ids = cursor.fetchall()
+        file_id = None
+        for f in file_ids:
+            # it can have multiple file for a scene
+            cursor.execute("SELECT parent_folder_id from files WHERE id=?", [f[0]])
+            check_parent = cursor.fetchall()[0][0]
+            # if the parent id is the one found above section, we find our file.s
+            if check_parent == old_folder_id:
+                file_id = f[0]
+                break
+        if file_id:
+            #log.LogDebug(f"UPDATE files SET basename={scene_info['new_filename']}, parent_folder_id={folder_id}, updated_at={mod_time} WHERE id={file_id};")
+            cursor.execute("UPDATE files SET basename=?, parent_folder_id=?, updated_at=? WHERE id=?;", [scene_info['new_filename'], folder_id, mod_time, file_id])
+            cursor.close()
+            stash_db.commit()
+        else:
+            raise Exception("Failed to find file_id")
+    else:
+        cursor.close()
+        raise Exception(f"You need to setup a library with the new location ({scene_info['new_directory']}) and scan at least 1 file")
+
+
+def file_rename(current_path: str, new_path: str, scene_info: dict):
     # OS Rename
-    if not os.path.isfile(scene_info['current_path']):
-        log.LogWarning(f"[OS] File doesn't exist in your Disk/Drive ({scene_info['current_path']})")
+    if not os.path.isfile(current_path):
+        log.LogWarning(f"[OS] File doesn't exist in your Disk/Drive ({current_path})")
         return 1
     # moving/renaming
-    new_dir = os.path.dirname(scene_info['final_path'])
+    new_dir = os.path.dirname(new_path)
+    current_dir = os.path.dirname(current_path)
     if not os.path.exists(new_dir):
         log.LogInfo(f"Creating folder because it don't exist ({new_dir})")
         os.makedirs(new_dir)
     try:
-        shutil.move(scene_info['current_path'], scene_info['final_path'])
+        shutil.move(current_path, new_path)
     except PermissionError as err:
         if "[WinError 32]" in str(err) and MODULE_PSUTIL:
             log.LogWarning("A process is using this file (Probably FFMPEG), trying to find it ...")
             # Find which process accesses the file, it's ffmpeg for sure...
-            process_use = has_handle(scene_info['current_path'], PROCESS_ALLRESULT)
+            process_use = has_handle(current_path, PROCESS_ALLRESULT)
             if process_use:
                 # Terminate the process then try again to rename
                 log.LogDebug(f"Process that uses this file: {process_use}")
@@ -817,7 +917,7 @@ def file_rename(scene_info: dict, template: dict):
                     p.wait(10)
                     # If process is not terminated, this will create an error again.
                     try:
-                        shutil.move(scene_info['current_path'], scene_info['final_path'])
+                        shutil.move(current_path, new_path)
                     except Exception as err:
                         log.LogError(f"Something still prevents renaming the file. {err}")
                         return 1
@@ -828,32 +928,28 @@ def file_rename(scene_info: dict, template: dict):
             log.LogError(f"Something prevents renaming the file. {err}")
             return 1
     # checking if the move/rename work correctly
-    if os.path.isfile(scene_info['final_path']):
-        log.LogInfo(f"[OS] File Renamed! ({scene_info['current_path']} -> {scene_info['final_path']})")
+    if os.path.isfile(new_path):
+        log.LogInfo(f"[OS] File Renamed! ({current_path} -> {new_path})")
         if LOGFILE:
             try:
                 with open(LOGFILE, 'a', encoding='utf-8') as f:
-                    f.write(f"{scene_info['scene_id']}|{scene_info['current_path']}|{scene_info['final_path']}|{scene_info['oshash']}\n")
+                    f.write(f"{scene_info['scene_id']}|{current_path}|{new_path}|{scene_info['oshash']}\n")
             except Exception as err:
-                shutil.move(scene_info['final_path'], scene_info['current_path'])
+                shutil.move(new_path, current_path)
                 log.LogError(f"Restoring the original path, error writing the logfile: {err}")
                 return 1
         if REMOVE_EMPTY_FOLDER:
-            with os.scandir(scene_info['current_directory']) as it:
+            with os.scandir(current_dir) as it:
                 if not any(it):
-                    log.LogInfo(f"Removing empty folder ({scene_info['current_directory']})")
+                    log.LogInfo(f"Removing empty folder ({current_dir})")
                     try:
-                        os.rmdir(scene_info['current_directory'])
+                        os.rmdir(current_dir)
                     except Exception as err:
-                        log.logWarning(f"Fail to delete empty folder {scene_info['current_directory']} - {err}")
+                        log.logWarning(f"Fail to delete empty folder {current_dir} - {err}")
     else:
         # I don't think it's possible.
-        log.LogError(f"[OS] Failed to rename the file ? {scene_info['final_path']}")
+        log.LogError(f"[OS] Failed to rename the file ? {new_path}")
         return 1
-    if template.get("path"):
-        if "clean_tag" in template["path"]["option"]:
-            graphql_removeScenesTag([scene_info['scene_id']], template["path"]["opt_details"]["clean_tag"])
-
 
 def associated_rename(scene_info: dict):
     if ASSOCIATED_EXT:
@@ -889,114 +985,155 @@ def renamer(scene_id, db_conn=None):
         log.LogDebug(f"[{scene_id}] Scene ignored (not organized)")
         return
 
-    # Tags > Studios > Default
-    template = {}
-    template["filename"] = get_template_filename(stash_scene)
-    template["path"] = get_template_path(stash_scene)
-    if not template["path"].get("destination"):
-        if config.p_use_default_template:
-            log.LogDebug("[PATH] Using default template")
-            template["path"] = {"destination": config.p_default_template, "option": [], "opt_details": {}}
+    # refractor file support
+    fingerprint = []
+    if stash_scene.get("path"):
+        stash_scene["file"]["path"] = stash_scene["path"]
+        if stash_scene.get("checksum"):
+            fingerprint.append({
+                "type": "md5",
+                "value": stash_scene["checksum"]
+            })
+        if stash_scene.get("oshash"):
+            fingerprint.append({
+                "type": "oshash",
+                "value": stash_scene["oshash"]
+            })
+        stash_scene["file"]["fingerprints"] = fingerprint
+        scene_files = [stash_scene["file"]]
+        del stash_scene["path"]
+        del stash_scene["file"]
+    elif stash_scene.get("files"):
+        scene_files = stash_scene["files"]
+        del stash_scene["files"]
+    stash_db = None
+    for i in range(0, len(scene_files)):
+        scene_file = scene_files[i]
+        # refractor file support
+        for f in scene_file["fingerprints"]:
+            if f.get("oshash"):
+                stash_scene["oshash"] = f["oshash"]
+            if f.get("md5"):
+                stash_scene["checksum"] = f["md5"]
+        stash_scene["path"] = scene_file["path"]
+        stash_scene["file"] = scene_file
+        if scene_file.get("bit_rate"):
+            stash_scene["file"]["bitrate"] = scene_file["bit_rate"]
+        if scene_file.get("frame_rate"):
+            stash_scene["file"]["framerate"] = scene_file["frame_rate"]
+
+        # Tags > Studios > Default
+        template = {}
+        template["filename"] = get_template_filename(stash_scene)
+        template["path"] = get_template_path(stash_scene)
+        if not template["path"].get("destination"):
+            if config.p_use_default_template:
+                log.LogDebug("[PATH] Using default template")
+                template["path"] = {"destination": config.p_default_template, "option": [], "opt_details": {}}
+            else:
+                template["path"] = None
         else:
-            template["path"] = None
-    else:
-        if template["path"].get("option"):
-            if "dry_run" in template["path"]["option"] and not DRY_RUN:
-                log.LogInfo("Dry-Run on (activate by option)")
-                option_dryrun = True
-    if not template["filename"] and config.use_default_template:
-        log.LogDebug("[FILENAME] Using default template")
-        template["filename"] = config.default_template
+            if template["path"].get("option"):
+                if "dry_run" in template["path"]["option"] and not DRY_RUN:
+                    log.LogInfo("Dry-Run on (activate by option)")
+                    option_dryrun = True
+        if not template["filename"] and config.use_default_template:
+            log.LogDebug("[FILENAME] Using default template")
+            template["filename"] = config.default_template
 
-    if not template["filename"] and not template["path"]:
-        log.LogWarning(f"[{scene_id}] No template for this scene.")
-        return
+        if not template["filename"] and not template["path"]:
+            log.LogWarning(f"[{scene_id}] No template for this scene.")
+            return
 
-    #log.LogDebug("Using this template: {}".format(filename_template))
-    scene_information = extract_info(stash_scene, template)
-    log.LogDebug(f"[{scene_id}] Scene information: {scene_information}")
-    log.LogDebug(f"[{scene_id}] Template: {template}")
+        #log.LogDebug("Using this template: {}".format(filename_template))
+        scene_information = extract_info(stash_scene, template)
+        log.LogDebug(f"[{scene_id}] Scene information: {scene_information}")
+        log.LogDebug(f"[{scene_id}] Template: {template}")
 
-    scene_information['scene_id'] = scene_id
-    if template["filename"]:
-        scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
-    else:
-        scene_information['new_filename'] = scene_information['current_filename']
-    if template.get("path"):
-        scene_information['new_directory'] = create_new_path(scene_information, template)
-    else:
-        scene_information['new_directory'] = scene_information['current_directory']
-    scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
-    # check length of path
-    if check_longpath(scene_information['final_path']):
+        scene_information['scene_id'] = scene_id
+        scene_information['file_index'] = i
+        if template["filename"]:
+            scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+        else:
+            scene_information['new_filename'] = scene_information['current_filename']
+        if template.get("path"):
+            scene_information['new_directory'] = create_new_path(scene_information, template)
+        else:
+            scene_information['new_directory'] = scene_information['current_directory']
+        scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
+        # check length of path
+        if check_longpath(scene_information['final_path']):
+            if (DRY_RUN or option_dryrun) and LOGFILE:
+                with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
+                    f.write(f"[LENGTH LIMIT] {scene_information['scene_id']}|{scene_information['final_path']}\n")
+            continue
+
+        #log.LogDebug(f"Filename: {scene_information['current_filename']} -> {scene_information['new_filename']}")
+        #log.LogDebug(f"Path: {scene_information['current_directory']} -> {scene_information['new_directory']}")
+
+        if scene_information['final_path'] == scene_information['current_path']:
+            log.LogInfo(f"Everything is ok. ({scene_information['current_filename']})")
+            continue
+
+        if scene_information['current_directory'] != scene_information['new_directory']:
+            log.LogInfo("File will be moved to another directory")
+            log.LogDebug(f"[OLD path] {scene_information['current_path']}")
+            log.LogDebug(f"[NEW path] {scene_information['final_path']}")
+
+        if scene_information['current_filename'] != scene_information['new_filename']:
+            log.LogInfo("The filename will be changed")
+            if ALT_DIFF_DISPLAY:
+                find_diff_text(scene_information['current_filename'], scene_information['new_filename'])
+            else:
+                log.LogDebug(f"[OLD filename] {scene_information['current_filename']}")
+                log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
+
         if (DRY_RUN or option_dryrun) and LOGFILE:
             with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
-                f.write(f"[LENGTH LIMIT] {scene_information['scene_id']}|{scene_information['final_path']}\n")
-        return
-
-    #log.LogDebug(f"Filename: {scene_information['current_filename']} -> {scene_information['new_filename']}")
-    #log.LogDebug(f"Path: {scene_information['current_directory']} -> {scene_information['new_directory']}")
-
-    if scene_information['final_path'] == scene_information['current_path']:
-        log.LogInfo(f"Everything is ok. ({scene_information['current_filename']})")
-        return
-
-    if scene_information['current_directory'] != scene_information['new_directory']:
-        log.LogInfo("File will be moved to another directory")
-        log.LogDebug(f"[OLD path] {scene_information['current_path']}")
-        log.LogDebug(f"[NEW path] {scene_information['final_path']}")
-
-    if scene_information['current_filename'] != scene_information['new_filename']:
-        log.LogInfo("The filename will be changed")
-        if ALT_DIFF_DISPLAY:
-            find_diff_text(scene_information['current_filename'], scene_information['new_filename'])
-        else:
-            log.LogDebug(f"[OLD filename] {scene_information['current_filename']}")
-            log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
-
-    if (DRY_RUN or option_dryrun) and LOGFILE:
-        with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
-            f.write(f"{scene_information['scene_id']}|{scene_information['current_path']}|{scene_information['final_path']}\n")
-        return
-    # connect to the db
-    if not db_conn:
-        stash_db = connect_db(STASH_DATABASE)
-        if stash_db is None:
-            return
-    else:
-        stash_db = db_conn
-    try:
+                f.write(f"{scene_information['scene_id']}|{scene_information['current_path']}|{scene_information['final_path']}\n")
+            continue
         # check if there is already a file where the new path is
-        err = checking_duplicate_db(stash_db, scene_information)
+        err = checking_duplicate_db(scene_information)
         if err:
             raise Exception("duplicate")
-        # rename file on your disk
-        err = file_rename(scene_information, template)
-        if err:
-            raise Exception("rename")
-        # rename file on your db
+        # connect to the db
+        if not db_conn:
+            stash_db = connect_db(STASH_DATABASE)
+            if stash_db is None:
+                return
+        else:
+            stash_db = db_conn
         try:
-            db_rename(stash_db, scene_information)
-        except Exception as err:
-            log.LogError(f"error when trying to update the database ({err}), revert the move...")
-            tmp = scene_information['final_path']
-            scene_information['final_path'] = scene_information['current_path']
-            scene_information['current_path'] = tmp
-            scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
-            err = file_rename(scene_information, template)
+            # rename file on your disk
+            err = file_rename(scene_information['current_path'], scene_information['final_path'], scene_information)
             if err:
                 raise Exception("rename")
-            raise Exception("database update")
-    except Exception as err:
-        log.LogError(f"Error during database operation ({err})")
-        if not db_conn:
-            log.LogDebug("[SQLITE] Database closed")
-            stash_db.close()
-        return
-    if not db_conn:
+            # rename file on your db
+            try:
+                if FILE_REFACTOR:
+                    db_rename_refactor(stash_db, scene_information)
+                else:
+                    db_rename(stash_db, scene_information)
+            except Exception as err:
+                log.LogError(f"error when trying to update the database ({err}), revert the move...")
+                err = file_rename(scene_information['final_path'], scene_information['current_path'], scene_information)
+                if err:
+                    raise Exception("rename")
+                raise Exception("database update")
+            if i == 0:
+                associated_rename(scene_information)
+            if template.get("path"):
+                if "clean_tag" in template["path"]["option"]:
+                    graphql_removeScenesTag([scene_information['scene_id']], template["path"]["opt_details"]["clean_tag"])
+        except Exception as err:
+            log.LogError(f"Error during database operation ({err})")
+            if not db_conn:
+                log.LogDebug("[SQLITE] Database closed")
+                stash_db.close()
+            continue
+    if not db_conn and stash_db:
         stash_db.close()
         log.LogInfo("[SQLITE] Database updated and closed!")
-    associated_rename(scene_information)
 
 
 def exit_plugin(msg=None, err=None):
@@ -1042,7 +1179,7 @@ LOGFILE = config.log_file
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG['general']['databasePath']
-TEMPLATE_FIELD = "$date $year $performer_path $performer $title $height $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum".split(" ")
+TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $duration $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum".split(" ")
 
 # READING CONFIG
 
@@ -1051,6 +1188,7 @@ ASSOCIATED_EXT = config.associated_extension
 FIELD_WHITESPACE_SEP = config.field_whitespaceSeperator
 FIELD_REPLACER = config.field_replacer
 
+FILENAME_ASTITLE = config.filename_as_title
 FILENAME_LOWER = config.lowercase_Filename
 FILENAME_TITLECASE = config.titlecase_Filename
 FILENAME_SPLITCHAR = config.filename_splitchar
@@ -1063,6 +1201,8 @@ PERFORMER_LIMIT_KEEP = config.performer_limit_keep
 PERFORMER_SORT = config.performer_sort
 PERFORMER_IGNOREGENDER = config.performer_ignoreGender
 PREVENT_TITLE_PERF = config.prevent_title_performer
+
+DUPLICATE_SUFFIX = config.duplicate_suffix
 
 PREPOSITIONS_LIST = config.prepositions_list
 PREPOSITIONS_REMOVAL = config.prepositions_removal
@@ -1092,6 +1232,41 @@ PATH_KEEP_ALRPERF = config.path_keep_alrperf
 PATH_NON_ORGANIZED = config.p_non_organized
 PATH_ONEPERFORMER = config.path_one_performer
 
+
+FILE_REFACTOR = check_version(graphql_getBuild())
+
+if FILE_REFACTOR:
+    FILE_QUERY = """
+            files {
+                path
+                video_codec
+                audio_codec
+                width
+                height
+                frame_rate
+                duration
+                bit_rate
+                fingerprints {
+                    type
+                    value
+                }
+            }
+    """
+else:
+    FILE_QUERY = """
+            path
+            file {
+                video_codec
+                audio_codec
+                width
+                height
+                framerate
+                bitrate
+                duration
+            }
+    """
+
+
 if PLUGIN_ARGS:
     if "bulk" in PLUGIN_ARGS:
         scenes = graphql_findScene(config.batch_number_scene, "ASC")
@@ -1112,6 +1287,10 @@ if PLUGIN_ARGS:
         stash_db.close()
         log.LogInfo("[SQLITE] Database closed!")
 else:
-    renamer(FRAGMENT_SCENE_ID)
+    try:
+        renamer(FRAGMENT_SCENE_ID)
+    except Exception as err:
+        log.LogError(f"main function error: {err}")
+        traceback.print_exc()
 
 exit_plugin("Successful!")

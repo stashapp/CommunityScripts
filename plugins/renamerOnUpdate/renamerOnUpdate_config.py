@@ -5,11 +5,13 @@
 #   $oshash 
 #   $checksum 
 #   $date 
+#   $date_format
 #   $year 
 #   $performer 
 #   $title 
 #   $height 
 #   $resolution 
+#   $duration
 #   $bitrate (megabits per second)
 #   $studio 
 #   $parent_studio 
@@ -24,6 +26,8 @@
 #   $movie_scene
 #
 # Note:
+# $date_format: can be edited with date_format settings
+# $duration: can be edited with duration_format settings
 # $studio_family: If parent studio exists use it, else use the studio name.
 # $performer: If more than * performers linked to the scene, this field will be ignored. Limit this number at Settings section below (default: 3)
 # $resolution: SD/HD/UHD/VERTICAL (for phone) | $height: 720p 1080p 4k 5k 6k 8k
@@ -117,6 +121,10 @@ log_file = r""
 # rename associated file (subtitle, funscript) if present
 associated_extension = ["srt", "vtt", "funscript"]
 
+# use filename as title if no title is set
+# it will cause problem if you update multiple time the same scene without title.
+filename_as_title = False
+
 # Character which replaces every space in the filename
 # Common values are "." and "_"
 # e. g.:
@@ -141,6 +149,13 @@ field_replacer = {
 replace_words = {
 }
 
+# Date format for $date_format field, check: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+date_format = r"%Y-%m-%d"
+# Duration format, check table: https://docs.python.org/3/library/time.html#time.strftime
+# exemple: %H;%M;%S -> 00;35;20 (You can't have ':' character in filename)
+# If empty, it will give you the duration as seconds
+duration_format = r""
+
 # put the filename in lowercase
 lowercase_Filename = False
 # filename in title case (Capitalises each word and lowercases the rest)
@@ -158,6 +173,9 @@ performer_limit_keep = False
 performer_sort = "id"
 # ignore certain gender. Available "MALE" "FEMALE" "TRANSGENDER_MALE" "TRANSGENDER_FEMALE" "INTERSEX" "NON_BINARY"
 performer_ignoreGender = []
+
+# word attached at end if multiple file for same scene [FileRefactor]
+duplicate_suffix = ["", "_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10"]
 
 # If $performer is before $title, prevent having duplicate text. 
 # e.g.:
