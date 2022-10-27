@@ -249,6 +249,8 @@ enable_hook = True
 # disable/enable dry mode. Do a trial run with no permanent changes. Can write into a file (dryrun_renamerOnUpdate.txt), set a path for log_file. 
 # You can edit this value in 'Plugin Tasks' inside of Stash.
 dry_run = False
+# Choose if you want to append (True) or owerwrite (False) the dry-run log file everytime.
+dry_run_append = True
 ######################################
 #            Module Related          #
 
