@@ -1,0 +1,29 @@
+# example plugin config
+name: Path Parser
+description: Updates scene info based on the file path.
+version: 1.0
+exec:
+  - pathParser.js
+interface: js
+hooks:
+  - name: Run Rules on scan
+    description: Updates scene info whenever a new scene is added.
+    triggeredBy: 
+      - Scene.Create.Post
+tasks:
+  - name: Create Tags
+    description: Create tags used by the path parser tasks.
+    defaultArgs:
+      task: createTags
+  - name: Remove Tags
+    description: Remove tags used by the path parser tasks.
+    defaultArgs:
+      task: removeTags
+  - name: Run Rules
+    description: Run rules for scenes containing the [Run] tag.
+    defaultArgs:
+      task: runRules
+  - name: Test Rules
+    description: Test rules for scenes containing the [Test] tag.
+    defaultArgs:
+      task: testRules
