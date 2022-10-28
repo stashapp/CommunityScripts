@@ -37,7 +37,7 @@ if config.log_file:
     DRY_RUN_FILE = os.path.join(os.path.dirname(config.log_file), "renamerOnUpdate_dryrun.txt")
 
 if DRY_RUN:
-    if DRY_RUN_FILE:
+    if DRY_RUN_FILE and not config.dry_run_append:
         if os.path.exists(DRY_RUN_FILE):
             os.remove(DRY_RUN_FILE)
     log.LogInfo("Dry mode on")
