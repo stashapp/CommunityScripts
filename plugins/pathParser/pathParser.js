@@ -6,65 +6,28 @@ var patterns = {
 
 var rules = [
   {
-    name: 'OnlyFans',
+    name: 'Rule 1',
     pattern: [
-      'OnlyFans',
+      'Specific Studio',
       null,
       null
     ],
     fields: {
-      studio: 'OnlyFans',
-      performers: '#1',
+      studio: '#0',
+      title: '#2',
     }
   },
   {
-    name: 'Studio & Sub-Studio + Movie & Scenes',
+    name: 'Rule 2',
     pattern: [
-      ['Digital Playground', 'New Sensations'], // Parent Studio
-      studiosWithMovies,
+      ['One Studio', 'Another Studio'],
       patterns.movieTitleAndYear,
       patterns.sceneTitleAndPerformers
-    ],
-    fields: {
-      title: '#4',
-      studio: '#1',
-      performers: '#5'
-    }
-  },
-  {
-    name: 'Movie & Scenes',
-    pattern: [
-      studiosWithMovies,
-      patterns.movieTitleAndYear,
-      null
     ],
     fields: {
       title: '#2',
-      studio: '#0'
-    }
-  },
-  {
-    name: 'Studio & Sub-Studio + Scenes',
-    pattern: [
-      studiosWithSubStudios, // Parent Studio
-      null, // Studio name (any)
-      patterns.sceneTitleAndPerformers
-    ],
-    fields: {
-      title: '#3',
-      studio: '#2'
-    }
-  },
-  {
-    name: 'Studio + Scenes',
-    pattern: [
-      null, // Studio name (any)
-      patterns.sceneTitleAndPerformers
-    ],
-    fields: {
-      title: '#1',
       studio: '#0',
-      performers: '#2',
+      performers: '#3'
     }
   },
 ];
