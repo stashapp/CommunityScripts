@@ -30,7 +30,7 @@ hooks:
 
 ### Create Tags
 
-Adds the \[Run\] and \[Test\] tags.
+Adds the \[Run\] and \[Test\] tags (configurable from pathParser.yml).
 
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
@@ -39,11 +39,13 @@ You can remove this trigger by deleting the following section from `pathParser.y
     description: Create tags used by the path parser tasks.
     defaultArgs:
       task: createTags
+      runTag: '[Run]'
+      testTag: '[Test]'
 ```
 
 ### Remove Tags
 
-Removes the \[Run\] and \[Test\] tags.
+Removes the \[Run\] and \[Test\] tags (configurable from pathParser.yml).
 
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
@@ -52,32 +54,36 @@ You can remove this trigger by deleting the following section from `pathParser.y
     description: Remove tags used by the path parser tasks.
     defaultArgs:
       task: removeTags
+      runTag: '[Run]'
+      testTag: '[Test]'
 ```
 
 ### Run Rules
 
-Run rules for scenes containing the \[Run\] tag.
+Run rules for scenes containing the \[Run\] tag (configurable from pathParser.yml).
 
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
 ```yml
   - name: Run Rules
-    description: Run rules for scenes containing the [Run] tag.
+    description: Run rules for scenes containing the run tag.
     defaultArgs:
       task: runRules
+      runTag: '[Run]'
 ```
 
 ### Test Rules
 
-Test rules for scenes containing the \[Test\] tag.
+Test rules for scenes containing the \[Test\] tag (configurable from pathParser.yml).
 
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
 ```yml
   - name: Test Rules
-    description: Test rules for scenes containing the [Test] tag.
+    description: Test rules for scenes containing the test tag.
     defaultArgs:
       task: testRules
+      testTag: '[Test]'
 ```
 
 ## Rules
@@ -123,12 +129,13 @@ Patterns behave differently depending on the type:
 
 The first matching rule will update the scene with the fields indicated:
 
-| Field      | Format                            |
-| :----------|:----------------------------------|
-| title      | `'New Title'`                     |
-| studio     | `'Studio Name'`                   |
-| performers | `'Performer 1, Performer 2, ...'` |
-| tags       | `'Tag 1, Tag 2, ...'`             |
+| Field       | Format                            |
+| :-----------|:----------------------------------|
+| title       | `'New Title'`                     |
+| studio      | `'Studio Name'`                   |
+| movie_title | `'Movie Name'`                    |
+| performers  | `'Performer 1, Performer 2, ...'` |
+| tags        | `'Tag 1, Tag 2, ...'`             |
 
 Matched patterns can be inserted into any field by referencing their indexed value ([see examples](#examples) below).
 
@@ -138,7 +145,7 @@ Matched patterns can be inserted into any field by referencing their indexed val
 
 ```js
 {
-  name: 'Specific studio folders with scenes',
+  name: 'Studio/Scene',
   pattern: [
     ['Specific Studio', 'Another Studio'], // A specific studio name
     null // Any filename
@@ -161,7 +168,7 @@ Output:
 
 ```js
 {
-  name: 'Specific studio folders with scenes',
+  name: 'Studio/Movie (YEAR)/Scene - Scene #',
   pattern: [
     null, // Any studio name
     /(.+) \(\d{4}\)/, // A sub-folder with 'Movie Title (2022)'
@@ -169,7 +176,8 @@ Output:
   ],
   fields: {
     title: '#2',
-    studio: '#0'
+    studio: '#0',
+    movie_title: '#1'
   }
 }
 ```
@@ -187,7 +195,7 @@ Output:
 ```js
 
 {
-  name: 'Filename with performers using function',
+  name: 'Studio/Scene.Performers.S##E##',
   pattern: [
     null, // Any studio name
     function (path) {
