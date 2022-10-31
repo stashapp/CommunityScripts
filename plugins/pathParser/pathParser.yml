@@ -15,15 +15,21 @@ tasks:
     description: Create tags used by the path parser tasks.
     defaultArgs:
       task: createTags
+      runTag: '[Run]'
+      testTag: '[Test]'
   - name: Remove Tags
     description: Remove tags used by the path parser tasks.
     defaultArgs:
       task: removeTags
+      runTag: '[Run]'
+      testTag: '[Test]'
   - name: Run Rules
-    description: Run rules for scenes containing the [Run] tag.
+    description: Run rules for scenes containing the run tag.
     defaultArgs:
       task: runRules
+      runTag: '[Run]'
   - name: Test Rules
-    description: Test rules for scenes containing the [Test] tag.
+    description: Test rules for scenes containing the test tag.
     defaultArgs:
       task: testRules
+      testTag: '[Test]'
