@@ -1,7 +1,7 @@
 // Common Patterns
 var patterns = {
   movieTitleAndYear: /(.+) \(\d{4}\)/,
-  sceneTitleAndPerformers: /(.+) - ([^\.]+)/
+  sceneTitleAndPerformers: /(.+) - ([A-zÀ-ú, ]+)/
 }
 
 var rules = [
@@ -42,22 +42,28 @@ function main()
     switch (getTask(input.Args))
     {
       case 'createTags':
-        createTags(['[Run]', '[Test]']);
+        var runTag = getArg(input.Args, 'runTag');
+        var testTag = getArg(input.Args, 'testTag');
+        createTags([runTag, testTag]);
         break;
 
       case 'removeTags':
-        removeTags(['[Run]', '[Test]']);
+        var runTag = getArg(input.Args, 'runTag');
+        var testTag = getArg(input.Args, 'testTag');
+        removeTags([runTag, testTag]);
         break;
 
       case 'runRules':
+        var runTag = getArg(input.Args, 'runTag');
         initBasePaths();
-        runRules('[Run]');
+        runRules(runTag);
         break;
 
       case 'testRules':
         DEBUG = true;
+        var testTag = getArg(input.Args, 'testTag');
         initBasePaths();
-        runRules('[Test]');
+        runRules(testTag);
         break;
 
       case 'scene':
@@ -81,6 +87,17 @@ function main()
   }
 
   return { Output: 'ok' };
+}
+
+// Get an input arg
+function getArg(inputArgs, arg)
+{
+  if (inputArgs.hasOwnProperty(arg))
+  {
+    return inputArgs[arg];
+  }
+
+  throw 'Input is missing ' + arg;
 }
 
 // Determine task based on input args
@@ -149,7 +166,7 @@ function createTags(tags)
 
   tags.forEach(function (tag)
   {
-    if (getTagId(tag) !== null)
+    if (tryGetTag(tag) !== null)
     {
       return;
     }
@@ -173,7 +190,7 @@ function removeTags(tags)
 {
   tags.forEach(function (tag)
   {
-    var tagId = getTagId(tag);
+    var tagId = tryGetTag(tag);
     if (tagId === null)
     {
       return;
@@ -199,7 +216,7 @@ function removeTags(tags)
 // Run rules for scenes containing tag
 function runRules(tag)
 {
-  var tagId = getTagId(tag);
+  var tagId = tryGetTag(tag);
   if (tagId === null)
   {
     throw 'Tag ' + tag + ' does not exist';
@@ -428,14 +445,27 @@ function testPattern(pattern, part)
 // Apply rule
 function applyRule(sceneId, fields, data)
 {
-  var values = {};
+  var any = false;
+  var variables = {
+    input: {
+      id: sceneId
+    }
+  };
+
+  if (DEBUG)
+  {
+    for (var i = 0; i < data.length; i++)
+    {
+      bufferedOutput += '#' + i + ': ' + data[i] + '\n';
+    }
+  }
 
   for (var field in fields)
   {
     var value = fields[field];
-    for (var j = data.length - 1; j >= 0; j--)
+    for (var i = data.length - 1; i >= 0; i--)
     {
-      value = value.replace('#' + j, data[j]);
+      value = value.replace('#' + i, data[i]);
     }
 
     if (DEBUG)
@@ -443,12 +473,92 @@ function applyRule(sceneId, fields, data)
       bufferedOutput += field + ': ' + value + '\n';
     }
 
-    values[field] = value;
+    switch (field)
+    {
+      case 'title':
+        variables.input['title'] = value;
+        any = true;
+        continue;
+
+      case 'studio':
+        var studioId = tryGetStudio(value);
+        if (studioId == null)
+        {
+          continue;
+        }
+
+        if (DEBUG)
+        {
+          bufferedOutput += 'studio_id: ' + studioId + '\n';
+        }
+
+        variables.input['studio_id'] = studioId;
+        any = true;
+        continue;
+
+        case 'movie_title':
+          var movie_title = value.split(' ').join('[\\W]*');
+          var movieId = tryGetMovie(movie_title);
+          if (movieId == null)
+          {
+            continue;
+          }
+
+          if (DEBUG)
+          {
+            bufferedOutput += 'movie_id: ' + movieId + '\n';
+          }
+
+          variables.input['movies'] = [
+            {
+              movie_id: movieId
+            }
+          ];
+          any = true;
+          continue;
+      
+      case 'performers':
+        var performers = value.split(',').map(tryGetPerformer).filter(notNull);
+        if (performers.length == 0)
+        {
+          continue;
+        }
+
+        if (DEBUG)
+        {
+          bufferedOutput += 'performer_ids: ' + performers.join(', ') + '\n';
+        }
+
+        variables.input['performer_ids'] = performers;
+        any = true;
+        continue;
+
+      case 'tags':
+        var tags = value.split(',').map(tryGetTag).filter(notNull);
+        if (tags.length == 0)
+        {
+          continue;
+        }
+
+        if (DEBUG)
+        {
+          bufferedOutput += 'tag_ids: ' + tags.join(', ') + '\n';
+        }
+
+        variables.input['tag_ids'] = tags;
+        any = true;
+        continue;
+    }
   }
 
   // Test only
   if (DEBUG)
   {
+    if (!any)
+    {
+      bufferedOutput += 'No fields to update!\n';
+    }
+
     return;
   }
 
@@ -459,54 +569,6 @@ function applyRule(sceneId, fields, data)
       id\
     }\
   }';
-
-  var variables = {
-    input: {
-      id: sceneId
-    }
-  };
-
-  var any = false;
-  for (var field in values)
-  {
-    switch (field)
-    {
-      case 'title':
-        variables.input['title'] = values[field];
-        any = true;
-        break;
-
-      case 'studio':
-        var studioId = getStudioId(values[field]);
-        if (studioId != null)
-        {
-          variables.input['studio_id'] = getStudioId(values[field]);
-          any = true;
-        }
-
-        break;
-      
-      case 'performers':
-        var performers = values[field].split(',').map(getPerformerId).filter(notNull);
-        if (performers.length != 0)
-        {
-          variables.input['performer_ids'] = performers;
-          any = true;
-        }
-
-        break;
-
-      case 'tags':
-        var tags = values[field].split(',').map(getTagId).filter(notNull);
-        if (tags.length != 0)
-        {
-          variables.input['tag_ids'] = tags;
-          any = true;
-        }
-
-        break;
-    }
-  }
 
   if (!any)
   {
@@ -527,7 +589,7 @@ function notNull(ele)
 }
 
 // Get studio id from studio name
-function getStudioId(studio)
+function tryGetStudio(studio)
 {
   var query = '\
   query FindStudios($studioFilter: StudioFilterType) {\
@@ -557,8 +619,38 @@ function getStudioId(studio)
   return result.findStudios.studios[0].id;
 }
 
+function tryGetMovie(movie_title)
+{
+  var query = '\
+  query FindMovies($movieFilter: MovieFilterType) {\
+    findMovies(movie_filter: $movieFilter) {\
+      movies {\
+        id\
+      }\
+      count\
+    }\
+  }';
+
+  var variables = {
+    movieFilter: {
+      name: {
+        value: movie_title.trim(),
+        modifier: 'MATCHES_REGEX'
+      }
+    }
+  };
+
+  var result = gql.Do(query, variables);
+  if (!result.findMovies || result.findMovies.count == 0)
+  {
+    return;
+  }
+
+  return result.findMovies.movies[0].id;
+}
+
 // Get performer id from performer name
-function getPerformerId(performer)
+function tryGetPerformer(performer)
 {
   var query = '\
   query FindPerformers($performerFilter: PerformerFilterType) {\
@@ -589,7 +681,7 @@ function getPerformerId(performer)
 }
 
 // Get tag id from tag name
-function getTagId(tag)
+function tryGetTag(tag)
 {
   var query ='\
   query FindTags($tagFilter: TagFilterType) {\
