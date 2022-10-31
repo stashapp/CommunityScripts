@@ -468,14 +468,14 @@ function applyRule(sceneId, fields, data)
       value = value.replace('#' + i, data[i]);
     }
 
-    if (DEBUG)
-    {
-      bufferedOutput += field + ': ' + value + '\n';
-    }
-
     switch (field)
     {
       case 'title':
+        if (DEBUG)
+        {
+          bufferedOutput += field + ': ' + value + '\n';
+        }
+
         variables.input['title'] = value;
         any = true;
         continue;
@@ -489,6 +489,7 @@ function applyRule(sceneId, fields, data)
 
         if (DEBUG)
         {
+          bufferedOutput += field + ': ' + value + '\n';
           bufferedOutput += 'studio_id: ' + studioId + '\n';
         }
 
@@ -504,19 +505,41 @@ function applyRule(sceneId, fields, data)
             continue;
           }
 
+          if (!variables.input.hasOwnProperty('movies'))
+          {
+            variables.input['movies'] = [{}];
+          }
+
           if (DEBUG)
           {
+            bufferedOutput += field + ': ' + value + '\n';
             bufferedOutput += 'movie_id: ' + movieId + '\n';
           }
 
-          variables.input['movies'] = [
-            {
-              movie_id: movieId
-            }
-          ];
+          variables.input['movies'][0]['movie_id'] = movieId;
           any = true;
           continue;
       
+      case 'scene_index':
+        var sceneIndex = parseInt(value);
+        if (isNaN(sceneIndex))
+        {
+          continue;
+        }
+
+        if (!variables.input.hasOwnProperty('movies'))
+        {
+          variables.input['movies'] = [{}];
+        }
+
+        if (DEBUG)
+        {
+          bufferedOutput += 'scene_index: ' + sceneIndex + '\n';
+        }
+
+        variables.input['movies'][0]['scene_index'] = sceneIndex;
+        continue;
+
       case 'performers':
         var performers = value.split(',').map(tryGetPerformer).filter(notNull);
         if (performers.length == 0)
@@ -526,6 +549,7 @@ function applyRule(sceneId, fields, data)
 
         if (DEBUG)
         {
+          bufferedOutput += field + ': ' + value + '\n';
           bufferedOutput += 'performer_ids: ' + performers.join(', ') + '\n';
         }
 
@@ -542,6 +566,7 @@ function applyRule(sceneId, fields, data)
 
         if (DEBUG)
         {
+          bufferedOutput += field + ': ' + value + '\n';
           bufferedOutput += 'tag_ids: ' + tags.join(', ') + '\n';
         }
 
@@ -560,6 +585,12 @@ function applyRule(sceneId, fields, data)
     }
 
     return;
+  }
+
+  // Remove movies if movie_id is missing
+  if (variables.input.hasOwnProperty('movies') && !variables.input['movies'][0].hasOwnProperty('movie_id'))
+  {
+    delete variables.input['movies'];
   }
 
   // Apply updates

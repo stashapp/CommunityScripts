@@ -134,6 +134,7 @@ The first matching rule will update the scene with the fields indicated:
 | title       | `'New Title'`                     |
 | studio      | `'Studio Name'`                   |
 | movie_title | `'Movie Name'`                    |
+| scene_index | `'1'`                             |
 | performers  | `'Performer 1, Performer 2, ...'` |
 | tags        | `'Tag 1, Tag 2, ...'`             |
 
@@ -172,12 +173,13 @@ Output:
   pattern: [
     null, // Any studio name
     /(.+) \(\d{4}\)/, // A sub-folder with 'Movie Title (2022)'
-    /(.+) - \w+ {d}/, // A filename with 'Scene Title - Scene 1'
+    /(.+) - \w+ ({d})/, // A filename with 'Scene Title - Scene 1'
   ],
   fields: {
     title: '#2',
     studio: '#0',
-    movie_title: '#1'
+    movie_title: '#1',
+    scene_index: '#3'
   }
 }
 ```
@@ -189,6 +191,7 @@ Output:
 0. HBO
 1. House of the Dragon
 2. House of the Dragon
+3. 1
 
 ### Filename with performers using function
 
@@ -201,20 +204,26 @@ Output:
     function (path) {
       var parts = path.split('.');
       var performers = parts[1].split('&').map(function (performer) { return performer.trim() }).join(',');
-      return [parts[0], performers];
+      var series = /S(\d{2})E(\d{2})/.exec(parts[2]);
+      return [parts[0], performers, parseInt(series[1]), parseInt(series[2])];
     }
   ],
   fields: {
     title: '#1',
-    studio: '#0'
+    studio: '#0',
+    performers: '#2',
+    movie_title: '#1 - Season #3',
+    scene_index: '#4'
   }
 }
 ```
 
-Input: `X:\Prime\The Boys.Karl Urban & Jack Quaid.S01E01.mp4`
+Input: `X:\Prime\The Boys.Karl Urban & Jack Quaid.S06E09.mp4`
 
 Output:
 
 0. Prime
 1. The Boys
 2. Karl Urban,Jack Quaid
+3. 6
+4. 9
