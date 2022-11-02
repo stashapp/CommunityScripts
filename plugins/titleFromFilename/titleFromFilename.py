@@ -8,8 +8,8 @@ import log
 import graphql
 
 API_VERSION_BF_FILES = 31 # APP/DB Schema version prior to files refactor PR
-MAX_RETRY_COUNT = 15
-SLEEP_RETRY = 2
+MAX_RETRY_COUNT = 25
+SLEEP_RETRY = 0.5
 
 def exit_plugin(msg=None, err=None):
     if msg is None and err is None:
