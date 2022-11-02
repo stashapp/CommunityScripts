@@ -1,12 +1,15 @@
 import json
 import os
 import sys
+import time
 
 import config
 import log
 import graphql
 
 API_VERSION_BF_FILES = 31 # APP/DB Schema version prior to files refactor PR
+MAX_RETRY_COUNT = 15
+SLEEP_RETRY = 2
 
 def exit_plugin(msg=None, err=None):
     if msg is None and err is None:
@@ -49,6 +52,16 @@ if basename is None:
 if  config.STRIP_EXT:
     basename = os.path.splitext(basename)[0]
 
+
 updated_scene = graphql.update_scene_title(scene_id, basename, port=graphql_port, session=graphql_session, scheme=graphql_scheme)
 
-exit_plugin(f"Scene title updated. Title:{updated_scene.get('title')}")
+i = MAX_RETRY_COUNT
+while i >= 0:
+    #log.LogDebug(f"TitleFromFilename: Retry attempt {i}")
+    i -= 1
+    if updated_scene:
+        exit_plugin(f"Scene title updated after {MAX_RETRY_COUNT - i} tries. Title:{updated_scene.get('title')}")
+    time.sleep(SLEEP_RETRY)
+    
+exit_plugin("Error updating scene")
+    
