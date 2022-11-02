@@ -53,12 +53,13 @@ if  config.STRIP_EXT:
     basename = os.path.splitext(basename)[0]
 
 
-updated_scene = graphql.update_scene_title(scene_id, basename, port=graphql_port, session=graphql_session, scheme=graphql_scheme)
+
 
 i = MAX_RETRY_COUNT
 while i >= 0:
     #log.LogDebug(f"TitleFromFilename: Retry attempt {i}")
     i -= 1
+    updated_scene = graphql.update_scene_title(scene_id, basename, port=graphql_port, session=graphql_session, scheme=graphql_scheme)
     if updated_scene:
         exit_plugin(f"Scene title updated after {MAX_RETRY_COUNT - i} tries. Title:{updated_scene.get('title')}")
     time.sleep(SLEEP_RETRY)
