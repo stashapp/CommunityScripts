@@ -570,7 +570,10 @@ def extract_info(scene: dict, template: None):
             while studio_p.get("parent_studio"):
                 studio_p = graphql_getStudio(studio_p['parent_studio']['id'])
                 if studio_p:
-                    studio_hierarchy.append(studio_p['name'])
+                    if SQUEEZE_STUDIO_NAMES:
+                        studio_hierarchy.append(studio_p['name'].replace(' ', ''))
+                    else:
+                        studio_hierarchy.append(studio_p['name'])
             studio_hierarchy.reverse()
         scene_information['studio_hierarchy'] = studio_hierarchy
     # Grab Tags
