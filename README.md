@@ -26,6 +26,7 @@ Scanning|Scene.Create<br />Gallery.Create<br />Image.Create|[defaultDataForPath]
 Scanning|Scene.Create<br />Gallery.Create|[filenameParser](plugins/filenameParser)|Tries to parse filenames, primarily in {studio}.{year}.{month}.{day}.{performer1firstname}.{performer1lastname}.{performer2}.{title} format, into the respective fields|v0.10
 Scanning|Scene.Create|[titleFromFilename](plugins/titleFromFilename)|Sets the scene title to its filename|v0.17
 Reporting||[TagGraph](plugins/taggrap)|Creates a visual of the Tag relations.|v0.7
+Scanning|Scene.Create|[pathParser](plugins/pathParser)|Updates scene info based on the file path.|v0.17
 
 ## Themes
 
