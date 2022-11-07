@@ -342,7 +342,7 @@ def config_edit(name: str, state: bool):
         with open(config.__file__, 'w', encoding='utf8') as file_w:
             for line in config_lines:
                 if len(line.split("=")) > 1:
-                    if name in line.split("=")[0].strip():
+                    if name == line.split("=")[0].strip():
                         file_w.write(f"{name} = {state}\n")
                         found += 1
                         continue
