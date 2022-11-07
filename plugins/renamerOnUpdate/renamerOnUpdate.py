@@ -364,7 +364,7 @@ def check_longpath(path: str):
 def get_template_filename(scene: dict):
     template = None
     # Change by Studio
-    if scene.get("studio") and config.p_studio_templates:
+    if scene.get("studio") and config.studio_templates:
         template_found = False
         current_studio = scene.get("studio")
         if config.studio_templates.get(current_studio['name']):
