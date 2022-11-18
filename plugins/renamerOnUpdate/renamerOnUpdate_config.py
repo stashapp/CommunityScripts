@@ -174,7 +174,7 @@ performer_limit = 3
 performer_limit_keep = False
 # sorting performer (name, id, rating, favorite, mix (favorite > rating > name), mixid (..>..> id))
 performer_sort = "id"
-# ignore certain gender. Available "MALE" "FEMALE" "TRANSGENDER_MALE" "TRANSGENDER_FEMALE" "INTERSEX" "NON_BINARY"
+# ignore certain gender. Available "MALE" "FEMALE" "TRANSGENDER_MALE" "TRANSGENDER_FEMALE" "INTERSEX" "NON_BINARY" "UNDEFINED"
 performer_ignoreGender = []
 
 # word attached at end if multiple file for same scene [FileRefactor]
