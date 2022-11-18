@@ -495,6 +495,8 @@ def extract_info(scene: dict, template: None):
             if perf.get("gender"):
                 if perf['gender'] in PERFORMER_IGNOREGENDER:
                     continue
+            elif "UNDEFINED" in PERFORMER_IGNOREGENDER:
+                continue
             # path related
             if template.get("path"):
                 if "inverse_performer" in template["path"]["option"]:
