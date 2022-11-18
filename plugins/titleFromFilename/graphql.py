@@ -1,6 +1,14 @@
 import json
+import sys
 
 import requests
+
+def exit_plugin(msg=None, err=None):
+    if msg is None and err is None:
+        msg = "plugin ended"
+    output_json = {"output": msg, "error": err}
+    print(json.dumps(output_json))
+    sys.exit()
 
 def doRequest(query, variables=None, port=9999, session=None, scheme="http", raise_exception=True):
     # Session cookie for authentication
@@ -27,7 +35,7 @@ def doRequest(query, variables=None, port=9999, session=None, scheme="http", rai
     try:
         response = requests.post(graphql_url, json=json,headers=graphql_headers, cookies=graphql_cookies, timeout=20)
     except Exception as e:
-         exit_plugin(err="f[FATAL] Exception with GraphQL request. {e}")
+         exit_plugin(err=f"[FATAL] Exception with GraphQL request. {e}")
     if response.status_code == 200:
         result = response.json()
         if result.get("error"):
@@ -88,3 +96,4 @@ def get_api_version(port, session, scheme):
     """
     result = doRequest(query=query, port=port, session=session, scheme=scheme)
     return result.get('systemStatus')
+
