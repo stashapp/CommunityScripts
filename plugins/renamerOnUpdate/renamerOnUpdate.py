@@ -107,25 +107,33 @@ def graphql_getScene(scene_id):
         title
         date
         rating
+        stash_ids {
+            endpoint
+            stash_id
+        }
         organized""" + FILE_QUERY + """
         studio {
-          id
-          name
-          parent_studio {
-              id
-              name
-          }
+            id
+            name
+            parent_studio {
+                id
+                name
+            }
         }
         tags {
-          id
-          name
+            id
+            name
         }
         performers {
-          id
-          name
-          gender
-          favorite
-          rating
+            id
+            name
+            gender
+            favorite
+            rating
+            stash_ids{
+                endpoint
+                stash_id
+            }
         }
         movies {
             movie {
@@ -162,25 +170,33 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
         date
         rating
         organized
+        stash_ids {
+            endpoint
+            stash_id
+        }
     """ + FILE_QUERY + """
         studio {
-          id
-          name
-          parent_studio {
-              id
-              name
-          }
+            id
+            name
+            parent_studio {
+                id
+                name
+            }
         }
         tags {
-          id
-          name
+            id
+            name
         }
         performers {
-          id
-          name
-          gender
-          favorite
-          rating
+            id
+            name
+            gender
+            favorite
+            rating
+            stash_ids{
+                endpoint
+                stash_id
+            }
         }
         movies {
             movie {
@@ -450,7 +466,12 @@ def extract_info(scene: dict, template: None):
     scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
     scene_information['oshash'] = scene['oshash']
     scene_information['checksum'] = scene.get("checksum")
+    scene_information['studio_code'] = scene.get("code")
 
+    if scene.get("stash_ids"):
+        #todo support other db that stashdb ?
+        scene_information['stashid_scene'] = scene['stash_ids'][0]["stash_id"]
+    
     if template.get("path"):
         if "^*" in template["path"]["destination"]:
             template["path"]["destination"] = template["path"]["destination"].replace("^*", scene_information['current_directory'])
@@ -489,6 +510,7 @@ def extract_info(scene: dict, template: None):
     scene_information['performer_path'] = None
     if scene.get("performers"):
         perf_list = []
+        perf_list_stashid = []
         perf_rating = {"5": [], "4": [], "3": [], "2": [], "1": [], "0": []}
         perf_favorite = {"yes": [], "no": []}
         for perf in scene['performers']:
@@ -545,6 +567,14 @@ def extract_info(scene: dict, template: None):
                 log.LogInfo(f"Limited the amount of performer to {PERFORMER_LIMIT}")
                 perf_list = perf_list[0: PERFORMER_LIMIT]
         scene_information['performer'] = PERFORMER_SPLITCHAR.join(perf_list)
+        if perf_list:
+            for p in perf_list:
+                for perf in scene['performers']:
+                    #todo support other db that stashdb ?
+                    if p == perf['name'] and perf.get('stash_ids'):
+                        perf_list_stashid.append(perf['stash_ids'][0]["stash_id"])
+                        break
+            scene_information['stashid_performer'] = PERFORMER_SPLITCHAR.join(perf_list_stashid)
         if not PATH_ONEPERFORMER:
             scene_information['performer_path'] = PERFORMER_SPLITCHAR.join(perf_list)
     elif PATH_NOPERFORMER_FOLDER:
@@ -1182,7 +1212,7 @@ LOGFILE = config.log_file
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG['general']['databasePath']
-TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $duration $resolution $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum".split(" ")
+TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $resolution $duration $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum $stashid_scene $stashid_performer $studio_code".split(" ")
 
 # READING CONFIG
 
@@ -1240,6 +1270,7 @@ FILE_REFACTOR = check_version(graphql_getBuild())
 
 if FILE_REFACTOR:
     FILE_QUERY = """
+            code
             files {
                 path
                 video_codec
