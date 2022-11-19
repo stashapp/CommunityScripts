@@ -707,6 +707,8 @@ def makeFilename(scene_information: dict, query: str) -> str:
     r, t = field_replacer(new_filename, scene_information)
     if FILENAME_REPLACEWORDS:
         r = replace_text(r)
+    if not t:
+        r = r.replace("$title", t)
     r = cleanup_text(r)
     if t:
         r = r.replace("$title", t)
@@ -719,6 +721,8 @@ def makePath(scene_information: dict, query: str) -> str:
     new_filename = str(query)
     new_filename = new_filename.replace("$performer", "$performer_path")
     r, t = field_replacer(new_filename, scene_information)
+    if not t:
+        r = r.replace("$title", t)
     r = cleanup_text(r)
     if t:
         r = r.replace("$title", t)
