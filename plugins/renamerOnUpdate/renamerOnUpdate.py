@@ -438,6 +438,13 @@ def sort_performer(lst_use: list, lst_app=[]):
     return lst_app
 
 
+def sort_rating(d: dict):
+    new_d = {}
+    for i in sorted(d.keys(), reverse=True):
+        new_d[i] = d[i]
+    return new_d
+
+
 def extract_info(scene: dict, template: None):
     # Grabbing things from Stash
     scene_information = {}
@@ -489,7 +496,7 @@ def extract_info(scene: dict, template: None):
     scene_information['performer_path'] = None
     if scene.get("performers"):
         perf_list = []
-        perf_rating = {"5": [], "4": [], "3": [], "2": [], "1": [], "0": []}
+        perf_rating = {"0": []}
         perf_favorite = {"yes": [], "no": []}
         for perf in scene['performers']:
             if perf.get("gender"):
@@ -503,6 +510,8 @@ def extract_info(scene: dict, template: None):
                     perf["name"] = re.sub(r"([a-zA-Z]+)(\s)([a-zA-Z]+)", r"\3 \1", perf["name"])
             perf_list.append(perf['name'])
             if perf.get('rating'):
+                if perf_rating.get(str(perf['rating'])) is None:
+                    perf_rating[str(perf['rating'])] = []
                 perf_rating[str(perf['rating'])].append(perf['name'])
             else:
                 perf_rating["0"].append(perf['name'])
@@ -514,6 +523,7 @@ def extract_info(scene: dict, template: None):
             if perf["name"] in scene_information['current_path_split'] and scene_information.get('performer_path') is None and PATH_KEEP_ALRPERF:
                 scene_information['performer_path'] = perf["name"]
                 log.LogDebug(f"[PATH] Keeping the current name of the performer '{perf['name']}'")
+        perf_rating = sort_rating(perf_rating)
         # sort performer
         if PERFORMER_SORT == "rating":
             # sort alpha
