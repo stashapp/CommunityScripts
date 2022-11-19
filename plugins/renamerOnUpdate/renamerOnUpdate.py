@@ -635,27 +635,6 @@ def extract_info(scene: dict, template: None):
     return scene_information
 
 
-def cleanup_text(text: str):
-    # cleanup
-    new_filename = re.sub(r'[\s_-]+(?=[^a-zA-Z0-9_#]{2})', ' ', text)
-    # remove multi space
-    new_filename = re.sub(r'\s+', ' ', new_filename)
-    # remove thing like 'test - ]'
-    for c in ["[", "("]:
-        new_filename = re.sub(r'{}[_\s-]+'.format("\\" + c), c, new_filename)
-    for c in ["]", ")"]:
-        new_filename = re.sub(r'[_\s-]+{}'.format("\\" + c), c, new_filename)
-    # remove () []
-    new_filename = re.sub(r'\(\W*\)|\[\W*\]', '', new_filename)
-    # remove {}
-    new_filename = re.sub(r'[{}]', '', new_filename)
-    # remove multi space
-    new_filename = re.sub(r'\s+', ' ', new_filename)
-    # Remove space at start/end
-    new_filename = new_filename.strip(" -_")
-    return new_filename
-
-
 def replace_text(text: str):
     for old, new in FILENAME_REPLACEWORDS.items():
         if type(new) is str:
@@ -679,52 +658,70 @@ def replace_text(text: str):
     return tmp
 
 
+def cleanup_text(text: str):
+    text = re.sub(r'\(\W*\)|\[\W*\]|{\W*}', '', text)
+    text = re.sub(r'[{}]', '', text)
+    text = remove_consecutive_nonword(text)
+    return text.strip(" -_")
+
+
+def remove_consecutive_nonword(text: str):
+    for _ in range(0, 10):
+        m = re.findall(r'(\W+)\1+', text)
+        if m:
+            text = re.sub(r'(\W+)\1+', r'\1', text)
+        else:
+            break
+    return text
+
+
+def field_replacer(text: str, scene_information:dict):
+    field_found = re.findall(r"\$\w+", text)
+    result = text
+    title = None
+    replaced_word = ""
+    for i in range(0, len(field_found)):
+        f = field_found[i].replace("$", "")
+        # If $performer is before $title, prevent having duplicate text.
+        if f == "performer" and len(field_found) > i + 1 and scene_information.get('performer'):
+            if field_found[i+1] == "$title" and scene_information.get('title') and PREVENT_TITLE_PERF:
+                if re.search(f"^{scene_information['performer'].lower()}", scene_information['title'].lower()):
+                    log.LogDebug("Ignoring the performer field because it's already in start of title")
+                    result = result.replace("$performer", "")
+                    continue
+        replaced_word = scene_information.get(f)
+        if not replaced_word:
+            replaced_word = ""
+        if FIELD_REPLACER.get(f"${f}"):
+            replaced_word = replaced_word.replace(FIELD_REPLACER[f"${f}"]["replace"], FIELD_REPLACER[f"${f}"]["with"])
+        if f == "title":
+            title = replaced_word.strip()
+            continue
+        result = result.replace(f"${f}", replaced_word)
+    return result, title
+
+
 def makeFilename(scene_information: dict, query: str) -> str:
     new_filename = str(query)
-    for field in TEMPLATE_FIELD:
-        field_name = field.replace("$", "")
-        if field in new_filename:
-            if field == "$movie_scene":
-                if scene_information.get("movie_index"):
-                    new_filename = new_filename.replace(field, f"scene {scene_information['movie_index']}")
-                else:
-                    new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
-            elif scene_information.get(field_name):
-                if field == "$performer":
-                    if re.search(r"\$performer[-\s_]*\$title", new_filename) and scene_information.get('title') and PREVENT_TITLE_PERF:
-                        if re.search(f"^{scene_information['performer'].lower()}", scene_information['title'].lower()):
-                            log.LogInfo("Ignoring the performer field because it's already in start of title")
-                            new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
-                            continue
-                new_filename = new_filename.replace(field, scene_information[field_name])
-            else:
-                new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
-            if FIELD_REPLACER.get(field):
-                new_filename = new_filename.replace(FIELD_REPLACER[field]["replace"], FIELD_REPLACER[field]["with"])
-
+    r, t = field_replacer(new_filename, scene_information)
     if FILENAME_REPLACEWORDS:
-        new_filename = replace_text(new_filename)
-
-    new_filename = cleanup_text(new_filename)
+        r = replace_text(r)
+    r = cleanup_text(r)
+    if t:
+        r = r.replace("$title", t)
     # Replace spaces with splitchar
-    new_filename = new_filename.replace(' ', FILENAME_SPLITCHAR)
-    return new_filename
+    r = r.replace(' ', FILENAME_SPLITCHAR)
+    return r
 
 
 def makePath(scene_information: dict, query: str) -> str:
     new_filename = str(query)
     new_filename = new_filename.replace("$performer", "$performer_path")
-    for field in TEMPLATE_FIELD:
-        field_name = field.replace("$", "")
-        if field in new_filename:
-            if scene_information.get(field_name):
-                new_filename = new_filename.replace(field, scene_information[field_name])
-            else:
-                new_filename = re.sub(f'{{\\{field}.+}}|\\{field}', "", new_filename)
-            if FIELD_REPLACER.get(field):
-                new_filename = new_filename.replace(FIELD_REPLACER[field]["replace"], FIELD_REPLACER[field]["with"])
-    new_filename = cleanup_text(new_filename)
-    return new_filename
+    r, t = field_replacer(new_filename, scene_information)
+    r = cleanup_text(r)
+    if t:
+        r = r.replace("$title", t)
+    return r
 
 
 def capitalizeWords(s: str):
