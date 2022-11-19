@@ -618,6 +618,7 @@ def extract_info(scene: dict, template: None):
             scene_information["movie_year"] = scene["movies"][0]["movie"]["date"][0:4]
         if scene["movies"][0].get("scene_index"):
             scene_information["movie_index"] = scene["movies"][0]["scene_index"]
+            scene_information["movie_scene"] = f"scene {scene_information['movie_index']}"
 
     # Grab Video and Audio codec
     scene_information['video_codec'] = scene['file']['video_codec'].upper()
