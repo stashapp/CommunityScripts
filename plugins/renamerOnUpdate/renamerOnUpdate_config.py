@@ -24,6 +24,9 @@
 #   $movie_title
 #   $movie_year
 #   $movie_scene
+#   $stashid_scene
+#   $stashid_performer
+#   $studio_code
 #
 # Note:
 # $date_format: can be edited with date_format settings
