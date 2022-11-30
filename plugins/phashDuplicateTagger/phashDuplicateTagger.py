@@ -162,12 +162,21 @@ def process_duplicates(duplicate_list):
 	for i, group in enumerate(duplicate_list):
 		log.progress(i/total)
 		filtered_group = []
+		unified_tags = []
 		for scene in group:
 			tag_ids = [ t['id'] for t in scene['tags'] ]
 			if ignore_tag_id in tag_ids:
 				log.debug(f"Ignore {scene['id']} {scene['title']}")
 			else:
+				unified_tags = unified_tags + list(set(tag_ids) - set(unified_tags))
 				filtered_group.append(scene)
+		stash.update_scenes({
+			'ids': [scene['id'] for scene in group],
+			'tag_ids': {
+				'mode': 'ADD',
+				'ids': unified_tags
+			} 
+		})
 		if len(filtered_group) > 1:
 			tag_files(filtered_group)
 
