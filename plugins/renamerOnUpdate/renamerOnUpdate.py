@@ -1224,7 +1224,7 @@ LOGFILE = config.log_file
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG['general']['databasePath']
-TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $resolution $duration $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum $stashid_scene $stashid_performer $studio_code".split(" ")
+TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $resolution $duration $bitrate $parent_studio $studio_family $studio_code $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum $stashid_scene $stashid_performer".split(" ")
 
 # READING CONFIG
 
