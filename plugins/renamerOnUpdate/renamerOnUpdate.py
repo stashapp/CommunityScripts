@@ -305,13 +305,6 @@ def graphql_getBuild():
     return result['systemStatus']['databaseSchema']
 
 
-def check_version(current: str):
-    # > 31: FileRefactor
-    if current > 31:
-        return True
-    return False
-
-
 def find_diff_text(a: str, b: str):
     addi = minus = stay = ""
     minus_ = addi_ = 0
@@ -1278,11 +1271,9 @@ PATH_NON_ORGANIZED = config.p_non_organized
 PATH_ONEPERFORMER = config.path_one_performer
 
 
-FILE_REFACTOR = check_version(graphql_getBuild())
-
-if FILE_REFACTOR:
+db_version = graphql_getBuild()
+if db_version >= 32:
     FILE_QUERY = """
-            code
             files {
                 path
                 video_codec
@@ -1311,7 +1302,8 @@ else:
                 duration
             }
     """
-
+if db_version >= 38:
+    FILE_QUERY = f"        code{FILE_QUERY}"
 
 if PLUGIN_ARGS:
     if "bulk" in PLUGIN_ARGS:
