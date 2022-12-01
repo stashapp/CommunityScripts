@@ -1148,7 +1148,7 @@ def renamer(scene_id, db_conn=None):
                 raise Exception("rename")
             # rename file on your db
             try:
-                if FILE_REFACTOR:
+                if db_version >= 32:
                     db_rename_refactor(stash_db, scene_information)
                 else:
                     db_rename(stash_db, scene_information)
