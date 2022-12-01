@@ -1148,7 +1148,7 @@ def renamer(scene_id, db_conn=None):
                 raise Exception("rename")
             # rename file on your db
             try:
-                if db_version >= 32:
+                if DB_VERSION >= 32:
                     db_rename_refactor(stash_db, scene_information)
                 else:
                     db_rename(stash_db, scene_information)
@@ -1271,8 +1271,8 @@ PATH_NON_ORGANIZED = config.p_non_organized
 PATH_ONEPERFORMER = config.path_one_performer
 
 
-db_version = graphql_getBuild()
-if db_version >= 32:
+DB_VERSION = graphql_getBuild()
+if DB_VERSION >= 32:
     FILE_QUERY = """
             files {
                 path
@@ -1302,7 +1302,7 @@ else:
                 duration
             }
     """
-if db_version >= 38:
+if DB_VERSION >= 38:
     FILE_QUERY = f"        code{FILE_QUERY}"
 
 if PLUGIN_ARGS:
