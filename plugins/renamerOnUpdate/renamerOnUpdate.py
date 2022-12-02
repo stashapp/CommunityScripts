@@ -30,6 +30,10 @@ except Exception:
     import config
 import log
 
+
+DB_VERSION_FILE_REFACTOR = 32
+DB_VERSION_SCENE_STUDIO_CODE = 38
+
 DRY_RUN = config.dry_run
 DRY_RUN_FILE = None
 
@@ -303,13 +307,6 @@ def graphql_getBuild():
     """
     result = callGraphQL(query)
     return result['systemStatus']['databaseSchema']
-
-
-def check_version(current: str):
-    # > 31: FileRefactor
-    if current > 31:
-        return True
-    return False
 
 
 def find_diff_text(a: str, b: str):
@@ -1155,7 +1152,7 @@ def renamer(scene_id, db_conn=None):
                 raise Exception("rename")
             # rename file on your db
             try:
-                if FILE_REFACTOR:
+                if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
                     db_rename_refactor(stash_db, scene_information)
                 else:
                     db_rename(stash_db, scene_information)
@@ -1224,7 +1221,7 @@ LOGFILE = config.log_file
 
 STASH_CONFIG = graphql_getConfiguration()
 STASH_DATABASE = STASH_CONFIG['general']['databasePath']
-TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $resolution $duration $bitrate $parent_studio $studio_family $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum $stashid_scene $stashid_performer $studio_code".split(" ")
+TEMPLATE_FIELD = "$date_format $date $year $performer_path $performer $title $height $resolution $duration $bitrate $parent_studio $studio_family $studio_code $studio $rating $tags $video_codec $audio_codec $movie_title $movie_year $movie_scene $oshash $checksum $stashid_scene $stashid_performer".split(" ")
 
 # READING CONFIG
 
@@ -1277,12 +1274,9 @@ PATH_KEEP_ALRPERF = config.path_keep_alrperf
 PATH_NON_ORGANIZED = config.p_non_organized
 PATH_ONEPERFORMER = config.path_one_performer
 
-
-FILE_REFACTOR = check_version(graphql_getBuild())
-
-if FILE_REFACTOR:
+DB_VERSION = graphql_getBuild()
+if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
     FILE_QUERY = """
-            code
             files {
                 path
                 video_codec
@@ -1311,7 +1305,8 @@ else:
                 duration
             }
     """
-
+if DB_VERSION >= DB_VERSION_SCENE_STUDIO_CODE:
+    FILE_QUERY = f"        code{FILE_QUERY}"
 
 if PLUGIN_ARGS:
     if "bulk" in PLUGIN_ARGS:
