@@ -30,6 +30,10 @@ except Exception:
     import config
 import log
 
+
+DB_VERSION_FILE_REFACTOR = 32
+DB_VERSION_SCENE_STUDIO_CODE = 38
+
 DRY_RUN = config.dry_run
 DRY_RUN_FILE = None
 
@@ -1148,7 +1152,7 @@ def renamer(scene_id, db_conn=None):
                 raise Exception("rename")
             # rename file on your db
             try:
-                if DB_VERSION >= 32:
+                if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
                     db_rename_refactor(stash_db, scene_information)
                 else:
                     db_rename(stash_db, scene_information)
@@ -1270,9 +1274,8 @@ PATH_KEEP_ALRPERF = config.path_keep_alrperf
 PATH_NON_ORGANIZED = config.p_non_organized
 PATH_ONEPERFORMER = config.path_one_performer
 
-
 DB_VERSION = graphql_getBuild()
-if DB_VERSION >= 32:
+if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
     FILE_QUERY = """
             files {
                 path
@@ -1302,7 +1305,7 @@ else:
                 duration
             }
     """
-if DB_VERSION >= 38:
+if DB_VERSION >= DB_VERSION_SCENE_STUDIO_CODE:
     FILE_QUERY = f"        code{FILE_QUERY}"
 
 if PLUGIN_ARGS:
