@@ -30,6 +30,10 @@ except Exception:
     import config
 import log
 
+
+DB_VERSION_FILE_REFACTOR = 32
+DB_VERSION_SCENE_STUDIO_CODE = 38
+
 DRY_RUN = config.dry_run
 DRY_RUN_FILE = None
 
@@ -107,25 +111,33 @@ def graphql_getScene(scene_id):
         title
         date
         rating
+        stash_ids {
+            endpoint
+            stash_id
+        }
         organized""" + FILE_QUERY + """
         studio {
-          id
-          name
-          parent_studio {
-              id
-              name
-          }
+            id
+            name
+            parent_studio {
+                id
+                name
+            }
         }
         tags {
-          id
-          name
+            id
+            name
         }
         performers {
-          id
-          name
-          gender
-          favorite
-          rating
+            id
+            name
+            gender
+            favorite
+            rating
+            stash_ids{
+                endpoint
+                stash_id
+            }
         }
         movies {
             movie {
@@ -162,25 +174,33 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
         date
         rating
         organized
+        stash_ids {
+            endpoint
+            stash_id
+        }
     """ + FILE_QUERY + """
         studio {
-          id
-          name
-          parent_studio {
-              id
-              name
-          }
+            id
+            name
+            parent_studio {
+                id
+                name
+            }
         }
         tags {
-          id
-          name
+            id
+            name
         }
         performers {
-          id
-          name
-          gender
-          favorite
-          rating
+            id
+            name
+            gender
+            favorite
+            rating
+            stash_ids{
+                endpoint
+                stash_id
+            }
         }
         movies {
             movie {
@@ -287,13 +307,6 @@ def graphql_getBuild():
     """
     result = callGraphQL(query)
     return result['systemStatus']['databaseSchema']
-
-
-def check_version(current: str):
-    # > 31: FileRefactor
-    if current > 31:
-        return True
-    return False
 
 
 def find_diff_text(a: str, b: str):
@@ -438,6 +451,13 @@ def sort_performer(lst_use: list, lst_app=[]):
     return lst_app
 
 
+def sort_rating(d: dict):
+    new_d = {}
+    for i in sorted(d.keys(), reverse=True):
+        new_d[i] = d[i]
+    return new_d
+
+
 def extract_info(scene: dict, template: None):
     # Grabbing things from Stash
     scene_information = {}
@@ -450,7 +470,12 @@ def extract_info(scene: dict, template: None):
     scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
     scene_information['oshash'] = scene['oshash']
     scene_information['checksum'] = scene.get("checksum")
+    scene_information['studio_code'] = scene.get("code")
 
+    if scene.get("stash_ids"):
+        #todo support other db that stashdb ?
+        scene_information['stashid_scene'] = scene['stash_ids'][0]["stash_id"]
+    
     if template.get("path"):
         if "^*" in template["path"]["destination"]:
             template["path"]["destination"] = template["path"]["destination"].replace("^*", scene_information['current_directory'])
@@ -489,7 +514,8 @@ def extract_info(scene: dict, template: None):
     scene_information['performer_path'] = None
     if scene.get("performers"):
         perf_list = []
-        perf_rating = {"5": [], "4": [], "3": [], "2": [], "1": [], "0": []}
+        perf_list_stashid = []
+        perf_rating = {"0": []}
         perf_favorite = {"yes": [], "no": []}
         for perf in scene['performers']:
             if perf.get("gender"):
@@ -503,6 +529,8 @@ def extract_info(scene: dict, template: None):
                     perf["name"] = re.sub(r"([a-zA-Z]+)(\s)([a-zA-Z]+)", r"\3 \1", perf["name"])
             perf_list.append(perf['name'])
             if perf.get('rating'):
+                if perf_rating.get(str(perf['rating'])) is None:
+                    perf_rating[str(perf['rating'])] = []
                 perf_rating[str(perf['rating'])].append(perf['name'])
             else:
                 perf_rating["0"].append(perf['name'])
@@ -514,6 +542,7 @@ def extract_info(scene: dict, template: None):
             if perf["name"] in scene_information['current_path_split'] and scene_information.get('performer_path') is None and PATH_KEEP_ALRPERF:
                 scene_information['performer_path'] = perf["name"]
                 log.LogDebug(f"[PATH] Keeping the current name of the performer '{perf['name']}'")
+        perf_rating = sort_rating(perf_rating)
         # sort performer
         if PERFORMER_SORT == "rating":
             # sort alpha
@@ -547,6 +576,14 @@ def extract_info(scene: dict, template: None):
                 log.LogInfo(f"Limited the amount of performer to {PERFORMER_LIMIT}")
                 perf_list = perf_list[0: PERFORMER_LIMIT]
         scene_information['performer'] = PERFORMER_SPLITCHAR.join(perf_list)
+        if perf_list:
+            for p in perf_list:
+                for perf in scene['performers']:
+                    #todo support other db that stashdb ?
+                    if p == perf['name'] and perf.get('stash_ids'):
+                        perf_list_stashid.append(perf['stash_ids'][0]["stash_id"])
+                        break
+            scene_information['stashid_performer'] = PERFORMER_SPLITCHAR.join(perf_list_stashid)
         if not PATH_ONEPERFORMER:
             scene_information['performer_path'] = PERFORMER_SPLITCHAR.join(perf_list)
     elif PATH_NOPERFORMER_FOLDER:
@@ -1117,7 +1154,7 @@ def renamer(scene_id, db_conn=None):
                 raise Exception("rename")
             # rename file on your db
             try:
-                if FILE_REFACTOR:
+                if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
                     db_rename_refactor(stash_db, scene_information)
                 else:
                     db_rename(stash_db, scene_information)
@@ -1238,10 +1275,8 @@ PATH_KEEP_ALRPERF = config.path_keep_alrperf
 PATH_NON_ORGANIZED = config.p_non_organized
 PATH_ONEPERFORMER = config.path_one_performer
 
-
-FILE_REFACTOR = check_version(graphql_getBuild())
-
-if FILE_REFACTOR:
+DB_VERSION = graphql_getBuild()
+if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
     FILE_QUERY = """
             files {
                 path
@@ -1271,7 +1306,8 @@ else:
                 duration
             }
     """
-
+if DB_VERSION >= DB_VERSION_SCENE_STUDIO_CODE:
+    FILE_QUERY = f"        code{FILE_QUERY}"
 
 if PLUGIN_ARGS:
     if "bulk" in PLUGIN_ARGS:
