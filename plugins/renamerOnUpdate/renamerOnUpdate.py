@@ -697,7 +697,7 @@ def replace_text(text: str):
 
 
 def cleanup_text(text: str):
-    text = re.sub(r'\(\W*\)|\[\W*\]|{[^a-zA-Z]*}', '', text)
+    text = re.sub(r'\(\W*\)|\[\W*\]|{[^a-zA-Z0-9]*}', '', text)
     text = re.sub(r'[{}]', '', text)
     text = remove_consecutive_nonword(text)
     return text.strip(" -_.")
@@ -718,6 +718,8 @@ def field_replacer(text: str, scene_information:dict):
     result = text
     title = None
     replaced_word = ""
+    if field_found:
+        field_found.sort(key=len, reverse=True)
     for i in range(0, len(field_found)):
         f = field_found[i].replace("$", "").strip("_")
         # If $performer is before $title, prevent having duplicate text.
@@ -735,7 +737,10 @@ def field_replacer(text: str, scene_information:dict):
         if f == "title":
             title = replaced_word.strip()
             continue
-        result = result.replace(f"${f}", replaced_word, 1)
+        if replaced_word == "":
+            result = result.replace(field_found[i], replaced_word)
+        else:
+            result = result.replace(f"${f}", replaced_word)
     return result, title
 
 
