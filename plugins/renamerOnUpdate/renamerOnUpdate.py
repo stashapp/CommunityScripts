@@ -665,6 +665,8 @@ def extract_info(scene: dict, template: None):
 
     if FIELD_WHITESPACE_SEP:
         for key, value in scene_information.items():
+            if key in ["current_path", "current_filename", "current_directory", "current_path_split", "template_split"]:
+                continue
             if type(value) is str:
                 scene_information[key] = value.replace(" ", FIELD_WHITESPACE_SEP)
             elif type(value) is list:
