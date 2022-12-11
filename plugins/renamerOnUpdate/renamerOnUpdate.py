@@ -368,9 +368,8 @@ def config_edit(name: str, state: bool):
 def check_longpath(path: str):
     # Trying to prevent error with long paths for Win10
     # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
-    #TODO remove part until good
     if len(path) > 240 and not IGNORE_PATH_LENGTH:
-        log.LogError(f"The path is too long ({len(path)} > 240)")
+        log.LogError(f"The path is too long ({len(path)} > 240). You can look at 'order_field'/'ignore_path_length' in config.")
         return 1
 
 
