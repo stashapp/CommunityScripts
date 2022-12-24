@@ -1057,6 +1057,8 @@ def renamer(scene_id, db_conn=None):
     elif stash_scene.get("files"):
         scene_files = stash_scene["files"]
         del stash_scene["files"]
+    else:
+        scene_files = []
     stash_db = None
     for i in range(0, len(scene_files)):
         scene_file = scene_files[i]
