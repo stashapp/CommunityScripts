@@ -695,6 +695,7 @@ def replace_text(text: str):
             tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', text)
             if tmp != text:
                 log.LogDebug(f"'{old}' changed with '{new[0]}'")
+        text = tmp
     return tmp
 
 
