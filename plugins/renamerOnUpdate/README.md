@@ -203,16 +203,3 @@ Example:
 If you want to use the `-` only when you have the date, you can group the `-` with `$date`
 **Without** date in Stash:
  - `[$studio] {$date -} $title` -> `[Blender] Big Buck Bunny`
-
-## Option
-
-### *p_tag_option*
-...
-### *field_replacer*
-...
-### *replace_words*
-...
-### *removecharac_Filename*
-...
-### *performer_limit*
-...
