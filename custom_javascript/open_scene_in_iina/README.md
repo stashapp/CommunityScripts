@@ -16,7 +16,6 @@ File will be saved as custom.js in your stash configuration
 
 | Key | Description |
 | - | - |
-| `apiKey` | Needed to get file path from scene ID. Generate in Settings → Security |
 | `urlScheme` | Protocol to open media player. Only tested with IINA on macOS |
 | `replacePath` | Replace docker container path with local path. Default `["", ""]` |
 
@@ -24,7 +23,6 @@ File will be saved as custom.js in your stash configuration
 
 ```js
 const settings = {
-  "apiKey": "eKoCbZSSyo",
   "urlScheme": "iina://weblink?url=file://",
   "replacePath": ["/data/", "/Volumes/folder/"],
 };
