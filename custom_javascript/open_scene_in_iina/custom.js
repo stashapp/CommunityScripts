@@ -1,6 +1,5 @@
 // settings
 const settings = {
-    "apiKey": "",
     "urlScheme": "iina://weblink?url=file://",
     "replacePath": ["", ""],
 };
@@ -33,15 +32,14 @@ style.innerHTML = `
 document.head.appendChild(style);
 
 // api
-let getFilePath = async href => {
-    let regex = /\/scenes\/(.*)\?/,
+const getFilePath = async href => {
+    const regex = /\/scenes\/(.*)\?/,
         sceneId = regex.exec(href)[1],
         graphQl = `{ findScene(id: ${sceneId}) { files { path } } }`,
         response = await fetch("/graphql", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "ApiKey": settings.apiKey,
             },
             body: JSON.stringify({ query: graphQl })
         });
@@ -49,12 +47,12 @@ let getFilePath = async href => {
 };
 
 // promise
-let waitForElm = selector => {
+const waitForElm = selector => {
     return new Promise(resolve => {
         if (document.querySelector(selector)) {
             return resolve(document.querySelector(selector));
         }
-        let observer = new MutationObserver(mutations => {
+        const observer = new MutationObserver(mutations => {
             if (document.querySelector(selector)) {
                 resolve(document.querySelector(selector));
                 observer.disconnect();
@@ -73,7 +71,7 @@ waitForElm("video").then(() => {
 });
 
 // route
-let previousUrl = '';
+let previousUrl = "";
 const observer = new MutationObserver(function (mutations) {
     if (window.location.href !== previousUrl) {
         previousUrl = window.location.href;
@@ -86,11 +84,11 @@ const config = { subtree: true, childList: true };
 observer.observe(document, config);
 
 // main
-let addButton = () => {
-    let scenes = document.querySelectorAll("div.row > div");
-    for (let scene of scenes) {
+const addButton = () => {
+    const scenes = document.querySelectorAll("div.row > div");
+    for (const scene of scenes) {
         if (scene.querySelector("a.button") === null) {
-            let scene_url = scene.querySelector("a.scene-card-link"),
+            const scene_url = scene.querySelector("a.scene-card-link"),
                 popover = scene.querySelector("div.card-popovers"),
                 button = document.createElement("a");
             button.innerHTML = `
@@ -111,7 +109,7 @@ let addButton = () => {
                 if ([button.title.length, button.href.length].indexOf(0) > -1) {
                     getFilePath(scene_url.href)
                         .then((result) => {
-                            let filePath = result.data.findScene.files[0].path
+                            const filePath = result.data.findScene.files[0].path
                                 .replace(settings.replacePath[0], "");
                             button.title = filePath;
                             button.href = settings.urlScheme +
