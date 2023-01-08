@@ -38,7 +38,7 @@ As the above example, it will only create a movie when:
 4. The scene has some details text.
   
 Only when all 4 conditions are met, and after the scene is updated with something, then a movie will be created and linked to that scene. The new movie will try to copy as much information as possible, including title, studio, duration, date, details and front cover. <br>
-The new movie will not copy the URL from scene directly, instead it will copy the scene's internal URL, like "http://localhost:9999/scenes/1234" . Because I am planning on create a scraper that will allow you to update the movie information from this URL. It doesn't make much sense to direct-copy the URL if the scraper cannot scrape the URL for movies.
+The new movie will not copy the URL from scene directly, instead it will copy the scene's internal URL, like "http://localhost:9999/scenes/1234" . Because I am planning on create a scraper that will allow you to update the movie information from this URL. It doesn't make much sense to direct-copy the external URL if the scraper cannot scrape it for movies.
 
 ### I got a problem with xxx...
 This is only version 1.0. So please raise an issue and let me know. I am not a Linux or Docker guy, so please don't expect me to solve
