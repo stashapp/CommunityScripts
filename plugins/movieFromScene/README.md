@@ -28,7 +28,7 @@ It's the same thing as you run "movieFromSceneGui.py" directly from file browser
 <p>
   
 * The run mode is obvious: Disable, Enable or just Dry Runs.
-* The criteria defines when this plugin will automatically create a scene.
+* The criteria defines under what condition this plugin will automatically create a movie.
   
 As the above example, it will only create a movie when:
 1. The scene has no movies.
