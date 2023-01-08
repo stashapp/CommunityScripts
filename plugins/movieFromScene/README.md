@@ -1,18 +1,18 @@
 # Auto-Create Movie From Scene Update
-A python plugin with GUI config.
+### A python plugin for Stash with GUI config.
 
-Tested under:
-Stash v0.18.0
-Python 3.10 with tkinter installed
+Tested under: <br>
+Stash v0.18.0 <br>
+Python 3.10 with tkinter installed <br>
 Windows 11
 
 ### Purpose of the plugin:
-There are lots of scrapers which can retrieve information for scenes, but there are only a few of them come with movie scrapers. No one have patience to scrape the scene then copy the information from scenes to movies. Therefore, this is where the plugin comes handy: you specify the criteria when to automatically create a movie for your scene. Once the settings are set, and a scene has enough information to fit the criteria, it will automatically copy the scene information to create a new movie for you.
+There are lots of scrapers which can retrieve information for scenes, but there are only a few of them came with movie scrapers. No one have patience to scrape the scene then copy the information from scenes to movies bit by bit. Therefore, this is where the plugin comes in handy: you specify the criteria when to automatically create a movie for your scene. Once the settings are set, and a scene has enough information to fit the criteria, it will automatically use the scene information to create a new movie for you.
 
 ### install instructions:
-Drop the py_plugins folder and the "movieFromScene.yml" file in stash's plugin folder, and press the `Reload plugins` button in the Plugin settings
+Drop the py_plugins folder and the "movieFromScene.yml" file in stash's plugin folder, and press the `Reload plugins` button in the Plugin settings. <p>
 
-This plugin requires python 3.10 for the new "match" statement. Because "if elif...else..." is so lame!
+This plugin requires python 3.10 for the new "match" statement. Because "if elif...else..." is so lame! <br>
 It also comes with a GUI that can help you set the criteria and run mode easily, but then you need to install "tkinter" in Python. Or you can just edit the config file manually.
 
 ### How to use it:
@@ -26,8 +26,10 @@ It's the same thing as you run "movieFromSceneGui.py" directly from file browser
 <p>
 <img src="https://user-images.githubusercontent.com/22040708/211181257-2182df00-0b8f-4c93-90d9-885dbb0172f6.png" width= 400 />
 <p>
+  
 * The run mode is obvious: Disable, Enable or just Dry Runs.
 * The criteria defines when this plugin will automatically create a scene.
+  
 As the above example, it will only create a movie when:
 1. The scene has no movies.
 2. The scene has title. ( This is not the same as the file name. )
