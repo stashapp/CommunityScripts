@@ -31,10 +31,12 @@ It's the same thing as you run "movieFromSceneGui.py" directly from file browser
 * The criteria defines under what condition this plugin will automatically create a movie.
   
 As the above example, it will only create a movie when:
+  
 1. The scene has no movies.
 2. The scene has title. ( This is not the same as the file name. )
 3. The scene has at least one performer.
 4. The scene has some details text.
+  
 Only when all 4 condictions are met, and after the scene is updated with something, then a movie will be created.
 
 ### I got a problem with xxx...
