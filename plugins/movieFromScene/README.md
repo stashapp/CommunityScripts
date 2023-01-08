@@ -37,7 +37,7 @@ As the above example, it will only create a movie when:
 3. The scene has at least one performer.
 4. The scene has some details text.
   
-Only when all 4 condictions are met, and after the scene is updated with something, then a movie will be created.
+Only when all 4 conditions are met, and after the scene is updated with something, then a movie will be created and linked to that scene.
 
 ### I got a problem with xxx...
 This is only version 1.0. So please raise an issue and let me know. I am not a Linux or Docker guy, so please don't expect me to solve
