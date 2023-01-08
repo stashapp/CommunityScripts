@@ -27,6 +27,7 @@ Scanning|Scene.Create<br />Gallery.Create|[filenameParser](plugins/filenameParse
 Scanning|Scene.Create|[pathParser](plugins/pathParser)|Updates scene info based on the file path.|v0.17
 Scanning|Scene.Create|[titleFromFilename](plugins/titleFromFilename)|Sets the scene title to its filename|v0.17
 Reporting||[TagGraph](plugins/tagGraph)|Creates a visual of the Tag relations.|v0.7
+Movies|Scene.Update|[movieFromScene](plguins/movieFromScene)|Auto-create movies when scenes get updated|v0.18
 
 ## Themes
 
