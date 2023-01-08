@@ -39,7 +39,7 @@ Only when all 4 condictions are met, and after the scene is updated with somethi
 
 ### I got a problem with xxx...
 This is only version 1.0. So please raise an issue and let me know. I am not a Linux or Docker guy, so please don't expect me to solve
-problems related to that. In fact, this is my first time to build a Python GUI program.
+problems related to that. In fact, this is my first time to build a Python GUI program. Please be understanding.
 
 
 
