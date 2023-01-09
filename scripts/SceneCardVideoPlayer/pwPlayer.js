@@ -12,11 +12,12 @@ function log(str){
 }
 
 const pwPlayer_settings = {
-	"Mode": "local",
-	// Path fixes for different OS
+	// most should be using remote playing mode, which plays the stream.
+	"Mode": "remote",	
+	// Path fixes for different OS. For local only.
 	"Windows":{
-		// Not used.
-		"urlScheme": "file:///",
+		// Use vlc to handle local files.
+		"urlScheme": "vlc://",
 		// double backsplashes need 4 backslashes.
 		"replacePath": ["\\\\", "/"],
 	},
@@ -183,27 +184,30 @@ const pwPlayer_addButton = () => {
 						.replace(pwPlayer_settings[pwPlayer_OS].replacePath[0], "");
 					switch (pwPlayer_OS){
 						case "Mac OS":
-							// For iina player.
+							// Sample local handling for iina player.
+							// if you don't have iina player, use "remote" mode instead.
 							if(debug)alert("you just click play in MacOS");
 							if (pwPlayer_settings.Mode == "local"){
 								href = pwPlayer_settings.MacOS.urlScheme +
-								pwPlayer_settings.MacOS.replacePath[1] +
+									pwPlayer_settings.MacOS.replacePath[1] +
 									encodeURIComponent(filePath);
-							}else{
-								href = streamLink;
+								window.open(href);
+							}else{  // "remote"
+								playVideoInBrowser(streamLink);
 							}
-							playVideoInBrowser(streamLink);
 							break;
 						case "iOS":
+							// I don't know how to do this, so play in browser.
 							if(debug)alert("you just click play in iOS");
 							playVideoInBrowser(streamLink);
 							break;
 						case "Android":
+							// Use android's intent to open the stream.
 							if(debug)alert("you just click play in Android");
 							intent = new Intent(android.content.Intent.ACTION_VIEW);
 							if (pwPlayer_settings.Mode == "local"){
 								uriData = Uri.parse( pwPlayer_settings.Android.urlScheme + filePath);
-							}else{
+							}else{ // remote
 								uriData = Uri.parse(streamLink);
 							}
 							intent.setDataAndType(uriData, "video/*");
@@ -211,12 +215,20 @@ const pwPlayer_addButton = () => {
 							break;
 						case "Windows":
 							if(debug)alert("you just click play in Windows");
-							log("streamLink:" + streamLink);
-							playVideoInBrowser(streamLink);
+							if (pwPlayer_settings.Mode == "local"){
+								settings = pwPlayer_settings.Windows;
+								href = settings.urlScheme +
+									encodeURIComponent(filePath)
+									.replace(settings.replacePath[0],settings.replacePath[1]);
+								window.open(href);
+							}else{	// remote mode
+								log("streamLink:" + streamLink);
+								playVideoInBrowser(streamLink);
+							}
 							break;
 						default:
 							if(debug)alert("You just click play in an unknow OS.");
-
+							playVideoInBrowser(streamLink);
 					}
 				});
 
