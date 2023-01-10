@@ -11,3 +11,6 @@ You click on the video, then it will disappear. You are back to the scene list. 
 Then refresh the browser.
 * Well, it's supposed to be this simple. Don't know why Stash guys make it so complicated. <br>
 So, enjoy play with it. In the future I will try to make it work with DeoVr.
+
+### Update Log:
+  * 1/10/2023 Show a lot more information about the file when the mouse hovers over Play button.
