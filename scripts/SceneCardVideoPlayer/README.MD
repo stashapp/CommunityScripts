@@ -13,6 +13,8 @@ Then refresh the browser.
 So, enjoy play with it. In the future I will try to make it work with DeoVr.
 
 ### Updates
+#### 1/09/2023
+* Move file info to display when mouse hovers over play buttons.
 #### 1/10/2023
 * Improve the "wait for element" to preview video only.
 * Now when play, the top nav bar will be hidden as well.
