@@ -86,6 +86,38 @@ document.head.appendChild(pwPlayer_style);
 
 
 // api
+const pwPlayer_getSceneDetails = async href => {
+    const regex = /\/scenes\/(\d+)\?/,
+        sceneId = regex.exec(href)[1],
+        graphQl = `
+		{
+			findScene(id:${sceneId}){
+			  files{
+				path,
+				size,
+				format,
+				width,
+				height,
+				duration,
+				video_codec,
+				audio_codec,
+				frame_rate,
+				
+			  },
+			  date
+			}
+		}
+		`,
+        response = await fetch("/graphql", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query: graphQl })
+        });
+    return response.json();
+};
+
 const pwPlayer_getSceneInfo = async href => {
     const regex = /\/scenes\/(\d+)\?/,
         sceneId = regex.exec(href)[1],
@@ -99,6 +131,7 @@ const pwPlayer_getSceneInfo = async href => {
         });
     return response.json();
 };
+
 
 function pwPlayer_getOS() {
 	var userAgent = window.navigator.userAgent,
@@ -238,18 +271,49 @@ const pwPlayer_addButton = () => {
 
             button.onmouseover = () => {
                 if (button.title.length == 0) {
-                    pwPlayer_getSceneInfo(scene_url.href)
+                    pwPlayer_getSceneDetails(scene_url.href)
                         .then((result) => {
 							// console.log("result: " + JSON.stringify(result));
-                            const filePath = result.data.findScene.files[0].path
-                                .replace(pwPlayer_settings[pwPlayer_OS].replacePath[0], "");
-                            button.title = filePath;
+							data = result.data.findScene;
+							sceneFile = data.files[0];
+							log("before title phase.")
+							title =`Path: ${ TrunStr(sceneFile.path,30)}
+Size: ${niceBytes(sceneFile.size)}
+Dimensions: ${sceneFile.width}x${sceneFile.height}
+Duration: ${toHMS(sceneFile.duration)}
+Codecs: ${sceneFile.video_codec}, ${sceneFile.audio_codec}
+Frame Rate: ${sceneFile.frame_rate}
+${data.date?"Date: "+data.date : ""}`;
+							log("result:" + title);
+							button.title = title;
                         });
                 }
             };
         }
     }
 };
+
+function TrunStr(s,n){
+	if (s.length <= n) return s;
+	str = s.substr(0,n)
+	for (i=n;i<s.length;i+=n){
+		str += "\n        " + s.substr(i,n)
+	}
+	return str
+}
+
+function toHMS(s){
+	f=Math.floor;
+	g=(n)=>('00'+n).slice(-2);
+	return f(s/3600)+':'+g(f(s/60)%60)+':'+g(s%60);
+}
+   
+function niceBytes(x){
+	let units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	let l = 0, n = parseInt(x, 10) || 0;
+	while(n >= 1024 && ++l){ n = n/1024; }
+	return(n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + units[l]);
+}
 
 function playVideoInBrowser(streamLink){
 	var pwPlayer_video_div = document.createElement("div");
