@@ -11,3 +11,8 @@ You click on the video, then it will disappear. You are back to the scene list. 
 Then refresh the browser.
 * Well, it's supposed to be this simple. Don't know why Stash guys make it so complicated. <br>
 So, enjoy play with it. In the future I will try to make it work with DeoVr.
+
+### Updates
+#### 1/10/2023
+* Improve the "wait for element" to preview video only.
+* Now when play, the top nav bar will be hidden as well.

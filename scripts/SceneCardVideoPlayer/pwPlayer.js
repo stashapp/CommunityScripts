@@ -3,7 +3,7 @@
 // Allow you to easily play those video files.
 // To use it, just copy and paste the code into Stash->Settings->Interface->Custome Javascript.
 // Then refresh the browser.
-// This is only version 1.0
+// This is only version 1.1
 
 // settings
 const debug = false;
@@ -39,6 +39,7 @@ const pwPlayer_settings = {
 	"MacOS":{
 		// For local iina player.
 		"urlScheme": "iina://weblink?url=file://",
+		// Or VLC: "urlScheme": "vlc-x-callback://x-callback-url/stream?url=file://"
 		"replacePath": ["", ""],
 	}
 };
@@ -74,7 +75,7 @@ pwPlayer_style.innerHTML = `
 		left: 0px;
 		width: 100%;
 		height: 100%;
-		z-index: 99;
+		z-index: 1040;
 	}
 }
 `;
@@ -156,6 +157,8 @@ function pwPlayer_getOS() {
 	return os;
 }
 
+const pwPlayer_config = { subtree: true, childList: true };
+const pwPlayer_previewElm = "video.scene-card-preview-video";
 // promise
 const pwPlayer_waitForElm = selector => {
     return new Promise(resolve => {
@@ -168,15 +171,12 @@ const pwPlayer_waitForElm = selector => {
                 observer.disconnect();
             }
         });
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
+        observer.observe(document.body, pwPlayer_config);
     });
 };
 
 // initial
-pwPlayer_waitForElm("video").then(() => {
+pwPlayer_waitForElm(pwPlayer_previewElm).then(() => {
     pwPlayer_addButton();
 });
 
@@ -185,13 +185,13 @@ let previousUrl = "";
 const observer = new MutationObserver(function (mutations) {
     if (window.location.href !== previousUrl) {
         previousUrl = window.location.href;
-        pwPlayer_waitForElm("video").then(() => {
+        pwPlayer_waitForElm(pwPlayer_previewElm).then(() => {
             pwPlayer_addButton();
         });
     }
 });
-const config = { subtree: true, childList: true };
-observer.observe(document, config);
+
+observer.observe(document, pwPlayer_config);
 
 // main
 const pwPlayer_addButton = () => {
@@ -277,7 +277,7 @@ const pwPlayer_addButton = () => {
 							data = result.data.findScene;
 							sceneFile = data.files[0];
 							log("before title phase.")
-							title =`Path: ${ TrunStr(sceneFile.path,30)}
+							title =`Path: ${ WrapStr(sceneFile.path,30)}
 Size: ${niceBytes(sceneFile.size)}
 Dimensions: ${sceneFile.width}x${sceneFile.height}
 Duration: ${toHMS(sceneFile.duration)}
@@ -293,7 +293,8 @@ ${data.date?"Date: "+data.date : ""}`;
     }
 };
 
-function TrunStr(s,n){
+function WrapStr(s,n){
+	// 
 	if (s.length <= n) return s;
 	str = s.substr(0,n)
 	for (i=n;i<s.length;i+=n){
@@ -379,5 +380,3 @@ function playVideoInBrowser(streamLink){
 		window.scrollTo(0, pwPlayer_scrollPos);
 	}
 }
-
-
