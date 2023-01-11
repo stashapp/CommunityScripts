@@ -1,19 +1,32 @@
-// Inspired by clangmoyai's IINA player script in github !
-// This script will add a "Play" button in each scene card.
-// Allow you to easily play those video files.
-// To use it, just copy and paste the code into Stash->Settings->Interface->Custome Javascript.
-// Then refresh the browser.
-// This is only version 1.1
+/* Inspired by clangmoyai's IINA player script in github !
+   This script will add a "Play" button in each scene card.
+   Allow you to easily play those video files.
+   To use it, just copy and paste the code into Stash->Settings->Interface->Custome Javascript.
+   Then refresh the browser.
+   This is only version 1.2
+
+   Player mode should be either "browser" or "player"
+   In browser mode, the video is played within a <video> tag. It works for most platforms.
+   In player mode, the video is trying to be sent to an external player.
+   Player mode is still buggy, but it should work in android.
+   A special use for player mode, is to use Oculus Browser to see the content of Stash,
+   then use "Play" to open the scene video quickly.
+   This is a great way to view Stash and play scene files in Oculus Quest.
+   Most importantly, once a video is played, you can make it full screen, then set the
+   immersion mode to be "180" and "3d".
+*/
 
 // settings
 const debug = false;
+
+const pwPlayer_mode = "browser";
+
 function log(str){
 	if(debug)console.log(str);
 }
+log("program starts.");
 
 const pwPlayer_settings = {
-	// most should be using remote playing mode, which plays the stream.
-	"Mode": "remote",	
 	// Path fixes for different OS. For local only.
 	"Windows":{
 		// Use vlc to handle local files.
@@ -40,6 +53,16 @@ const pwPlayer_settings = {
 		// For local iina player.
 		"urlScheme": "iina://weblink?url=file://",
 		// Or VLC: "urlScheme": "vlc-x-callback://x-callback-url/stream?url=file://"
+		"replacePath": ["", ""],
+	},
+	"Oculus":{
+		// not use.
+		"urlScheme": "file://",
+		"replacePath": ["", ""],
+	},
+	"Others":{
+		// not use.
+		"urlScheme": "file://",
 		"replacePath": ["", ""],
 	}
 };
@@ -103,9 +126,8 @@ const pwPlayer_getSceneDetails = async href => {
 				video_codec,
 				audio_codec,
 				frame_rate,
-				
 			  },
-			  date
+			  date,
 			}
 		}
 		`,
@@ -122,7 +144,7 @@ const pwPlayer_getSceneDetails = async href => {
 const pwPlayer_getSceneInfo = async href => {
     const regex = /\/scenes\/(\d+)\?/,
         sceneId = regex.exec(href)[1],
-        graphQl = `{ findScene(id: ${sceneId}) { files { path }, paths{stream} } }`,
+        graphQl = `{ findScene(id: ${sceneId}) { files { path, basename }, paths{stream} } }`,
         response = await fetch("/graphql", {
             method: "POST",
             headers: {
@@ -142,16 +164,21 @@ function pwPlayer_getOS() {
 	iosPlatforms = ['iPhone', 'iPad', 'iPod'],
 	os = null;
 
-	if (macosPlatforms.indexOf(platform) !== -1) {
-	os = 'MacOS';
-	} else if (iosPlatforms.indexOf(platform) !== -1) {
-	os = 'iOS';
-	} else if (windowsPlatforms.indexOf(platform) !== -1) {
-	os = 'Windows';
-	} else if (/Android/.test(userAgent)) {
-	os = 'Android';
-	} else if (/Linux/.test(platform)) {
-	os = 'Linux';
+	switch(true){
+		case macosPlatforms.indexOf(platform) !== -1:
+			os = 'MacOS'; break;
+		case iosPlatforms.indexOf(platform) !== -1:
+			os = 'iOS'; break;
+		case windowsPlatforms.indexOf(platform) !== -1:
+			os = 'Windows'; break;
+		case /Android/.test(userAgent):
+			os = 'Android'; break;
+		case /Linux/.test(platform):
+			os = 'Linux'; break;
+		case /OculusBrowser/.test(userAgent):
+			os = 'Oculus'; break;
+		default:
+			os = 'Others'; break;
 	}
 
 	return os;
@@ -197,101 +224,116 @@ observer.observe(document, pwPlayer_config);
 const pwPlayer_addButton = () => {
     const scenes = document.querySelectorAll("div.row > div");
     for (const scene of scenes) {
-        if (scene.querySelector("a.pwPlayer_button") === null) {
-            const scene_url = scene.querySelector("a.scene-card-link"),
-			popover = scene.querySelector("div.card-popovers"),
-			button = document.createElement("a");
-            button.innerHTML = `
-			<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-			<path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm115.7 272-176 
-			101c-15.8 8.8-35.7-2.5-35.7-21V152c0-18.4 19.8-29.8 35.7-21l176 107c16.4 9.2 16.4 32.9 0 42z"/></svg>
-			<span>Play</span>`;
+        if (scene.querySelector("a.pwPlayer_button") != null) continue;
 
-            button.classList.add("pwPlayer_button");
-			button.href = "javascript:;";
-			button.onclick = () =>{
-				pwPlayer_getSceneInfo(scene_url.href)
-				.then((result) =>{
-					const streamLink = result.data.findScene.paths.stream;
-					const filePath = result.data.findScene.files[0].path
-						.replace(pwPlayer_settings[pwPlayer_OS].replacePath[0], "");
+		const scene_url = scene.querySelector("a.scene-card-link"),
+		popover = scene.querySelector("div.card-popovers"),
+		button = document.createElement("a");
+		button.innerHTML = `
+		<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+		<path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm115.7 272-176 
+		101c-15.8 8.8-35.7-2.5-35.7-21V152c0-18.4 19.8-29.8 35.7-21l176 107c16.4 9.2 16.4 32.9 0 42z"/></svg>
+		<span>Play</span>`;
+
+		button.classList.add("pwPlayer_button");
+		button.href = "javascript:;";
+		
+		button.onclick = () =>{
+			pwPlayer_getSceneInfo(scene_url.href)
+			.then((result) =>{
+				const streamLink = result.data.findScene.paths.stream;
+				const filePath = result.data.findScene.files[0].path
+					.replace(pwPlayer_settings[pwPlayer_OS].replacePath[0],
+						pwPlayer_settings[pwPlayer_OS].replacePath[1]);
+				if (pwPlayer_mode == "browser"){
+					playVideoInBrowser(streamLink);
+				}else{
 					switch (pwPlayer_OS){
 						case "Mac OS":
 							// Sample local handling for iina player.
 							// if you don't have iina player, use "remote" mode instead.
 							if(debug)alert("you just click play in MacOS");
-							if (pwPlayer_settings.Mode == "local"){
+							if (pwPlayer_mode == "player"){
 								href = pwPlayer_settings.MacOS.urlScheme +
 									pwPlayer_settings.MacOS.replacePath[1] +
 									encodeURIComponent(filePath);
 								window.open(href);
-							}else{  // "remote"
-								playVideoInBrowser(streamLink);
 							}
-							break;
-						case "iOS":
-							// I don't know how to do this, so play in browser.
-							if(debug)alert("you just click play in iOS");
-							playVideoInBrowser(streamLink);
 							break;
 						case "Android":
-							// Use android's intent to open the stream.
-							if(debug)alert("you just click play in Android");
-							intent = new Intent(android.content.Intent.ACTION_VIEW);
-							if (pwPlayer_settings.Mode == "local"){
-								uriData = Uri.parse( pwPlayer_settings.Android.urlScheme + filePath);
-							}else{ // remote
-								uriData = Uri.parse(streamLink);
+							// Special andoid launch with intent
+							if (button.href == "javascript:;"){
+								url = new URL(streamLink);
+								const scheme=url.protocol.slice(0,-1);
+								url.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(
+									result.data.findScene.files[0].basename
+									)};end`;
+								url.protocol = "intent";
+								button.href = url.toString();
+								button.click();
 							}
-							intent.setDataAndType(uriData, "video/*");
-							context.startActivity(intent);
+							break;
+
+						case "iOS":
+							// Special ios launch
+							if( button.href == "javascript:;"){
+								url = new URL();
+								url.host = "x-callback-url";
+								url.port = "";
+								url.pathname = "stream";
+								url.search = `url=${encodeURIComponent(streamLink)}`;
+								url.protocol = "vlc-x-callback";
+								button.href = url.toString();
+								button.click();
+							}
+							break;
+						case "Oculus":
+							// use browser built-in player
+							if (button.href == "javascript:;"){
+								button.href = streamLink;
+								button.click();
+							}
 							break;
 						case "Windows":
 							if(debug)alert("you just click play in Windows");
-							if (pwPlayer_settings.Mode == "local"){
+							if (pwPlayer_mode == "player"){
 								settings = pwPlayer_settings.Windows;
-								href = settings.urlScheme +
-									encodeURIComponent(filePath)
-									.replace(settings.replacePath[0],settings.replacePath[1]);
+								href = settings.urlScheme + encodeURIComponent(filePath);
 								window.open(href);
-							}else{	// remote mode
-								log("streamLink:" + streamLink);
-								playVideoInBrowser(streamLink);
 							}
 							break;
 						default:
-							if(debug)alert("You just click play in an unknow OS.");
-							playVideoInBrowser(streamLink);
-					}
-				});
+					} // end of the switch
+				} // end of not browser mode
+			});
 
-			};
+		};	// end of button onclick envent.
 
-            if (popover) popover.append(button);
+		if (popover) popover.append(button);
 
-            button.onmouseover = () => {
-                if (button.title.length == 0) {
-                    pwPlayer_getSceneDetails(scene_url.href)
-                        .then((result) => {
-							// console.log("result: " + JSON.stringify(result));
-							data = result.data.findScene;
-							sceneFile = data.files[0];
-							log("before title phase.")
-							title =`Path: ${ WrapStr(sceneFile.path,30)}
+		button.onmouseover = () => {
+			if (button.title.length == 0) {
+				pwPlayer_getSceneDetails(scene_url.href)
+					.then((result) => {
+						// console.log("result: " + JSON.stringify(result));
+						data = result.data.findScene;
+						sceneFile = data.files[0];
+						log("before title phase.")
+						title =`Path: ${ WrapStr(sceneFile.path,30)}
 Size: ${niceBytes(sceneFile.size)}
 Dimensions: ${sceneFile.width}x${sceneFile.height}
 Duration: ${toHMS(sceneFile.duration)}
 Codecs: ${sceneFile.video_codec}, ${sceneFile.audio_codec}
 Frame Rate: ${sceneFile.frame_rate}
 ${data.date?"Date: "+data.date : ""}`;
-							log("result:" + title);
-							button.title = title;
-                        });
-                }
-            };
-        }
-    }
-};
+						log("result:" + title);
+						button.title = title;
+					});
+			}
+		};	// end of on mouse move over.
+        
+    }; // end of the each scene card loop.
+};	// end of pwPlayer_addButton function.
 
 function WrapStr(s,n){
 	// 
@@ -380,3 +422,5 @@ function playVideoInBrowser(streamLink){
 		window.scrollTo(0, pwPlayer_scrollPos);
 	}
 }
+
+
