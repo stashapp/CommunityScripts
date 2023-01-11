@@ -1,5 +1,5 @@
 # Scene Card Video Player
-Sorry but this is not the best place for the script. New and updated script will go to:
+Sorry but this is not the best place for the script. New and updated script will go to: <br>
 https://github.com/philpw99/StashCustomJavascripts  <br>
 I think a separate repo is the best for this script and other scripts I might make in the future.
 <p>
