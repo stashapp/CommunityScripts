@@ -1,5 +1,9 @@
 # Scene Card Video Player
+Sorry but this is not the best place for the script. New and updated script will go to:
+https://github.com/philpw99/StashCustomJavascripts
+I think a separate repo is the best for this script and other scripts I might make in the future.
 <p>
+
 <img src="https://user-images.githubusercontent.com/22040708/211264163-5f25f566-8217-4334-9df6-ca742a5e92c5.png" width=500 />
 <p>
 Inspired by clangmoyai's IINA plugin. I added more cross platform support. <br>
