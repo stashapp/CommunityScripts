@@ -18,3 +18,8 @@ So, enjoy play with it. In the future I will try to make it work with DeoVr.
 #### 1/10/2023
 * Improve the "wait for element" to preview video only.
 * Now when play, the top nav bar will be hidden as well.
+#### 1/11/2023
+* Add "browser" mode and "player" mode. Player mode is useful for using device's internal players, while browser mode works most of the time.
+* Add Oculus browser detection.
+<p>
+Finally, if you use "player" mode, you will be happy to use Quest 2 browser to watch Stash, as I am very happy now.
