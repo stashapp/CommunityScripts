@@ -368,9 +368,8 @@ def config_edit(name: str, state: bool):
 def check_longpath(path: str):
     # Trying to prevent error with long paths for Win10
     # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
-    #TODO remove part until good
     if len(path) > 240 and not IGNORE_PATH_LENGTH:
-        log.LogError(f"The path is too long ({len(path)} > 240)")
+        log.LogError(f"The path is too long ({len(path)} > 240). You can look at 'order_field'/'ignore_path_length' in config.")
         return 1
 
 
@@ -695,6 +694,7 @@ def replace_text(text: str):
             tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', text)
             if tmp != text:
                 log.LogDebug(f"'{old}' changed with '{new[0]}'")
+        text = tmp
     return tmp
 
 
@@ -1105,16 +1105,27 @@ def renamer(scene_id, db_conn=None):
 
         scene_information['scene_id'] = scene_id
         scene_information['file_index'] = i
-        if template["filename"]:
-            scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
-        else:
-            scene_information['new_filename'] = scene_information['current_filename']
-        if template.get("path"):
-            scene_information['new_directory'] = create_new_path(scene_information, template)
-        else:
-            scene_information['new_directory'] = scene_information['current_directory']
-        scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
-        # check length of path
+        
+        for removed_field in ORDER_SHORTFIELD:
+            if removed_field:
+                if scene_information.get(removed_field.replace("$", "")):
+                    del scene_information[removed_field.replace("$", "")]
+                    log.LogWarning(f"removed {removed_field} to reduce the length path")
+                else:
+                    continue
+            if template["filename"]:
+                scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+            else:
+                scene_information['new_filename'] = scene_information['current_filename']
+            if template.get("path"):
+                scene_information['new_directory'] = create_new_path(scene_information, template)
+            else:
+                scene_information['new_directory'] = scene_information['current_directory']
+            scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
+            # check length of path
+            if IGNORE_PATH_LENGTH or len(scene_information['final_path']) <= 240:
+                break
+
         if check_longpath(scene_information['final_path']):
             if (DRY_RUN or option_dryrun) and LOGFILE:
                 with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
@@ -1277,6 +1288,8 @@ PROCESS_ALLRESULT = config.process_getall
 UNICODE_USE = config.use_ascii
 
 ORDER_SHORTFIELD = config.order_field
+ORDER_SHORTFIELD.insert(0, None)
+
 ALT_DIFF_DISPLAY = config.alt_diff_display
 
 PATH_NOPERFORMER_FOLDER = config.path_noperformer_folder
