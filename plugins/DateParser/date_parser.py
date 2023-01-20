@@ -2,7 +2,7 @@ import sys, json
 from pathlib import Path
 
 import stashapi.log as log
-from stashapi.stashapp import StashInterface, stashapp_gql_fragments
+from stashapi.stashapp import StashInterface
 import re
 from dateparser import parse
 from datetime import datetime
@@ -15,13 +15,10 @@ def main():
 	json_input = json.loads(sys.stdin.read())
 	mode_arg = json_input['args']['mode']
 
-	stash = StashInterface(json_input["server_connection"],fragments=[stashapp_gql_fragments.DEVELOP])
+	stash = StashInterface(json_input["server_connection"])
 
-	match mode_arg:
-		case "gallery":
-			find_date_for_galleries()
-	
-	#log.exit("ok")
+	if mode_arg == "gallery":
+		find_date_for_galleries()
 
 
 
