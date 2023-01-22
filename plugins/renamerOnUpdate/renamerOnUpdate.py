@@ -474,7 +474,7 @@ def extract_info(scene: dict, template: None):
     if scene.get("stash_ids"):
         #todo support other db that stashdb ?
         scene_information['stashid_scene'] = scene['stash_ids'][0]["stash_id"]
-    
+
     if template.get("path"):
         if "^*" in template["path"]["destination"]:
             template["path"]["destination"] = template["path"]["destination"].replace("^*", scene_information['current_directory'])
@@ -1105,7 +1105,7 @@ def renamer(scene_id, db_conn=None):
 
         scene_information['scene_id'] = scene_id
         scene_information['file_index'] = i
-        
+
         for removed_field in ORDER_SHORTFIELD:
             if removed_field:
                 if scene_information.get(removed_field.replace("$", "")):
@@ -1158,6 +1158,15 @@ def renamer(scene_id, db_conn=None):
             continue
         # check if there is already a file where the new path is
         err = checking_duplicate_db(scene_information)
+        while err and scene_information['file_index']<=len(DUPLICATE_SUFFIX):
+            log.LogDebug("Duplicate filename detected, increasing file index")
+            scene_information['file_index'] = scene_information['file_index'] + 1
+            scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+            scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
+            log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
+            log.LogDebug(f"[NEW path] {scene_information['final_path']}")
+            err = checking_duplicate_db(scene_information)
+        # abort
         if err:
             raise Exception("duplicate")
         # connect to the db
@@ -1358,3 +1367,4 @@ else:
         traceback.print_exc()
 
 exit_plugin("Successful!")
+
