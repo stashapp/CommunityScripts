@@ -7,12 +7,11 @@ Using metadata from your Stash to rename/move your file.
 	- [Table of Contents](#table-of-contents)
 - [Requirement](#requirement)
 - [Installation](#installation)
-		- [:exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:](#exclamation-make-sure-to-configure-the-plugin-by-editing-configpy-before-running-it-exclamation)
+		- [:exclamation: Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it :exclamation:](#exclamation-make-sure-to-configure-the-plugin-by-editing-renameronupdate_configpy-before-running-it-exclamation)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Config.py explained](#configpy-explained)
 	- [Template](#template)
-	- [- You can find the list of available variables in `config.py`](#--you-can-find-the-list-of-available-variables-in-configpy)
 	- [Filename](#filename)
 		- [- Based on a Tag](#--based-on-a-tag)
 		- [- Based on a Studio](#--based-on-a-studio)
@@ -25,27 +24,21 @@ Using metadata from your Stash to rename/move your file.
 		- [- Special Variables](#--special-variables)
 	- [Advanced](#advanced)
 		- [Groups](#groups)
-	- [Option](#option)
-		- [*p_tag_option*](#p_tag_option)
-		- [*field_replacer*](#field_replacer)
-		- [*replace_words*](#replace_words)
-		- [*removecharac_Filename*](#removecharac_filename)
-		- [*performer_limit*](#performer_limit)
 
 # Requirement
 - Stash (v0.15+)
-- Python 3.6+ (Tested on Python v3.9.1 64bit, Win10)
+- Python (3.10+)
 - Request Module (https://pypi.org/project/requests/)
-- Tested on Windows 10/Synology/docker.
+- Tested on Windows 10/Synology/docker
 
 # Installation
 
-- Download the whole folder '**renamerOnUpdate**' (config.py, log.py, renamerOnUpdate.py/.yml)
+- Download the whole folder '**renamerOnUpdate**'
 - Place it in your **plugins** folder (where the `config.yml` is)
 - Reload plugins (Settings > Plugins > Reload)
 - *renamerOnUpdate* appears
 
-### :exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:
+### :exclamation: Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it :exclamation:
 
 # Usage
 

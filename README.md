@@ -45,4 +45,3 @@ StashDB  |[StashDB Submission Helper](/userscripts/StashDB_Submission_Helper)|Ad
 Category|Plugin Name|Description|Minimum Stash version
 --------|-----------|-----------|---------------------
 Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with Kodi.|v0.7
-Maintenance|[Stash Sqlite Renamer](scripts/Sqlite_Renamer)|Renames your files using stash's metadata.|v0.7
