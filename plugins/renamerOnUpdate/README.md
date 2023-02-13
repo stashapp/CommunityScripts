@@ -5,12 +5,12 @@ Using metadata from your Stash to rename/move your file.
 
 - [*renamerOnUpdate*](#renameronupdate)
 	- [Table of Contents](#table-of-contents)
-- [Requirement](#requirement)
+- [Requirements](#requirements)
 - [Installation](#installation)
-		- [:exclamation: Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it :exclamation:](#exclamation-make-sure-to-configure-the-plugin-by-editing-renameronupdate_configpy-before-running-it-exclamation)
+		- [:exclamation: Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it :exclamation:](renamerOnUpdate_config.py)
 - [Usage](#usage)
 - [Configuration](#configuration)
-- [Config.py explained](#configpy-explained)
+- [Config file explained](#config-file-explained)
 	- [Template](#template)
 	- [Filename](#filename)
 		- [- Based on a Tag](#--based-on-a-tag)
@@ -24,11 +24,12 @@ Using metadata from your Stash to rename/move your file.
 		- [- Special Variables](#--special-variables)
 	- [Advanced](#advanced)
 		- [Groups](#groups)
+		- [Options](#options)
 
-# Requirement
+# Requirements
 - Stash (v0.15+)
 - Python (3.10+)
-- Request Module (https://pypi.org/project/requests/)
+- Requests Module (https://pypi.org/project/requests/)
 - Tested on Windows 10/Synology/docker
 
 # Installation
@@ -53,7 +54,7 @@ Using metadata from your Stash to rename/move your file.
 
 # Configuration
 
-- Read/Edit `config.py`
+- Read/Edit `renamerOnUpdate_config.py`
 	- Change template filename/path
 	- Add `log_file` path
 
@@ -65,11 +66,11 @@ Using metadata from your Stash to rename/move your file.
 - Dry-run mode:
 	- It prevents editing the file, only shows in your log.
 	- This mode can write into a file (`dryrun_renamerOnUpdate.txt`), the change that the plugin will do.
-		- You need to set a path for `log_file` in `config.py`
+		- You need to set a path for `log_file` in `renamerOnUpdate_config.py`
 		- The format will be: `scene_id|current path|new path`. (e.g. `100|C:\Temp\foo.mp4|C:\Temp\bar.mp4`)
 		- This file will be overwritten everytime the plugin is triggered.
 
-# Config.py explained
+# Config file explained
 ## Template
 To modify your path/filename, you can use **variables**. These are elements that will change based on your **metadata**.
 
@@ -94,10 +95,10 @@ tag_templates  = {
 	"rename_tag2": "$title"
 }
 ```
-|tag| new path |
-|--|--|
-|rename_tag| `C:\Temp\2008 Big Buck Bunny - Blender Institute 1080p H264.mp4` |
-| rename_tag2 | `C:\Temp\Big Buck Bunny.mp4` |
+| tag         | new path                                                         |
+| ----------- | ---------------------------------------------------------------- |
+| rename_tag  | `C:\Temp\2008 Big Buck Bunny - Blender Institute 1080p H264.mp4` |
+| rename_tag2 | `C:\Temp\Big Buck Bunny.mp4`                                     |
 
 
 
@@ -108,10 +109,10 @@ studio_templates  = {
 	"Pixar": "$title [$studio]"
 }
 ```
-|studio| new path |
-|--|--|
-|Blender Institute| `C:\Temp\2008-05-20 - Big Buck Bunny [Blender Institute].mp4` |
-| Pixar | `C:\Temp\Big Buck Bunny [Pixar].mp4` |
+| studio            | new path                                                      |
+| ----------------- | ------------------------------------------------------------- |
+| Blender Institute | `C:\Temp\2008-05-20 - Big Buck Bunny [Blender Institute].mp4` |
+| Pixar             | `C:\Temp\Big Buck Bunny [Pixar].mp4`                          |
 
 
 ### - Change filename no matter what
@@ -130,9 +131,9 @@ p_tag_templates  = {
 	"rename_tag2": r"E:\Video\$year"
 }
 ```
-|tag| new path |
-|--|--|
-|rename_tag| `D:\Video\QmlnQnVja0J1bm55.mp4` |
+| tag         | new path                             |
+| ----------- | ------------------------------------ |
+| rename_tag  | `D:\Video\QmlnQnVja0J1bm55.mp4`      |
 | rename_tag2 | `E:\Video\2008\QmlnQnVja0J1bm55.mp4` |
 
 
@@ -144,10 +145,10 @@ p_studio_templates  = {
 	"Pixar": r"E:\Video\$studio\"
 }
 ```
-|studio| new path |
-|--|--|
-|Blender Institute| `D:\Video\Blender\QmlnQnVja0J1bm55.mp4` |
-| Pixar | `E:\Video\Pixar\QmlnQnVja0J1bm55.mp4` |
+| studio            | new path                                |
+| ----------------- | --------------------------------------- |
+| Blender Institute | `D:\Video\Blender\QmlnQnVja0J1bm55.mp4` |
+| Pixar             | `E:\Video\Pixar\QmlnQnVja0J1bm55.mp4`   |
 
 ### - Based on a Path
 ```py
@@ -156,10 +157,10 @@ p_path_templates = {
 	r"C:\Video": r"E:\Video\Win\"
 }
 ```
-|file path| new path |
-|--|--|
-|`C:\Temp`| `D:\Video\QmlnQnVja0J1bm55.mp4` |
-| `C:\Video`| `E:\Video\Win\QmlnQnVja0J1bm55.mp4` |
+| file path  | new path                            |
+| ---------- | ----------------------------------- |
+| `C:\Temp`  | `D:\Video\QmlnQnVja0J1bm55.mp4`     |
+| `C:\Video` | `E:\Video\Win\QmlnQnVja0J1bm55.mp4` |
 
 
 ### - Change path no matter what
@@ -196,3 +197,6 @@ Example:
 If you want to use the `-` only when you have the date, you can group the `-` with `$date`
 **Without** date in Stash:
  - `[$studio] {$date -} $title` -> `[Blender] Big Buck Bunny`
+
+### Options
+For extra options check the `renamerOnUpdate_config.py` file
