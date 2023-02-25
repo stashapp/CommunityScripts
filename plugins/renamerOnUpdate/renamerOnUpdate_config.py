@@ -239,7 +239,7 @@ only_organized = False
 ignore_path_length = False
 
 # Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
-order_field = ["$video_codec", "$audio_codec", "$resolution", "tags", "rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
+order_field = ["$video_codec", "$audio_codec", "$resolution", "$tags", "$rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
 
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
