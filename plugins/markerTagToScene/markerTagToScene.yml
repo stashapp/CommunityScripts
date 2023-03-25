@@ -17,3 +17,7 @@ tasks:
     description: Adds primary tag or all tags of Scene Markers to their Scenes
     defaultArgs:
       mode: updateAllScenes
+  - name: Dry Run
+    description: Dry run of adding tags of Scene Markers to their Scenes
+    defaultArgs:
+      mode: dryRunUpdateAllScenes

@@ -9,7 +9,8 @@ function ok() {
 
 function main() {
     // Check if running task, or hook triggered
-    if (input.args.mode === "updateAllScenes") {
+    if (input.args.mode === "updateAllScenes" || input.args.mode === "dryRunUpdateAllScenes") {
+        var isDryRun = input.args.mode === "dryRunUpdateAllScenes";
         // running task
         var totalScenes;
         var checkedScenes = 0;
@@ -39,13 +40,17 @@ function main() {
                 if (newSceneTags.length > sceneTagIDs.length) {
                     // This scene is going to get new tags
                     modifiedScenes++;
-                    setSceneTags(scene.id, newSceneTags)
+                    if (!isDryRun) {
+                        setSceneTags(scene.id, newSceneTags);
+                    }
                 }
             }
 
         } while (checkedScenes < totalScenes)
 
-        log.Info("Updated tags in " + modifiedScenes + " scenes to include tag(s) from their markers.");
+        var dryRunMessage = isDryRun ? "DRY RUN: " : "";
+        var allTagsMessage = ALL_MARKER_TAGS ? "all" : "the primary";
+        log.Info(dryRunMessage + "Updated tags in " + modifiedScenes + " scenes to include " + allTagsMessage + " tags from their markers.");
 
     } else if (input.Args.hookContext) {
         // hook triggered
@@ -69,7 +74,9 @@ function main() {
         }
 
         setSceneTags(sceneID, combinedTags);
-        log.Info("Added marker tag(s) to scene " + sceneID);
+
+        var allTagsMessage = ALL_MARKER_TAGS ? "all" : "primary";
+        log.Info("Added " + allTagsMessage + " marker tags to scene " + sceneID);
     }
 }
 
