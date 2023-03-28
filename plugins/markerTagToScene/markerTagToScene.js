@@ -8,6 +8,7 @@ function main() {
     var hookContext = input.Args.hookContext;
     var opInput = hookContext.input;
     var primaryTagID = opInput.primary_tag_id;
+    var markerTagIDs = opInput.tag_ids ? opInput.tag_ids : [];
     var sceneID = opInput.scene_id;
 
     // we can't currently find scene markers. If it's not in the input
@@ -16,25 +17,21 @@ function main() {
         // just return
         return ok();
     }
+    markerTagIDs.push(primaryTagID)
 
     // get the existing scene tags
     var sceneTags = getSceneTags(sceneID);
-    var tagIDs = [];
-    for (var i = 0; i < sceneTags.length; ++i) {
-        var tagID = sceneTags[i].id;
-        if (tagID == primaryTagID) {
-            log.Debug("primary tag already exists on scene");
-            return;
-        }
-
-        tagIDs.push(tagID);
+    var missingTagIDs = markerTagIDs.filter(markerTagID => !sceneTags.includes(markerTagID))
+    
+    if (missingTagIDs.length == 0){
+        log.Debug("all marker tags already exists on scene");
+        return;
     }
 
-    // set the tag on the scene if not present
-    tagIDs.push(primaryTagID);
-
+    // add missing tags to existing scene tags
+    var tagIDs = sceneTags.concat(missingTagIDs)
     setSceneTags(sceneID, tagIDs);
-    log.Info("added primary tag " + primaryTagID + " to scene " + sceneID);
+    log.Info(`added missing tag(s) ${missingTagIDs} to scene ${sceneID}`);
 }
 
 function getSceneTags(sceneID) {
