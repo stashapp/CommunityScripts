@@ -2,10 +2,11 @@
 name: Scene Marker Tags to Scene
 description: Adds primary tag of Scene Marker to the Scene on marker create/update.
 url: https://github.com/stashapp/CommunityScripts
-version: 1.0
+version: 2.0
 exec:
-  - markerTagToScene.js
-interface: js
+  - python
+  - "{pluginDir}/markerTagToScene.py"
+interface: raw
 hooks:
   - name: Update scene with scene marker tag
     description: Adds primary tag of Scene Marker to the Scene on marker create/update.
