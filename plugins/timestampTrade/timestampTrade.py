@@ -51,52 +51,44 @@ def processAll():
             time.sleep(2)
 
 def submit():
-    query ="""query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {
-			findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {
-				count
-				scenes {
-				    title
-                                    details
-                                    url
-                                    date
-                                    performers{
-                                       name
-                                       stash_ids{
-                                           endpoint
-                                           stash_id
-                                       }
-                                    }
-                                    tags{
-                                       name
-                                    }
-                                    studio{
-                                       name
-                                       stash_ids{
-                                           endpoint
-                                           stash_id
-                                       }
-                                    }
-                                    stash_ids{
-                                       endpoint
-                                       stash_id
-                                    }
-                                    scene_markers{
-                                       title
-                                       seconds
-                                       primary_tag{
-                                           name
-                                       }
-                                    }
-				}
-			}
-		}"""
-    scenes = stash.call_gql(query,variables={'scene_filter':{'has_markers': 'true'},'filter':{'page':1,'per_page':1,"q":"","direction":"DESC","sort":"updated_at"}})
-    count=scenes['findScenes']['count']
+    scene_fgmt = """title
+       details
+       url
+       date
+       performers{
+           name
+           stash_ids{
+              endpoint
+              stash_id
+           }
+       }
+       tags{
+           name
+       }
+       studio{
+           name
+           stash_ids{
+              endpoint
+              stash_id
+           }
+       }
+       stash_ids{
+           endpoint
+           stash_id
+       }
+       scene_markers{
+           title
+           seconds
+           primary_tag{
+              name
+           }
+       }"""
+    count = stash.find_scenes(f={"has_markers": "true"}, filter={"per_page": 1}, get_count=True)[0]
     i=0
     for r in range(1, math.ceil(count/per_page) + 1):
         log.info('submitting scenes: %s - %s %0.1f%%' % ((r - 1) * per_page,r * per_page,(i/count)*100,))
-        scenes = stash.call_gql(query,variables={'scene_filter':{'has_markers': 'true'},'filter':{'page':r,'per_page':per_page,"q":"","direction":"DESC","sort":"updated_at"}})
-        for s in scenes['findScenes']['scenes']:
+        scenes = stash.find_scenes(f={"has_markers": "true"}, filter={"page": r, "per_page": per_page},fragment=scene_fgmt)
+        for s in scenes:
             log.debug("submitting scene: " + str(s))
             request_s.post('https://timestamp.trade/submit-stash', json=s)
             i=i+1
