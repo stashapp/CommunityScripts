@@ -1,6 +1,6 @@
 name: Timestamp Trade
 description: Sync Markers with timestamp.trade, a new database for sharing markers.
-version: 0.1
+version: 0.2
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
