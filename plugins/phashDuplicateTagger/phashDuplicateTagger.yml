@@ -20,7 +20,7 @@
 
 name: "PHash Duplicate Tagger"
 description: Will tag scenes based on duplicate PHashes for easier/safer removal.
-version: 0.1.0
+version: 0.1.1
 url: https://github.com/Darklyter/CommunityScripts
 exec:
   - python
