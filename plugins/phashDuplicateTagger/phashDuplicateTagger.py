@@ -6,7 +6,7 @@ import datetime as dt
 try:
     import stashapi.log as log
     from stashapi.tools import human_bytes
-    from stashapi.types import PhashDistance
+    from stashapi.stash_types import PhashDistance
     from stashapi.stashapp import StashInterface
 except ModuleNotFoundError:
     print("You need to install the stashapi module. (pip install stashapp-tools)",
