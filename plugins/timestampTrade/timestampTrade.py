@@ -5,8 +5,13 @@ import os
 import sys
 import requests
 import json
+import time
+import math
+
 
 per_page = 100
+request_s = requests.Session()
+
 
 def processScene(s):
     if len(s['stash_ids']) > 0:
@@ -19,7 +24,7 @@ def processScene(s):
                     'api returned something, for scene: ' + s['title'] + ' marker count: ' + str(len(md['marker'])))
                 markers = []
                 for m in md['marker']:
-                    log.debug('-- ' + m['name'] + ", " + str(m['start'] / 1000))
+#                    log.debug('-- ' + m['name'] + ", " + str(m['start'] / 1000))
                     marker = {}
                     marker["seconds"] = m['start'] / 1000
                     marker["primary_tag"] = m["tag"]
@@ -35,38 +40,60 @@ def processAll():
     log.info('Getting scene count')
     count=stash.find_scenes(f={"stash_id":{"value":"","modifier":"NOT_NULL"},"has_markers":"false"},filter={"per_page": 1},get_count=True)[0]
     log.info(str(count)+' scenes to submit.')
+    i=0
     for r in range(1,int(count/per_page)+1):
-        log.info('processing '+str(r*per_page)+ ' - '+str(count))
+        log.info('fetching data: %s - %s %0.1f%%' % ((r - 1) * per_page,r * per_page,(i/count)*100,))
         scenes=stash.find_scenes(f={"stash_id":{"value":"","modifier":"NOT_NULL"},"has_markers":"false"},filter={"page":r,"per_page": per_page})
         for s in scenes:
             processScene(s)
+            i=i+1
+            log.progress((i/count))
+            time.sleep(2)
 
 def submit():
+    scene_fgmt = """title
+       details
+       url
+       date
+       performers{
+           name
+           stash_ids{
+              endpoint
+              stash_id
+           }
+       }
+       tags{
+           name
+       }
+       studio{
+           name
+           stash_ids{
+              endpoint
+              stash_id
+           }
+       }
+       stash_ids{
+           endpoint
+           stash_id
+       }
+       scene_markers{
+           title
+           seconds
+           primary_tag{
+              name
+           }
+       }"""
     count = stash.find_scenes(f={"has_markers": "true"}, filter={"per_page": 1}, get_count=True)[0]
-    for r in range(1, int(count / per_page) + 2):
-        log.info('processing ' + str((r - 1) * per_page) + ' - ' + str(r * per_page) + ' / ' + str(count))
-        scenes = stash.find_scenes(f={"has_markers": "true"}, filter={"page": r, "per_page": per_page})
+    i=0
+    for r in range(1, math.ceil(count/per_page) + 1):
+        log.info('submitting scenes: %s - %s %0.1f%%' % ((r - 1) * per_page,r * per_page,(i/count)*100,))
+        scenes = stash.find_scenes(f={"has_markers": "true"}, filter={"page": r, "per_page": per_page},fragment=scene_fgmt)
         for s in scenes:
-            # Cleanup, remove fields that are not needed by the api like ratings, file paths etc
-            for x in ['id', 'checksum', 'oshash', 'phash', 'rating', 'organized', 'o_counter', 'file','path', 'galleries']:
-                s.pop(x, None)
-            for t in s['tags']:
-                for x in ['id', 'image_path', 'scene_count', 'primary_tag']:
-                    t.pop(x, None)
-            for t in s['performers']:
-                for x in ['id', 'checksum', 'scene_count', 'image_path', 'image_count', 'gallery_count', 'favorite',
-                          'tags']:
-                    t.pop(x, None)
-            for m in s['scene_markers']:
-                for x in ['id', 'scene', 'tags']:
-                    m.pop(x, None)
-                for x in ['id', 'aliases', 'image_path', 'scene_count']:
-                    m['primary_tag'].pop(x, None)
-
-            print("submitting scene: " + str(s))
-            requests.post('https://timestamp.trade/submit-stash', json=s)
-
-
+            log.debug("submitting scene: " + str(s))
+            request_s.post('https://timestamp.trade/submit-stash', json=s)
+            i=i+1
+            log.progress((i/count))
+            time.sleep(2)
 
 
 
