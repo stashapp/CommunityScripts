@@ -1,4 +1,3 @@
-# example plugin config
 name: Scene Marker Tags to Scene
 description: Adds primary tag of Scene Marker to the Scene on marker create/update.
 url: https://github.com/stashapp/CommunityScripts
@@ -13,3 +12,12 @@ hooks:
     triggeredBy: 
       - SceneMarker.Create.Post
       - SceneMarker.Update.Post
+tasks:
+  - name: Update Scenes Tags
+    description: Adds primary tag or all tags of Scene Markers to their Scenes
+    defaultArgs:
+      mode: updateAllScenes
+  - name: Dry Run
+    description: Dry run of adding tags of Scene Markers to their Scenes
+    defaultArgs:
+      mode: dryRunUpdateAllScenes
