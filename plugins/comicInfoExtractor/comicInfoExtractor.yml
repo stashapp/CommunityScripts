@@ -11,6 +11,7 @@ hooks:
     description: Update Metadata for Gallery by evaluating the ComicInfo.xml.
     triggeredBy:
       - Gallery.Update.Post
+      - Gallery.Create.Post
 tasks:
   - name: Load all cbz Metadata
     description: Get Metadata for all Galleries by looking for ComicInfo.xml files in the Archive.
