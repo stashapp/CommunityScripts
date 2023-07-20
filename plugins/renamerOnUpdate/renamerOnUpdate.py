@@ -1161,7 +1161,10 @@ def renamer(scene_id, db_conn=None):
         while err and scene_information['file_index']<=len(DUPLICATE_SUFFIX):
             log.LogDebug("Duplicate filename detected, increasing file index")
             scene_information['file_index'] = scene_information['file_index'] + 1
-            scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+            if template["filename"]:
+                scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+            else:
+                scene_information['new_filename'] = create_new_filename(scene_information, scene_information['current_filename'])
             scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
             log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
             log.LogDebug(f"[NEW path] {scene_information['final_path']}")

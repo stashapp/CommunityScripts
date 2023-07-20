@@ -1,7 +1,7 @@
 name: renamerOnUpdate
 description: Rename/move filename based on a template.
 url: https://github.com/stashapp/CommunityScripts
-version: 2.4.4
+version: 2.4.5
 exec:
   - python
   - "{pluginDir}/renamerOnUpdate.py"
