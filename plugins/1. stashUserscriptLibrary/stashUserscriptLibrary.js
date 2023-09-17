@@ -1,11 +1,5 @@
 const stashListener = new EventTarget();
 
-function concatRegexp(reg, exp) {
-    let flags = reg.flags + exp.flags;
-    flags = Array.from(new Set(flags.split(''))).join();
-    return new RegExp(reg.source + exp.source, flags);
-}
-
 class Logger {
     constructor(enabled) {
         this.enabled = enabled;
@@ -138,27 +132,27 @@ class Stash extends EventTarget {
     async getFreeOnesStats(link) {
         try {
             const doc = await fetch(link)
-            .then(function(response) {
-                // When the page is loaded convert it to text
-                return response.text()
-            })
-            .then(function(html) {
-                // Initialize the DOM parser
-                var parser = new DOMParser();
+                .then(function(response) {
+                    // When the page is loaded convert it to text
+                    return response.text()
+                })
+                .then(function(html) {
+                    // Initialize the DOM parser
+                    var parser = new DOMParser();
 
-                // Parse the text
-                var doc = parser.parseFromString(html, "text/html");
+                    // Parse the text
+                    var doc = parser.parseFromString(html, "text/html");
 
-                // You can now even select part of that html as you would in the regular DOM
-                // Example:
-                // var docArticle = doc.querySelector('article').innerHTML;
+                    // You can now even select part of that html as you would in the regular DOM
+                    // Example:
+                    // var docArticle = doc.querySelector('article').innerHTML;
 
-                console.log(doc);
-                return doc
-            })
-            .catch(function(err) {
-                console.log('Failed to fetch page: ', err);
-            });
+                    console.log(doc);
+                    return doc
+                })
+                .catch(function(err) {
+                    console.log('Failed to fetch page: ', err);
+                });
 
             var data = new Object();
             data.rank = doc.querySelector('rank-chart-button');
@@ -858,9 +852,9 @@ class Stash extends EventTarget {
         let urlNode = null;
         let detailsNode = null;
         for (const sceneDetailNode of sceneDetailNodes) {
-            if (remoteData?.url === sceneDetailNode.innerText) {
+            if (sceneDetailNode.innerText.startsWith('http') && (remoteUrlNode?.href !== sceneDetailNode.innerText)) {
                 urlNode = sceneDetailNode;
-            } else if (remoteData?.details === sceneDetailNode.textContent) {
+            } else if (!sceneDetailNode.innerText.startsWith('http')) {
                 detailsNode = sceneDetailNode;
             }
         }
@@ -869,7 +863,16 @@ class Stash extends EventTarget {
 
         const metadataNode = searchResultItem.querySelector('.scene-metadata');
         const titleNode = metadataNode.querySelector('h4 .optional-field .optional-field-content');
-        const dateNode = metadataNode.querySelector('h5 .optional-field .optional-field-content');
+        const codeAndDateNodes = metadataNode.querySelectorAll('h5 .optional-field .optional-field-content');
+        let codeNode = null;
+        let dateNode = null;
+        for (const node of codeAndDateNodes) {
+            if (node.textContent.includes('-')) {
+                dateNode = node;
+            } else {
+                codeNode = node;
+            }
+        }
 
         const entityNodes = searchResultItem.querySelectorAll('.entity-name');
         let studioNode = null;
@@ -923,6 +926,7 @@ class Stash extends EventTarget {
             detailsNode,
             imageNode,
             titleNode,
+            codeNode,
             dateNode,
             studioNode,
             performerNodes,
@@ -973,6 +977,90 @@ function getElementByXpath(xpath, contextNode) {
     return document.evaluate(xpath, contextNode || document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 }
 
+function createElementFromHTML(htmlString) {
+    const div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+
+    // Change this to div.childNodes to support multiple top-level nodes.
+    return div.firstChild;
+}
+
+function getElementByXpath(xpath, contextNode) {
+    return document.evaluate(xpath, contextNode || document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
+function getElementsByXpath(xpath, contextNode) {
+    return document.evaluate(xpath, contextNode || document, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+}
+
+function getClosestAncestor(el, selector, stopSelector) {
+    let retval = null;
+    while (el) {
+        if (el.matches(selector)) {
+            retval = el;
+            break
+        } else if (stopSelector && el.matches(stopSelector)) {
+            break
+        }
+        el = el.parentElement;
+    }
+    return retval;
+}
+
+function setNativeValue(element, value) {
+    const valueSetter = Object.getOwnPropertyDescriptor(element, 'value').set;
+    const prototype = Object.getPrototypeOf(element);
+    const prototypeValueSetter = Object.getOwnPropertyDescriptor(prototype, 'value').set;
+
+    if (valueSetter && valueSetter !== prototypeValueSetter) {
+        prototypeValueSetter.call(element, value);
+    } else {
+        valueSetter.call(element, value);
+    }
+}
+
+function updateTextInput(element, value) {
+    setNativeValue(element, value);
+    element.dispatchEvent(new Event('input', {
+        bubbles: true
+    }));
+}
+
+function concatRegexp(reg, exp) {
+    let flags = reg.flags + exp.flags;
+    flags = Array.from(new Set(flags.split(''))).join();
+    return new RegExp(reg.source + exp.source, flags);
+}
+
+function sortElementChildren(node) {
+    const items = node.childNodes;
+    const itemsArr = [];
+    for (const i in items) {
+        if (items[i].nodeType == Node.ELEMENT_NODE) { // get rid of the whitespace text nodes
+            itemsArr.push(items[i]);
+        }
+    }
+
+    itemsArr.sort((a, b) => {
+        return a.innerHTML == b.innerHTML ?
+            0 :
+            (a.innerHTML > b.innerHTML ? 1 : -1);
+    });
+
+    for (let i = 0; i < itemsArr.length; i++) {
+        node.appendChild(itemsArr[i]);
+    }
+}
+
+function xPathResultToArray(result) {
+    let node = null;
+    const nodes = [];
+    while (node = result.iterateNext()) {
+        nodes.push(node);
+    }
+    return nodes;
+}
+
 function createStatElement(container, title, heading) {
     const statEl = document.createElement('div');
     statEl.classList.add('stats-element');
@@ -988,3 +1076,11 @@ function createStatElement(container, title, heading) {
     statHeading.innerText = heading;
     statEl.appendChild(statHeading);
 }
+
+const reloadImg = url =>
+    fetch(url, {
+        cache: 'reload',
+        mode: 'no-cors'
+    })
+    .then(() => document.body.querySelectorAll(`img[src='${url}']`)
+        .forEach(img => img.src = url));
