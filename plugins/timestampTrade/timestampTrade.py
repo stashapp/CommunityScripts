@@ -42,7 +42,8 @@ def processScene(s):
 
 def processAll():
     log.info('Getting scene count')
-    count=stash.find_scenes(f={"stash_id":{"value":"","modifier":"NOT_NULL"},"has_markers":"false"},filter={"per_page": 1},get_count=True)[0]
+    skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
+    count=stash.find_scenes(f={"stash_id":{"value":"","modifier":"NOT_NULL"},"has_markers":"false","tags":{"depth":0,"excludes":[skip_sync_tag_id],"modifier":"INCLUDES_ALL","value":[]}},filter={"per_page": 1},get_count=True)[0]
     log.info(str(count)+' scenes to submit.')
     i=0
     for r in range(1,int(count/per_page)+1):
@@ -53,6 +54,7 @@ def processAll():
             i=i+1
             log.progress((i/count))
             time.sleep(2)
+
 
 def submit():
     scene_fgmt = """title
@@ -87,7 +89,8 @@ def submit():
               name
            }
        }"""
-    count = stash.find_scenes(f={"has_markers": "true"}, filter={"per_page": 1}, get_count=True)[0]
+    skip_submit_tag_id = stash.find_tag('[Timestamp: Skip Submit]', create=True).get("id")
+    count = stash.find_scenes(f={"has_markers": "true","tags":{"depth":0,"excludes":[skip_sync_tag_id],"modifier":"INCLUDES_ALL","value":[]}}, filter={"per_page": 1}, get_count=True)[0]
     i=0
     for r in range(1, math.ceil(count/per_page) + 1):
         log.info('submitting scenes: %s - %s %0.1f%%' % ((r - 1) * per_page,r * per_page,(i/count)*100,))
