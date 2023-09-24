@@ -15,8 +15,12 @@ def processScene(s):
     if len(s['stash_ids']) == 0:
         log.debug('no scenes to process')
         return
+    skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
     for sid in s['stash_ids']:
         try:
+            if any(tag['id'] == str(skip_sync_tag_id) for tag in s['tags']):
+                log.debug('scene has skip sync tag')
+                return
             log.debug('looking up markers for stash id: '+sid['stash_id'])
             res = requests.post('https://timestamp.trade/get-markers/' + sid['stash_id'], json=s)
             md = res.json()
@@ -54,7 +58,6 @@ def processAll():
             i=i+1
             log.progress((i/count))
             time.sleep(2)
-
 
 def submit():
     scene_fgmt = """title
