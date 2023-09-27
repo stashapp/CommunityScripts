@@ -1,0 +1,4 @@
+argparse
+gql
+stashapp-tools
+watchdog
