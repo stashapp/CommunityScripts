@@ -1,7 +1,7 @@
 # Stash Watcher
 Stash Watcher is a service that watches your Stash library directories for changes and then triggers a Metadata Scan when new files are added to those directories.  It then waits a period of time before triggering another scan to keep Stash from constantly scanning if you're making many changes.  Note that updates are watched during that window; the update is merely delayed.
 
-## Configuration {#configuration}
+## Configuration
 Modify a [config.toml](config.toml) for your environment.  The defaults match the Stash docker defaults, so they may work for you.  You are likely to have to update `Paths` and possibly `ApiKey`.  Check out [default.toml](default.toml) for all configurable options.  You can configure:
 * Url (host, domain, port)
 * Api Key (if your Stash is password protected)
@@ -10,9 +10,9 @@ Modify a [config.toml](config.toml) for your environment.  The defaults match th
 * Scan options - The options for the Metadata Scan
 
 ## Running Stash Watcher
-You can run Stash Watcher directly from the [command line](#run-python) or from inside [docker](#run-docker).  
+You can run Stash Watcher directly from the [command line](#running-directly-with-python) or from inside [docker](#running-with-docker).  
 
-### Running directly with python {#run-python}
+### Running directly with python
 The directs below are for linux, but they should work on other operating systems.
 #### Step 0: Create a Virtual Environment (optional, but recommended)
 ```
@@ -32,7 +32,7 @@ python watcher.py path_to_config.toml
 ```
 That's it.  Now when you make changes to watched directories, Stash Watcher will make an API call to trigger a metadata scan.
 
-### Running with docker {#run-docker}
+### Running with docker
 There is currently no published docker image, so you'll have to build it yourself.  The easiest way to do this is with docker compose:
 ```
 version: "3.4"
