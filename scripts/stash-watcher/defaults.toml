@@ -19,6 +19,15 @@ Cooldown = 300
 #A list of file extensions to watch.  If this is omitted, it uses the extensions that are defined
 #in your Stash library (for videos, images, and galleries)
 Extensions =
+#If this is set to a non-zero numeric value, this forces the use of polling to
+#determine file system changes.  If it is left blank, then the OS appropriate
+#mechanism is used.  This is much less efficient than the OS mechanism, so it
+#should be used with care.  The docs claim that this is required to watch SMB
+#shares, though in my testing I could watch them on Windows with the regular
+#WindowsApiObserver
+PollInterval=
+#This enables debug logging
+Debug=
 
 #Options for the Stash Scan.  Stash defaults to everything disabled, so this is the default
 #Generate options that match up with what we can do in Scan
