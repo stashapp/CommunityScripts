@@ -8,6 +8,7 @@ Modify a [config.toml](config.toml) for your environment.  The defaults match th
 * Paths
 * Timeout - the minimum time between Metadata Scans
 * Scan options - The options for the Metadata Scan
+* Enable Polling - see [SMB/CIFS Shares](#smbcifs-shares)
 
 ## Running Stash Watcher
 You can run Stash Watcher directly from the [command line](#running-directly-with-python) or from inside [docker](#running-with-docker).  
@@ -53,3 +54,10 @@ Then you can run
 docker compose up -d --build
 ```
 To start the watcher.
+
+## Notes
+### SMB/CIFS shares
+The library ([watchdog](https://pypi.org/project/watchdog/)) that Stash Watcher uses has some limitations when dealing with SMB/CIFS shares.  If you encounter some problems, set [PollInterval in your config.toml](https://github.com/DuctTape42/CommunityScripts/blob/main/scripts/stash-watcher/defaults.toml#L28).  This is a lot less efficient than the default mechanism, but is more likely to work.
+
+In my testing (this is from Windows to a share on another machine), if the machine running Stash Watcher wrote to the share, then the normal watcher worked fine.  However, if a different machine wrote to the share, then Stash Watcher did not see the write unless I used Polling.
+
