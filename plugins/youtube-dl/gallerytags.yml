@@ -1,0 +1,33 @@
+name: Copy information to gallery
+description: Copy information from attached scene to all galleries with CopyTags tag
+version: 1.4
+url: https://github.com/niemands/StashPlugins
+exec:
+  - python
+  - "{pluginDir}/py_plugins/gallerytags.py"
+interface: raw
+tasks:
+  - name: Create CopyTags tag
+    description: Create the "CopyTags" tag. Add this tag to all galleries where you want to copy the information from the attached scene
+    defaultArgs:
+      mode: create
+  - name: Remove CopyTags tag
+    description: Removes the "CopyTags" tag from all galleries and deletes the tag.
+    defaultArgs:
+      mode: remove
+  - name: Copy Tags
+    description: Copy information from scenes to their associated galleries tagged with the "CopyTags" tag
+    defaultArgs:
+      mode: copy
+  - name: Copy tags for all galleries
+    description: Copies information from attached scene for ALL galleries. You have 30 seconds to cancel, before this task actually starts copying
+    defaultArgs:
+      mode: copyall
+  - name: Copy studio to images
+    description: Copies the Studio from each gallery to the corresponding images
+    defaultArgs:
+      mode: studioImageCopy
+  - name: Copy date to images
+    description: Copies the date from each gallery to the corresponding images
+    defaultArgs:
+      mode: dateImageCopy

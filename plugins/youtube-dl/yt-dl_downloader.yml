@@ -1,0 +1,18 @@
+name: Youtube-dl Downloader
+description: Download a video with youtube-dl
+version: 2.0
+url: https://github.com/niemands/StashPlugins
+exec:
+  - python
+  - "{pluginDir}/py_plugins/yt-dl_downloader.py"
+interface: raw
+tasks:
+  - name: Download Video
+    description: Download entered Video
+    defaultArgs:
+      mode: download
+
+  - name: Tag Downloads
+    description: Tag all downloaded Videos
+    defaultArgs:
+      mode: tag

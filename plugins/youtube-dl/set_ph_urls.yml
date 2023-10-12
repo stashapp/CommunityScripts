@@ -1,0 +1,11 @@
+name: Set Pornhub Urls
+description: Search for all pornhub videos downloaded by Youtube-dl and set the url accordingly
+version: 2.5.1
+url: https://github.com/niemands/StashPlugins
+exec:
+  - python
+  - "{pluginDir}/py_plugins/set_ph_urls.py"
+interface: raw
+tasks:
+  - name: Set Pornhub Urls
+    description: Search for all pornhub videos downloaded by Youtube-dl and set the url accordingly
