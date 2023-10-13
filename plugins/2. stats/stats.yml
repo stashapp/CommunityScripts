@@ -1,0 +1,6 @@
+name: Extended Stats
+description: Adds new stats to the stats page
+version: 1.0
+ui:
+  javascript:
+  - stats.js
