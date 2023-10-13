@@ -8,23 +8,23 @@ import json
 import time
 import math
 
-
 per_page = 100
 request_s = requests.Session()
 
-
 def processScene(s):
-    if len(s['stash_ids']) > 0:
-        for sid in s['stash_ids']:
-            #                print('looking up markers for stash id: '+sid['stash_id'])
+    if len(s['stash_ids']) == 0:
+        log.debug('no scenes to process')
+        return
+    for sid in s['stash_ids']:
+        try:
+            log.debug('looking up markers for stash id: '+sid['stash_id'])
             res = requests.post('https://timestamp.trade/get-markers/' + sid['stash_id'], json=s)
             md = res.json()
-            if 'marker' in md:
-                log.info(
-                    'api returned something, for scene: ' + s['title'] + ' marker count: ' + str(len(md['marker'])))
+            if md.get('marker'):
+                log.info('api returned markers for scene: ' + s['title'] + ' marker count: ' + str(len(md['marker'])))
                 markers = []
                 for m in md['marker']:
-#                    log.debug('-- ' + m['name'] + ", " + str(m['start'] / 1000))
+                    # log.debug('-- ' + m['name'] + ", " + str(m['start'] / 1000))
                     marker = {}
                     marker["seconds"] = m['start'] / 1000
                     marker["primary_tag"] = m["tag"]
@@ -34,6 +34,10 @@ def processScene(s):
                 if len(markers) > 0:
                     log.info('Saving markers')
                     mp.import_scene_markers(stash, markers, s['id'], 15)
+            else:
+                log.debug('api returned no markers for scene: ' + s['title'])
+        except json.decoder.JSONDecodeError:
+            log.error('api returned invalid JSON for stash id: ' + sid['stash_id'])
 
 
 def processAll():
@@ -94,8 +98,6 @@ def submit():
             i=i+1
             log.progress((i/count))
             time.sleep(2)
-
-
 
 json_input = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = json_input["server_connection"]
