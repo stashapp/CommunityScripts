@@ -23,13 +23,13 @@ stash = StashInterface(FRAGMENT["server_connection"])
 SLIM_SCENE_FRAGMENT = """
 	id
 	title
-	path
-	file_mod_time
 	tags { id }
-	file {
+	files {
+		path
+		mod_time
 		size
 		height
-		bitrate
+		bit_rate
 		video_codec
 	}
 """
@@ -39,7 +39,7 @@ def main():
 		stash.find_tag('[Dupe: Keep]', create=True)
 		stash.find_tag('[Dupe: Remove]', create=True)
 		stash.find_tag('[Dupe: Ignore]', create=True)
-		
+
 	if MODE == "remove":
 		tag_id = stash.find_tag('[Dupe: Keep]').get("id")
 		stash.destroy_tag(tag_id)
@@ -70,13 +70,14 @@ class StashScene:
 
 	def __init__(self, scene=None) -> None:
 		self.id = int(scene['id'])
-		self.mod_time = parse_timestamp(scene['file_mod_time'])
+		scene['file'] = scene['files'][0]
+		self.mod_time = parse_timestamp(scene['file']['mod_time'])
 		self.height = scene['file']['height']
 		self.size = int(scene['file']['size'])
-		self.bitrate = int(scene['file']['bitrate'])
+		self.bitrate = int(scene['file']['bit_rate'])
 		# replace any existing tagged title
 		self.title = re.sub(r'^\[Dupe: \d+[KR]\]\s+', '', scene['title'])
-		self.path = scene['path']
+		self.path = scene['file']['path']
 
 		self.codec = scene['file']['video_codec'].upper()
 		if self.codec in CODEC_PRIORITY:
