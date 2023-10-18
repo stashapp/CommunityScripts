@@ -27,27 +27,27 @@ exec:
   - "{pluginDir}/phashDuplicateTagger.py"
 interface: raw
 tasks:
-  - name: 'Create [Dupe] Tags'
-    description: 'Create [Dupe: Keep] and [Dupe: Remove] scene tags for filtering '
-    defaultArgs:
-      mode: create
   - name: 'Set Dupe Tags (EXACT)'
     description: 'Assign duplicates tags to Exact Match (Dist 0) scenes'
     defaultArgs:
-      mode: tagexact
+      mode: tag_exact
   - name: 'Set Dupe Tags (HIGH)'
     description: 'Assign duplicates tags to High Match (Dist 3) scenes'
     defaultArgs:
-      mode: taghigh
+      mode: tag_high
   - name: 'Set Dupe Tags (MEDIUM)'
     description: 'Assign duplicates tags to Medium Match (Dist 6) scenes (BE CAREFUL WITH THIS LEVEL)'
     defaultArgs:
-      mode: tagmid
+      mode: tag_medium
   - name: 'Remove [Dupe] Tags'
     description: 'Remove duplicates scene tags from Stash database'
     defaultArgs:
       mode: remove
-  - name: 'Strip [Dupe] From Titles'
-    description: 'Clean prefixed Dupe string from scene titles'
+  - name: 'Scene Cleanup'
+    description: 'Removes titles from scenes and any generated tags excluding [Dupe: Ignore]'
     defaultArgs:
-      mode: cleantitle
+      mode: clean_scenes
+  - name: 'Generate PHASH'
+    description: 'Generate PHASHs for all scenes where they are missing'
+    defaultArgs:
+      mode: generate_phash
