@@ -20,6 +20,7 @@ FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT['args']['mode']
 stash = StashInterface(FRAGMENT["server_connection"])
 
+IGNORE_TAG_NAME = "[Dupe: Ignore]"
 SLIM_SCENE_FRAGMENT = """
 id
 title
@@ -39,16 +40,11 @@ file {
 """
 
 def main():
-	if MODE == "create":
-		stash.find_tag('[Dupe: Keep]', create=True)
-		stash.find_tag('[Dupe: Remove]', create=True)
-		stash.find_tag('[Dupe: Ignore]', create=True)
 		
 	if MODE == "remove":
-		tag_id = stash.find_tag('[Dupe: Keep]').get("id")
-		stash.destroy_tag(tag_id)
-		tag_id = stash.find_tag('[Dupe: Remove]').get("id")
-		stash.destroy_tag(tag_id)
+		clean_scenes()
+		for tag in get_managed_tags():
+			stash.destroy_tag(tag["id"])
 
 	if MODE == "tag_exact":
 		process_duplicates(PhashDistance.EXACT)
@@ -69,6 +65,7 @@ def main():
 def parse_timestamp(ts, format="%Y-%m-%dT%H:%M:%S%z"):
 	ts = re.sub(r'\.\d+', "", ts) #remove fractional seconds
 	return dt.datetime.strptime(ts, format)
+
 
 class StashScene:
 
@@ -187,7 +184,7 @@ def process_duplicates(distance:PhashDistance=PhashDistance.EXACT):
 	
 	clean_scenes() # clean old results
 
-	ignore_tag_id = stash.find_tag('[Dupe: Ignore]', create=True).get("id")
+	ignore_tag_id = stash.find_tag(IGNORE_TAG_NAME, create=True).get("id")
 	duplicate_list = stash.find_duplicate_scenes(distance, fragment=SLIM_SCENE_FRAGMENT)
 
 	total = len(duplicate_list)
@@ -208,9 +205,6 @@ def process_duplicates(distance:PhashDistance=PhashDistance.EXACT):
 		log.progress(i/total)
 
 def tag_files(group):
-	keep_tag_id = stash.find_tag('[Dupe: Keep]', create=True).get("id")
-	remove_tag_id = stash.find_tag('[Dupe: Remove]', create=True).get("id")
-
 	group = [StashScene(s) for s in group]
 
 	keep_reasons = []
@@ -235,14 +229,10 @@ def tag_files(group):
 			# log.debug(f"Tag for Keeping: {scene.id} {scene.path}")
 			stash.update_scenes({
 				'ids': [scene.id],
-				'title':  f'[PDT: {total_size}|{keep_scene.id}K] {scene.title}',
-				'tag_ids': {
-					'mode': 'ADD',
-					'ids': [keep_tag_id]
-				} 
+				'title':  f'[PDT: {total_size}|{keep_scene.id}K] {scene.title}'
 			})
 		else:
-			tag_ids = [remove_tag_id]
+			tag_ids = []
 			if scene.reason:
 				tag_ids.append(stash.find_tag(f'[Reason: {scene.reason}]', create=True).get('id'))
 			stash.update_scenes({
@@ -250,7 +240,7 @@ def tag_files(group):
 				'title':  f'[PDT: {total_size}|{keep_scene.id}R] {scene.title}',
 				'tag_ids': {
 					'mode': 'ADD',
-					'ids': [remove_tag_id]
+					'ids': tag_ids
 				} 
 			})
 
@@ -274,31 +264,23 @@ def clean_scenes():
 		})
 
 	# Remove Tags
-	tag_ids_to_remove = []
-	keep_tag = stash.find_tag('[Dupe: Keep]')
-	if keep_tag:
-		tag_ids_to_remove.append(keep_tag["id"])
-	remove_tag = stash.find_tag('[Dupe: Remove]')
-	if remove_tag:
-		tag_ids_to_remove.append(remove_tag["id"])
-	reason_tags = stash.find_tags(f={
-	"name": {
-		"value": "^\\[Reason",
-		"modifier": "MATCHES_REGEX"
-	}})
-	tag_ids_to_remove.extend([t["id"] for t in reason_tags])
-
-	for tag_id in tag_ids_to_remove:
-		scene_filter={"tags":{"value": [tag_id],"modifier": "INCLUDES","depth": 0}}
+	for tag in get_managed_tags():
+		scene_filter={"tags":{"value": [tag['id']],"modifier": "INCLUDES","depth": 0}}
 		stash.update_scenes({
 			'ids': [s["id"] for s in stash.find_scenes(f=scene_filter, fragment="id")],
 			'tag_ids': {
 				'mode': 'REMOVE',
-				'ids': [tag_id]
+				'ids': [tag['id']]
 			} 
 		})
 
-		
+def get_managed_tags(fragment="id name"):
+	return stash.find_tags(f={
+	"name": {
+		"value": "^\\[Reason",
+		"modifier": "MATCHES_REGEX"
+	}}, fragment=fragment)
+
 def generate_phash():
 	query = """mutation MetadataGenerate($input: GenerateMetadataInput!) {
 		metadataGenerate(input: $input)
