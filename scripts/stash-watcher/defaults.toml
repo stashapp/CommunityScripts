@@ -1,0 +1,48 @@
+#This is the information about your stash instance
+[Host]
+#The scheme (either http or https)
+Scheme = http
+#The full hostname for your stash instance.  If you're running in docker you might want the
+#service name and not localhost here.
+Host = localhost
+#The port number for your stash instance
+Port = 9999
+#The api key, if your stash instance is password protected
+ApiKey = 
+
+#Configuration for the listener itself
+[Config]
+#A comma separated list of paths to watch.
+Paths = /data
+#The minimum time to wait between triggering scans
+Cooldown = 300
+#A list of file extensions to watch.  If this is omitted, it uses the extensions that are defined
+#in your Stash library (for videos, images, and galleries)
+Extensions =
+#If this is set to a non-zero numeric value, this forces the use of polling to
+#determine file system changes.  If it is left blank, then the OS appropriate
+#mechanism is used.  This is much less efficient than the OS mechanism, so it
+#should be used with care.  The docs claim that this is required to watch SMB
+#shares, though in my testing I could watch them on Windows with the regular
+#WindowsApiObserver
+PollInterval=
+#This enables debug logging
+Debug=
+
+#Options for the Stash Scan.  Stash defaults to everything disabled, so this is the default
+#Generate options that match up with what we can do in Scan
+[ScanOptions]
+#"Generate scene covers" from the UI
+Covers=true
+#"Generate previews" from the UI
+Previews=true
+#"Generate animated image previews" from the UI
+ImagePreviews=false
+#"Generate scrubber sprites" from the UI
+Sprites=false
+#"Generate perceptual hashes" from the UI
+Phashes=true
+#"Generate thumbnails for images" from the UI
+Thumbnails=true
+#"Generate previews for image clips" from the UI
+ClipPreviews=false
