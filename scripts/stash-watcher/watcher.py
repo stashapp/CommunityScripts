@@ -238,8 +238,3 @@ if __name__ == '__main__':
 
 
     main(stash, scanFlags, paths, extensions, timeout, pollInterval)
-
-
-    
-    
-
