@@ -112,9 +112,8 @@ class StashScene:
 		if not (isinstance(other, StashScene)):
 			raise Exception(f"can only compare to <StashScene> not <{type(other)}>")
 
-		# Check if same scene
 		if self.id == other.id:
-			return None, "Matching IDs {self.id}=={other.id}"
+			return None, f"Matching IDs {self.id}=={other.id}"
 
 		def compare_not_found():
 			raise Exception("comparison not found")
@@ -130,7 +129,6 @@ class StashScene:
 		return None, f"{self.id} worse than {other.id}"
 
 	def compare_resolution(self, other):
-		# Checking Resolution
 		if self.height != other.height:
 			if self.height > other.height:
 				better, worse = self, other
@@ -140,7 +138,6 @@ class StashScene:
 			return better, f"Better Resolution {better.id}:{better.height}p > {worse.id}:{worse.height}p"
 		return None, None
 	def compare_bitrate(self, other):
-		# Checking Bitrate
 		if self.bitrate != other.bitrate:
 			if self.bitrate > other.bitrate:
 				better, worse = self, other
@@ -150,7 +147,6 @@ class StashScene:
 			return better, f"Better Bitrate {human_bits(better.bitrate)}ps > {human_bits(worse.bitrate)}ps Δ:({human_bits(better.bitrate-other.bitrate)}ps)"
 		return None, None
 	def compare_size(self, other):
-		# Checking Size
 		if abs(self.size-other.size) > 100000: # diff is > than 0.1 Mb
 			if self.size > other.size:
 				better, worse = self, other
@@ -160,7 +156,6 @@ class StashScene:
 			return better, f"Better Size {human_bytes(better.size)} > {human_bytes(worse.size)} Δ:({human_bytes(better.size-worse.size)})"
 		return None, None
 	def compare_age(self, other):
-		# Checking Age
 		if (self.mod_time and other.mod_time) and (self.mod_time != other.mod_time):
 			if self.mod_time < other.mod_time:
 				better, worse = self, other
