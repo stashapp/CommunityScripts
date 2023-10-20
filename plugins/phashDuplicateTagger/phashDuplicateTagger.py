@@ -25,14 +25,13 @@ SLIM_SCENE_FRAGMENT = """
 id
 title
 date
-path
-file_mod_time
 tags { id }
-file {
+files {
 	size
 	width
 	height
-	bitrate
+	bit_rate
+	mod_time
 	duration
 	framerate
 	video_codec
@@ -70,28 +69,30 @@ def parse_timestamp(ts, format="%Y-%m-%dT%H:%M:%S%z"):
 class StashScene:
 
 	def __init__(self, scene=None) -> None:
+		file = scene["files"][0]
+
 		self.id = int(scene['id'])
-		self.mod_time = parse_timestamp(scene['file_mod_time'])
+		self.mod_time = parse_timestamp(file['mod_time'])
 		if scene.get("date"):
 			self.date = parse_timestamp(scene['date'], format="%Y-%m-%d")
 		else:
 			self.date = None
 		self.path = scene.get("path")
-		self.width = scene['file']['width']
-		self.height = scene['file']['height']
+		self.width = file['width']
+		self.height = file['height']
 		# File size in # of BYTES
-		self.size = int(scene['file']['size'])
-		self.frame_rate = int(scene['file']['framerate'])
-		self.bitrate = int(scene['file']['bitrate'])
-		self.duration = float(scene['file']['duration'])
+		self.size = int(file['size'])
+		self.frame_rate = int(file['framerate'])
+		self.bitrate = int(file['bit_rate'])
+		self.duration = float(file['duration'])
 		# replace any existing tagged title
 		self.title = re.sub(r'^\[Dupe: \d+[KR]\]\s+', '', scene['title'])
-		self.path = scene['path']
+		self.path = file['path']
 		self.tag_ids = [t["id"]for t in scene["tags"]]
 
 		self.reason = None
 
-		self.codec = scene['file']['video_codec'].upper()
+		self.codec = file['video_codec'].upper()
 		if self.codec in CODEC_PRIORITY:
 			self.codec_priority = CODEC_PRIORITY[self.codec]
 		else:
