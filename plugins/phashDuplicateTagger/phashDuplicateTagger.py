@@ -20,7 +20,10 @@ FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT['args']['mode']
 stash = StashInterface(FRAGMENT["server_connection"])
 
-IGNORE_TAG_NAME = "[Dupe: Ignore]"
+KEEP_TAG_NAME = "[PDT: Keep]"
+REMOVE_TAG_NAME = "[PDT: Remove]"
+IGNORE_TAG_NAME = "[PDT: Ignore]"
+
 SLIM_SCENE_FRAGMENT = """
 id
 title
@@ -227,13 +230,18 @@ def tag_files(group):
 
 	for scene in group:
 		if scene.id == keep_scene.id:
-			# log.debug(f"Tag for Keeping: {scene.id} {scene.path}")
+			tag_ids = [stash.find_tag(REMOVE_TAG_NAME, create=True).get("id")]
 			stash.update_scenes({
 				'ids': [scene.id],
-				'title':  f'[PDT: {total_size}|{keep_scene.id}K] {scene.title}'
+				'title':  f'[PDT: {total_size}|{keep_scene.id}K] {scene.title}',
+				'tag_ids': {
+					'mode': 'ADD',
+					'ids': tag_ids
+				}
 			})
 		else:
 			tag_ids = []
+			tag_ids.append(stash.find_tag(KEEP_TAG_NAME, create=True).get("id"))
 			if scene.reason:
 				tag_ids.append(stash.find_tag(f'[Reason: {scene.reason}]', create=True).get('id'))
 			stash.update_scenes({
@@ -242,7 +250,7 @@ def tag_files(group):
 				'tag_ids': {
 					'mode': 'ADD',
 					'ids': tag_ids
-				} 
+				}
 			})
 
 def clean_scenes():
@@ -276,11 +284,16 @@ def clean_scenes():
 		})
 
 def get_managed_tags(fragment="id name"):
-	return stash.find_tags(f={
+	tags = stash.find_tags(f={
 	"name": {
 		"value": "^\\[Reason",
 		"modifier": "MATCHES_REGEX"
 	}}, fragment=fragment)
+	if remove_tag := stash.find_tag(REMOVE_TAG_NAME):
+		tags.append(remove_tag)
+	if keep_tag := stash.find_tag(KEEP_TAG_NAME):
+		tags.append(keep_tag)
+	return tags
 
 def generate_phash():
 	query = """mutation MetadataGenerate($input: GenerateMetadataInput!) {
