@@ -31,12 +31,13 @@ date
 tags { id }
 files {
 	size
+	path
 	width
 	height
 	bit_rate
 	mod_time
 	duration
-	framerate
+	frame_rate
 	video_codec
 }
 """
@@ -85,7 +86,7 @@ class StashScene:
 		self.height = file['height']
 		# File size in # of BYTES
 		self.size = int(file['size'])
-		self.frame_rate = int(file['framerate'])
+		self.frame_rate = int(file['frame_rate'])
 		self.bitrate = int(file['bit_rate'])
 		self.duration = float(file['duration'])
 		# replace any existing tagged title
@@ -187,7 +188,7 @@ def process_duplicates(distance:PhashDistance=PhashDistance.EXACT):
 	duplicate_list = stash.find_duplicate_scenes(distance, fragment=SLIM_SCENE_FRAGMENT)
 
 	total = len(duplicate_list)
-	log.info(f"There is {total} sets of duplicates found.")
+	log.info(f"Found {total} sets of duplicates.")
 
 	for i, group in enumerate(duplicate_list):
 		group = [StashScene(s) for s in group]
@@ -204,15 +205,17 @@ def process_duplicates(distance:PhashDistance=PhashDistance.EXACT):
 		log.progress(i/total)
 
 def tag_files(group):
-	group = [StashScene(s) for s in group]
-
+	
 	keep_reasons = []
-	keep_scene = group[0]
+	keep_scene = None
+
+	total_size = group[0].size
 	for scene in group[1:]:
-		better, msg = scene.compare(keep_scene)
+		total_size += scene.size
+		better, msg = scene.compare(group[0])
 		if better:
 			keep_scene = better
-		keep_reasons.append(msg)
+			keep_reasons.append(msg)
 
 	if not keep_scene:
 		log.warning(f"could not determine better scene from {group}")
