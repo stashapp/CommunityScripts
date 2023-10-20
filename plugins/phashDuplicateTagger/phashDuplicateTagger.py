@@ -157,13 +157,13 @@ class StashScene:
 		return None, None
 	def compare_age(self, other):
 		# Checking Age
-		if (self.date and other.date) and (self.date != other.date):
-			if self.date < other.date:
+		if (self.mod_time and other.mod_time) and (self.mod_time != other.mod_time):
+			if self.mod_time < other.mod_time:
 				better, worse = self, other
 			else:
 				worse, better = self, other
 			worse.reason = "age"
-			return better, f"Choose Oldest: Δ:{worse.date-better.date} | {better.id} older than {worse.id}"
+			return better, f"Choose Oldest: Δ:{worse.mod_time-better.mod_time} | {better.id} older than {worse.id}"
 		return None, None
 	def compare_encoding(self, other):
 		if self.codec_priority != other.codec_priority:
