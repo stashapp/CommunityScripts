@@ -1,0 +1,16 @@
+#This is the information about your stash instance
+[Host]
+#The scheme (either http or https)
+Scheme = http
+#The full hostname for your stash instance.  If you're running in docker you might want the
+#service name and not localhost here.
+Host = localhost
+#The port number for your stash instance
+Port = 9999
+#The api key, if your stash instance is password protected
+ApiKey = 
+
+#Configuration for the listener itself
+[Config]
+#A comma separated list of paths to watch.
+Paths = /data
