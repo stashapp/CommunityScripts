@@ -230,7 +230,7 @@ def tag_files(group):
 
 	for scene in group:
 		if scene.id == keep_scene.id:
-			tag_ids = [stash.find_tag(REMOVE_TAG_NAME, create=True).get("id")]
+			tag_ids = [stash.find_tag(KEEP_TAG_NAME, create=True).get("id")]
 			stash.update_scenes({
 				'ids': [scene.id],
 				'title':  f'[PDT: {total_size}|{keep_scene.id}K] {scene.title}',
@@ -241,7 +241,7 @@ def tag_files(group):
 			})
 		else:
 			tag_ids = []
-			tag_ids.append(stash.find_tag(KEEP_TAG_NAME, create=True).get("id"))
+			tag_ids.append(stash.find_tag(REMOVE_TAG_NAME, create=True).get("id"))
 			if scene.reason:
 				tag_ids.append(stash.find_tag(f'[Reason: {scene.reason}]', create=True).get('id'))
 			stash.update_scenes({
