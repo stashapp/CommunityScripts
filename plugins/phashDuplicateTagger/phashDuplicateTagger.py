@@ -1,63 +1,59 @@
-import json
-import sys
-import re
+import re, sys, json
 import datetime as dt
+from inspect import getmembers, isfunction
 
 try:
     import stashapi.log as log
-    from stashapi.tools import human_bytes
+    from stashapi.tools import human_bytes, human_bits
     from stashapi.stash_types import PhashDistance
     from stashapi.stashapp import StashInterface
 except ModuleNotFoundError:
     print("You need to install the stashapi module. (pip install stashapp-tools)",
      file=sys.stderr)
 
-
-PRIORITY = ['resolution', 'bitrate', 'size', 'age'] # 'encoding'
-CODEC_PRIORITY = ['H265','HEVC','H264','MPEG4']
+import config
 
 FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT['args']['mode']
 stash = StashInterface(FRAGMENT["server_connection"])
 
 SLIM_SCENE_FRAGMENT = """
-	id
-	title
+id
+title
+date
+tags { id }
+files {
+	size
 	path
-	file_mod_time
-	tags { id }
-	file {
-		size
-		height
-		bitrate
-		video_codec
-	}
+	width
+	height
+	bit_rate
+	mod_time
+	duration
+	frame_rate
+	video_codec
+}
 """
 
 def main():
-	if MODE == "create":
-		stash.find_tag('[Dupe: Keep]', create=True)
-		stash.find_tag('[Dupe: Remove]', create=True)
-		stash.find_tag('[Dupe: Ignore]', create=True)
 		
 	if MODE == "remove":
-		tag_id = stash.find_tag('[Dupe: Keep]').get("id")
-		stash.destroy_tag(tag_id)
-		tag_id = stash.find_tag('[Dupe: Remove]').get("id")
-		stash.destroy_tag(tag_id)
+		clean_scenes()
+		for tag in get_managed_tags():
+			stash.destroy_tag(tag["id"])
 
-	if MODE == "tagexact":
-		duplicate_list = stash.find_duplicate_scenes(PhashDistance.EXACT, fragment=SLIM_SCENE_FRAGMENT)
-		process_duplicates(duplicate_list)
-	if MODE == "taghigh":
-		duplicate_list = stash.find_duplicate_scenes(PhashDistance.HIGH, fragment=SLIM_SCENE_FRAGMENT)
-		process_duplicates(duplicate_list)
-	if MODE == "tagmid":
-		duplicate_list = stash.find_duplicate_scenes(PhashDistance.MEDIUM, fragment=SLIM_SCENE_FRAGMENT)
-		process_duplicates(duplicate_list)
+	if MODE == "tag_exact":
+		process_duplicates(PhashDistance.EXACT)
+	if MODE == "tag_high":
+		process_duplicates(PhashDistance.HIGH)
+	if MODE == "tag_medium":
+		process_duplicates(PhashDistance.MEDIUM)
 
-	if MODE == "cleantitle":
-		clean_titles()
+	if MODE == "clean_scenes":
+		clean_scenes()
+	if MODE == "generate_phash":
+		generate_phash()
+
 
 	log.exit("Plugin exited normally.")
 
@@ -66,23 +62,39 @@ def parse_timestamp(ts, format="%Y-%m-%dT%H:%M:%S%z"):
 	ts = re.sub(r'\.\d+', "", ts) #remove fractional seconds
 	return dt.datetime.strptime(ts, format)
 
+
 class StashScene:
 
 	def __init__(self, scene=None) -> None:
+		file = scene["files"][0]
+
 		self.id = int(scene['id'])
-		self.mod_time = parse_timestamp(scene['file_mod_time'])
-		self.height = scene['file']['height']
-		self.size = int(scene['file']['size'])
-		self.bitrate = int(scene['file']['bitrate'])
+		self.mod_time = parse_timestamp(file['mod_time'])
+		if scene.get("date"):
+			self.date = parse_timestamp(scene['date'], format="%Y-%m-%d")
+		else:
+			self.date = None
+		self.path = scene.get("path")
+		self.width = file['width']
+		self.height = file['height']
+		# File size in # of BYTES
+		self.size = int(file['size'])
+		self.frame_rate = int(file['frame_rate'])
+		self.bitrate = int(file['bit_rate'])
+		self.duration = float(file['duration'])
 		# replace any existing tagged title
 		self.title = re.sub(r'^\[Dupe: \d+[KR]\]\s+', '', scene['title'])
-		self.path = scene['path']
+		self.path = file['path']
+		self.tag_ids = [t["id"]for t in scene["tags"]]
 
-		self.codec = scene['file']['video_codec'].upper()
-		if self.codec in CODEC_PRIORITY:
-			self.codec = CODEC_PRIORITY.index(self.codec)
+		self.remove_reason = None
+
+		self.codec = file['video_codec'].upper()
+		if self.codec in config.CODEC_PRIORITY:
+			self.codec_priority = config.CODEC_PRIORITY[self.codec]
 		else:
-			log.warning(f"could not find codec {self.codec}")
+			self.codec_priority = None
+			log.warning(f"could not find codec {self.codec} used in SceneID:{self.id}")
 
 	def __repr__(self) -> str:
 		return f'<StashScene ({self.id})>'
@@ -94,176 +106,165 @@ class StashScene:
 		if not (isinstance(other, StashScene)):
 			raise Exception(f"can only compare to <StashScene> not <{type(other)}>")
 
-		# Check if same scene
 		if self.id == other.id:
-			return None, "Matching IDs {self.id}=={other.id}"
+			return None, f"Matching IDs {self.id}=={other.id}"
 
-		def compare_not_found():
+		def compare_not_found(*args, **kwargs):
 			raise Exception("comparison not found")
-		for type in PRIORITY:
+		for type in config.PRIORITY:
 			try:
 				compare_function = getattr(self, f'compare_{type}', compare_not_found)
-				best, msg = compare_function(other)
-				if best:
+				result =  compare_function(other)
+				if result and len(result) == 2:
+					best, msg = result
 					return best, msg
 			except Exception as e:
-				log.error(f"Issue Comparing <{type}> {e}")
+				log.error(f"Issue Comparing {self.id} {other.id} using <{type}> {e}")
 		
 		return None, f"{self.id} worse than {other.id}"
 
-	def compare_resolution(self, other):
-		# Checking Resolution
-		if self.height != other.height:
-			if self.height > other.height:
-				return self, f"Better Resolution {self.height} > {other.height} | {self.id}>{other.id}"
-			else:
-				return other, f"Better Resolution {other.height} > {self.height} | {other.id}>{self.id}"
-		return None, None
-	def compare_bitrate(self, other):
-		# Checking Bitrate
-		if self.bitrate != other.bitrate:
-			if self.bitrate > other.bitrate:
-				return self, f"Better Bitrate {human_bytes(self.bitrate)} > {human_bytes(other.bitrate)} Δ:({human_bytes(self.bitrate-other.bitrate)}) | {self.id}>{other.id}"
-			else:
-				return other, f"Better Bitrate {human_bytes(other.bitrate)} > {human_bytes(self.bitrate)} Δ:({human_bytes(other.bitrate-self.bitrate)}) | {other.id}>{self.id}"
-		return None, None
-	def compare_size(self, other):
-		# Checking Size
-		if self.size != other.size:
-			if self.size > other.size:
-				return self, f"Better Size {human_bytes(self.size)} > {human_bytes(other.size)} Δ:({human_bytes(self.size-other.size)}) | {self.id} > {other.id}"
-			else:
-				return other, f"Better Size {human_bytes(other.size)} > {human_bytes(self.size)} Δ:({human_bytes(other.size-self.size)}) | {other.id} > {self.id}"
-		return None, None
-	def compare_age(self, other):
-		# Checking Age
-		if self.mod_time != other.mod_time:
-			if self.mod_time < other.mod_time:
-				return self, f"Choose Oldest: Δ:{other.mod_time-self.mod_time} | {self.id} older than {other.id}"
-			else:
-				return other, f"Choose Oldest: Δ:{self.mod_time-other.mod_time} | {other.id} older than {self.id}"
-		return None, None
-	def compare_encoding(self, other):
-		# could not find one of the codecs in priority list
-		if not isinstance(self.codec, int) or not isinstance(other.codec, int):
-			return None, None
-		if self.codec != other.codec:
-			if self.codec < other.codec:
-				return self, f"Preferred Codec {CODEC_PRIORITY[self.codec]} over {CODEC_PRIORITY[other.codec]} | {self.id} better than {other.id}"
-			else:
-				return other, f"Preferred Codec {CODEC_PRIORITY[other.codec]} over {CODEC_PRIORITY[self.codec]} | {other.id} better than {self.id}"
-		return None, None
+def process_duplicates(distance:PhashDistance=PhashDistance.EXACT):
+	
+	clean_scenes() # clean old results
 
+	ignore_tag_id = stash.find_tag(config.IGNORE_TAG_NAME, create=True).get("id")
+	duplicate_list = stash.find_duplicate_scenes(distance, fragment=SLIM_SCENE_FRAGMENT)
 
-def process_duplicates(duplicate_list):
-	ignore_tag_id = stash.find_tag('[Dupe: Ignore]', create=True).get("id")
 	total = len(duplicate_list)
-	log.info(f"There is {total} sets of duplicates found.")
+	log.info(f"Found {total} sets of duplicates.")
+
 	for i, group in enumerate(duplicate_list):
-		log.progress(i/total)
+		group = [StashScene(s) for s in group]
 		filtered_group = []
 		for scene in group:
-			tag_ids = [ t['id'] for t in scene['tags'] ]
-			if ignore_tag_id in tag_ids:
-				log.debug(f"Ignore {scene['id']} {scene['title']}")
+			if ignore_tag_id in scene.tag_ids:
+				log.debug(f"Ignore {scene.id} {scene.title}")
 			else:
 				filtered_group.append(scene)
+		
 		if len(filtered_group) > 1:
 			tag_files(filtered_group)
+		
+		log.progress(i/total)
 
 def tag_files(group):
-	tag_keep = stash.find_tag('[Dupe: Keep]', create=True).get("id")
-	tag_remove = stash.find_tag('[Dupe: Remove]', create=True).get("id")
-
-	group = [StashScene(s) for s in group]
-
+	
 	keep_reasons = []
-	keep_scene = group[0]
+	keep_scene = None
+
+	total_size = group[0].size
 	for scene in group[1:]:
-		better, msg = scene.compare(keep_scene)
+		total_size += scene.size
+		better, msg = scene.compare(group[0])
 		if better:
 			keep_scene = better
-		keep_reasons.append(msg)
+			keep_reasons.append(msg)
+	total_size = human_bytes(total_size, round=2, prefix='G')
 
-	keep_scene.reasons = keep_reasons
+	if not keep_scene:
+		log.info(f"could not determine better scene from {group}")
+		if config.UNKNOWN_TAG_NAME:
+			group_id = group[0].id
+			for scene in group:
+				tag_ids = [stash.find_tag(config.UNKNOWN_TAG_NAME, create=True).get("id")]
+				stash.update_scenes({
+					'ids': [scene.id],
+					'title':  f'[PDT: {total_size}|{group_id}U] {scene.title}',
+					'tag_ids': {
+						'mode': 'ADD',
+						'ids': tag_ids
+					}
+				})
+		return
 
-	log.info(f"{keep_scene.id} best of:{[s.id for s in group]} {keep_scene.reasons}")
+	log.info(f"{keep_scene.id} best of:{[s.id for s in group]} {keep_reasons}")
 
 	for scene in group:
 		if scene.id == keep_scene.id:
-			# log.debug(f"Tag for Keeping: {scene.id} {scene.path}")
+			tag_ids = [stash.find_tag(config.KEEP_TAG_NAME, create=True).get("id")]
 			stash.update_scenes({
 				'ids': [scene.id],
-				'title':  f'[Dupe: {keep_scene.id}K] {scene.title}',
+				'title':  f'[PDT: {total_size}|{keep_scene.id}K] {scene.title}',
 				'tag_ids': {
 					'mode': 'ADD',
-					'ids': [tag_keep]
-				} 
+					'ids': tag_ids
+				}
 			})
 		else:
-			# log.debug(f"Tag for Removal: {scene.id} {scene.path}")
+			tag_ids = []
+			tag_ids.append(stash.find_tag(config.REMOVE_TAG_NAME, create=True).get("id"))
+			if scene.remove_reason:
+				tag_ids.append(stash.find_tag(f'[Reason: {scene.remove_reason}]', create=True).get('id'))
 			stash.update_scenes({
 				'ids': [scene.id],
-				'title':  f'[Dupe: {keep_scene.id}R] {scene.title}',
+				'title':  f'[PDT: {total_size}|{keep_scene.id}R] {scene.title}',
 				'tag_ids': {
 					'mode': 'ADD',
-					'ids': [tag_remove]
-				} 
+					'ids': tag_ids
+				}
 			})
 
-def clean_titles():
-	scenes = stash.find_scenes(f={
+def clean_scenes():
+	scene_count, scenes = stash.find_scenes(f={
 		"title": {
 			"modifier": "MATCHES_REGEX",
-			"value": "^\\[Dupe: (\\d+)([KR])\\]"
+			"value": "^\\[PDT: .+?\\]"
 		}
-	},fragment="id title")
+	},fragment="id title", get_count=True)
 
-	log.info(f"Cleaning Titles/Tags of {len(scenes)} Scenes ")
+	log.info(f"Cleaning Titles/Tags of {scene_count} Scenes ")
 	
-	for scene in scenes:
-		title = re.sub(r'\[Dupe: \d+[KR]\]\s+', '', scene['title'])
-		log.info(f"Removing Dupe Title String from: [{scene['id']}] {scene['title']}")
+	# Clean scene Title
+	for i, scene in enumerate(scenes):
+		title = re.sub(r'\[PDT: .+?\]\s+', '', scene['title'])
 		stash.update_scenes({
 			'ids': [scene['id']],
 			'title': title
 		})
+		log.progress(i/scene_count)
 
-	tag_keep = stash.find_tag('[Dupe: Keep]')
-	if tag_keep:
-		tag_keep = tag_keep['id']
-		scenes = stash.find_scenes(f={
-			"tags":{
-				"value": [tag_keep],
-				"modifier": "INCLUDES",
-				"depth": 0
-			}
-		},fragment="id title")
+	# Remove Tags
+	for tag in get_managed_tags():
+		scene_count, scenes = stash.find_scenes(f={
+			"tags":{"value": [tag['id']],"modifier": "INCLUDES","depth": 0}
+		}, fragment="id", get_count=True)
+		if not scene_count > 0:
+			continue
+		log.info(f'removing tag {tag["name"]} from {scene_count} scenes')
 		stash.update_scenes({
-			'ids': [s['id'] for s in scenes],
+			'ids': [s["id"] for s in scenes],
 			'tag_ids': {
 				'mode': 'REMOVE',
-				'ids': [tag_keep]
+				'ids': [tag['id']]
 			} 
 		})
 
-	tag_remove = stash.find_tag('[Dupe: Remove]')
-	if tag_remove:
-		tag_remove = tag_remove['id']
-		scenes = stash.find_scenes(f={
-			"tags":{
-				"value": [tag_remove],
-				"modifier": "INCLUDES",
-				"depth": 0
-			}
-		},fragment="id title")
-		stash.update_scenes({
-			'ids': [s['id'] for s in scenes],
-			'tag_ids': {
-				'mode': 'REMOVE',
-				'ids': [tag_remove]
-			} 
-		})
+def get_managed_tags(fragment="id name"):
+	tags = stash.find_tags(f={
+	"name": {
+		"value": "^\\[Reason",
+		"modifier": "MATCHES_REGEX"
+	}}, fragment=fragment)
+	tag_name_list = [
+		config.REMOVE_TAG_NAME,
+		config.KEEP_TAG_NAME,
+		config.UNKNOWN_TAG_NAME,
+		# config.IGNORE_TAG_NAME,
+	]
+	for tag_name in tag_name_list:
+		if tag := stash.find_tag(tag_name):
+			tags.append(tag)
+	return tags
+
+def generate_phash():
+	query = """mutation MetadataGenerate($input: GenerateMetadataInput!) {
+		metadataGenerate(input: $input)
+	}"""
+	variables = {"phashes", True}
+	stash._callGraphQL(query, variables)
 
 if __name__ == '__main__':
+	for name, func in getmembers(config, isfunction):
+		if re.match(r'^compare_', name):
+			setattr(StashScene, name, func)
 	main()
