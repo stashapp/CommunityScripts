@@ -41,3 +41,9 @@ cleanup changes made to scene titles and tags back to before they were tagged
 
 ### Generate Scene PHASHs
 Start a generate task within stash to generate PHASHs
+
+## Custom Compare Functions
+
+you can create custom compare functions inside config.py all current compare functions are provided custom functions must return two values when a better file is determined, the better object and a message string, optionally you can set `remove_reason` on the worse file and it will be tagged with that reason
+
+custom functions must start with "compare_" otherwise they will not be detected, make sure to add your function name to the PRIORITY list
