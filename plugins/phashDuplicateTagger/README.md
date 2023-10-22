@@ -1,27 +1,43 @@
 This plugin has four functions:
 
-1) It will create two tags for review, [Dupe: Keep] and [Dupe: Remove]
+# PHASH Duplicate Tagger
 
-2) It will auto assign those tags to scenes with EXACT PHashes based on (and in this order):
-      a) Keep the larger resolution
-      b) Keep the larger file size (if same resolution)
-      c) Keep the older scene (if same file size.)
-          (Older scene is kept since it's more likely to have been organized if they're the same file)
-   With this order of precedence one scene is determined to be the "Keeper" and the rest are assigned for Removal
-   When the scenes are tagged, the titles are also modified to add '[Dupe: {SceneID}K/R]'
-   The SceneID put into the title is the one determined to be the "Keeper", and is put into all matching scenes
-   This way you can sort by title after matching and verify the scenes are actually the same thing, and the Keeper
-   will be the first scene in the set. (Since you'll have [Dupe: 72412K], [Dupe: 72412R], [Dupe: 72412R] as an example
+## Requirements
+ * python >= 3.10.X
+ * `pip install -r requirements.txt`
 
-   What I have personally done is essentially set a filter on the two Dupe tags, then sort by title.  Then I spot check the 
-   'K' scenes versus the 'R' scenes.  If everything looks good then I just drop [Dupe: Keep] out of the filter (leaving only
-   [Dupe: Remove], Select All and delete the files.
 
-3) It will remove the [Dupe: Keep] and [Dupe: Remove] tags from Stash
-4) It will remove the [Dupe: ######K/R] tags from the titles
-  (These last two options are obviously for after you have removed the scenes you don't want any longer)
+## Title Syntax
 
-PS. This script is essentially a hack and slash job on scripts from Belley and WithoutPants, thanks guys!
+This plugin will change the titles of scenes that are matched as duplicates in the following format
 
-PPS. The original plugin has been rewritten by stg-annon, and does now require hos stashapp-tools module (pip install stashapp-tools)
-     (Yes, this works with the Stash Docker)
+`[PDT: 0.0GB|<group_id><keep_flag>] <Scene Title>`
+
+group_id: usually the scene ID of the scene that was selected to Keep
+keep_flag: K=Keep R=remove U=Unknown
+
+
+## Tags
+various tags may be created by this plugin 
+* Keep - Applied on scenes that are determined to be the "best"
+* Remove - Applied to the scenes that determined to be the "worst"
+* Unknown - Applied to scenes where a best scene could not be determined
+* Ignore - Applied to scenes by user to ignore known duplicates
+* Reason -  These tags are applied to remove scenes, they will have a category that will match the determining factor on why a scene was chosen to be removed
+
+## Tasks
+### Tag Dupes (EXACT/HIGH/MEDIUM)
+These tasks will search for scenes with similar PHASHs within stash the closeness (distance) of the hashes to each other depends on which option you select
+
+* EXACT - Matches have a distance of 0 and should be exact matches
+* HIGH - Matches have a distance of 3 and are very similar to each other
+* MEDIUM - Matches have a distance of 6 and resemble each other
+
+### Delete Managed Tags
+remove any generated tags within stash created by the plugin, excluding the `Ignore` tag this may be something you want to retain
+
+### Scene Cleanup
+cleanup changes made to scene titles and tags back to before they were tagged
+
+### Generate Scene PHASHs
+Start a generate task within stash to generate PHASHs
