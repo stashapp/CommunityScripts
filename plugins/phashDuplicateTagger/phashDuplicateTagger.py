@@ -221,7 +221,7 @@ def tag_files(group):
 		log.warning(f"could not determine better scene from {group}")
 		return
 
-	total_size = human_bytes(total_size)
+	total_size = human_bytes(total_size, round=2, prefix='G')
 	keep_scene.reasons = keep_reasons
 
 	log.info(f"{keep_scene.id} best of:{[s.id for s in group]} {keep_scene.reasons}")
