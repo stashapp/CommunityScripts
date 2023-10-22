@@ -22,8 +22,8 @@ We will also be rearranging things a bit, and updating documentation (including 
 
 ## Plugins
 
-Category|Triggers|Plugin Name|Description|Minimum Stash version|Updated for v24
---------|-----------|-----------|-----------|---------------------
+Category|Triggers|Plugin Name|Description|Minimum Stash version|Updated for v24|
+--------|-----------|-----------|-----------|---------------------|-----
 Scraper|Task|[GHScraper_Checker](plugins/GHScraper_Checker)|Compare local file against github file from the community scraper repo.|v0.8|:x:
 Maintenance|Task<br />Scene.Update|[renamerOnUpdate](plugins/renamerOnUpdate)|Rename/Move your file based on Stash metadata.|v0.7|:x:
 Maintenance|Set Scene Cover|[setSceneCoverFromFile](plugins/setSceneCoverFromFile)|Searchs Stash for Scenes with a cover image in the same folder and sets the cover image in stash to that image|v0.7|:x:
@@ -36,18 +36,18 @@ Reporting||[TagGraph](plugins/tagGraph)|Creates a visual of the Tag relations.|v
 
 ## Themes
 
-Theme Name|Description                                 |Updated for v24
-----------|--------------------------------------------|
+Theme Name|Description                                 |Updated for v24|
+----------|--------------------------------------------|----
 [Plex](themes/plex)      |Theme inspired by the popular Plex Interface|:x:
 
 ## Utility Scripts
 
-|Category|Userscript Name|Description|Updated for v24
----------|---------------|-----------|
+|Category|Userscript Name|Description|Updated for v24|
+---------|---------------|-----------|----
 StashDB  |[StashDB Submission Helper](/userscripts/StashDB_Submission_Helper)|Adds handy functions for StashDB submissions like buttons to add aliases in bulk to a performer|:x:
 
 ## Utility Scripts
 
-Category|Plugin Name|Description|Minimum Stash version|Updated for v24
---------|-----------|-----------|---------------------
+Category|Plugin Name|Description|Minimum Stash version|Updated for v24|
+--------|-----------|-----------|---------------------|----
 Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with Kodi.|v0.7|:x:
