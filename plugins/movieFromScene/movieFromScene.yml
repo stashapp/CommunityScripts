@@ -1,0 +1,31 @@
+name: Auto-Create Movie From Scene
+description: Automatically create a movie from a scene when scene gets updated. Require Python 3.10 and above. If you use the config GUI, tkinter should be installed.
+url: https://github.com/stashapp/CommunityScripts
+version: 1.0
+exec:
+  - python
+  - "{pluginDir}/py_plugins/movieFromScene.py"
+interface: raw
+hooks:
+  - name: hook_create_movie_from_scene
+    description: Create a movie from a scene if it fits certain criteria
+    triggeredBy:
+      - Scene.Update.Post
+tasks:
+  - name: 'Disable'
+    description: Don't auto-create movies. Save this setting in the config file.
+    defaultArgs:
+      mode: disable
+  - name: 'Enable'
+    description: Auto-Create a movie when scene is updated and fits the criteria. Save this setting in the config file.
+    defaultArgs:
+      mode: enable
+  - name: 'Dry Run'
+    description: Run but not create any movies. Only show in the log. Save this setting in the config file.
+    defaultArgs:
+      mode: dryrun
+  - name: 'Show Config'
+    description: Use tkinter to show detailed config GUI for this plugin. Make sure tkinter is installed before this.
+    defaultArgs:
+      mode: config
+    
