@@ -1,0 +1,7 @@
+name: Tag Image Cropper
+description: Crop Tag Images
+version: 1.0
+ui:
+  css:
+  javascript:
+  - tagImageCropper.js

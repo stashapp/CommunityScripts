@@ -9,12 +9,12 @@
         const img = document.createElement('img');
         new Cropper(img)
     } catch (e) {
-        console.error("Cropper not loaded - please install 4. CropperJS from CommunityScripts")
+        console.error("Cropper not loaded - please install '/UI/10-lib/CropperJS' from CommunityScripts")
     }
     try {
         stash.getVersion()
     } catch (e) {
-        console.error("Stash not loaded - please install 1. stashUserscriptLibrary from CommunityScripts")
+        console.error("Stash not loaded - please install '/UI/10-lib/stashUserscriptLibrary' from CommunityScripts")
     }
 
     function setupCropper() {

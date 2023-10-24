@@ -1,0 +1,7 @@
+name: Performer Image Cropper
+description: Crop Performer Images
+version: 1.0
+ui:
+  css:
+  javascript:
+  - performerImageCropper.js
