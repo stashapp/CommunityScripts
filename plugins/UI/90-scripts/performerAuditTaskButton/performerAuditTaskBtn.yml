@@ -1,0 +1,6 @@
+name: Performer Audit Task Button
+description: Adds a button to the performers page to run the audit plugin task
+version: 0.3.0
+ui:
+  javascript:
+  - performerAuditTaskBtn.js

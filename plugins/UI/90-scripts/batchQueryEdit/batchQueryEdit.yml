@@ -1,0 +1,6 @@
+name: Batch Query Edit
+description: Batch modify scene tagger search query
+version: 0.6.0
+ui:
+  javascript:
+  - batchQueryEdit.js

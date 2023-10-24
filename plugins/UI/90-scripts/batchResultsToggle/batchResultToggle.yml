@@ -1,0 +1,6 @@
+name: Batch Result Toggle
+description: 
+version: 0.4.1
+ui:
+  javascript:
+  - batchResultToggle.js

@@ -1,0 +1,6 @@
+name: StashID Icon
+description: Adds checkmark icon to performer and studio cards that have a stashid
+version: 0.1.2
+ui:
+  javascript:
+  - stashIdIcon.js

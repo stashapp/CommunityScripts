@@ -1,0 +1,6 @@
+name: Performer URL Searchbox
+description: Adds a search by performer url textbox to the performers page
+version: 0.2.0
+ui:
+  javascript:
+  - performerURLSearchbox.js

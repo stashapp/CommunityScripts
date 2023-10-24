@@ -1,0 +1,6 @@
+name: Parse Markdown
+description: Adds markdown parsing to tag description fields
+version: 0.1.1
+ui:
+  javascript:
+  - parseMarkdown.js

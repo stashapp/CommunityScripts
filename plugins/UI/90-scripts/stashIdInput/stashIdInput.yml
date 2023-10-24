@@ -1,0 +1,6 @@
+name: Stash StashID Input
+description: Adds input for entering new stash id to performer details page and studio page
+version: 0.4.0
+ui:
+  javascript:
+  - stashIdInput.js

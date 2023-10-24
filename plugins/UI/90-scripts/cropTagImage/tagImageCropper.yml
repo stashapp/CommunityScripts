@@ -1,6 +1,6 @@
 name: Tag Image Cropper
-description: Crop Tag Images
-version: 1.0
+description: Adds an image cropper to tag page
+version: 0.1.1
 ui:
   css:
   javascript:

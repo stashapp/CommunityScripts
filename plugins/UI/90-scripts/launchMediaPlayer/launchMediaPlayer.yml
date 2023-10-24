@@ -1,0 +1,6 @@
+name: Launch Media Player
+description: Open scene filepath links in an external media player. Requires userscript_functions
+version: 0.2.1
+ui:
+  javascript:
+  - launchMediaPlayer.js
