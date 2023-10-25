@@ -1,7 +1,6 @@
 (function() {
     'use strict';
-
-    const MIN_REQUIRED_PLUGIN_VERSION = '0.5.0';
+    let pluginName = "setStashboxFavoritePerformers";
 
     const TASK_NAME = 'Set Stashbox Favorite Performers';
     stash.visiblePluginTasks.push(TASK_NAME);
@@ -29,7 +28,7 @@
                 const toolbar = document.querySelector(".btn-toolbar");
 
                 const newGroup = document.createElement('div');
-                newGroup.classList.add('mx-2', 'mb-2', await GM.getValue(inputId, false) ? 'd-flex' : 'd-none');
+                newGroup.classList.add('mx-2', 'mb-2', await stash.getValue(pluginName, inputId, false) ? 'd-flex' : 'd-none');
                 toolbar.appendChild(newGroup);
 
                 const button = document.createElement("button");
@@ -72,24 +71,11 @@
         const settingsHeader = 'Show Set Stashbox Favorites Button';
         const settingsSubheader = 'Display set stashbox favorites button on performers page.';
         const checkbox = await stash.createSystemSettingCheckbox(el, settingsId, inputId, settingsHeader, settingsSubheader);
-        checkbox.checked = await GM.getValue(inputId, false);
+        checkbox.checked = await stash.getValue(pluginName, inputId, false);
         checkbox.addEventListener('change', async () => {
             const value = checkbox.checked;
-            await GM.setValue(inputId, value);
+            await stash.setValue(pluginName, inputId, value);
         });
-    });
-
-    stash.addEventListener('stash:pluginVersion', async function () {
-        waitForElementId(settingsId, async (elementId, el) => {
-            el.style.display = stash.pluginVersion != null ? 'flex' : 'none';
-        });
-        if (stash.comparePluginVersion(MIN_REQUIRED_PLUGIN_VERSION) < 0) {
-            const alertedPluginVersion = await GM.getValue('alerted_plugin_version');
-            if (alertedPluginVersion !== stash.pluginVersion) {
-                await GM.setValue('alerted_plugin_version', stash.pluginVersion);
-                alert(`User functions plugin version is ${stash.pluginVersion}. Set Stashbox Favorite Performers userscript requires version ${MIN_REQUIRED_PLUGIN_VERSION} or higher.`);
-            }
-        }
     });
 
     stash.addEventListener('stash:plugin:task', async function (evt) {
