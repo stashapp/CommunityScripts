@@ -26,11 +26,11 @@
   </a>
 </button>`);
                         urlElement.classList.add('d-inline-block');
-                        insertAfter(urlElement, headerElement);
-                        insertAfter(birthdateElement, urlElement);
+                        headerElement.after(urlElement);
+                        urlElement.after(birthdateElement);
                     }
                     else {
-                        insertAfter(birthdateElement, headerElement);
+                        headerElement.after(birthdateElement);
                     }
                 }
             }

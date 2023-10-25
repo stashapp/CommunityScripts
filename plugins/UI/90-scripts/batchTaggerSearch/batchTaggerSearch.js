@@ -1,5 +1,5 @@
 (function() {
-
+    const pluginName = "batchTaggerSearch"
     const DEFAULT_DELAY = 200;
     let delay = DEFAULT_DELAY;
 
@@ -114,7 +114,7 @@
 
     async function loadSettings() {
         for (const input of document.querySelectorAll(`#${batchSearchConfigId} input[type="text"]`)) {
-            input.value = parseInt(await GM.getValue(input.id, input.dataset.default));
+            input.value = parseInt(await stash.getValue(pluginName, input.id, input.dataset.default));
             delay = input.value;
             input.addEventListener('change', async () => {
                 let value = parseInt(input.value.trim())
@@ -123,7 +123,7 @@
                 }
                 input.value = value;
                 delay = value;
-                await GM.setValue(input.id, value);
+                await stash.setValue(pluginName, input.id, value);
             });
         }
     }
