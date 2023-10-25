@@ -1,26 +1,4 @@
 (function () {
-
-    GM_addStyle(`
-    .peformer-stashid-icon {
-        position: absolute;
-        top: 10px;
-        right: 5px;
-    }
-    .favorite ~ .peformer-stashid-icon {
-        right: 42px;
-    }
-    .studio-stashid-icon {
-        position: absolute;
-        top: 10px;
-        right: 5px;
-    }
-    .col-3.d-xl-none .studio-stashid-icon {
-        position: relative;
-        top: 0;
-        right: 0;
-    }
-    `);
-
     function createCheckmarkElement() {
         return createElementFromHTML(`<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="circle-check" class="svg-inline--fa fa-circle-check fa-icon undefined" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="
     color: #0f9960;
@@ -40,7 +18,6 @@
                 if (performerData?.stash_ids.length) {
                     const el = createElementFromHTML(`<div class="peformer-stashid-icon" title="Has StashID">`);
                     el.appendChild(createCheckmarkElement());
-    
                     performerLink.appendChild(el);
                 }
             }
@@ -73,10 +50,26 @@
         }
     }
 
+    const gqlFindScene = async (id) => {
+        const stashIds = `stash_ids { stash_id }`
+        const query = `query findScene ($id: ID!) {
+            findScene(id: $id) { id
+              performers { id ${stashIds} }
+              ${stashIds}
+              studio ${stashIds} }
+            }}`
+        const reqData = {
+            "variables": { id },
+            query
+        };
+        await stash.callGQL(reqData)
+    } 
+
     stash.addEventListener('page:scene', function () {
-        waitForElementClass("performer-card", function () {
+        waitForElementClass("performer-card", async function () {
             const sceneId = window.location.pathname.split('/').pop();
             const performerDatas = {};
+            const gqlData = await gqlFindScene(sceneId);
             for (const performerData of stash.scenes[sceneId].performers) {
                 performerDatas[performerData.id] = performerData;
             }
