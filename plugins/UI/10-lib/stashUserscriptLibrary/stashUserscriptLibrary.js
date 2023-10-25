@@ -977,12 +977,12 @@ class Stash extends EventTarget {
         }
     }
     async getValue(pluginId, key, fallback) {
-        Logger.debug(`[Plugin / ${pluginId}] Getting config value: ${key}`)
+        this.log.debug(`[Plugin / ${pluginId}] Getting config value: ${key}`)
         const data = await this.getConfig(pluginId);
         return this.parseValue(data, key, fallback);
     }
     async setValue(pluginId, key, value) {
-        Logger.debug(`[Plugin / ${pluginId}] Setting config value: ${key} = ${value}`)
+        this.log.debug(`[Plugin / ${pluginId}] Setting config value: ${key} = ${value}`)
         const oldData = await this.getConfig(pluginId);
         // JSON encode non string/ number/ boolean data
         if (!["string", "number", "boolean"].includes(typeof(value)))
