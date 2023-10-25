@@ -985,6 +985,19 @@ class Stash extends EventTarget {
 
 stash = new Stash();
 
+// Grease/Tamper/Violent Monkey stubs
+function GM_getValue (key, fallback) {
+    console.error("GM getValue not implemented, falling back to default value")
+    return fallback
+}
+const GM_setValue = (key, value) => {
+    console.error("GM setValue not implemented")
+}
+GM = {
+    setValue: GM_setValue,
+    getValue: GM_getValue,
+}
+
 function waitForElementClass(elementId, callBack, time) {
     time = (typeof time !== 'undefined') ? time : 100;
     window.setTimeout(() => {
@@ -1132,11 +1145,3 @@ const reloadImg = url =>
     })
     .then(() => document.body.querySelectorAll(`img[src='${url}']`)
         .forEach(img => img.src = url));
-
-// Grease/Tamper/Violent Monkey stubs
-const GM_getValue = (key, fallback) => { console.error("GM getValue not implemented, falling back to default value"); return fallback; }
-const GM_setValue = (key, value) => { console.error("GM setValue not implemented") }
-GM = {
-    setValue: GM_setValue,
-    getValue: GM_getValue
-}
