@@ -56,7 +56,7 @@
             findScene(id: $id) { id
               performers { id ${stashIds} }
               ${stashIds}
-              studio ${stashIds} }
+              studio { ${stashIds} }
             }}`
         const reqData = {
             "variables": { id },
@@ -69,7 +69,7 @@
         waitForElementClass("performer-card", async function () {
             const sceneId = window.location.pathname.split('/').pop();
             const performerDatas = {};
-            const gqlData = await gqlFindScene(sceneId);
+            await gqlFindScene(sceneId);
             for (const performerData of stash.scenes[sceneId].performers) {
                 performerDatas[performerData.id] = performerData;
             }
