@@ -1,5 +1,6 @@
 (function () {
 
+    const pluginName = "sceneTaggerAdditions";
     function formatDuration(s) {
         const sec_num = parseInt(s, 10);
         let hours   = Math.floor(sec_num / 3600);
@@ -29,9 +30,9 @@
             performerNodes
         } = stash.parseSearchItem(searchItem);
 
-        const includeDuration = await GM.getValue('additions-duration', true);
-        const includePath = await GM.getValue('additions-path', true);
-        const includeUrl = await GM.getValue('additions-url', true);
+        const includeDuration = await stash.getValue(pluginName, 'additions-duration', true);
+        const includePath = await stash.getValue(pluginName, 'additions-path', true);
+        const includeUrl = await stash.getValue(pluginName, 'additions-url', true);
 
         const originalSceneDetails = searchItem.querySelector('.original-scene-details');
 
@@ -142,9 +143,9 @@
 
     async function loadSettings() {
         for (const input of document.querySelectorAll(`#${additionsConfigId} input`)) {
-            input.checked = await GM.getValue(input.id, input.dataset.default === 'true');
+            input.checked = await stash.getValue(pluginName, input.id, input.dataset.default === 'true');
             input.addEventListener('change', async () => {
-                await GM.setValue(input.id, input.checked);
+                await stash.setValue(pluginName, input.id, input.checked);
             });
         }
     }

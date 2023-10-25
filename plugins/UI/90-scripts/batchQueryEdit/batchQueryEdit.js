@@ -1,5 +1,5 @@
 (function() {
-
+    let pluginName = "batchQueryEdit";
     let running = false;
     const buttons = [];
     let maxCount = 0;
@@ -196,9 +196,9 @@
 
     async function loadSettings() {
         for (const input of document.querySelectorAll(`#${queryEditConfigId} input`)) {
-            input.checked = await GM.getValue(input.id, input.dataset.default === 'true');
+            input.checked = await stash.getValue(pluginName, input.id, input.dataset.default === 'true');
             input.addEventListener('change', async () => {
-                await GM.setValue(input.id, input.checked);
+                await stash.setValue(pluginName, input.id, input.checked);
             });
         }
     }

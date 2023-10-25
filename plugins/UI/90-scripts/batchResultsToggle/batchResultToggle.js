@@ -1,5 +1,5 @@
 (function() {
-
+    const pluginName = 'batchResultToggle';
     let running = false;
     const buttons = [];
     let maxCount = 0;
@@ -27,17 +27,6 @@
         if (!searchResultItem) return;
 
         const {
-            urlNode,
-            url,
-            id,
-            data,
-            nameNode,
-            name,
-            queryInput,
-            performerNodes
-        } = stash.parseSearchItem(searchItem);
-
-        const {
             remoteUrlNode,
             remoteId,
             remoteUrl,
@@ -56,15 +45,15 @@
         const studioMatchNode = matches.find(o => o.matchType === 'studio')?.matchNode;
         const performerMatchNodes = matches.filter(o => o.matchType === 'performer').map(o => o.matchNode);
 
-        const includeTitle = document.getElementById('result-toggle-title').checked;
-        const includeStudioCode = document.getElementById('result-toggle-studiocode').checked;
-        const includeDate = document.getElementById('result-toggle-date').checked;
-        const includeCover = document.getElementById('result-toggle-cover').checked;
-        const includeStashID = document.getElementById('result-toggle-stashid').checked;
-        const includeURL = document.getElementById('result-toggle-url').checked;
-        const includeDetails = document.getElementById('result-toggle-details').checked;
-        const includeStudio = document.getElementById('result-toggle-studio').checked;
-        const includePerformers = document.getElementById('result-toggle-performers').checked;
+        const includeTitle = document.getElementById('result-toggle-title')?.checked;
+        const includeStudioCode = document.getElementById('result-toggle-studiocode')?.checked;
+        const includeDate = document.getElementById('result-toggle-date')?.checked;
+        const includeCover = document.getElementById('result-toggle-cover')?.checked;
+        const includeStashID = document.getElementById('result-toggle-stashid')?.checked;
+        const includeURL = document.getElementById('result-toggle-url')?.checked;
+        const includeDetails = document.getElementById('result-toggle-details')?.checked;
+        const includeStudio = document.getElementById('result-toggle-studio')?.checked;
+        const includePerformers = document.getElementById('result-toggle-performers')?.checked;
 
         let options = [];
 
@@ -292,9 +281,9 @@
 
     async function loadSettings() {
         for (const input of document.querySelectorAll(`#${resultToggleConfigId} input`)) {
-            input.checked = await GM.getValue(input.id, input.dataset.default === 'true');
+            input.checked = await stash.getValue(pluginName, input.id, input.dataset.default === 'true');
             input.addEventListener('change', async () => {
-                await GM.setValue(input.id, input.checked);
+                await stash.setValue(pluginName, input.id, input.checked);
             });
         }
     }

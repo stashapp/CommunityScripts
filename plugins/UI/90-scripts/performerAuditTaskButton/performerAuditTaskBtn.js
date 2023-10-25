@@ -1,5 +1,5 @@
 (function () {
-
+    let pluginName = "performerAuditTaskBtn"
     stash.visiblePluginTasks.push('Audit performer urls');
 
     const settingsId = 'userscript-settings-audit-task';
@@ -11,7 +11,7 @@
                 const toolbar = document.querySelector(".btn-toolbar");
 
                 const newGroup = document.createElement('div');
-                newGroup.classList.add('mx-2', 'mb-2', await GM.getValue(inputId, false) ? 'd-flex' : 'd-none');
+                newGroup.classList.add('mx-2', 'mb-2', await stash.getValue(pluginName, inputId, false) ? 'd-flex' : 'd-none');
                 toolbar.appendChild(newGroup);
 
                 const auditButton = document.createElement("button");
@@ -31,16 +31,10 @@
         const settingsHeader = 'Show Audit Performer URLs Button';
         const settingsSubheader = 'Display audit performer urls button on performers page.';
         const checkbox = await stash.createSystemSettingCheckbox(el, settingsId, inputId, settingsHeader, settingsSubheader);
-        checkbox.checked = await GM.getValue(inputId, false);
+        checkbox.checked = await stash.getValue(pluginName, inputId, false);
         checkbox.addEventListener('change', async () => {
             const value = checkbox.checked;
-            await GM.setValue(inputId, value);
-        });
-    });
-
-    stash.addEventListener('stash:pluginVersion', async function () {
-        waitForElementId(settingsId, async (elementId, el) => {
-            el.style.display = stash.pluginVersion != null ? 'flex' : 'none';
+            await stash.setValue(pluginName, inputId, value);
         });
     });
 })();

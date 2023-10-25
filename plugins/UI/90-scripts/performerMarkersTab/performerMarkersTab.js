@@ -13,8 +13,8 @@
                   }
                 }
               },
-            "query": `query FindSceneMarkers($filter: FindFilterType, $scene_marker_filter: SceneMarkerFilterType) {
-                findSceneMarkers(filter: $filter, scene_marker_filter: $scene_marker_filter) {
+            "query": `query FindSceneMarkers($scene_marker_filter: SceneMarkerFilterType) {
+                findSceneMarkers(scene_marker_filter: $scene_marker_filter) {
                     count
                 }
             }`

@@ -136,7 +136,7 @@ fragment StudioData on Studio {
 
     function copyHandler(copyTooltip, copyText) {
         return evt => {
-            GM_setClipboard(copyText);
+            stash.setClipboard(copyText);
             const rect = document.body.getBoundingClientRect();
             const rect2 = evt.currentTarget.getBoundingClientRect();
             const x = rect2.left - rect.left;

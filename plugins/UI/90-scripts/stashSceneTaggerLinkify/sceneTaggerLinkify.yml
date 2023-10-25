@@ -1,6 +1,0 @@
-name: Scene Tagger Linkify
-description: Turn all scene tagger result text referencing stash or stashbox studio and performer names into clickable links
-version: 0.3.1
-ui:
-  javascript:
-  - sceneTaggerLinkify.js
