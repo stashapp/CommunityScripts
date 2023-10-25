@@ -1,7 +1,4 @@
 (function () {
-
-    const MIN_REQUIRED_PLUGIN_VERSION = '0.4.0';
-
     function openMediaPlayerTask(path) {
         // fixes decodeURI breaking on %'s because they are not encoded
         const encodedPctPath = path.replace(/%([^\d].)/, "%25$1");
@@ -55,12 +52,5 @@
         waitForElementId(settingsId, async (elementId, el) => {
             el.style.display = stash.pluginVersion != null ? 'flex' : 'none';
         });
-        if (stash.comparePluginVersion(MIN_REQUIRED_PLUGIN_VERSION) < 0) {
-            const alertedPluginVersion = await GM.getValue('alerted_plugin_version');
-            if (alertedPluginVersion !== stash.pluginVersion) {
-                await GM.setValue('alerted_plugin_version', stash.pluginVersion);
-                alert(`User functions plugin version is ${stash.pluginVersion}. Stash Open Media Player userscript requires version ${MIN_REQUIRED_PLUGIN_VERSION} or higher.`);
-            }
-        }
     });
 })();
