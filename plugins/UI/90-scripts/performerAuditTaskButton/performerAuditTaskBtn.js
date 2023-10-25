@@ -37,10 +37,4 @@
             await stash.setValue(pluginName, inputId, value);
         });
     });
-
-    stash.addEventListener('stash:pluginVersion', async function () {
-        waitForElementId(settingsId, async (elementId, el) => {
-            el.style.display = stash.pluginVersion != null ? 'flex' : 'none';
-        });
-    });
 })();

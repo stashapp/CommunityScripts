@@ -47,10 +47,4 @@
             textbox.disabled = false;
         });
     });
-
-    stash.addEventListener('stash:pluginVersion', async function () {
-        waitForElementId(settingsId, async (elementId, el) => {
-            el.style.display = stash.pluginVersion != null ? 'flex' : 'none';
-        });
-    });
 })();
