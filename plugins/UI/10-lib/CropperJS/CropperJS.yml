@@ -1,5 +1,5 @@
-name: Cropper.JS
-description: Exports cropper.js functionality for JS/Userscripts
+name: Cropper.js
+description: Cropping UI library for plugins
 version: 1.6.1
 ui:
   css:
