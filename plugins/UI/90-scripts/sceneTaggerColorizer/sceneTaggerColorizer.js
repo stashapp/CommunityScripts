@@ -1,5 +1,5 @@
 (function() {
-
+    let pluginName = "sceneTaggerColorize";
     const DEFAULT_COLORS = {
         'green': '#0f9960',
         'red': '#ff7373',
@@ -325,18 +325,18 @@
 
     async function loadSettings() {
         for (const input of document.querySelectorAll(`#${colorizeConfigId} input[type="checkbox"]`)) {
-            input.checked = await GM.getValue(input.id, input.dataset.default === 'true');
+            input.checked = await stash.getValue(pluginName, input.id, input.dataset.default === 'true');
             input.addEventListener('change', async () => {
-                await GM.setValue(input.id, input.checked);
+                await stash.setValue(pluginName, input.id, input.checked);
             });
         }
         for (const input of document.querySelectorAll(`#${colorizeConfigId} input[type="text"]`)) {
-            input.value = await GM.getValue(input.id, input.dataset.default);
+            input.value = await stash.getValue(pluginName, input.id, input.dataset.default);
             input.addEventListener('change', async () => {
                 const value = input.value.trim() || input.dataset.default;
                 input.value = value;
                 COLORS[input.id.replace('colorize-color-', '')] = value;
-                await GM.setValue(input.id, value);
+                await stash.setValue(pluginName, input.id, value);
             });
         }
     }
