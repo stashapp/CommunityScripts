@@ -15,17 +15,21 @@
         statEl.appendChild(statHeading);
     }
 
+    // add queries
+    const findSceneQuery = "query FindScenes($scene_filter: SceneFilterType) { findScenes(scene_filter: $scene_filter) { count }}"
+    const findPerformerQuery = "query FindPerformers($performer_filter: PerformerFilterType) { findPerformers(performer_filter: $performer_filter) { count }}"
+    const findStudioQuery = "query FindStudios($studio_filter: StudioFilterType) { findStudios(studio_filter: $studio_filter) { count }}"
+
     async function createSceneStashIDPct(row) {
         const reqData = {
             "variables": {
                 "scene_filter": {
-                    "stash_id": {
-                        "value": "",
-                        "modifier": "NOT_NULL"
+                    "NOT": {
+                        "is_missing": "stash_id"
                     }
                 }
             },
-            "query": "query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {\n  findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {\n    count\n  }\n}"
+            "query": findSceneQuery
         };
         const stashIdCount = (await stash.callGQL(reqData)).data.findScenes.count;
 
@@ -33,9 +37,10 @@
             "variables": {
                 "scene_filter": {}
             },
-            "query": "query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {\n  findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {\n    count\n  }\n}"
+            "query": findSceneQuery
         };
-        const totalCount = (await stash.callGQL(reqData2)).data.findScenes.count;
+        const res = (await stash.callGQL(reqData2))
+        const totalCount = res.data.findScenes.count;
 
         createStatElement(row, (stashIdCount / totalCount * 100).toFixed(2) + '%', 'Scene StashIDs');
     }
@@ -44,13 +49,12 @@
         const reqData = {
             "variables": {
                 "performer_filter": {
-                    "stash_id": {
-                        "value": "",
-                        "modifier": "NOT_NULL"
+                    "NOT": {
+                        "is_missing": "stash_id"
                     }
                 }
             },
-            "query": "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}"
+            "query": findPerformerQuery
         };
         const stashIdCount = (await stash.callGQL(reqData)).data.findPerformers.count;
 
@@ -58,7 +62,7 @@
             "variables": {
                 "performer_filter": {}
             },
-            "query": "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}"
+            "query": findPerformerQuery
         };
         const totalCount = (await stash.callGQL(reqData2)).data.findPerformers.count;
 
@@ -69,21 +73,20 @@
         const reqData = {
             "variables": {
                 "studio_filter": {
-                    "stash_id": {
-                        "value": "",
-                        "modifier": "NOT_NULL"
+                    "NOT": {
+                        "is_missing": "stash_id"
                     }
                 }
             },
-            "query": "query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType) {\n  findStudios(filter: $filter, studio_filter: $studio_filter) {\n    count\n  }\n}"
+            "query": findStudioQuery
         };
         const stashIdCount = (await stash.callGQL(reqData)).data.findStudios.count;
 
         const reqData2 = {
             "variables": {
-                "scene_filter": {}
+                "studio_filter": {}
             },
-            "query": "query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType) {\n  findStudios(filter: $filter, studio_filter: $studio_filter) {\n    count\n  }\n}"
+            "query": findStudioQuery
         };
         const totalCount = (await stash.callGQL(reqData2)).data.findStudios.count;
 
@@ -97,7 +100,7 @@
                     "filter_favorites": true
                 }
             },
-            "query": "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}"
+            "query": findPerformerQuery
         };
         const perfCount = (await stash.callGQL(reqData)).data.findPerformers.count;
 
@@ -109,7 +112,7 @@
             "variables": {
                 "scene_marker_filter": {}
             },
-            "query": "query FindSceneMarkers($filter: FindFilterType, $scene_marker_filter: SceneMarkerFilterType) {\n  findSceneMarkers(filter: $filter, scene_marker_filter: $scene_marker_filter) {\n    count\n  }\n}"
+            "query": "query FindSceneMarkers($scene_marker_filter: SceneMarkerFilterType) { findSceneMarkers(scene_marker_filter: $scene_marker_filter) { count }}"
         };
         const totalCount = (await stash.callGQL(reqData)).data.findSceneMarkers.count;
 
