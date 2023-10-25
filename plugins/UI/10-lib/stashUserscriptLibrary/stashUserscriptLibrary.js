@@ -1,4 +1,21 @@
+const { fetch: originalFetch } = window;
 const stashListener = new EventTarget();
+
+window.fetch = async (...args) => {
+    let [resource, config ] = args;
+    // request interceptor here
+    const response = await originalFetch(resource, config);
+    // response interceptor here
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("application/json") && resource.endsWith('/graphql')) {
+        try {
+            const data = await response.clone().json();
+            stashListener.dispatchEvent(new CustomEvent('response', { 'detail': data }));
+        }
+        catch (e) {}
+    }
+    return response;
+};
 
 class Logger {
     constructor(enabled) {
@@ -9,7 +26,6 @@ class Logger {
         console.debug(...arguments);
     }
 }
-
 
 class Stash extends EventTarget {
     constructor({
@@ -30,6 +46,7 @@ class Stash extends EventTarget {
             }
         }, this._pageUrlCheckInterval);
         stashListener.addEventListener('response', (evt) => {
+            console.log("response", evt.detail);
             if (evt.detail.data?.plugins) {
                 this.getPluginVersion(evt.detail);
             }
@@ -983,6 +1000,7 @@ class Stash extends EventTarget {
         };
         await this.callGQL(reqData)
     }
+    setClipboard = (text) => navigator.clipboard.writeText(text)
 }
 
 stash = new Stash();
@@ -995,9 +1013,11 @@ function GM_getValue (key, fallback) {
 const GM_setValue = (key, value) => {
     console.error("GM setValue not implemented")
 }
+const GM_setClipboard = stash.setClipboard
 GM = {
     setValue: GM_setValue,
     getValue: GM_getValue,
+    setClipboard: GM_setClipboard
 }
 
 function waitForElementClass(elementId, callBack, time) {
