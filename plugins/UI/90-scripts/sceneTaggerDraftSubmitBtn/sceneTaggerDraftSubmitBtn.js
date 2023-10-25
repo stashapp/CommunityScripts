@@ -18,9 +18,7 @@
     }
 
     async function initDraftButtons() {
-        const data = await stash.getStashBoxes();
-        let i = 0;
-        const stashBoxes = data.data.configuration.general.stashBoxes;
+        const stashBoxes = (await stash.getStashBoxes()).data.configuration.general.stashBoxes;
 
         const nodes = getElementsByXpath("//button[contains(@class, 'btn-primary') and text()='Scrape by fragment']");
         const buttons = [];
@@ -58,7 +56,7 @@
                 const selectedStashboxIndex = parseInt(selectedStashbox.replace(/^stashbox:/, ''));
                 const existingStashId = data.stash_ids.find(o => o.endpoint === stashBoxes[selectedStashboxIndex].endpoint);
                 if (existingStashId) {
-                    alert(`Scene already has StashID for ${stashBoxes[selectedStashboxIndex].endpoint}.`);
+                    alert(`Scene already has StashID for ${stashBoxes[selectedStashboxIndex].name}.`);
                     return;
                 }
                 const draftId = await submitDraft(id, selectedStashboxIndex);

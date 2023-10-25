@@ -1,6 +1,6 @@
 name: Scene Tagger Draft Submit
 description: Adds button to Scene Tagger to submit draft to stash-box endpoints
-version: 0.1.0
+version: 0.1.1
 ui:
   javascript:
   - sceneTaggerDraftSubmitBtn.js
