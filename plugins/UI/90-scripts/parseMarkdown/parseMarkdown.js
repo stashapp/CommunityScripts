@@ -1,22 +1,17 @@
-/* global marked */
-
 (function () {
-
-    function processMarkdown(el) {
-        el.innerHTML = marked.parse(el.innerHTML);
+    const processMarkdown = (elid, els) => {
+        for (const el of els) {
+            el.innerHTML = marked.parse(el.innerHTML);
+        }
     }
 
     stash.addEventListener('page:tag:any', function () {
-        waitForElementByXpath("//div[contains(@class, 'logo-container')]/p", function (xpath, el) {
-            processMarkdown(el);
-        });
+        waitForElementClass("detail-item-value", processMarkdown(elid, el));
     });
 
     stash.addEventListener('page:tags', function () {
-        waitForElementByXpath("//div[contains(@class, 'tag-description')]", function (xpath, el) {
-            for (const node of document.querySelectorAll('.tag-description')) {
-                processMarkdown(node);
-            }
-        });
+        waitForElementClass("tag-description", (elid, el) =>
+            processMarkdown(null, document.querySelectorAll('.tag-description'))
+        );
     });
 })();
