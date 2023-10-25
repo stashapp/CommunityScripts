@@ -46,7 +46,6 @@ class Stash extends EventTarget {
             }
         }, this._pageUrlCheckInterval);
         stashListener.addEventListener('response', (evt) => {
-            console.log("response", evt.detail);
             if (evt.detail.data?.plugins) {
                 this.getPluginVersion(evt.detail);
             }
