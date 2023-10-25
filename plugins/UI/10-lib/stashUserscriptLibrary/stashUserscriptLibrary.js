@@ -933,9 +933,70 @@ class Stash extends EventTarget {
             matches
         }
     }
+    // config setter/getter by feederbox826
+    async getConfig(pluginId) {
+        const reqData = {
+            "operationName": "Configuration",
+            "variables": {
+                "plugin_id": pluginId,
+            },
+            "query": "query Configuration($plugin_id: String!) { configuration { plugins (include: [$plugin_id]) } }"
+        };
+        const res = await this.callGQL(reqData);
+        return Object.values(res.data.configuration.plugins)?.[0];
+    }
+    parseValue(data, key, fallback) {
+        // not JSON encoded, return value as-is
+        const value = data?.[key];
+        if (value == "True" || value == "False") return Boolean(value)
+        if (typeof(value) !== "string") return value ?? fallback;
+        // try JSON decoding
+        try {
+            const parsed = JSON.parse(value);
+            return parsed ?? fallback;
+        } catch (e) {
+            // not JSON encoded, return value as-is
+            return value ?? fallback;
+        }
+    }
+    async getValue(pluginId, key, fallback) {
+        const data = await getConfig(pluginId);
+        return parseValue(data, key, fallback);
+    }
+    async setValue(pluginId, key, value) {
+        const oldData = await getConfig(pluginId);
+        // JSON encode non string/ number/ boolean data
+        if (!["string", "number", "boolean"].includes(typeof(value)))
+            value = JSON.stringify(value);
+        const reqData = {
+            "operationName": "ConfigurePlugin",
+            "variables": {
+                "plugin_id": pluginId,
+                "input": {
+                    ...oldData,
+                    [key]: value
+                }
+            },
+            "query": "mutation ConfigurePlugin($plugin_id: String!, $input: Map!) { configurePlugin(plugin_id: $plugin_name, input: $input) }"
+        };
+        await this.callGQL(reqData);
+    }
 }
 
 stash = new Stash();
+
+// Grease/Tamper/Violent Monkey stubs
+function GM_getValue (key, fallback) {
+    console.error("GM getValue not implemented, falling back to default value")
+    return fallback
+}
+const GM_setValue = (key, value) => {
+    console.error("GM setValue not implemented")
+}
+GM = {
+    setValue: GM_setValue,
+    getValue: GM_getValue,
+}
 
 function waitForElementClass(elementId, callBack, time) {
     time = (typeof time !== 'undefined') ? time : 100;
