@@ -1,6 +1,6 @@
 name: Date Parser
 description: Find date in path or filename and add it
-version: 0.2
+version: 0.3
 exec:
   - python
   - "{pluginDir}/date_parser.py"
