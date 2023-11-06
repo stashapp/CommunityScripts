@@ -1,0 +1,1 @@
+- [ ] https://github.com/elkorol/Stash-Userscript-Upscaler * external files

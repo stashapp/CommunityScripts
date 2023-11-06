@@ -18,7 +18,7 @@
                 if (performerData?.stash_ids.length) {
                     const el = createElementFromHTML(`<div class="peformer-stashid-icon" title="Has StashID">`);
                     el.appendChild(createCheckmarkElement());
-                    performerLink.querySelector('a[href="/"').appendChild(el);
+                    performerCard.querySelector('a[href="/"').appendChild(el);
                 }
             }
         }
