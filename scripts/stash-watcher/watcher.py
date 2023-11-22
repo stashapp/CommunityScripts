@@ -223,7 +223,7 @@ if __name__ == '__main__':
     #If the extensions are in the config, use them.  Otherwise pull them from stash.
     extensions = config.getlist('Config', 'Extensions')
     if not extensions:
-        stashConfig = stash.graphql_configuration()
+        stashConfig = stash.get_configuration()
         extensions = stashConfig['general']['videoExtensions'] + stashConfig['general']['imageExtensions'] + stashConfig['general']['galleryExtensions']
 
     pollIntervalStr = config.get('Config', 'PollInterval')
