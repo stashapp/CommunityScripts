@@ -18,26 +18,28 @@ buildPlugin()
 {
     f=$1
     # get the scraper id from the directory
-    plugin_id=$(basename "$f")
+    dir=$(dirname "$f")
+    plugin_id=$(basename "$f" .yml)
 
     echo "Processing $plugin_id"
 
     # create a directory for the version
-    version=$(git log -n 1 --pretty=format:%h -- "$f"/*)
-    updated=$(git log -n 1 --date="format:%F %T %z" --pretty=format:%ad -- "$f"/*)
+    version=$(git log -n 1 --pretty=format:%h -- "$dir"/*)
+    updated=$(git log -n 1 --date="format:%F %T %z" --pretty=format:%ad -- "$dir"/*)
     
     # create the zip file
     # copy other files
     zipfile=$(realpath "$outdir/$plugin_id.zip")
     
-    pushd "$f" > /dev/null
+    pushd "$dir" > /dev/null
     zip -r "$zipfile" . > /dev/null
     popd > /dev/null
 
-    name=$(grep "^name:" "$f"/*.yml | head -n 1 | cut -d' ' -f2- | sed -e 's/\r//' -e 's/^"\(.*\)"$/\1/')
-    description=$(grep "^description:" "$f"/*.yml | head -n 1 | cut -d' ' -f2- | sed -e 's/\r//' -e 's/^"\(.*\)"$/\1/')
-    ymlVersion=$(grep "^version:" "$f"/*.yml | head -n 1 | cut -d' ' -f2- | sed -e 's/\r//' -e 's/^"\(.*\)"$/\1/')
+    name=$(grep "^name:" "$f" | head -n 1 | cut -d' ' -f2- | sed -e 's/\r//' -e 's/^"\(.*\)"$/\1/')
+    description=$(grep "^description:" "$f" | head -n 1 | cut -d' ' -f2- | sed -e 's/\r//' -e 's/^"\(.*\)"$/\1/')
+    ymlVersion=$(grep "^version:" "$f" | head -n 1 | cut -d' ' -f2- | sed -e 's/\r//' -e 's/^"\(.*\)"$/\1/')
     version="$ymlVersion-$version"
+    dep=$(grep "^# requires:" "$f" | cut -c 12- | sed -e 's/\r//')
 
     # write to spec index
     echo "- id: $plugin_id
@@ -47,10 +49,19 @@ buildPlugin()
   version: $version
   date: $updated
   path: $plugin_id.zip
-  sha256: $(sha256sum "$zipfile" | cut -d' ' -f1)
-" >> "$outdir"/index.yml
+  sha256: $(sha256sum "$zipfile" | cut -d' ' -f1)" >> "$outdir"/index.yml
+
+    # handle dependencies
+    if [ ! -z "$dep" ]; then
+        echo "  requires:" >> "$outdir"/index.yml
+        for d in ${dep//,/ }; do
+            echo "    - $d" >> "$outdir"/index.yml
+        done
+    fi
+
+    echo "" >> "$outdir"/index.yml
 }
 
-find ./plugins -mindepth 1 -maxdepth 1 -type d | while read file; do
+find ./plugins -mindepth 1 -name *.yml | while read file; do
     buildPlugin "$file"
 done
