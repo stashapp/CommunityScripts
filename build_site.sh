@@ -25,7 +25,7 @@ buildPlugin()
 
     # create a directory for the version
     version=$(git log -n 1 --pretty=format:%h -- "$dir"/*)
-    updated=$(git log -n 1 --date="format:%F %T %z" --pretty=format:%ad -- "$dir"/*)
+    updated=$(TZ=UTC0 git log -n 1 --date="format-local:%F %T" --pretty=format:%ad -- "$dir"/*)
     
     # create the zip file
     # copy other files
