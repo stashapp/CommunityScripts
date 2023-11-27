@@ -36,7 +36,7 @@ jobs:
     # - run: |
     #     cd stable
     #     ../master/build_site.sh ../_site/stable
-    # - uses: actions/upload-pages-artifact@v2
+    - uses: actions/upload-pages-artifact@v2
     
   deploy:
     environment:
