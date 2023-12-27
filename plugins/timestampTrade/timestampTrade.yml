@@ -1,6 +1,6 @@
 name: Timestamp Trade
 description: Sync Markers with timestamp.trade, a new database for sharing markers.
-version: 0.1
+version: 0.4
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
@@ -11,12 +11,25 @@ hooks:
     description: Makes Markers checking against timestamp.trade
     triggeredBy:
       - Scene.Update.Post
+  - name: Gallery lookup
+    description: Look up gallery metadata from timestamp.trade
+    triggeredBy:
+      - Gallery.Create.Post
+
 tasks:
   - name: 'Submit'
     description: Submit markers to timestamp.trade
     defaultArgs:
-      mode: submit
+      mode: submitScene
   - name: 'Sync'
     description: Get markers for all scenes with a stashid
     defaultArgs:
-      mode: process
+      mode: processScene
+  - name: 'Submit Gallery'
+    description: Submit gallery info to timestamp.trade
+    defaultArgs:
+      mode: submitGallery
+  - name: 'Sync Gallery'
+    description: get gallery info from timestamp.trade
+    defaultArgs:
+      mode: processGallery
