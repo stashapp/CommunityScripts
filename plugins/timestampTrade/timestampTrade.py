@@ -96,7 +96,7 @@ def processAll():
             log.progress((i/count))
             time.sleep(1)
 
-def submit():
+def submitScene():
     scene_fgmt = """title
        details
        url
@@ -183,11 +183,11 @@ def submit():
 
 
     skip_submit_tag_id = stash.find_tag('[Timestamp: Skip Submit]', create=True).get("id")
-    count = stash.find_scenes(f={"has_markers": "true","tags":{"depth":0,"excludes":[skip_sync_tag_id],"modifier":"INCLUDES_ALL","value":[]}}, filter={"per_page": 1}, get_count=True)[0]
+    count = stash.find_scenes(f={"has_markers": "true","tags":{"depth":0,"excludes":[skip_submit_tag_id],"modifier":"INCLUDES_ALL","value":[]}}, filter={"per_page": 1}, get_count=True)[0]
     i=0
     for r in range(1, math.ceil(count/per_page) + 1):
         log.info('submitting scenes: %s - %s %0.1f%%' % ((r - 1) * per_page,r * per_page,(i/count)*100,))
-        scenes = stash.find_scenes(f={"has_markers": "true"}, filter={"page": r, "per_page": per_page},fragment=scene_fgmt)
+        scenes = stash.find_scenes(f={"has_markers": "true","tags":{"depth":0,"excludes":[skip_submit_tag_id],"modifier":"INCLUDES_ALL","value":[]}}, filter={"page": r, "per_page": per_page},fragment=scene_fgmt)
         for s in scenes:
             log.debug("submitting scene: " + str(s))
             request_s.post('https://timestamp.trade/submit-stash', json=s)
@@ -255,12 +255,13 @@ def submitGallery():
       }      
     }"""
 
-    count=stash.find_galleries(f={"url": {"value": "","modifier": "NOT_NULL"}},filter={"per_page": 1},get_count=True, fragment=scene_fgmt)[0]
+    skip_submit_tag_id = stash.find_tag('[Timestamp: Skip Submit]', create=True).get("id")
+    count=stash.find_galleries(f={"url": {"value": "","modifier": "NOT_NULL"},"tags":{"depth":0,"excludes":[skip_submit_tag_id],"modifier":"INCLUDES_ALL","value":[]}},filter={"per_page": 1},get_count=True, fragment=scene_fgmt)[0]
     log.debug(count)
     i = 0
     for r in range(1, math.ceil(count / per_page) + 1):
         log.info('submitting gallery: %s - %s %0.1f%%' % ((r - 1) * per_page, r * per_page, (i / count) * 100,))
-        galleries = stash.find_galleries(f={"url": {"value": "", "modifier": "NOT_NULL"}}, filter={"page": r, "per_page": per_page,'sort': 'created_at', 'direction': 'DESC'}, fragment=scene_fgmt)
+        galleries = stash.find_galleries(f={"url": {"value": "", "modifier": "NOT_NULL"},"tags":{"depth":0,"excludes":[skip_submit_tag_id],"modifier":"INCLUDES_ALL","value":[]}}, filter={"page": r, "per_page": per_page,'sort': 'created_at', 'direction': 'DESC'}, fragment=scene_fgmt)
         for g in galleries:
             log.debug("submitting gallery: %s" %(g,))
             request_s.post('https://timestamp.trade/submit-stash-gallery', json=g)
@@ -386,18 +387,13 @@ stash = StashInterface(FRAGMENT_SERVER)
 if 'mode' in json_input['args']:
     PLUGIN_ARGS = json_input['args']["mode"]
     if 'submitScene' in PLUGIN_ARGS:
-        submit()
+        submitScene()
     elif 'submitGallery' in PLUGIN_ARGS:
         submitGallery()
     elif 'processGallery' in  PLUGIN_ARGS:
         processGalleries()
     elif 'processScene' in PLUGIN_ARGS:
         processAll()
-    elif '2tmp'  in PLUGIN_ARGS:
-        submit(f={"url": {"modifier": "INCLUDES","value": "sexlikereal.com"}})
-    elif 'tmp'  in PLUGIN_ARGS:
-        tmp=getImages(gallery_id=5904)
-        print(tmp)
 
 elif 'hookContext' in json_input['args']:
     id=json_input['args']['hookContext']['id']
