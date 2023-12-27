@@ -162,6 +162,7 @@ function cleanFilename(name) {
     var blockList = [
         'mp4',
         'mov',
+        'zip',
         'xxx',
         '4k',
         '4096x2160',

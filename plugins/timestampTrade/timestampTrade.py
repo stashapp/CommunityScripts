@@ -14,66 +14,77 @@ request_s = requests.Session()
 
 
 def processScene(s):
-    if len(s['stash_ids']) > 0:
-        for sid in s['stash_ids']:
-            #                print('looking up markers for stash id: '+sid['stash_id'])
-            res = request_s.post('https://timestamp.trade/get-markers/' + sid['stash_id'], json=s)
-            if res.status_code==200:
-                md = res.json()
-                if 'marker' in md:
-                    log.info(
-                        'api returned something, for scene: ' + s['title'] + ' marker count: ' + str(len(md['marker'])))
-                    markers = []
-                    for m in md['marker']:
-    #                    log.debug('-- ' + m['name'] + ", " + str(m['start'] / 1000))
-                        marker = {}
-                        marker["seconds"] = m['start'] / 1000
-                        marker["primary_tag"] = m["tag"]
-                        marker["tags"] = []
-                        marker["title"] = m['name']
-                        markers.append(marker)
-                    if len(markers) > 0:
-                        log.info('Saving markers')
-                        mp.import_scene_markers(stash, markers, s['id'], 15)
-                if 'galleries' in md:
-                    log.info(md['galleries'])
-                    skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
-                    for g in md['galleries']:
-                        for f in g['files']:
-                            res=stash.find_galleries(f={"checksum": {"value": f['md5'],"modifier": "EQUALS"},"tags":{"depth":0,"excludes":[skip_sync_tag_id],"modifier":"INCLUDES_ALL","value":[]}})
-                            for gal in res:
-#                                log.debug('Gallery=%s'  %(gal,))
-                                gallery={
-                                    'id':gal['id'],
-                                    'title':gal['title'],
-                                    'urls':gal['urls'],
-                                    'date':gal['date'],
-                                    'rating100':gal['rating100'],
-                                    'studio_id':gal['studio']['id'],
-                                    'performer_ids':[x['id'] for x in gal['performers']],
-                                    'tag_ids':[x['id'] for x in gal['tags']],
-                                    'scene_ids':[x['id'] for x in gal['scenes']],
-                                    'details':gal['details']
-                                }
-                                if len(gal['urls'])==0:
-                                    log.debug('no urls on gallery, needs new metadata')
-                                    gallery['urls'].extend([x['url'] for x in g['urls']])
+    if len(s['stash_ids']) == 0:
+        log.debug('no scenes to process')
+        return
+    skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
+    for sid in s['stash_ids']:
+        try:
+            if any(tag['id'] == str(skip_sync_tag_id) for tag in s['tags']):
+                log.debug('scene has skip sync tag')
+                return
+            log.debug('looking up markers for stash id: '+sid['stash_id'])
+            res = requests.post('https://timestamp.trade/get-markers/' + sid['stash_id'], json=s)
+            md = res.json()
+            if md.get('marker'):
+                log.info('api returned markers for scene: ' + s['title'] + ' marker count: ' + str(len(md['marker'])))
+                markers = []
+                for m in md['marker']:
+                    # log.debug('-- ' + m['name'] + ", " + str(m['start'] / 1000))
+                    marker = {}
+                    marker["seconds"] = m['start'] / 1000
+                    marker["primary_tag"] = m["tag"]
+                    marker["tags"] = []
+                    marker["title"] = m['name']
+                    markers.append(marker)
+                if len(markers) > 0:
+                    log.info('Saving markers')
+                    mp.import_scene_markers(stash, markers, s['id'], 15)
+            else:
+                log.debug('api returned no markers for scene: ' + s['title'])
+            if 'galleries' in md:
+                log.info(md['galleries'])
+                skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
+                for g in md['galleries']:
+                    for f in g['files']:
+                        res = stash.find_galleries(f={"checksum": {"value": f['md5'], "modifier": "EQUALS"},
+                                                      "tags": {"depth": 0, "excludes": [skip_sync_tag_id],
+                                                               "modifier": "INCLUDES_ALL", "value": []}})
+                        for gal in res:
+                            #                                log.debug('Gallery=%s'  %(gal,))
+                            gallery = {
+                                'id': gal['id'],
+                                'title': gal['title'],
+                                'urls': gal['urls'],
+                                'date': gal['date'],
+                                'rating100': gal['rating100'],
+                                'studio_id': gal['studio']['id'],
+                                'performer_ids': [x['id'] for x in gal['performers']],
+                                'tag_ids': [x['id'] for x in gal['tags']],
+                                'scene_ids': [x['id'] for x in gal['scenes']],
+                                'details': gal['details']
+                            }
+                            if len(gal['urls']) == 0:
+                                log.debug('no urls on gallery, needs new metadata')
+                                gallery['urls'].extend([x['url'] for x in g['urls']])
 
-                                if s['id'] not in gallery['scene_ids']:
-                                    log.debug('attaching scene %s to gallery %s '% (s['id'],gallery['id'],))
-                                    gallery['scene_ids'].append(s['id'])
-                                log.info('updating gallery: %s' % (gal['id'],))
-                                stash.update_gallery(gallery_data=gallery)
-                            log.debug(res)
-                if 'movies' in md:
-                    log.info(md['movies'])
+                            if s['id'] not in gallery['scene_ids']:
+                                log.debug('attaching scene %s to gallery %s ' % (s['id'], gallery['id'],))
+                                gallery['scene_ids'].append(s['id'])
+                            log.info('updating gallery: %s' % (gal['id'],))
+                            stash.update_gallery(gallery_data=gallery)
+
+
+
+        except json.decoder.JSONDecodeError:
+            log.error('api returned invalid JSON for stash id: ' + sid['stash_id'])
 
 
 
 def processAll():
     log.info('Getting scene count')
-
-    count=stash.find_scenes(f={"stash_id_endpoint": { "endpoint": "", "modifier": "NOT_NULL", "stash_id": ""},"has_markers":"false"},filter={"per_page": 1},get_count=True)[0]
+    skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
+    count=stash.find_scenes(f={"stash_id_endpoint": { "endpoint": "", "modifier": "NOT_NULL", "stash_id": ""},"has_markers":"false","tags":{"depth":0,"excludes":[skip_sync_tag_id],"modifier":"INCLUDES_ALL","value":[]}},filter={"per_page": 1},get_count=True)[0]
     log.info(str(count)+' scenes to submit.')
     i=0
     for r in range(1,int(count/per_page)+1):
@@ -85,7 +96,7 @@ def processAll():
             log.progress((i/count))
             time.sleep(1)
 
-def submit(f={"has_markers": "true"}):
+def submit():
     scene_fgmt = """title
        details
        url
@@ -168,18 +179,21 @@ def submit(f={"has_markers": "true"}):
       }
     }
        """
-    count = stash.find_scenes(f=f, filter={"per_page": 1}, get_count=True,fragment=scene_fgmt)[0]
+
+
+
+    skip_submit_tag_id = stash.find_tag('[Timestamp: Skip Submit]', create=True).get("id")
+    count = stash.find_scenes(f={"has_markers": "true","tags":{"depth":0,"excludes":[skip_sync_tag_id],"modifier":"INCLUDES_ALL","value":[]}}, filter={"per_page": 1}, get_count=True)[0]
     i=0
     for r in range(1, math.ceil(count/per_page) + 1):
         log.info('submitting scenes: %s - %s %0.1f%%' % ((r - 1) * per_page,r * per_page,(i/count)*100,))
-        scenes = stash.find_scenes(f=f, filter={"page": r, "per_page": per_page},fragment=scene_fgmt)
+        scenes = stash.find_scenes(f={"has_markers": "true"}, filter={"page": r, "per_page": per_page},fragment=scene_fgmt)
         for s in scenes:
             log.debug("submitting scene: " + str(s))
             request_s.post('https://timestamp.trade/submit-stash', json=s)
             i=i+1
             log.progress((i/count))
             time.sleep(2)
-
 
 
 def submitGallery():
