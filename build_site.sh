@@ -17,6 +17,11 @@ mkdir -p "$outdir"
 buildPlugin() 
 {
     f=$1
+
+    if grep -q "^#pkgignore" "$f"; then
+        return
+    fi
+    
     # get the scraper id from the directory
     dir=$(dirname "$f")
     plugin_id=$(basename "$f" .yml)
