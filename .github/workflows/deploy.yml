@@ -25,17 +25,17 @@ jobs:
         fetch-depth: '0'
     - run: |
         cd main
-        ./build_site.sh ../_site/develop
-    # uncomment this once we have a stable branch
-    - name: Checkout Stable
+        ./build_site.sh ../_site/stable
+    - name: Checkout dev
       uses: actions/checkout@v2
       with:
-        path: stable
-        ref: stable
+        path: dev
+        # change this ref to whatever dev branch/tag we need when necessary
+        ref: main
         fetch-depth: '0'
     - run: |
-        cd stable
-        ../main/build_site.sh ../_site/stable
+        cd dev
+        ../main/build_site.sh ../_site/develop
     - uses: actions/upload-pages-artifact@v2
     
   deploy:
