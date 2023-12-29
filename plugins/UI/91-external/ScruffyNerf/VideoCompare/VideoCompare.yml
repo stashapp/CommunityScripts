@@ -1,0 +1,9 @@
+name: Stash Video Compare Userscript
+# requires: StashUserscriptLibrary
+description: Compare videos side-by-side
+version: 1.0.1
+ui:
+  javascript:
+  - VideoCompare.js
+
+# https://gist.github.com/DogmaDragon/fb3ed033c0d1f0a6811137dfea0c4ce8
