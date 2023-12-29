@@ -1,9 +1,9 @@
+# author: github.com/QxxxGit
 name: Performer Card Details
 # requires: StashUserscriptLibrary
+url: https://gist.github.com/QxxxGit/5c25005ff1a918d3f1213134b2282609
 description: Adds details to performer cards.
 version: 0.1.1
 ui:
   javascript:
   - performer-card-details.js
-
-# https://gist.github.com/QxxxGit/5c25005ff1a918d3f1213134b2282609
