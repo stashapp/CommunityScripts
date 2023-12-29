@@ -1,26 +1,31 @@
 # CommunityScripts Repository
 
-This repository contains plugin and utility scripts created by the Stash community and hosted on the official GitHub repo.  There is also [a list of third-party plugins on our wiki page](https://github.com/stashapp/stash/wiki/Plugins-&--Scripts).
+This repository contains plugin and utility scripts created by the Stash community and hosted on the official GitHub repo.  
+
+There is also [a list of third-party plugins on our wiki page](https://github.com/stashapp/stash/wiki/Plugins-&--Scripts).
+
+## Please note: V24 now uses an installer, so we recommend you use that to install plugins.  
+Manual installs are discouraged, and you shouldn't do so unless you know what you are doing otherwise.
 
 ## How To Install
-To download a plugin, either clone the git repo, or download the files directly.
+To download a plugin in Stash v24, the CommunityScripts repo source is automatically installed by default.
+This source is located at https://stashapp.github.io/CommunityScripts/stable/index.yml
 
-It is recommended that plugins are placed in their own subdirectory of your `plugins` directory. The `plugins` directory should be created as a subdirectory in the directory containing your `config.yml` file. This will be in `$HOME/.stash` by default.
+# Plugin, Themes, and Scripts Directory
+We used to list all plugins, themes, and scripts in this repository...
+but with the changes in v24, ANY items installable by the plugin installer are no longer listed here.
+Use the Plugin Installer built into Stash.
 
-When downloading directly click on the file you want and then make sure to click the raw button:
-
-![](https://user-images.githubusercontent.com/1358708/82524777-cd4cfe80-9afd-11ea-808d-5ea7bf26704f.jpg)
-
-# Plugin and Script Directory
-This list keeps track of scripts and plugins in this repository. Please ensure the list is kept in alphabetical order.
+We will continue to list the items NOT otherwise installable this way below.
 
 ## NOTE: BREAKING CHANGES
-The upcoming v24 release (and the current development branch) have breaking changes to schema, and also plugin changes.
-We're beginning to review plugins and the rest and patch them to work, but it's an ongoing process.
-We'll update the table below as we do this, but we STRONGLY recommend you do not use the development branch unless you are prepared to help with the patching.
+The recent v24 release (and development branches) had major breaking changes to old schema, and plugin changes.
+We're beginning to review plugins and the rest and patch them to work, but it's an ongoing process...
+
+We'll update the table below as we do this...
 We will also be rearranging things a bit, and updating documentation (including this page)
 
-## Plugins
+## Plugins and Themes are no longer listed here.
 
 Category|Triggers|Plugin Name|Description|Minimum Stash version|Updated for v24|
 --------|-----------|-----------|-----------|---------------------|-----
@@ -42,12 +47,7 @@ Theme Name|Description                                 |Updated for v24|
 
 ## Utility Scripts
 
-|Category|Userscript Name|Description|Updated for v24|
+|Category|Name|Description|Updated for v24|
 ---------|---------------|-----------|----
 StashDB  |[StashDB Submission Helper](/userscripts/StashDB_Submission_Helper)|Adds handy functions for StashDB submissions like buttons to add aliases in bulk to a performer|:x:
-
-## Utility Scripts
-
-Category|Plugin Name|Description|Minimum Stash version|Updated for v24|
---------|-----------|-----------|---------------------|----
 Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with Kodi.|v0.7|:x:
