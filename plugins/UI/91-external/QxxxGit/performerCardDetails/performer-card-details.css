@@ -1,8 +1,0 @@
-.performer-description {
-    display: -webkit-box;
-    -webkit-line-clamp: 7;
-    -webkit-box-orient: vertical;
-}
-.performer-card.grid-card.card hr {
-    margin-top: auto;
-}

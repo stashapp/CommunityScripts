@@ -1,8 +1,0 @@
-name: Swap Alias with name
-description: Stash Performer Edit Panel, swap name with alias buttons
-version: 0.22.1
-ui:
-  javascript:
-  - swapAliasName.js
-
-# https://github.com/elkorol/Stash-Performer-Edit-Panel-Swap-Alias-to-Name
