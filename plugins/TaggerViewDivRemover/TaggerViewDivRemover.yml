@@ -1,8 +1,9 @@
+# author: github.com/elkorol
 name: Stash Tagger View Scene Remove Button
+# requires: StashUserscriptLibrary
+url: https://github.com/elkorol/Stash-App-Userscript-Tagger-View-Div-Remover
 description: Adds remove tag button to div elements in tagger view, so if on mass scrape there is scene miss match. You can remove the scene before saving all.
 version: 0.3.1
 ui:
   javascript:
   - TaggerViewDivRemover.js
-
-# https://github.com/elkorol/Stash-App-Userscript-Tagger-View-Div-Remover
