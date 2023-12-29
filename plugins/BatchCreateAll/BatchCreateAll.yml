@@ -1,9 +1,9 @@
+# author: github.com/Serechoo
 name: Batch Create All
 # requires: StashUserscriptLibrary
+url: https://github.com/Serechoo/stash-userscripts/tree/main
 description: Adds a 'Create All' button much like the 'Search All' button that interacts with all create buttons. The idea is to run the 'Search All' button first, and then run this one.
 version: 0.2.1
 ui:
   javascript:
   - BatchCreateAll.js
-
-# https://github.com/Serechoo/stash-userscripts/tree/main
