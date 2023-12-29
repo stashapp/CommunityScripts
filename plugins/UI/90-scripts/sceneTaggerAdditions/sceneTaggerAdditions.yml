@@ -1,4 +1,5 @@
 name: Scene Tagger Additions
+# requires: StashUserscriptLibrary
 description: Adds scene duration and filepath to tagger view.
 version: 0.3.2
 ui:

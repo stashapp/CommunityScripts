@@ -1,4 +1,5 @@
 name: Scene Tagger Draft Submit
+# requires: StashUserscriptLibrary
 description: Adds button to Scene Tagger to submit draft to stash-box endpoints
 version: 0.1.1
 ui:

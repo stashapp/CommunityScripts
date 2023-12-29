@@ -1,4 +1,6 @@
 name: Performer Image Cropper
+# requires: StashUserscriptLibrary
+# requires: CropperJS
 description: Adds an image cropper to performer page
 version: 0.2.2
 ui:

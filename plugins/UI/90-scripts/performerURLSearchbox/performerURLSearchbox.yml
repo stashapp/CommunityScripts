@@ -1,4 +1,5 @@
 name: Performer URL Searchbox
+# requires: StashUserscriptLibrary
 description: Adds a search by performer url textbox to the performers page
 version: 0.2.0
 ui:
