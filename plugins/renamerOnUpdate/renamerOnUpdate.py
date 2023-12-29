@@ -106,11 +106,9 @@ def graphql_getScene(scene_id):
     }
     fragment SceneData on Scene {
         id
-        oshash
-        checksum
         title
         date
-        rating
+        rating100
         stash_ids {
             endpoint
             stash_id
@@ -133,7 +131,7 @@ def graphql_getScene(scene_id):
             name
             gender
             favorite
-            rating
+            rating100
             stash_ids{
                 endpoint
                 stash_id
@@ -168,11 +166,9 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
     }
     fragment SlimSceneData on Scene {
         id
-        oshash
-        checksum
         title
         date
-        rating
+        rating100
         organized
         stash_ids {
             endpoint
@@ -196,7 +192,7 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
             name
             gender
             favorite
-            rating
+            rating100
             stash_ids{
                 endpoint
                 stash_id
@@ -467,8 +463,6 @@ def extract_info(scene: dict, template: None):
     # note: basename contains the extension
     scene_information['current_filename'] = os.path.basename(scene_information['current_path'])
     scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
-    scene_information['oshash'] = scene['oshash']
-    scene_information['checksum'] = scene.get("checksum")
     scene_information['studio_code'] = scene.get("code")
 
     if scene.get("stash_ids"):
@@ -506,8 +500,8 @@ def extract_info(scene: dict, template: None):
         scene_information['duration'] = str(scene_information['duration'])
 
     # Grab Rating
-    if scene.get("rating"):
-        scene_information['rating'] = RATING_FORMAT.format(scene['rating'])
+    if scene.get("rating100"):
+        scene_information['rating100'] = RATING_FORMAT.format(scene['rating100'])
 
     # Grab Performer
     scene_information['performer_path'] = None
@@ -527,10 +521,10 @@ def extract_info(scene: dict, template: None):
                 if "inverse_performer" in template["path"]["option"]:
                     perf["name"] = re.sub(r"([a-zA-Z]+)(\s)([a-zA-Z]+)", r"\3 \1", perf["name"])
             perf_list.append(perf['name'])
-            if perf.get('rating'):
-                if perf_rating.get(str(perf['rating'])) is None:
-                    perf_rating[str(perf['rating'])] = []
-                perf_rating[str(perf['rating'])].append(perf['name'])
+            if perf.get('rating100'):
+                if perf_rating.get(str(perf['rating100'])) is None:
+                    perf_rating[str(perf['rating100'])] = []
+                perf_rating[str(perf['rating100'])].append(perf['name'])
             else:
                 perf_rating["0"].append(perf['name'])
             if perf.get('favorite'):
@@ -984,7 +978,7 @@ def file_rename(current_path: str, new_path: str, scene_info: dict):
         if LOGFILE:
             try:
                 with open(LOGFILE, 'a', encoding='utf-8') as f:
-                    f.write(f"{scene_info['scene_id']}|{current_path}|{new_path}|{scene_info['oshash']}\n")
+                    f.write(f"{scene_info['scene_id']}|{current_path}|{new_path}\n")
             except Exception as err:
                 shutil.move(new_path, current_path)
                 log.LogError(f"Restoring the original path, error writing the logfile: {err}")
@@ -1040,17 +1034,6 @@ def renamer(scene_id, db_conn=None):
     fingerprint = []
     if stash_scene.get("path"):
         stash_scene["file"]["path"] = stash_scene["path"]
-        if stash_scene.get("checksum"):
-            fingerprint.append({
-                "type": "md5",
-                "value": stash_scene["checksum"]
-            })
-        if stash_scene.get("oshash"):
-            fingerprint.append({
-                "type": "oshash",
-                "value": stash_scene["oshash"]
-            })
-        stash_scene["file"]["fingerprints"] = fingerprint
         scene_files = [stash_scene["file"]]
         del stash_scene["path"]
         del stash_scene["file"]
@@ -1063,11 +1046,6 @@ def renamer(scene_id, db_conn=None):
     for i in range(0, len(scene_files)):
         scene_file = scene_files[i]
         # refractor file support
-        for f in scene_file["fingerprints"]:
-            if f.get("oshash"):
-                stash_scene["oshash"] = f["oshash"]
-            if f.get("md5"):
-                stash_scene["checksum"] = f["md5"]
         stash_scene["path"] = scene_file["path"]
         stash_scene["file"] = scene_file
         if scene_file.get("bit_rate"):
@@ -1367,4 +1345,3 @@ else:
         traceback.print_exc()
 
 exit_plugin("Successful!")
-
