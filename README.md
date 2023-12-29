@@ -4,12 +4,14 @@ This repository contains plugin and utility scripts created by the Stash communi
 
 There is also [a list of third-party plugins on our wiki page](https://github.com/stashapp/stash/wiki/Plugins-&--Scripts).
 
-## Please note: V24 now uses an installer, so we recommend you use that to install plugins.  
-Manual installs are discouraged, and you shouldn't do so unless you know what you are doing otherwise.
+## Please note: V24 now uses an installer
+# We recommend you use that to install plugins.  
+Manual installs are discouraged, and you shouldn't do so unless you otherwise know what you are doing.
 
 ## How To Install
 To download a plugin in Stash v24, the CommunityScripts repo source is automatically installed by default.
-This source is located at https://stashapp.github.io/CommunityScripts/stable/index.yml
+
+This default source is located at https://stashapp.github.io/CommunityScripts/stable/index.yml
 
 # Plugin, Themes, and Scripts Directory
 We used to list all plugins, themes, and scripts in this repository...
