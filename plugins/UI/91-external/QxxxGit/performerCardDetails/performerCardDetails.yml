@@ -1,4 +1,5 @@
 name: Performer Card Details
+# requires: StashUserscriptLibrary
 description: Adds details to performer cards.
 version: 0.1.1
 ui:

@@ -1,4 +1,5 @@
 name: Stash Toggle Sprite
+# requires: StashUserscriptLibrary
 description: Toggle Sprites on Scene page in place of the cover
 version: 0.2.1
 ui:

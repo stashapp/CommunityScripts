@@ -1,4 +1,5 @@
 name: Performer Suggestions
+# requires: StashUserscriptLibrary
 description: Adds performer suggestions based on similar tags.
 version: 0.3.1
 ui:

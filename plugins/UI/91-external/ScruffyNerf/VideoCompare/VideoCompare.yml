@@ -1,4 +1,5 @@
 name: Stash Video Compare Userscript
+# requires: StashUserscriptLibrary
 description: Compare videos side-by-side
 version: 1.0.1
 ui:
