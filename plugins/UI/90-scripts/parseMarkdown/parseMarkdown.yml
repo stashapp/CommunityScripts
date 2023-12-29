@@ -1,5 +1,6 @@
 name: Parse Markdown
 # requires: StashUserscriptLibrary
+# requires: markedJs
 description: Adds markdown parsing to tag description fields
 version: 0.1.2
 ui:
