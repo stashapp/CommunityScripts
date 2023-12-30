@@ -5,6 +5,9 @@ name: Performer Image Cropper
 description: Adds an image cropper to performer page
 version: 0.2.2
 ui:
+  requires:
+  - StashUserscriptLibrary
+  - CropperJS
   css:
   javascript:
   - performerImageCropper.js

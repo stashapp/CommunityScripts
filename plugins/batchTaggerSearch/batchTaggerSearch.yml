@@ -3,5 +3,7 @@ name: Batch Tagger Search
 description: Adds a batch search button to scenes and performers tagger
 version: 0.4.3
 ui:
+  requires:
+  - StashUserscriptLibrary
   javascript:
   - batchTaggerSearch.js

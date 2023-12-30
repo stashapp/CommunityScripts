@@ -5,6 +5,8 @@ url: https://gist.github.com/DogmaDragon/66d8f81aa2a30cfbe1cea81e9a98ca49
 description: Toggle Sprites on Scene page in place of the cover
 version: 0.2.1
 ui:
+  requires:
+  - StashUserscriptLibrary
   javascript:
   - StashToggleSprite.js
 

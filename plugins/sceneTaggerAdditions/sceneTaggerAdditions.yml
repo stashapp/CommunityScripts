@@ -3,5 +3,7 @@ name: Scene Tagger Additions
 description: Adds scene duration and filepath to tagger view.
 version: 0.3.2
 ui:
+  requires:
+  - StashUserscriptLibrary
   javascript:
   - sceneTaggerAdditions.js

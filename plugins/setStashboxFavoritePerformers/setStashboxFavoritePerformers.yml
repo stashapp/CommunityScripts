@@ -4,5 +4,8 @@ name: Set Stashbox Favorite Performers
 description: Set Stashbox favorite performers according to stash favorites.
 version: 0.2.2
 ui:
+  requires:
+  - StashUserscriptLibrary
+  - userscript_functions
   javascript:
   - setStashboxFavoritePerformers.js

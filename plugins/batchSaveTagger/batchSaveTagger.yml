@@ -3,5 +3,7 @@ name: Batch Save Tagger
 description: Adds a batch save button to scenes tagger
 version: 0.5.2
 ui:
+  requires:
+  - StashUserscriptLibrary
   javascript:
   - batchSaveTagger.js

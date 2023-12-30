@@ -3,5 +3,7 @@ name: Performer Markers Tab
 description: Adds a Markers link to performer pages
 version: 0.1.1
 ui:
+  requires:
+  - StashUserscriptLibrary
   javascript:
   - performerMarkersTab.js

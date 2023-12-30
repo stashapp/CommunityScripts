@@ -5,5 +5,7 @@ url: https://gist.github.com/QxxxGit/7d6e5759814b1ce84cb7535173415eff
 description: Adds performer suggestions based on similar tags.
 version: 0.3.1
 ui:
+  requires:
+  - StashUserscriptLibrary
   javascript:
   - performer-suggestions.js

@@ -3,5 +3,7 @@ name: Batch Query Edit
 description: Batch modify scene tagger search query
 version: 0.6.1
 ui:
+  requires:
+  - StashUserscriptLibrary
   javascript:
   - batchQueryEdit.js
