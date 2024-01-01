@@ -106,11 +106,9 @@ def graphql_getScene(scene_id):
     }
     fragment SceneData on Scene {
         id
-        oshash
-        checksum
         title
         date
-        rating
+        rating100
         stash_ids {
             endpoint
             stash_id
@@ -133,7 +131,7 @@ def graphql_getScene(scene_id):
             name
             gender
             favorite
-            rating
+            rating100
             stash_ids{
                 endpoint
                 stash_id
@@ -168,11 +166,9 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
     }
     fragment SlimSceneData on Scene {
         id
-        oshash
-        checksum
         title
         date
-        rating
+        rating100
         organized
         stash_ids {
             endpoint
@@ -196,7 +192,7 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
             name
             gender
             favorite
-            rating
+            rating100
             stash_ids{
                 endpoint
                 stash_id
@@ -467,7 +463,7 @@ def extract_info(scene: dict, template: None):
     # note: basename contains the extension
     scene_information['current_filename'] = os.path.basename(scene_information['current_path'])
     scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
-    scene_information['oshash'] = scene['oshash']
+    scene_information['oshash'] = scene.get("oshash")
     scene_information['checksum'] = scene.get("checksum")
     scene_information['studio_code'] = scene.get("code")
 
@@ -506,8 +502,8 @@ def extract_info(scene: dict, template: None):
         scene_information['duration'] = str(scene_information['duration'])
 
     # Grab Rating
-    if scene.get("rating"):
-        scene_information['rating'] = RATING_FORMAT.format(scene['rating'])
+    if scene.get("rating100"):
+        scene_information['rating'] = RATING_FORMAT.format(scene['rating100'])
 
     # Grab Performer
     scene_information['performer_path'] = None
@@ -527,10 +523,10 @@ def extract_info(scene: dict, template: None):
                 if "inverse_performer" in template["path"]["option"]:
                     perf["name"] = re.sub(r"([a-zA-Z]+)(\s)([a-zA-Z]+)", r"\3 \1", perf["name"])
             perf_list.append(perf['name'])
-            if perf.get('rating'):
-                if perf_rating.get(str(perf['rating'])) is None:
-                    perf_rating[str(perf['rating'])] = []
-                perf_rating[str(perf['rating'])].append(perf['name'])
+            if perf.get('rating100'):
+                if perf_rating.get(str(perf['rating100'])) is None:
+                    perf_rating[str(perf['rating100'])] = []
+                perf_rating[str(perf['rating100'])].append(perf['name'])
             else:
                 perf_rating["0"].append(perf['name'])
             if perf.get('favorite'):
@@ -630,7 +626,7 @@ def extract_info(scene: dict, template: None):
         scene_information['tags'] = TAGS_SPLITCHAR.join(tag_list)
 
     # Grab Height (720p,1080p,4k...)
-    scene_information['bitrate'] = str(round(int(scene['file']['bitrate']) / 1000000, 2))
+    scene_information['bit_rate'] = str(round(int(scene['file']['bit_rate']) / 1000000, 2))
     scene_information['resolution'] = 'SD'
     scene_information['height'] = f"{scene['file']['height']}p"
     if scene['file']['height'] >= 720:
@@ -1068,10 +1064,12 @@ def renamer(scene_id, db_conn=None):
                 stash_scene["oshash"] = f["oshash"]
             if f.get("md5"):
                 stash_scene["checksum"] = f["md5"]
+            if f.get("checksum"):
+                stash_scene["checksum"] = f["checksum"]
         stash_scene["path"] = scene_file["path"]
         stash_scene["file"] = scene_file
         if scene_file.get("bit_rate"):
-            stash_scene["file"]["bitrate"] = scene_file["bit_rate"]
+            stash_scene["file"]["bit_rate"] = scene_file["bit_rate"]
         if scene_file.get("frame_rate"):
             stash_scene["file"]["framerate"] = scene_file["frame_rate"]
 
@@ -1318,6 +1316,9 @@ if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
                 frame_rate
                 duration
                 bit_rate
+                phash: fingerprint(type: "phash")
+                oshash: fingerprint(type: "oshash")
+                checksum: fingerprint(type: "checksum")
                 fingerprints {
                     type
                     value
