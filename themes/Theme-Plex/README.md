@@ -24,6 +24,6 @@ _These steps are optional, by default this theme uses the Github hosted image li
 
 2. Place `background.png` and `noise.png` in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows. Then edit the `background-image: url("")` attributes like below:  
 
-The [body](https://github.com/stashapp/CommunityScripts/blob/main/themes/Theme-Plex/plex.css#L7) one `background-image: url("./background.png");`
+The [body](https://github.com/stashapp/CommunityScripts/blob/main/themes/Theme-Plex/Theme-Plex.css#L7) one `background-image: url("./background.png");`
 
-The [root](https://github.com/stashapp/CommunityScripts/blob/main/themes/Theme-Plex/plex.css#L18) one `background: rgba(0, 0, 0, 0) url("./noise.png") repeat scroll 0% 0%;`
+The [root](https://github.com/stashapp/CommunityScripts/blob/main/themes/Theme-Plex/Theme-Plex.css#L18) one `background: rgba(0, 0, 0, 0) url("./noise.png") repeat scroll 0% 0%;`
