@@ -27,7 +27,7 @@ We're beginning to review plugins and the rest and patch them to work, but it's 
 We'll update the table below as we do this...
 We will also be rearranging things a bit, and updating documentation (including this page)
 
-## Plugins and Themes will no longer be listed here.
+## Plugins will no longer be listed individually here...
 
 Category|Triggers|Plugin Name|Description|Minimum Stash version|Updated for v24|
 --------|-----------|-----------|-----------|---------------------|-----
@@ -42,9 +42,8 @@ Reporting||[TagGraph](plugins/tagGraph)|Creates a visual of the Tag relations.|v
 
 ## Themes
 
-Theme Name|Description                                 |Updated for v24|
-----------|--------------------------------------------|----
-[Plex](themes/plex)      |Theme inspired by the popular Plex Interface|:x:
+# A Variety of Themes are now available to be one click installed via the Plugin Setting page in your Stash
+We welcome new themes, as well as patches to existing themes.
 
 ## Utility Scripts
 
