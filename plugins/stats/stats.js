@@ -19,8 +19,8 @@
         const reqData = {
             "variables": {
                 "scene_filter": {
-                    "stash_id": {
-                        "value": "",
+                    "stash_id_endpoint": {
+                        "stash_id": "",
                         "modifier": "NOT_NULL"
                     }
                 }
