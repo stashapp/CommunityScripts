@@ -10,11 +10,11 @@ The Plex Theme will only change the look and feel of the Stash interface. It wil
 
 ## Install
 
-1. Open User Interface Configuration panel in settings. (http://localhost:9999/settings?tab=interface)
+1. Open User Interface Configuration panel in settings. (http://localhost:9999/settings?tab=plugins)
 
-2. Tick/Enable Custom CSS ✅
+2. Find the Theme in the listing, in the default Community repo
 
-3. Copy & Paste [CSS Code](https://github.com/stashapp/CommunityScripts/blob/main/themes/plex/plex.css) to the Custom CSS text area.
+3. Click Install
 
 ### Optional - Host Backgrounds Locally
 
@@ -24,6 +24,6 @@ _These steps are optional, by default this theme uses the Github hosted image li
 
 2. Place `background.png` and `noise.png` in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows. Then edit the `background-image: url("")` attributes like below:  
 
-The [body](https://github.com/stashapp/CommunityScripts/blob/main/themes/plex/plex.css#L7) one `background-image: url("./background.png");`
+The [body](https://github.com/stashapp/CommunityScripts/blob/main/themes/Theme-Plex/plex.css#L7) one `background-image: url("./background.png");`
 
-The [root](https://github.com/stashapp/CommunityScripts/blob/main/themes/plex/plex.css#L18) one `background: rgba(0, 0, 0, 0) url("./noise.png") repeat scroll 0% 0%;`
+The [root](https://github.com/stashapp/CommunityScripts/blob/main/themes/Theme-Plex/plex.css#L18) one `background: rgba(0, 0, 0, 0) url("./noise.png") repeat scroll 0% 0%;`
