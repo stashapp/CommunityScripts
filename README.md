@@ -2,7 +2,7 @@
 
 This repository contains plugin and utility scripts created by the Stash community and hosted on the official GitHub repo.  
 
-There is also [a list of third-party plugins on our wiki page](https://github.com/stashapp/stash/wiki/Plugins-&--Scripts).
+There is also [a list of third-party plugins in our documentation](https://docs.stashapp.cc/add-ons/third-party-integrations).
 
 ## Please note: V24 now uses an installer
 # We recommend you use that to install (and update) plugins.  
