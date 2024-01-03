@@ -1,3 +1,4 @@
+const baseURL = document.querySelector('base')?.getAttribute('href').slice(0, -1) ?? '';
 const stashListener = new EventTarget();
 
 class Logger {
@@ -122,7 +123,7 @@ class Stash extends EventTarget {
         }
 
         try {
-            const res = await window.fetch('/graphql', options);
+            const res = await window.fetch(baseURL + '/graphql', options);
             this.log.debug(res);
             return res.json();
         } catch (err) {
@@ -235,7 +236,7 @@ class Stash extends EventTarget {
         return this.callGQL(reqData);
     }
     matchUrl(location, fragment) {
-        const regexp = concatRegexp(new RegExp(location.origin), fragment);
+        const regexp = concatRegexp(new RegExp(this.serverUrl), fragment);
         this.log.debug(regexp, location.href.match(regexp));
         return location.href.match(regexp) != null;
     }
@@ -352,7 +353,7 @@ class Stash extends EventTarget {
         return document.getElementById(inputId);
     }
     get serverUrl() {
-        return window.location.origin;
+        return window.location.origin + baseURL;
     }
     gmMain() {
         const location = window.location;
@@ -824,7 +825,7 @@ class Stash extends EventTarget {
     parseSearchItem(searchItem) {
         const urlNode = searchItem.querySelector('a.scene-link');
         const url = new URL(urlNode.href);
-        const id = url.pathname.replace('/scenes/', '');
+        const id = url.pathname.replace(baseURL + '/scenes/', '');
         const data = this.scenes[id];
         const nameNode = searchItem.querySelector('a.scene-link > div.TruncatedText');
         const name = nameNode.innerText;
