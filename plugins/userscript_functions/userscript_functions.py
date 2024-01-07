@@ -19,7 +19,6 @@ json_input = json.loads(sys.stdin.read())
 name = json_input['args']['name']
 
 stash = StashInterface(json_input["server_connection"])
-sbox = StashBoxInterface(stash.get_stashbox_connection("stashdb.org"))
 
 CONFIG_PATH = os.path.join(pathlib.Path(__file__).parent.resolve(), 'config.ini')
 
@@ -36,6 +35,7 @@ def main():
     if name == 'audit_performer_urls':
         audit_performer_urls(stash)
     if name == 'favorite_performers_sync':
+        sbox = StashBoxInterface(stash.get_stashbox_connection(json_input['args']['endpoint']))
         set_stashbox_favorite_performers(stash, sbox)
     if name == 'favorite_performer_sync':
         favorite_performer_sync()
@@ -58,6 +58,7 @@ def open_mediaplayer():
     subprocess.Popen([mediaplayer_path, path])
 
 def favorite_performer_sync():
+    sbox = StashBoxInterface(stash.get_stashbox_connection(json_input['args']['endpoint']))
     stash_id = json_input['args']['stash_id']
     favorite = json_input['args']['favorite']
     log.debug(f"Favorite performer sync: endpoint={sbox.endpoint}, stash_id={stash_id}, favorite={favorite}")
