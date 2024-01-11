@@ -1,11 +1,25 @@
 name: Timestamp Trade
 description: Sync Markers with timestamp.trade, a new database for sharing markers.
-version: 0.3
+version: 0.4
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
   - "{pluginDir}/timestampTrade.py"
 interface: raw
+settings:
+  createGalleryFromScene:
+    displayName: Create Gallery from scene
+    description: If there is a gallery linked to the scene in the timestamp.trade database and a gallery with the same file hash is found create a gallery inside stash
+    type: BOOLEAN
+  createMovieFromScene:
+    displayName: Create Movie from scene
+    description: If there is a Movie linked to the scene in the timestamp.trade database automatically create a movie in stash with that info
+    type: BOOLEAN
+  extraUrls:
+    displayName: Add extra urls if they exist on timestamp.trade
+    description: Extra urls can be submitted to timestamp.trade, add them to the scene if they exist
+    type: BOOLEAN
+
 hooks:
   - name: Add Marker to Scene
     description: Makes Markers checking against timestamp.trade

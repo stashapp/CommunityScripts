@@ -42,38 +42,100 @@ def processScene(s):
                     mp.import_scene_markers(stash, markers, s['id'], 15)
             else:
                 log.debug('api returned no markers for scene: ' + s['title'])
-            if 'galleries' in md:
-                log.info(md['galleries'])
-                skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
-                for g in md['galleries']:
-                    for f in g['files']:
-                        res = stash.find_galleries(f={"checksum": {"value": f['md5'], "modifier": "EQUALS"},
-                                                      "tags": {"depth": 0, "excludes": [skip_sync_tag_id],
-                                                               "modifier": "INCLUDES_ALL", "value": []}})
-                        for gal in res:
-                            #                                log.debug('Gallery=%s'  %(gal,))
-                            gallery = {
-                                'id': gal['id'],
-                                'title': gal['title'],
-                                'urls': gal['urls'],
-                                'date': gal['date'],
-                                'rating100': gal['rating100'],
-                                'studio_id': gal['studio']['id'],
-                                'performer_ids': [x['id'] for x in gal['performers']],
-                                'tag_ids': [x['id'] for x in gal['tags']],
-                                'scene_ids': [x['id'] for x in gal['scenes']],
-                                'details': gal['details']
-                            }
-                            if len(gal['urls']) == 0:
-                                log.debug('no urls on gallery, needs new metadata')
-                                gallery['urls'].extend([x['url'] for x in g['urls']])
+            if settings['createGalleryFromScene']:
+                if 'galleries' in md:
+                    log.debug('galleries: %s' % (md['galleries'],))
+                    skip_sync_tag_id = stash.find_tag('[Timestamp: Skip Sync]', create=True).get("id")
+                    for g in md['galleries']:
+                        for f in g['files']:
+                            res = stash.find_galleries(f={"checksum": {"value": f['md5'], "modifier": "EQUALS"},
+                                                          "tags": {"depth": 0, "excludes": [skip_sync_tag_id],
+                                                                   "modifier": "INCLUDES_ALL", "value": []}})
+                            for gal in res:
+                                #                                log.debug('Gallery=%s'  %(gal,))
+                                needs_update=False
+                                gallery = {
+                                    'id': gal['id'],
+                                    'title': gal['title'],
+                                    'urls': gal['urls'],
+                                    'date': gal['date'],
+                                    'rating100': gal['rating100'],
+                                    'studio_id': gal['studio']['id'],
+                                    'performer_ids': [x['id'] for x in gal['performers']],
+                                    'tag_ids': [x['id'] for x in gal['tags']],
+                                    'scene_ids': [x['id'] for x in gal['scenes']],
+                                    'details': gal['details']
+                                }
+                                if len(gal['urls']) == 0:
+                                    log.debug('no urls on gallery, needs new metadata')
+                                    gallery['urls'].extend([x['url'] for x in g['urls']])
+                                    needs_update=True
 
-                            if s['id'] not in gallery['scene_ids']:
-                                log.debug('attaching scene %s to gallery %s ' % (s['id'], gallery['id'],))
-                                gallery['scene_ids'].append(s['id'])
-                            log.info('updating gallery: %s' % (gal['id'],))
-                            stash.update_gallery(gallery_data=gallery)
+                                if s['id'] not in gallery['scene_ids']:
+                                    log.debug('attaching scene %s to gallery %s ' % (s['id'], gallery['id'],))
+                                    gallery['scene_ids'].append(s['id'])
+                                    needs_update=True
+                                if needs_update:
+                                    log.info('updating gallery: %s' % (gal['id'],))
+                                    stash.update_gallery(gallery_data=gallery)
 
+            new_scene={
+                'id': s['id'],
+            }
+            needs_update=False
+
+            if settings['createMovieFromScene']:
+                if 'movies' in md:
+                    movies_to_add = []
+                    for m in md['movies']:
+                        log.debug('movie: %s' % (m,))
+                        log.debug('scene: %s' % (s,))
+                        movies=[]
+                        for u in m['urls']:
+                            sm=stash.find_movies(f= {"url": {"modifier": "EQUALS","value": u['url']}})
+                            log.debug('sm: %s' % (sm,))
+                            movies.extend(sm)
+                        if len(movies) ==0:
+                            for u in m['urls']:
+                                movie_scrape=stash.scrape_movie_url(u['url'])
+                                log.debug('move scrape: %s' % (movie_scrape,))
+                                new_movie={
+                                    'name':movie_scrape['name'],
+                                    'aliases':movie_scrape['aliases'],
+                                    'date':movie_scrape['date'],
+                                    'rating100': movie_scrape['rating'],
+                                    'director': movie_scrape['director'],
+                                    'synopsis':movie_scrape['synopsis'],
+                                    'url':movie_scrape['url'],
+                                    'front_image':movie_scrape['front_image'],
+                                    'back_image':movie_scrape['back_image']
+                                }
+                                if not movie_scrape['url']:
+                                    new_movie['url']=u['url']
+                                if movie_scrape['studio']:
+                                    new_movie['studio_id']=movie_scrape['studio']['stored_id']
+                                log.debug('new movie: %s' % (new_movie,))
+                                nm=stash.create_movie(new_movie)
+                                movies.append(nm)
+                        movies_to_add.extend([{'movie_id':x['id'],'scene_index':m['scene_index']} for x in movies])
+                    if len(movies_to_add) >0:
+                        new_scene['movies'] =[]
+                        for m in movies_to_add:
+                            if m['movie_id'] not in [x['movie']['id'] for x in s['movies']]:
+                                new_scene['movies'].append(m)
+                                needs_update=True
+
+            if settings['extraUrls']:
+                extra_urls=s['urls']
+                for url in md['urls']:
+                    if url['url'] not in s['urls']:
+                        extra_urls.append(url['url'])
+                        needs_update=True
+                if needs_update:
+                    new_scene['urls']=extra_urls
+            if needs_update:
+                log.debug('new scene update: %s' % (new_scene,))
+                stash.update_scene(new_scene)
 
 
         except json.decoder.JSONDecodeError:
@@ -94,7 +156,8 @@ def processAll():
             processScene(s)
             i=i+1
             log.progress((i/count))
-            time.sleep(1)
+            time.sleep(2)
+
 
 def submitScene():
     scene_fgmt = """title
@@ -288,8 +351,15 @@ def processGalleries():
         for gal in galleries:
             processGallery(gal)
 def processGallery(gallery):
+    process=False
     # ignore galleries with a url
     if len(gallery['urls']) ==0:
+        process=True
+    # Process the gallery if it has the [Timestamp: Tag Gallery] tag
+    tag_gallery_tag_id = stash.find_tag('[Timestamp: Tag Gallery]', create=True).get("id")
+    if tag_gallery_tag_id in gallery['tags']:
+        process=True
+    if process:
         for f in gallery['files']:
             for fp in f['fingerprints']:
                 if fp['type']=='md5':
@@ -360,8 +430,6 @@ def processGallery(gallery):
                                             break
 
                             log.debug(new_gallery)
-
-
                             stash.update_gallery(gallery_data=new_gallery)
                             time.sleep(1)
 
@@ -384,6 +452,17 @@ json_input = json.loads(sys.stdin.read())
 
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
+config=stash.get_configuration()['plugins']
+settings={
+    'createGalleryFromScene':True,
+    'createMovieFromScene':True,
+ }
+if 'timestampTrade' in config:
+    settings.update(config['timestampTrade'])
+log.info('config: %s ' % (settings,))
+
+
+
 if 'mode' in json_input['args']:
     PLUGIN_ARGS = json_input['args']["mode"]
     if 'submitScene' in PLUGIN_ARGS:
@@ -403,4 +482,5 @@ elif 'hookContext' in json_input['args']:
     if json_input['args']['hookContext']['type']=='Gallery.Update.Post':
         gallery=stash.find_gallery(id)
         processGallery(gallery)
+
 
