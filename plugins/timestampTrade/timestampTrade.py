@@ -456,6 +456,7 @@ config=stash.get_configuration()['plugins']
 settings={
     'createGalleryFromScene':True,
     'createMovieFromScene':True,
+    'extraUrls':True,
  }
 if 'timestampTrade' in config:
     settings.update(config['timestampTrade'])
