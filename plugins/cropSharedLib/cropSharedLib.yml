@@ -1,0 +1,11 @@
+name: cropSharedLib
+description: Library shared by crop plugins
+version: 1.0
+ui:
+  requires:
+  - StashUserscriptLibrary
+  - CropperJS
+  css:
+  - cropSharedLib.css
+  javascript:
+  - cropSharedLib.js

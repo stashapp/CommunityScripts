@@ -10,7 +10,6 @@ class Logger {
     }
 }
 
-
 class Stash extends EventTarget {
     constructor({
         pageUrlCheckInterval = 1,
@@ -30,9 +29,6 @@ class Stash extends EventTarget {
             }
         }, this._pageUrlCheckInterval);
         stashListener.addEventListener('response', (evt) => {
-            if (evt.detail.data?.plugins) {
-                this.getPluginVersion(evt.detail);
-            }
             this.processRemoteScenes(evt.detail);
             this.processScene(evt.detail);
             this.processScenes(evt.detail);
@@ -43,74 +39,26 @@ class Stash extends EventTarget {
                 'detail': evt.detail
             }));
         });
-        stashListener.addEventListener('pluginVersion', (evt) => {
-            if (this.pluginVersion !== evt.detail) {
-                this.pluginVersion = evt.detail;
-                this.dispatchEvent(new CustomEvent('stash:pluginVersion', {
-                    'detail': evt.detail
-                }));
-            }
-        });
-        this.version = [0, 0, 0];
-        this.getVersion();
-        this.pluginVersion = null;
-        this.getPlugins().then(plugins => this.getPluginVersion(plugins));
-        this.visiblePluginTasks = ['Userscript Functions'];
+        this.getVersion()
         this.settingsCallbacks = [];
-        this.settingsId = 'userscript-settings';
         this.remoteScenes = {};
         this.scenes = {};
         this.studios = {};
         this.performers = {};
-        this.userscripts = [];
     }
     async getVersion() {
         const reqData = {
             "operationName": "",
             "variables": {},
             "query": `query version {
-    version {
-        version
-    }
-}
-`
+                version {
+                    version
+                }
+            }`
         };
         const data = await this.callGQL(reqData);
         const versionString = data.data.version.version;
         this.version = versionString.substring(1).split('.').map(o => parseInt(o));
-    }
-    compareVersion(minVersion) {
-        let [currMajor, currMinor, currPatch = 0] = this.version;
-        let [minMajor, minMinor, minPatch = 0] = minVersion.split('.').map(i => parseInt(i));
-        if (currMajor > minMajor) return 1;
-        if (currMajor < minMajor) return -1;
-        if (currMinor > minMinor) return 1;
-        if (currMinor < minMinor) return -1;
-        return 0;
-
-    }
-    comparePluginVersion(minPluginVersion) {
-        if (!this.pluginVersion) return -1;
-        let [currMajor, currMinor, currPatch = 0] = this.pluginVersion.split('.').map(i => parseInt(i));
-        let [minMajor, minMinor, minPatch = 0] = minPluginVersion.split('.').map(i => parseInt(i));
-        if (currMajor > minMajor) return 1;
-        if (currMajor < minMajor) return -1;
-        if (currMinor > minMinor) return 1;
-        if (currMinor < minMinor) return -1;
-        return 0;
-
-    }
-    async runPluginTask(pluginId, taskName, args = []) {
-        const reqData = {
-            "operationName": "RunPluginTask",
-            "variables": {
-                "plugin_id": pluginId,
-                "task_name": taskName,
-                "args": args
-            },
-            "query": "mutation RunPluginTask($plugin_id: ID!, $task_name: String!, $args: [PluginArgInput!]) {\n  runPluginTask(plugin_id: $plugin_id, task_name: $task_name, args: $args)\n}\n"
-        };
-        return this.callGQL(reqData);
     }
     async callGQL(reqData) {
         const options = {
@@ -164,44 +112,6 @@ class Stash extends EventTarget {
             console.error(err);
         }
     }
-    async getPlugins() {
-        const reqData = {
-            "operationName": "Plugins",
-            "variables": {},
-            "query": `query Plugins {
-              plugins {
-                id
-                name
-                description
-                url
-                version
-                tasks {
-                  name
-                  description
-                  __typename
-                }
-                hooks {
-                  name
-                  description
-                  hooks
-                }
-              }
-            }
-            `
-        };
-        return this.callGQL(reqData);
-    }
-    async getPluginVersion(plugins) {
-        let version = null;
-        for (const plugin of plugins?.data?.plugins || []) {
-            if (plugin.id === 'userscript_functions') {
-                version = plugin.version;
-            }
-        }
-        stashListener.dispatchEvent(new CustomEvent('pluginVersion', {
-            'detail': version
-        }));
-    }
     async getStashBoxes() {
         const reqData = {
             "operationName": "Configuration",
@@ -239,121 +149,10 @@ class Stash extends EventTarget {
         this.log.debug(regexp, location.href.match(regexp));
         return location.href.match(regexp) != null;
     }
-    createSettings() {
-        waitForElementId('configuration-tabs-tabpane-system', async (elementId, el) => {
-            let section;
-            if (!document.getElementById(this.settingsId)) {
-                section = document.createElement("div");
-                section.setAttribute('id', this.settingsId);
-                section.classList.add('setting-section');
-                section.innerHTML = `<h1>Userscript Settings</h1>`;
-                el.appendChild(section);
-
-                const expectedApiKey = (await this.getApiKey())?.data?.configuration?.general?.apiKey || '';
-                const expectedUrl = window.location.origin;
-
-                const serverUrlInput = await this.createSystemSettingTextbox(section, 'userscript-section-server-url', 'userscript-server-url', 'Stash Server URL', '', 'Server URL…', true);
-                serverUrlInput.addEventListener('change', () => {
-                    const value = serverUrlInput.value || '';
-                    if (value) {
-                        this.updateConfigValueTask('STASH', 'url', value);
-                        alert(`Userscripts plugin server URL set to ${value}`);
-                    } else {
-                        this.getConfigValueTask('STASH', 'url').then(value => {
-                            serverUrlInput.value = value;
-                        });
-                    }
-                });
-                serverUrlInput.disabled = true;
-                serverUrlInput.value = expectedUrl;
-                this.getConfigValueTask('STASH', 'url').then(value => {
-                    if (value !== expectedUrl) {
-                        return this.updateConfigValueTask('STASH', 'url', expectedUrl);
-                    }
-                });
-
-                const apiKeyInput = await this.createSystemSettingTextbox(section, 'userscript-section-server-apikey', 'userscript-server-apikey', 'Stash API Key', '', 'API Key…', true);
-                apiKeyInput.addEventListener('change', () => {
-                    const value = apiKeyInput.value || '';
-                    this.updateConfigValueTask('STASH', 'api_key', value);
-                    if (value) {
-                        alert(`Userscripts plugin server api key set to ${value}`);
-                    } else {
-                        alert(`Userscripts plugin server api key value cleared`);
-                    }
-                });
-                apiKeyInput.disabled = true;
-                apiKeyInput.value = expectedApiKey;
-                this.getConfigValueTask('STASH', 'api_key').then(value => {
-                    if (value !== expectedApiKey) {
-                        return this.updateConfigValueTask('STASH', 'api_key', expectedApiKey);
-                    }
-                });
-            } else {
-                section = document.getElementById(this.settingsId);
-            }
-
-            for (const callback of this.settingsCallbacks) {
-                callback(this.settingsId, section);
-            }
-
-            if (this.pluginVersion) {
-                this.dispatchEvent(new CustomEvent('stash:pluginVersion', {
-                    'detail': this.pluginVersion
-                }));
-            }
-
-        });
-    }
-    addSystemSetting(callback) {
-        const section = document.getElementById(this.settingsId);
-        if (section) {
-            callback(this.settingsId, section);
-        }
-        this.settingsCallbacks.push(callback);
-    }
-    async createSystemSettingCheckbox(containerEl, settingsId, inputId, settingsHeader, settingsSubheader) {
-        const section = document.createElement("div");
-        section.setAttribute('id', settingsId);
-        section.classList.add('card');
-        section.style.display = 'none';
-        section.innerHTML = `<div class="setting">
-        <div>
-        <h3>${settingsHeader}</h3>
-        <div class="sub-heading">${settingsSubheader}</div>
-        </div>
-        <div>
-        <div class="custom-control custom-switch">
-        <input type="checkbox" id="${inputId}" class="custom-control-input">
-        <label title="" for="${inputId}" class="custom-control-label"></label>
-        </div>
-        </div>
-        </div>`;
-        containerEl.appendChild(section);
-        return document.getElementById(inputId);
-    }
-    async createSystemSettingTextbox(containerEl, settingsId, inputId, settingsHeader, settingsSubheader, placeholder, visible) {
-        const section = document.createElement("div");
-        section.setAttribute('id', settingsId);
-        section.classList.add('card');
-        section.style.display = visible ? 'flex' : 'none';
-        section.innerHTML = `<div class="setting">
-        <div>
-        <h3>${settingsHeader}</h3>
-        <div class="sub-heading">${settingsSubheader}</div>
-        </div>
-        <div>
-        <div class="flex-grow-1 query-text-field-group">
-        <input id="${inputId}" class="bg-secondary text-white border-secondary form-control" placeholder="${placeholder}">
-        </div>
-        </div>
-        </div>`;
-        containerEl.appendChild(section);
-        return document.getElementById(inputId);
-    }
     get serverUrl() {
         return window.location.origin;
     }
+    isPlugin = () => true;
     gmMain() {
         const location = window.location;
         this.log.debug(URL, window.location);
@@ -557,7 +356,6 @@ class Stash extends EventTarget {
         if (this.matchUrl(location, /\/settings\?tab=tasks/)) {
             this.log.debug('[Navigation] Settings Page Tasks Tab');
             this.dispatchEvent(new Event('page:settings:tasks'));
-            this.hidePluginTasks();
         }
         // settings page system tab
         else if (this.matchUrl(location, /\/settings\?tab=system/)) {
@@ -569,7 +367,6 @@ class Stash extends EventTarget {
         else if (this.matchUrl(location, /\/settings/)) {
             this.log.debug('[Navigation] Settings Page Tasks Tab');
             this.dispatchEvent(new Event('page:settings:tasks'));
-            this.hidePluginTasks();
         }
 
         // stats page
@@ -578,89 +375,40 @@ class Stash extends EventTarget {
             this.dispatchEvent(new Event('page:stats'));
         }
     }
-    hidePluginTasks() {
-        // hide userscript functions plugin tasks
-        waitForElementByXpath("//div[@id='tasks-panel']//h3[text()='Userscript Functions']/ancestor::div[contains(@class, 'setting-group')]", (elementId, el) => {
-            const tasks = el.querySelectorAll('.setting');
-            for (const task of tasks) {
-                const taskName = task.querySelector('h3').innerText;
-                task.classList.add(this.visiblePluginTasks.indexOf(taskName) === -1 ? 'd-none' : 'd-flex');
-                this.dispatchEvent(new CustomEvent('stash:plugin:task', {
-                    'detail': {
-                        taskName,
-                        task
-                    }
-                }));
-            }
-        });
-    }
-    async updateConfigValueTask(sectionKey, propName, value) {
-        return this.runPluginTask("userscript_functions", "Update Config Value", [{
-            "key": "section_key",
-            "value": {
-                "str": sectionKey
-            }
-        }, {
-            "key": "prop_name",
-            "value": {
-                "str": propName
-            }
-        }, {
-            "key": "value",
-            "value": {
-                "str": value
-            }
-        }]);
-    }
-    async getConfigValueTask(sectionKey, propName) {
-        await this.runPluginTask("userscript_functions", "Get Config Value", [{
-            "key": "section_key",
-            "value": {
-                "str": sectionKey
-            }
-        }, {
-            "key": "prop_name",
-            "value": {
-                "str": propName
-            }
-        }]);
-
-        // poll logs until plugin task output appears
-        const prefix = `[Plugin / Userscript Functions] get_config_value: [${sectionKey}][${propName}] =`;
-        return this.pollLogsForMessage(prefix);
-    }
-    async pollLogsForMessage(prefix) {
-        const reqTime = Date.now();
+    async getPluginSettings(pluginName) {
         const reqData = {
-            "variables": {},
-            "query": `query Logs {
-                        logs {
-                            time
-                            level
-                            message
-                        }
-                    }`
-        };
-        await new Promise(r => setTimeout(r, 500));
-        let retries = 0;
-        while (true) {
-            const delay = 2 ** retries * 100;
-            await new Promise(r => setTimeout(r, delay));
-            retries++;
-
-            const logs = await this.callGQL(reqData);
-            for (const log of logs.data.logs) {
-                const logTime = Date.parse(log.time);
-                if (logTime > reqTime && log.message.startsWith(prefix)) {
-                    return log.message.replace(prefix, '').trim();
+            "operationName": "Configuration",
+            "variables": { "pluginID": pluginName },
+            "query": `query ($pluginID: String!) {
+                configuration {
+                    plugins(include: [$pluginID])
                 }
-            }
-
-            if (retries >= 5) {
-                throw `Poll logs failed for message: ${prefix}`;
-            }
-        }
+            }`
+        };
+        const result = await this.callGQL(reqData);
+        const settings = result.data.configuration.plugins?.[pluginName]
+        return settings
     }
+    async updateConfigValue(pluginName, settingName, value) {
+        const existingSettings = await getPluginSettings(pluginName);
+        existingSettings[settingName] = value;
+        const reqData = {
+            "operationName": "UpdateConfigValue",
+            "variables": {
+                "pluginID": pluginName,
+                "settings": JSON.stringify(existingSettings)
+            },
+            "query": `mutation UpdateConfigValue($pluginID: String!, $settings: String!) {
+                updateConfigValue(pluginID: $pluginID, settings: $settings)
+            }`
+        };
+        return this.callGQL(reqData);
+    }
+    async getConfigValue(pluginName, settingName, fallback) {
+        const settings = await getPluginSettings(pluginName);
+        return settings?.[settingName] ?? fallback;
+    }
+
     processTagger() {
         waitForElementByXpath("//button[text()='Scrape All']", (xpath, el) => {
             this.dispatchEvent(new CustomEvent('tagger', {
@@ -816,11 +564,6 @@ class Stash extends EventTarget {
             }
         }
     }
-    processApiKey(data) {
-        if (data.data.generateAPIKey != null && this.pluginVersion) {
-            this.updateConfigValueTask('STASH', 'api_key', data.data.generateAPIKey);
-        }
-    }
     parseSearchItem(searchItem) {
         const urlNode = searchItem.querySelector('a.scene-link');
         const url = new URL(urlNode.href);
@@ -937,44 +680,30 @@ class Stash extends EventTarget {
 
 stash = new Stash();
 
-function waitForElementClass(elementId, callBack, time) {
-    time = (typeof time !== 'undefined') ? time : 100;
-    window.setTimeout(() => {
-        const element = document.getElementsByClassName(elementId);
-        if (element.length > 0) {
-            callBack(elementId, element);
-        } else {
-            waitForElementClass(elementId, callBack);
-        }
-    }, time);
+function waitForElementBySelector(selector, callback, time) {
+    time = time ?? 100;
+    const elements = document.querySelectorAll(selector);
+    return elements?.length > 0
+        ? callback(selector, elements)
+        : setTimeout(waitForElementBySelector, time, selector, callback, time);
 }
 
-function waitForElementId(elementId, callBack, time) {
-    time = (typeof time !== 'undefined') ? time : 100;
-    window.setTimeout(() => {
-        const element = document.getElementById(elementId);
-        if (element != null) {
-            callBack(elementId, element);
-        } else {
-            waitForElementId(elementId, callBack);
-        }
-    }, time);
+function waitForElementClass(elementId, callback, time) {
+    waitForElementBySelector(`.${elementId}`, callback, time);
+}
+function waitForElementId(elementId, callback, delay) {
+    waitForElementBySelector(`#${elementId}`, callback, delay);
 }
 
-function waitForElementByXpath(xpath, callBack, time) {
+function waitForElementByXpath(xpath, callback, delay) {
+    delay = delay ?? 100;
     time = (typeof time !== 'undefined') ? time : 100;
     window.setTimeout(() => {
-        const element = getElementByXpath(xpath);
-        if (element) {
-            callBack(xpath, element);
-        } else {
-            waitForElementByXpath(xpath, callBack);
-        }
+        const elements = getElementByXpath(xpath);
+        return elements?.length > 0
+            ? callback(selector, elements)
+            : waitForElementByXpath(xpath, callback);
     }, time);
-}
-
-function getElementByXpath(xpath, contextNode) {
-    return document.evaluate(xpath, contextNode || document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 }
 
 function createElementFromHTML(htmlString) {
@@ -1059,22 +788,6 @@ function xPathResultToArray(result) {
         nodes.push(node);
     }
     return nodes;
-}
-
-function createStatElement(container, title, heading) {
-    const statEl = document.createElement('div');
-    statEl.classList.add('stats-element');
-    container.appendChild(statEl);
-
-    const statTitle = document.createElement('p');
-    statTitle.classList.add('title');
-    statTitle.innerText = title;
-    statEl.appendChild(statTitle);
-
-    const statHeading = document.createElement('p');
-    statHeading.classList.add('heading');
-    statHeading.innerText = heading;
-    statEl.appendChild(statHeading);
 }
 
 const reloadImg = url =>
