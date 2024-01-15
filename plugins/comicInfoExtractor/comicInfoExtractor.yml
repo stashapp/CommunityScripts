@@ -1,0 +1,19 @@
+name: Comic Info Extractor
+description: Extract the metadata from cbz with the Comicrack standard (ComicInfo.xml)
+version: 0.1
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - "/usr/bin/python3"
+  - "{pluginDir}/comicInfoExtractor.py"
+interface: raw
+hooks:
+  - name: Add Metadata to Gallery
+    description: Update Metadata for Gallery by evaluating the ComicInfo.xml.
+    triggeredBy:
+      - Gallery.Update.Post
+      - Gallery.Create.Post
+tasks:
+  - name: Load all cbz Metadata
+    description: Get Metadata for all Galleries by looking for ComicInfo.xml files in the Archive.
+    defaultArgs:
+      mode: process

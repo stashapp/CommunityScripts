@@ -4,8 +4,13 @@ import sys
 import json
 import base64
 
-import log
-from stash_interface import StashInterface
+try:
+	import stashapi.log as log
+	from stashapi.tools import file_to_base64
+	from stashapi.stashapp import StashInterface
+except ModuleNotFoundError:
+	print("You need to install the stashapi module. (pip install stashapp-tools)",
+	 file=sys.stderr)
 
 MANUAL_ROOT = None # /some/other/path to override scanning all stashes
 cover_pattern = r'(?:thumb|poster|cover)\.(?:jpg|png)'
@@ -21,7 +26,7 @@ def main():
 		if MANUAL_ROOT:
 			scan(MANUAL_ROOT, handle_cover)
 		else:
-			for stash_path in stash.get_root_paths():
+			for stash_path in get_stash_paths():
 				scan(stash_path, handle_cover)
 	except Exception as e:
 		log.error(e)
@@ -34,30 +39,32 @@ def handle_cover(path, file):
 	filepath = os.path.join(path, file)
 
 
-	with open(filepath, "rb") as img:
-		b64img_bytes = base64.b64encode(img.read())
-
-	if not b64img_bytes:
+	b64img = file_to_base64(filepath)
+	if not b64img:
+		log.warning(f"Could not parse {filepath} to b64image")
 		return
-		
-	b64img  = f"data:image/jpeg;base64,{b64img_bytes.decode('utf-8')}"
 
-	scene_ids = stash.get_scenes_id(filter={
+	scenes = stash.find_scenes(f={
 		"path": {
 			"modifier": "INCLUDES",
 			"value": f"{path}\""
 		}
-	})
+	}, fragment="id")
 
-	log.info(f'Found Cover: {[int(s) for s in scene_ids]}|{filepath}')
+	log.info(f'Found Cover: {[int(s["id"]) for s in scenes]}|{filepath}')
 
 	if mode_arg == "set_cover":
-		for scene_id in scene_ids:
+		for scene in scenes:
 			stash.update_scene({
-				"id": scene_id,
+				"id": scene["id"],
 				"cover_image": b64img
 			})
-		log.info(f'Applied cover Scenes')
+		log.info(f'Applied cover to {len(scenes)} scenes')
+
+def get_stash_paths():
+		config = stash.get_configuration("general { stashes { path excludeVideo } }")
+		stashes = config["configuration"]["general"]["stashes"]
+		return [s["path"] for s in stashes if not s["excludeVideo"]]
 
 def scan(ROOT_PATH, _callback):
 	log.info(f'Scanning {ROOT_PATH}')
@@ -66,4 +73,5 @@ def scan(ROOT_PATH, _callback):
 			if re.match(cover_pattern, file, re.IGNORECASE):
 				_callback(root, file)
 
-main()
+if __name__ == '__main__':
+	main()

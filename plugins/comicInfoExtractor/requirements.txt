@@ -1,0 +1,2 @@
+stashapp-tools
+pyyaml
