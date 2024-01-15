@@ -1,7 +1,7 @@
 // settings
 const settings = {
-    "urlScheme": "iina://weblink?url=file://",
-    "replacePath": ["", ""],
+  urlScheme: "iina://weblink?url=file://",
+  replacePath: ["", ""], // example ["/data/", "/Volumes/temp/"],
 };
 
 // style
@@ -32,66 +32,66 @@ style.innerHTML = `
 document.head.appendChild(style);
 
 // api
-const getFilePath = async href => {
-    const regex = /\/scenes\/(.*)\?/,
-        sceneId = regex.exec(href)[1],
-        graphQl = `{ findScene(id: ${sceneId}) { files { path } } }`,
-        response = await fetch("/graphql", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ query: graphQl })
-        });
-    return response.json();
+const getFilePath = async (href) => {
+  const regex = /\/scenes\/(.*)\?/,
+    sceneId = regex.exec(href)[1],
+    graphQl = `{ findScene(id: ${sceneId}) { files { path } } }`,
+    response = await fetch("/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: graphQl }),
+    });
+  return response.json();
 };
 
 // promise
-const waitForElm = selector => {
-    return new Promise(resolve => {
-        if (document.querySelector(selector)) {
-            return resolve(document.querySelector(selector));
-        }
-        const observer = new MutationObserver(mutations => {
-            if (document.querySelector(selector)) {
-                resolve(document.querySelector(selector));
-                observer.disconnect();
-            }
-        });
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
+const waitForElm = (selector) => {
+  return new Promise((resolve) => {
+    if (document.querySelector(selector)) {
+      return resolve(document.querySelector(selector));
+    }
+    const observer = new MutationObserver((mutations) => {
+      if (document.querySelector(selector)) {
+        resolve(document.querySelector(selector));
+        observer.disconnect();
+      }
     });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  });
 };
 
 // initial
 waitForElm("video").then(() => {
-    addButton();
+  addButton();
 });
 
 // route
 let previousUrl = "";
 const observer = new MutationObserver(function (mutations) {
-    if (window.location.href !== previousUrl) {
-        previousUrl = window.location.href;
-        waitForElm("video").then(() => {
-            addButton();
-        });
-    }
+  if (window.location.href !== previousUrl) {
+    previousUrl = window.location.href;
+    waitForElm("video").then(() => {
+      addButton();
+    });
+  }
 });
 const config = { subtree: true, childList: true };
 observer.observe(document, config);
 
 // main
 const addButton = () => {
-    const scenes = document.querySelectorAll("div.row > div");
-    for (const scene of scenes) {
-        if (scene.querySelector("a.button") === null) {
-            const scene_url = scene.querySelector("a.scene-card-link"),
-                popover = scene.querySelector("div.card-popovers"),
-                button = document.createElement("a");
-            button.innerHTML = `
+  const scenes = document.querySelectorAll("div.row > div");
+  for (const scene of scenes) {
+    if (scene.querySelector("a.button") === null) {
+      const scene_url = scene.querySelector("a.scene-card-link"),
+        popover = scene.querySelector("div.card-popovers"),
+        button = document.createElement("a");
+      button.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
                     <path d="M77.2 1.1H22.8c-12 0-21.7 9.7-21.7 21.7v54.4c0 12 9.7 21.7 21.7 21.7h54.4c12 
                     0 21.7-9.7 21.7-21.7V22.8c0-12-9.7-21.7-21.7-21.7zM22 54.9c0 1.8-1.4 3.2-3.2 3.2h0c-1.8 
@@ -103,21 +103,31 @@ const addButton = () => {
                 </svg>
                 <span>IINA</span>
             `;
-            button.classList.add("button");
-            if (popover) popover.append(button);
-            button.onmouseover = () => {
-                if ([button.title.length, button.href.length].indexOf(0) > -1) {
-                    getFilePath(scene_url.href)
-                        .then((result) => {
-                            const filePath = result.data.findScene.files[0].path
-                                .replace(settings.replacePath[0], "");
-                            button.title = filePath;
-                            button.href = settings.urlScheme +
-                                settings.replacePath[1] +
-                                encodeURIComponent(filePath);
-                        });
-                }
-            };
+      button.classList.add("button");
+      if (popover) popover.append(button);
+      button.onmouseover = () => {
+        if ([button.title.length, button.href.length].indexOf(0) > -1) {
+          getFilePath(scene_url.href).then((result) => {
+            const filePath = result.data.findScene.files[0].path.replace(
+              settings.replacePath[0],
+              ""
+            );
+            button.title = filePath;
+
+            // replace known characters with issues...
+            const uriFix = filePath
+              .replaceAll(" ", "%20")
+              .replaceAll("[", "%5B")
+              .replaceAll("]", "%5D")
+              .replaceAll("-", "%2D");
+
+            button.href =
+              settings.urlScheme +
+              settings.replacePath[1] +
+              encodeURIComponent(uriFix);
+          });
         }
+      };
     }
+  }
 };
