@@ -20,7 +20,6 @@ jobs:
       with:
         fetch-depth: '0'
     - run: |
-        cd main
         ./build_site.sh ../_site/${{ github.ref_name }}
     - uses: actions/upload-pages-artifact@v3
     
