@@ -379,7 +379,7 @@ class Stash extends EventTarget {
         const reqData = {
             "operationName": "Configuration",
             "variables": { "pluginID": pluginName },
-            "query": `query ($pluginID: String!) {
+            "query": `query Configuration($pluginID: String!) {
                 configuration {
                     plugins(include: [$pluginID])
                 }
@@ -405,7 +405,7 @@ class Stash extends EventTarget {
         return this.callGQL(reqData);
     }
     async getConfigValue(pluginName, settingName, fallback) {
-        const settings = await getPluginSettings(pluginName);
+        const settings = await this.getPluginSettings(pluginName);
         return settings?.[settingName] ?? fallback;
     }
 
