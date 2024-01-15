@@ -1,0 +1,11 @@
+# author: github.com/elkorol
+name: Unit Converter
+# requires: StashUserscriptLibrary
+url: https://github.com/elkorol/Stash-Performer-Edit-Panel--Height--Weight-and-Penis-Converter
+description: Performer Edit Panel, Dot Notation Height & Weight & Penis Converter
+version: 0.1.1
+ui:
+  requires:
+  - StashUserscriptLibrary
+  javascript:
+  - unitConverter.js

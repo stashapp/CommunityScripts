@@ -1,28 +1,5 @@
 const stashListener = new EventTarget();
 
-const {
-    fetch: originalFetch
-} = window;
-
-window.fetch = async (...args) => {
-    let [resource, config] = args;
-    // request interceptor here
-    const response = await originalFetch(resource, config);
-    // response interceptor here
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.indexOf("application/json") !== -1 && resource.endsWith('/graphql')) {
-        try {
-            const data = await response.clone().json();
-            stashListener.dispatchEvent(new CustomEvent('response', {
-                'detail': data
-            }));
-        } catch (e) {
-
-        }
-    }
-    return response;
-};
-
 class Logger {
     constructor(enabled) {
         this.enabled = enabled;

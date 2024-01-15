@@ -1,0 +1,9 @@
+name: Batch Result Toggle
+# requires: StashUserscriptLibrary
+description: 
+version: 0.4.2
+ui:
+  requires:
+  - StashUserscriptLibrary
+  javascript:
+  - batchResultToggle.js

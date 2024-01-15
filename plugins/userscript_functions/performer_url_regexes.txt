@@ -1,0 +1,15 @@
+(babepedia).*?\/babe\/(.*?)$
+(bgafd).*?\/(?:gallery|details)\.php\/id\/(.*?)(?:\/.*?)?$
+(boobpedia).*?\/boobs\/(.*?)$
+(egafd).*?\/(?:gallery|details)\.php\/id\/(.*?)(?:\/.*?)?$
+(eurobabeindex).*?\/sbandoindex\/(.*?)\.html$
+(freeones).*?\/(.*?)(?:\/.*?)?$
+(iafd).*?\/perfid=(.*?\/gender=.)\/
+(imdb).*?\/(?:name|title)\/(.*?)(?:\/.*?)?$
+(indexxx).*?\/m\/(.*?)$
+(instagram).*?\/(.*?)\/?$
+(onlyfans).*?\/(.*?)\/?$
+(pornhub).*?\/(?:model|pornstar)\/(.*?)(?:\/.*?)?$
+(pornteengirl).*?\/model\/(.*?)\.html$
+(thenude).*?\/(?:.*?)_(.*?)\.html?$
+(twitter).*?\/(.*?)\/?$

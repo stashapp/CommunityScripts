@@ -1,0 +1,54 @@
+name: Userscript Functions
+description: Tasks for userscripts
+version: 0.6.0
+exec:
+  - python
+  - "{pluginDir}/userscript_functions.py"
+interface: raw
+tasks:
+  - name: Open in File Explorer
+    description: Open folder
+    defaultArgs:
+      name: explorer
+      path: null
+  - name: Open in Media Player
+    description: Open video
+    defaultArgs:
+      name: mediaplayer
+      path: null
+  - name: Update Studio
+    description: Update studio
+    defaultArgs:
+      name: update_studio
+      studio_id: null
+      endpoint: null
+      remote_site_id: null
+  - name: Audit performer urls
+    description: Audit performer IAFD urls for dupes
+    defaultArgs:
+      name: audit_performer_urls
+  - name: Update Config Value
+    description: Update value in config.ini
+    defaultArgs:
+      name: update_config_value
+      section_key: null
+      prop_name: null
+      value: null
+  - name: Get Config Value
+    description: Get value in config.ini
+    defaultArgs:
+      name: get_config_value
+      section_key: null
+      prop_name: null
+  - name: Set Stashbox Favorite Performers
+    description: Set Stashbox favorite performers according to stash favorites
+    defaultArgs:
+      name: favorite_performers_sync
+      endpoint: null
+  - name: Set Stashbox Favorite Performer
+    description: Update Stashbox performer favorite status
+    defaultArgs:
+      name: favorite_performer_sync
+      endpoint: null
+      stash_id: null
+      favorite: null

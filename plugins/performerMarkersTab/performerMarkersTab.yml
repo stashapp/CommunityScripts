@@ -1,0 +1,9 @@
+name: Performer Markers Tab
+# requires: StashUserscriptLibrary
+description: Adds a Markers link to performer pages
+version: 0.1.1
+ui:
+  requires:
+  - StashUserscriptLibrary
+  javascript:
+  - performerMarkersTab.js
