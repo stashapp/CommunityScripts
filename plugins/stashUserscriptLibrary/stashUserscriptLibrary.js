@@ -37,7 +37,7 @@ class Logger {
 class Stash extends EventTarget {
     constructor({
         pageUrlCheckInterval = 100,
-        detectReRenders = false, // detects if Root element is re-renders. eg: When this is true and you are in scenes page and click the scenes nav tab the url wont change but the elements are re-rendered, So you can listen to this and alter the root elements once again
+        detectReRenders = false, // detects if .main element is re-rendered. eg: When you are in scenes page and clicking the scenes nav tab the url wont change but the elements are re-rendered, So with this you can listen and alter the elements inside the .main node
         logging = false
     } = {}) {
         super();
@@ -444,7 +444,7 @@ class Stash extends EventTarget {
             }
         })
     }
-    async _listenForNonPageChanges(selector, event, eventMessage, isRecursive, reRunGmMain = false){
+    async _listenForNonPageChanges(selector, event, eventMessage, isRecursive = false, reRunGmMain = false){
         if (isRecursive) return
         if (await this.waitForElement(selector, null, true)) {
             this.log.debug("[Navigation] " + eventMessage);
@@ -458,7 +458,7 @@ class Stash extends EventTarget {
             }
         }
     }
-    gmMain(isRecursive) {
+    gmMain(isRecursive = false) {
         const location = window.location;
         this.log.debug(URL, window.location);
 
@@ -467,7 +467,7 @@ class Stash extends EventTarget {
             this.log.debug('[Navigation] Wall-Markers Page');
             this.dispatchEvent(new Event('page:markers'));
         }
-// create scene page
+        // create scene page
         else if (this.matchUrl(location, /\/scenes\/new/)) {
             this.log.debug('[Navigation] Create Scene Page');
             this.dispatchEvent(new Event('page:scene:new'));
@@ -766,9 +766,9 @@ class Stash extends EventTarget {
             this._listenForNonPageChanges(".recommendations-container-edit", "page:home:edit", "Home Page - Edit", false, true);
         }
     }
-    addEventListeners(events, callback) {
+    addEventListeners(events, callback, ...options) {
         events.forEach((event) => {
-            this.addEventListener(event, callback);
+            this.addEventListener(event, callback, ...options);
         });
     }
     hidePluginTasks() {
