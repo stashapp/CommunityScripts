@@ -36,19 +36,24 @@ class Logger {
 
 class Stash extends EventTarget {
     constructor({
-        pageUrlCheckInterval = 1,
+        pageUrlCheckInterval = 100,
+        detectReRenders = false, // detects if Root element is re-renders. eg: When this is true and you are in scenes page and click the scenes nav tab the url wont change but the elements are re-rendered, So you can listen to this and alter the root elements once again
         logging = false
     } = {}) {
         super();
         this.log = new Logger(logging);
         this._pageUrlCheckInterval = pageUrlCheckInterval;
+        this._detectReRenders = detectReRenders;
         this.fireOnHashChangesToo = true;
         this.pageURLCheckTimer = setInterval(() => {
-            // Loop every 500ms
-            if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash)) {
+            // Loop every 100 ms
+            if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash) || (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)) {
                 this.lastPathStr = location.pathname;
                 this.lastQueryStr = location.search;
                 this.lastHashStr = location.hash;
+                if (this._detectReRenders) document.querySelector(".main > div").setAttribute("stashUserscriptLibrary", "");
+                this.log.debug('[Navigation] Page Changed');
+                this.dispatchEvent(new Event('page'));
                 this.gmMain();
             }
         }, this._pageUrlCheckInterval);
@@ -377,7 +382,83 @@ class Stash extends EventTarget {
     get serverUrl() {
         return window.location.origin;
     }
-    gmMain() {
+    async waitForElement(selector, timeout = null, disconnectOnPageChange = false) {
+        return new Promise((resolve) => {
+            if (document.querySelector(selector)) {
+                return resolve(document.querySelector(selector))
+            }
+    
+            const observer = new MutationObserver(async () => {
+                if (document.querySelector(selector)) {
+                    resolve(document.querySelector(selector))
+                    observer.disconnect()
+                } else {
+                    if (timeout) {
+                        async function timeOver() {
+                            return new Promise((resolve) => {
+                                setTimeout(() => {
+                                    observer.disconnect()
+                                    resolve(false)
+                                }, timeout)
+                            })
+                        }
+                        resolve(await timeOver())
+                    }
+                }
+            })
+    
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+            })
+
+            if (disconnectOnPageChange) {
+                function disconnect() {
+                    observer.disconnect()
+                    this.removeEventListener("page", disconnect)
+                }
+                this.addEventListener("page", disconnect)
+            }
+        })
+    }
+    async waitForElementDeath(selector, disconnectOnPageChange = false) {
+        return new Promise((resolve) => {   
+            const observer = new MutationObserver(async () => {
+                if (!document.querySelector(selector)) {
+                    resolve(true)
+                    observer.disconnect()
+                }
+            })
+    
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+            })
+
+            if (disconnectOnPageChange) {
+                function disconnect() {
+                    observer.disconnect()
+                    this.removeEventListener("page", disconnect)
+                }
+                this.addEventListener("page", disconnect)
+            }
+        })
+    }
+    async _listenForNonPageChanges(selector, event, eventMessage, isRecursive, reRunGmMain = false){
+        if (isRecursive) return
+        if (await this.waitForElement(selector, null, true)) {
+            this.log.debug("[Navigation] " + eventMessage);
+            this.dispatchEvent(new Event(event));
+            if (await this.waitForElementDeath(selector, true)) {
+                if (this.lastPathStr === location.pathname && !reRunGmMain) {
+                    this._listenForNonPageChanges(selector, event, eventMessage)
+                } else if (this.lastPathStr === location.pathname && reRunGmMain)  {
+                    this.gmMain(true)
+                }
+            }
+        }
+    }
+    gmMain(isRecursive) {
         const location = window.location;
         this.log.debug(URL, window.location);
 
@@ -386,26 +467,43 @@ class Stash extends EventTarget {
             this.log.debug('[Navigation] Wall-Markers Page');
             this.dispatchEvent(new Event('page:markers'));
         }
+// create scene page
+        else if (this.matchUrl(location, /\/scenes\/new/)) {
+            this.log.debug('[Navigation] Create Scene Page');
+            this.dispatchEvent(new Event('page:scene:new'));
+        }
         // scene page
         else if (this.matchUrl(location, /\/scenes\/\d+/)) {
             this.log.debug('[Navigation] Scene Page');
             this.dispatchEvent(new Event('page:scene'));
+
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-details-panel']", "page:scene:details", "Scene Page - Details", isRecursive);
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-queue-panel']", "page:scene:queue", "Scene Page - Queue", isRecursive);
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-markers-panel']", "page:scene:markers", "Scene Page - Markers", isRecursive);
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-video-filter-panel']", "page:scene:filters", "Scene Page - Filters", isRecursive);
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-file-info-panel']", "page:scene:file-info", "Scene Page - File Info", isRecursive);
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-edit-panel']", "page:scene:edit", "Scene Page - Edit", isRecursive);
         }
         // scenes wall
         else if (this.matchUrl(location, /\/scenes\?/)) {
+            this.log.debug('[Navigation] Wall-Scenes Page');
             this.processTagger();
             this.dispatchEvent(new Event('page:scenes'));
         }
 
-        // images wall
-        if (this.matchUrl(location, /\/images\?/)) {
-            this.log.debug('[Navigation] Wall-Images Page');
-            this.dispatchEvent(new Event('page:images'));
-        }
         // image page
-        if (this.matchUrl(location, /\/images\/\d+/)) {
+        else if (this.matchUrl(location, /\/images\/\d+/)) {
             this.log.debug('[Navigation] Image Page');
             this.dispatchEvent(new Event('page:image'));
+
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-details-panel']", "page:image:details", "Image Page - Details");
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-file-info-panel']", "page:image:details", "Image Page - File Info");
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-edit-panel']", "page:image:details", "Image Page - Edit");
+        }
+        // images wall
+        else if (this.matchUrl(location, /\/images\?/)) {
+            this.log.debug('[Navigation] Wall-Images Page');
+            this.dispatchEvent(new Event('page:images'));
         }
 
         // movie scenes page
@@ -425,66 +523,72 @@ class Stash extends EventTarget {
             this.dispatchEvent(new Event('page:movies'));
         }
 
+        // gallery add page
+        else if (this.matchUrl(location, /\/galleries\/\d+\/add/)) {
+            this.log.debug('[Navigation] Gallery Add Page');
+            this.dispatchEvent(new Event('page:gallery:add'));
+        }
+        // create gallery page
+        else if (this.matchUrl(location, /\/galleries\/new/)) {
+            this.log.debug('[Navigation] Create Gallery Page');
+            this.dispatchEvent(new Event('page:gallery:new'));
+        }
+        // gallery page
+        else if (this.matchUrl(location, /\/galleries\/\d+/)) {
+            this.log.debug('[Navigation] Gallery Page');
+            this.dispatchEvent(new Event('page:gallery'));
+            this.log.debug('[Navigation] Gallery Page - Images');
+            this.dispatchEvent(new Event('page:gallery:images'));
+
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-details-panel']", "page:gallery:details", "Gallery Page - Details");
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-file-info-panel']", "page:gallery:file-info", "Gallery Page - File Info");
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-chapter-panel']", "page:gallery:chapters", "Gallery Page - Chapters");
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-edit-panel']", "page:gallery:edit", "Gallery Page - Edit");
+        }
         // galleries wall
-        if (this.matchUrl(location, /\/galleries\?/)) {
+        else if (this.matchUrl(location, /\/galleries\?/)) {
             this.log.debug('[Navigation] Wall-Galleries Page');
             this.dispatchEvent(new Event('page:galleries'));
         }
-        // gallery page
-        if (this.matchUrl(location, /\/galleries\/\d+/)) {
-            this.log.debug('[Navigation] Gallery Page');
-            this.dispatchEvent(new Event('page:gallery'));
-        }
 
-        // performer scenes page
-        if (this.matchUrl(location, /\/performers\/\d+\?/)) {
-            this.log.debug('[Navigation] Performer Page - Scenes');
-            this.processTagger();
-            this.dispatchEvent(new Event('page:performer:scenes'));
-        }
-        // performer appearswith page
-        if (this.matchUrl(location, /\/performers\/\d+\/appearswith/)) {
-            this.log.debug('[Navigation] Performer Page - Appears With');
-            this.processTagger();
-            this.dispatchEvent(new Event('page:performer:performers'));
-        }
         // performer galleries page
         else if (this.matchUrl(location, /\/performers\/\d+\/galleries/)) {
             this.log.debug('[Navigation] Performer Page - Galleries');
             this.dispatchEvent(new Event('page:performer:galleries'));
+        }
+        // performer images page
+        else if (this.matchUrl(location, /\/performers\/\d+\/images/)) {
+            this.log.debug('[Navigation] Performer Page - Images');
+            this.dispatchEvent(new Event('page:performer:images'));
         }
         // performer movies page
         else if (this.matchUrl(location, /\/performers\/\d+\/movies/)) {
             this.log.debug('[Navigation] Performer Page - Movies');
             this.dispatchEvent(new Event('page:performer:movies'));
         }
-        // performer page
-        else if (this.matchUrl(location, /\/performers\//)) {
-            this.log.debug('[Navigation] Performers Page');
-            this.dispatchEvent(new Event('page:performer'));
-            this.dispatchEvent(new Event('page:performer:details'));
+        // performer appearswith page
+        else if (this.matchUrl(location, /\/performers\/\d+\/appearswith/)) {
+            this.log.debug('[Navigation] Performer Page - Appears With');
+            this.processTagger();
+            this.dispatchEvent(new Event('page:performer:performers'));
+        }
+        // performer movies page
+        else if (this.matchUrl(location, /\/performers\/\d+\/movies/)) {
+            this.log.debug('[Navigation] Performer Page - Movies');
+            this.dispatchEvent(new Event('page:performer:movies'));
+        }
+        // create performer page
+        else if (this.matchUrl(location, /\/performers\/new/)) {
+            this.log.debug('[Navigation] Create Performer Page');
+            this.dispatchEvent(new Event('page:performer:new'));
+        }
+        // performer scenes page
+        else if (this.matchUrl(location, /\/performers\/\d+\?/)) {
+            this.log.debug('[Navigation] Performer Page - Scenes');
+            this.processTagger();
+            this.dispatchEvent(new Event('page:performer:scenes'));
 
-            waitForElementClass('performer-tabs', (className, targetNode) => {
-                const observerOptions = {
-                    childList: true
-                }
-                const observer = new MutationObserver(mutations => {
-                    let isPerformerEdit = false;
-                    mutations.forEach(mutation => {
-                        mutation.addedNodes.forEach(node => {
-                            if (node.id === 'performer-edit') {
-                                isPerformerEdit = true;
-                            }
-                        });
-                    });
-                    if (isPerformerEdit) {
-                        this.dispatchEvent(new Event('page:performer:edit'));
-                    } else {
-                        this.dispatchEvent(new Event('page:performer:details'));
-                    }
-                });
-                observer.observe(targetNode[0], observerOptions);
-            });
+            this._listenForNonPageChanges("#performer-edit", "page:performer:edit", "Performer Page - Edit", false, true);
         }
         // performers wall
         else if (this.matchUrl(location, /\/performers\?/)) {
@@ -493,7 +597,7 @@ class Stash extends EventTarget {
         }
 
         // studio galleries page
-        if (this.matchUrl(location, /\/studios\/\d+\/galleries/)) {
+        else if (this.matchUrl(location, /\/studios\/\d+\/galleries/)) {
             this.log.debug('[Navigation] Studio Page - Galleries');
             this.dispatchEvent(new Event('page:studio:galleries'));
         }
@@ -517,11 +621,18 @@ class Stash extends EventTarget {
             this.log.debug('[Navigation] Studio Page - Child Studios');
             this.dispatchEvent(new Event('page:studio:childstudios'));
         }
+        // create studio page
+        else if (this.matchUrl(location, /\/studios\/new/)) {
+            this.log.debug('[Navigation] Create Studio Page');
+            this.dispatchEvent(new Event('page:studio:new'));
+        }
         // studio scenes page
         else if (this.matchUrl(location, /\/studios\/\d+\?/)) {
             this.log.debug('[Navigation] Studio Page - Scenes');
             this.processTagger();
             this.dispatchEvent(new Event('page:studio:scenes'));
+
+            this._listenForNonPageChanges("#studio-edit", "page:studio:edit", "Studio Page - Edit", false, true);
         }
         // studio page
         else if (this.matchUrl(location, /\/studios\/\d+/)) {
@@ -535,7 +646,7 @@ class Stash extends EventTarget {
         }
 
         // tag galleries page
-        if (this.matchUrl(location, /\/tags\/\d+\/galleries/)) {
+        else if (this.matchUrl(location, /\/tags\/\d+\/galleries/)) {
             this.log.debug('[Navigation] Tag Page - Galleries');
             this.dispatchEvent(new Event('page:tag:galleries'));
         }
@@ -554,21 +665,23 @@ class Stash extends EventTarget {
             this.log.debug('[Navigation] Tag Page - Performers');
             this.dispatchEvent(new Event('page:tag:performers'));
         }
+        // create tag page
+        else if (this.matchUrl(location, /\/tags\/new/)) {
+            this.log.debug('[Navigation] Create Tag Page');
+            this.dispatchEvent(new Event('page:tag:new'));
+        }
         // tag scenes page
         else if (this.matchUrl(location, /\/tags\/\d+\?/)) {
             this.log.debug('[Navigation] Tag Page - Scenes');
             this.processTagger();
             this.dispatchEvent(new Event('page:tag:scenes'));
+
+            this._listenForNonPageChanges("#tag-edit", "page:tag:edit", "Tag Page - Edit", false, true);
         }
         // tag page
         else if (this.matchUrl(location, /\/tags\/\d+/)) {
             this.log.debug('[Navigation] Tag Page');
             this.dispatchEvent(new Event('page:tag'));
-        }
-        // tags any page
-        if (this.matchUrl(location, /\/tags\/\d+/)) {
-            this.log.debug('[Navigation] Tag Page - Any');
-            this.dispatchEvent(new Event('page:tag:any'));
         }
         // tags wall
         else if (this.matchUrl(location, /\/tags\?/)) {
@@ -577,10 +690,35 @@ class Stash extends EventTarget {
         }
 
         // settings page tasks tab
-        if (this.matchUrl(location, /\/settings\?tab=tasks/)) {
+        else if (this.matchUrl(location, /\/settings\?tab=tasks/)) {
             this.log.debug('[Navigation] Settings Page Tasks Tab');
             this.dispatchEvent(new Event('page:settings:tasks'));
             this.hidePluginTasks();
+        }
+        // settings page library tab
+        else if (this.matchUrl(location, /\/settings\?tab=library/)) {
+            this.log.debug('[Navigation] Settings Page Library Tab');
+            this.dispatchEvent(new Event('page:settings:library'));
+        }
+        // settings page interface tab
+        else if (this.matchUrl(location, /\/settings\?tab=interface/)) {
+            this.log.debug('[Navigation] Settings Page Interface Tab');
+            this.dispatchEvent(new Event('page:settings:interface'));
+        }
+        // settings page security tab
+        else if (this.matchUrl(location, /\/settings\?tab=security/)) {
+            this.log.debug('[Navigation] Settings Page Security Tab');
+            this.dispatchEvent(new Event('page:settings:security'));
+        }
+        // settings page metadata providers tab
+        else if (this.matchUrl(location, /\/settings\?tab=metadata-providers/)) {
+            this.log.debug('[Navigation] Settings Page Metadata Providers Tab');
+            this.dispatchEvent(new Event('page:settings:metadata-providers'));
+        }
+        // settings page services tab
+        else if (this.matchUrl(location, /\/settings\?tab=services/)) {
+            this.log.debug('[Navigation] Settings Page Services Tab');
+            this.dispatchEvent(new Event('page:settings:services'));
         }
         // settings page system tab
         else if (this.matchUrl(location, /\/settings\?tab=system/)) {
@@ -588,18 +726,50 @@ class Stash extends EventTarget {
             this.createSettings();
             this.dispatchEvent(new Event('page:settings:system'));
         }
-        // settings page (defaults to tasks tab)
-        else if (this.matchUrl(location, /\/settings/)) {
-            this.log.debug('[Navigation] Settings Page Tasks Tab');
-            this.dispatchEvent(new Event('page:settings:tasks'));
-            this.hidePluginTasks();
+        // settings page plugins tab
+        else if (this.matchUrl(location, /\/settings\?tab=plugins/)) {
+            this.log.debug('[Navigation] Settings Page Plugins Tab');
+            this.dispatchEvent(new Event('page:settings:plugins'));
+        }
+        // settings page logs tab
+        else if (this.matchUrl(location, /\/settings\?tab=logs/)) {
+            this.log.debug('[Navigation] Settings Page Logs Tab');
+            this.dispatchEvent(new Event('page:settings:logs'));
+        }
+        // settings page tools tab
+        else if (this.matchUrl(location, /\/settings\?tab=tools/)) {
+            this.log.debug('[Navigation] Settings Page Tools Tab');
+            this.dispatchEvent(new Event('page:settings:tools'));
+        }
+        // settings page changelog tab
+        else if (this.matchUrl(location, /\/settings\?tab=changelog/)) {
+            this.log.debug('[Navigation] Settings Page Changelog Tab');
+            this.dispatchEvent(new Event('page:settings:changelog'));
+        }
+        // settings page about tab
+        else if (this.matchUrl(location, /\/settings\?tab=about/)) {
+            this.log.debug('[Navigation] Settings Page About Tab');
+            this.dispatchEvent(new Event('page:settings:about'));
         }
 
         // stats page
-        if (this.matchUrl(location, /\/stats/)) {
+        else if (this.matchUrl(location, /\/stats/)) {
             this.log.debug('[Navigation] Stats Page');
             this.dispatchEvent(new Event('page:stats'));
         }
+
+        // home page
+        else if (this.matchUrl(location, /\/$/)) {
+            this.log.debug('[Navigation] Home Page');
+            this.dispatchEvent(new Event('page:home'));
+
+            this._listenForNonPageChanges(".recommendations-container-edit", "page:home:edit", "Home Page - Edit", false, true);
+        }
+    }
+    addEventListeners(events, callback) {
+        events.forEach((event) => {
+            this.addEventListener(event, callback);
+        });
     }
     hidePluginTasks() {
         // hide userscript functions plugin tasks
@@ -958,7 +1128,7 @@ class Stash extends EventTarget {
     }
 }
 
-stash = new Stash();
+window.stash = new Stash();
 
 function waitForElementClass(elementId, callBack, time) {
     time = (typeof time !== 'undefined') ? time : 100;
