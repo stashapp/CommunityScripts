@@ -687,7 +687,7 @@ function waitForElementBySelector(selector, callback, time) {
         if (element != null) {
             callback(selector, element);
         } else {
-            querySelector(selector, callback);
+            waitForElementBySelector(selector, callback);
         }
     }, time);
 }
