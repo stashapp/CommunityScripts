@@ -682,10 +682,14 @@ stash = new Stash();
 
 function waitForElementBySelector(selector, callback, time) {
     time = time ?? 100;
-    const elements = document.querySelectorAll(selector);
-    return elements?.length > 0
-        ? callback(selector, elements)
-        : setTimeout(waitForElementBySelector, time, selector, callback, time);
+    window.setTimeout(() => {
+        const element = document.querySelector(selector);
+        if (element != null) {
+            callback(selector, element);
+        } else {
+            querySelector(selector, callback);
+        }
+    }, time);
 }
 
 function waitForElementClass(elementId, callback, time) {
@@ -695,14 +699,15 @@ function waitForElementId(elementId, callback, delay) {
     waitForElementBySelector(`#${elementId}`, callback, delay);
 }
 
-function waitForElementByXpath(xpath, callback, delay) {
-    delay = delay ?? 100;
-    time = (typeof time !== 'undefined') ? time : 100;
+function waitForElementByXpath(xpath, callback, time) {
+    time = time ?? 100;
     window.setTimeout(() => {
-        const elements = getElementByXpath(xpath);
-        return elements?.length > 0
-            ? callback(selector, elements)
-            : waitForElementByXpath(xpath, callback);
+        const element = getElementByXpath(xpath);
+        if (element) {
+            callback(xpath, element);
+        } else {
+            waitForElementByXpath(xpath, callback);
+        }
     }, time);
 }
 
