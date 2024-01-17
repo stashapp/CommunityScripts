@@ -417,7 +417,7 @@ class Stash extends EventTarget {
                 subtree: true,
             })
 
-const stash = this
+            const stash = this
             if (disconnectOnPageChange) {
                 function disconnect() {
                     observer.disconnect()
@@ -441,7 +441,7 @@ const stash = this
                 subtree: true,
             })
 
-const stash = this
+            const stash = this
             if (disconnectOnPageChange) {
                 function disconnect() {
                     observer.disconnect()
