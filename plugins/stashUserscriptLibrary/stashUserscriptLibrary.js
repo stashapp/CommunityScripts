@@ -45,18 +45,20 @@ class Stash extends EventTarget {
         this._pageUrlCheckInterval = pageUrlCheckInterval;
         this._detectReRenders = detectReRenders;
         this.fireOnHashChangesToo = true;
-        this.pageURLCheckTimer = setInterval(() => {
-            // Loop every 100 ms
-            if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash) || (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)) {
-                this.lastPathStr = location.pathname;
-                this.lastQueryStr = location.search;
-                this.lastHashStr = location.hash;
-                if (this._detectReRenders) document.querySelector(".main > div").setAttribute("stashUserscriptLibrary", "");
-                this.log.debug('[Navigation] Page Changed');
-                this.dispatchEvent(new Event('page'));
-                this.gmMain();
-            }
-        }, this._pageUrlCheckInterval);
+        waitForElementQuerySelector(".main > div", () => {
+            this.pageURLCheckTimer = setInterval(() => {
+                // Loop every 100 ms
+                if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash) || (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)) {
+                    this.lastPathStr = location.pathname;
+                    this.lastQueryStr = location.search;
+                    this.lastHashStr = location.hash;
+                    if (this._detectReRenders) document.querySelector(".main > div").setAttribute("stashUserscriptLibrary", "");
+                    this.log.debug('[Navigation] Page Changed');
+                    this.dispatchEvent(new Event('page'));
+                    this.gmMain();
+                }
+            }, this._pageUrlCheckInterval);
+        }, 1)
         stashListener.addEventListener('response', (evt) => {
             if (evt.detail.data?.plugins) {
                 this.getPluginVersion(evt.detail);
@@ -497,8 +499,8 @@ class Stash extends EventTarget {
             this.dispatchEvent(new Event('page:image'));
 
             this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-details-panel']", "page:image:details", "Image Page - Details");
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-file-info-panel']", "page:image:details", "Image Page - File Info");
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-edit-panel']", "page:image:details", "Image Page - Edit");
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-file-info-panel']", "page:image:file-info", "Image Page - File Info");
+            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-edit-panel']", "page:image:edit", "Image Page - Edit");
         }
         // images wall
         else if (this.matchUrl(location, /\/images\?/)) {
@@ -1130,6 +1132,18 @@ class Stash extends EventTarget {
 
 window.stash = new Stash();
 
+function waitForElementQuerySelector(query, callBack, time) {
+    time = (typeof time !== 'undefined') ? time : 100;
+    window.setTimeout(() => {
+        const element = document.querySelector(query);
+        if (element) {
+            callBack(query, element);
+        } else {
+            waitForElementQuerySelector(query, callBack, time);
+        }
+    }, time);
+}
+
 function waitForElementClass(elementId, callBack, time) {
     time = (typeof time !== 'undefined') ? time : 100;
     window.setTimeout(() => {
@@ -1137,7 +1151,7 @@ function waitForElementClass(elementId, callBack, time) {
         if (element.length > 0) {
             callBack(elementId, element);
         } else {
-            waitForElementClass(elementId, callBack);
+            waitForElementClass(elementId, callBack, time);
         }
     }, time);
 }
@@ -1149,7 +1163,7 @@ function waitForElementId(elementId, callBack, time) {
         if (element != null) {
             callBack(elementId, element);
         } else {
-            waitForElementId(elementId, callBack);
+            waitForElementId(elementId, callBack, time);
         }
     }, time);
 }
@@ -1161,7 +1175,7 @@ function waitForElementByXpath(xpath, callBack, time) {
         if (element) {
             callBack(xpath, element);
         } else {
-            waitForElementByXpath(xpath, callBack);
+            waitForElementByXpath(xpath, callBack, time);
         }
     }, time);
 }
