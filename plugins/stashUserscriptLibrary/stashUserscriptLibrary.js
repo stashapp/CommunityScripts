@@ -417,10 +417,11 @@ class Stash extends EventTarget {
                 subtree: true,
             })
 
+const stash = this
             if (disconnectOnPageChange) {
                 function disconnect() {
                     observer.disconnect()
-                    this.removeEventListener("page", disconnect)
+                    stash.removeEventListener("page", disconnect)
                 }
                 this.addEventListener("page", disconnect)
             }
@@ -440,10 +441,11 @@ class Stash extends EventTarget {
                 subtree: true,
             })
 
+const stash = this
             if (disconnectOnPageChange) {
                 function disconnect() {
                     observer.disconnect()
-                    this.removeEventListener("page", disconnect)
+                    stash.removeEventListener("page", disconnect)
                 }
                 this.addEventListener("page", disconnect)
             }
