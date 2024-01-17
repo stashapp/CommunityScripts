@@ -48,14 +48,17 @@ class Stash extends EventTarget {
         waitForElementQuerySelector(".main > div", () => {
             this.pageURLCheckTimer = setInterval(() => {
                 // Loop every 100 ms
-                if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash) || (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)) {
+                if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash) || this.lastHref !== location.href || (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)) {
+                    this.log.debug('[Navigation] Page Changed');
+                    this.dispatchEvent(new Event('page'));
+                    this.gmMain(false, this.lastHref);
                     this.lastPathStr = location.pathname;
                     this.lastQueryStr = location.search;
                     this.lastHashStr = location.hash;
-                    if (this._detectReRenders) document.querySelector(".main > div").setAttribute("stashUserscriptLibrary", "");
-                    this.log.debug('[Navigation] Page Changed');
-                    this.dispatchEvent(new Event('page'));
-                    this.gmMain();
+                    this.lastHref = location.href;
+                    waitForElementQuerySelector(".main > div", (query, element) => {
+                        if (this._detectReRenders) element.setAttribute("stashUserscriptLibrary", "");
+                    }, 10)
                 }
             }, this._pageUrlCheckInterval);
         }, 1)
@@ -384,7 +387,7 @@ class Stash extends EventTarget {
     get serverUrl() {
         return window.location.origin;
     }
-    async waitForElement(selector, timeout = null, disconnectOnPageChange = false) {
+    async waitForElement(selector, timeout = null, location = document.body, disconnectOnPageChange = false) {
         return new Promise((resolve) => {
             if (document.querySelector(selector)) {
                 return resolve(document.querySelector(selector))
@@ -409,7 +412,7 @@ class Stash extends EventTarget {
                 }
             })
     
-            observer.observe(document.body, {
+            observer.observe(location, {
                 childList: true,
                 subtree: true,
             })
@@ -423,7 +426,7 @@ class Stash extends EventTarget {
             }
         })
     }
-    async waitForElementDeath(selector, disconnectOnPageChange = false) {
+    async waitForElementDeath(selector, location = document.body, disconnectOnPageChange = false) {
         return new Promise((resolve) => {   
             const observer = new MutationObserver(async () => {
                 if (!document.querySelector(selector)) {
@@ -432,7 +435,7 @@ class Stash extends EventTarget {
                 }
             })
     
-            observer.observe(document.body, {
+            observer.observe(location, {
                 childList: true,
                 subtree: true,
             })
@@ -446,27 +449,98 @@ class Stash extends EventTarget {
             }
         })
     }
-    async _listenForNonPageChanges(selector, event, eventMessage, isRecursive = false, reRunGmMain = false){
+    async _listenForNonPageChanges({selector = "", location = document.body, listenType = "", event = "", eventMessage = "", isRecursive = false, reRunGmMain = false, condition = () => true, listenDefaultTab = true, callback = () => {}} = {}){
         if (isRecursive) return
-        if (await this.waitForElement(selector, null, true)) {
+        if (listenType === "tabs") {
+            const locationElement = await this.waitForElement(location, 10000, document.body, true)
+            const stash = this
+            let previousEvent = ""
+            function listenForTabClicks(domEvent) {
+                const clickedChild = domEvent.target ? domEvent.target : domEvent;
+                if(!clickedChild.classList?.contains("nav-link")) return
+                const tagName = clickedChild.getAttribute("data-rb-event-key")
+                const parentEvent = tagName.split("-")[0]
+                const childEvent = tagName.split("-").slice(1, -1).join("-")
+                event = `page:${parentEvent}:${childEvent}`
+                if (previousEvent === event || !condition()) return
+                previousEvent = event
+                stash.log.debug("[Navigation] " + `${parentEvent[0].toUpperCase() + parentEvent.slice(1)} Page - ${childEvent[0].toUpperCase() + childEvent.slice(1)}`);
+                stash.dispatchEvent(new Event(event));
+            }
+            if (listenDefaultTab) listenForTabClicks(locationElement.querySelector(".nav-link.active"))
+            locationElement.addEventListener("click", listenForTabClicks);
+            function removeEventListenerOnPageChange() {
+                locationElement.removeEventListener("click", listenForTabClicks)
+                stash.removeEventListener("page", removeEventListenerOnPageChange)
+            }
+            stash.addEventListener("page", removeEventListenerOnPageChange)
+        } else if (await this.waitForElement(selector, null, location, true)) {
             this.log.debug("[Navigation] " + eventMessage);
             this.dispatchEvent(new Event(event));
-            if (await this.waitForElementDeath(selector, true)) {
-                if (this.lastPathStr === location.pathname && !reRunGmMain) {
-                    this._listenForNonPageChanges(selector, event, eventMessage)
-                } else if (this.lastPathStr === location.pathname && reRunGmMain)  {
-                    this.gmMain(true)
+            if (await this.waitForElementDeath(selector, location, true)) {
+                if (this.lastPathStr === window.location.pathname && !reRunGmMain) {
+                    this._listenForNonPageChanges({selector: selector, event: event, eventMessage: eventMessage})
+                } else if (this.lastPathStr === window.location.pathname && reRunGmMain)  {
+                    this.gmMain(true, this.lastHref)
                 }
             }
         }
+    callback()
     }
-    gmMain(isRecursive = false) {
+    gmMain(isRecursive = false, lastHref) {
         const location = window.location;
         this.log.debug(URL, window.location);
 
-        // marker wall
+        // Run parent page specific functions
+        // detect performer edit page
+        if (this.matchUrl(location, /\/performers\/\d+/)) {
+            if(!new RegExp(/\/performers\/\d+/).test(this.lastHref)){
+                this.log.debug('[Navigation] Performer Page');
+                this.processTagger();
+                this.dispatchEvent(new Event('page:performer'));
+            }
+
+            this._listenForNonPageChanges({selector: "#performer-edit", event: "page:performer:edit", eventMessage: "Performer Page - Edit", reRunGmMain: true, callback: () => {
+                if (this._detectReRenders) {
+                    this.log.debug('[Navigation] Performer Page');
+                    this.dispatchEvent(new Event('page:performer'));  
+                }
+            }})
+        }
+        // detect studio edit page
+        else if (this.matchUrl(location, /\/studios\/\d+/)) {
+            if(!new RegExp(/\/studios\/\d+/).test(this.lastHref)){
+                this.log.debug('[Navigation] Studio Page');
+                this.processTagger();
+                this.dispatchEvent(new Event('page:studio'));
+            }
+
+            this._listenForNonPageChanges({selector: "#studio-edit", event: "page:studio:edit", eventMessage: "Studio Page - Edit", reRunGmMain: true, callback: () => {
+                if (this._detectReRenders) {
+                    this.log.debug('[Navigation] Studio Page');
+                    this.dispatchEvent(new Event('page:studio'));    
+                }
+            }})
+        }
+        // detect tag edit page
+        else if (this.matchUrl(location, /\/tags\/\d+/)) {
+            if(!new RegExp(/\/tags\/\d+/).test(this.lastHref)){
+                this.log.debug('[Navigation] Tag Page');
+                this.processTagger();
+                this.dispatchEvent(new Event('page:tag'));
+            }
+
+            this._listenForNonPageChanges({selector: "#tag-edit", event: "page:tag:edit", eventMessage: "Tag Page - Edit", reRunGmMain: true, callback: () => {
+                if (this._detectReRenders) {
+                    this.log.debug('[Navigation] Tag Page');
+                    this.dispatchEvent(new Event('page:tag'));  
+                }
+            }})
+        }
+
+        // markers page
         if (this.matchUrl(location, /\/scenes\/markers/)) {
-            this.log.debug('[Navigation] Wall-Markers Page');
+            this.log.debug('[Navigation] Markers Page');
             this.dispatchEvent(new Event('page:markers'));
         }
         // create scene page
@@ -478,17 +552,16 @@ class Stash extends EventTarget {
         else if (this.matchUrl(location, /\/scenes\/\d+/)) {
             this.log.debug('[Navigation] Scene Page');
             this.dispatchEvent(new Event('page:scene'));
-
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-details-panel']", "page:scene:details", "Scene Page - Details", isRecursive);
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-queue-panel']", "page:scene:queue", "Scene Page - Queue", isRecursive);
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-markers-panel']", "page:scene:markers", "Scene Page - Markers", isRecursive);
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-video-filter-panel']", "page:scene:filters", "Scene Page - Filters", isRecursive);
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-file-info-panel']", "page:scene:file-info", "Scene Page - File Info", isRecursive);
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='scene-edit-panel']", "page:scene:edit", "Scene Page - Edit", isRecursive);
+            
+            this._listenForNonPageChanges({
+                location: ".scene-tabs .nav-tabs",
+                listenType: "tabs",
+                isRecursive: isRecursive
+            })
         }
-        // scenes wall
+        // scenes page
         else if (this.matchUrl(location, /\/scenes\?/)) {
-            this.log.debug('[Navigation] Wall-Scenes Page');
+            this.log.debug('[Navigation] Scenes Page');
             this.processTagger();
             this.dispatchEvent(new Event('page:scenes'));
         }
@@ -498,13 +571,15 @@ class Stash extends EventTarget {
             this.log.debug('[Navigation] Image Page');
             this.dispatchEvent(new Event('page:image'));
 
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-details-panel']", "page:image:details", "Image Page - Details");
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-file-info-panel']", "page:image:file-info", "Image Page - File Info");
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='image-edit-panel']", "page:image:edit", "Image Page - Edit");
+            this._listenForNonPageChanges({
+                location: ".image-tabs .nav-tabs",
+                listenType: "tabs",
+                isRecursive: isRecursive
+            })
         }
-        // images wall
+        // images page
         else if (this.matchUrl(location, /\/images\?/)) {
-            this.log.debug('[Navigation] Wall-Images Page');
+            this.log.debug('[Navigation] Images Page');
             this.dispatchEvent(new Event('page:images'));
         }
 
@@ -519,37 +594,56 @@ class Stash extends EventTarget {
             this.log.debug('[Navigation] Movie Page');
             this.dispatchEvent(new Event('page:movie'));
         }
-        // movies wall
+        // movies page
         else if (this.matchUrl(location, /\/movies\?/)) {
-            this.log.debug('[Navigation] Wall-Movies Page');
+            this.log.debug('[Navigation] Movies Page');
             this.dispatchEvent(new Event('page:movies'));
         }
 
+                // create gallery page
+                else if (this.matchUrl(location, /\/galleries\/new/)) {
+                    this.log.debug('[Navigation] Create Gallery Page');
+                    this.dispatchEvent(new Event('page:gallery:new'));
+                }
         // gallery add page
         else if (this.matchUrl(location, /\/galleries\/\d+\/add/)) {
-            this.log.debug('[Navigation] Gallery Add Page');
-            this.dispatchEvent(new Event('page:gallery:add'));
-        }
-        // create gallery page
-        else if (this.matchUrl(location, /\/galleries\/new/)) {
-            this.log.debug('[Navigation] Create Gallery Page');
-            this.dispatchEvent(new Event('page:gallery:new'));
+            if(!new RegExp(/\/galleries\/\d+/).test(lastHref)){
+                this.log.debug('[Navigation] Gallery Page');
+                this.dispatchEvent(new Event('page:gallery'));
+                this._listenForNonPageChanges({selector: ".gallery-tabs .nav-tabs .nav-link.active", event: "page:gallery:details", eventMessage: "Gallery Page - Details"})
+            }
+
+            this.log.debug('[Navigation] Gallery Page - Add');
+            this.dispatchEvent(new Event('page:gallery:add'));  
+            
+            this._listenForNonPageChanges({
+                location: ".gallery-tabs .nav-tabs",
+                listenType: "tabs",
+                isRecursive: isRecursive,
+                listenDefaultTab: false
+            })
         }
         // gallery page
         else if (this.matchUrl(location, /\/galleries\/\d+/)) {
-            this.log.debug('[Navigation] Gallery Page');
-            this.dispatchEvent(new Event('page:gallery'));
+            if(!new RegExp(/\/galleries\/\d+/).test(lastHref)){
+                this.log.debug('[Navigation] Gallery Page');
+                this.dispatchEvent(new Event('page:gallery'));
+                this._listenForNonPageChanges({selector: ".gallery-tabs .nav-tabs .nav-link.active", event: "page:gallery:details", eventMessage: "Gallery Page - Details"})
+            }
+
             this.log.debug('[Navigation] Gallery Page - Images');
             this.dispatchEvent(new Event('page:gallery:images'));
 
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-details-panel']", "page:gallery:details", "Gallery Page - Details");
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-file-info-panel']", "page:gallery:file-info", "Gallery Page - File Info");
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-chapter-panel']", "page:gallery:chapters", "Gallery Page - Chapters");
-            this._listenForNonPageChanges(".nav-link.active[data-rb-event-key='gallery-edit-panel']", "page:gallery:edit", "Gallery Page - Edit");
+            this._listenForNonPageChanges({
+                location: ".gallery-tabs .nav-tabs",
+                listenType: "tabs",
+                isRecursive: isRecursive,
+                listenDefaultTab: false
+            })
         }
-        // galleries wall
+        // galleries page
         else if (this.matchUrl(location, /\/galleries\?/)) {
-            this.log.debug('[Navigation] Wall-Galleries Page');
+            this.log.debug('[Navigation] Galleries Page');
             this.dispatchEvent(new Event('page:galleries'));
         }
 
@@ -572,12 +666,7 @@ class Stash extends EventTarget {
         else if (this.matchUrl(location, /\/performers\/\d+\/appearswith/)) {
             this.log.debug('[Navigation] Performer Page - Appears With');
             this.processTagger();
-            this.dispatchEvent(new Event('page:performer:performers'));
-        }
-        // performer movies page
-        else if (this.matchUrl(location, /\/performers\/\d+\/movies/)) {
-            this.log.debug('[Navigation] Performer Page - Movies');
-            this.dispatchEvent(new Event('page:performer:movies'));
+            this.dispatchEvent(new Event('page:performer:appearswith'));
         }
         // create performer page
         else if (this.matchUrl(location, /\/performers\/new/)) {
@@ -587,14 +676,11 @@ class Stash extends EventTarget {
         // performer scenes page
         else if (this.matchUrl(location, /\/performers\/\d+\?/)) {
             this.log.debug('[Navigation] Performer Page - Scenes');
-            this.processTagger();
             this.dispatchEvent(new Event('page:performer:scenes'));
-
-            this._listenForNonPageChanges("#performer-edit", "page:performer:edit", "Performer Page - Edit", false, true);
         }
-        // performers wall
+        // performers page
         else if (this.matchUrl(location, /\/performers\?/)) {
-            this.log.debug('[Navigation] Wall-Performers Page');
+            this.log.debug('[Navigation] Performers Page');
             this.dispatchEvent(new Event('page:performers'));
         }
 
@@ -631,19 +717,11 @@ class Stash extends EventTarget {
         // studio scenes page
         else if (this.matchUrl(location, /\/studios\/\d+\?/)) {
             this.log.debug('[Navigation] Studio Page - Scenes');
-            this.processTagger();
             this.dispatchEvent(new Event('page:studio:scenes'));
-
-            this._listenForNonPageChanges("#studio-edit", "page:studio:edit", "Studio Page - Edit", false, true);
         }
-        // studio page
-        else if (this.matchUrl(location, /\/studios\/\d+/)) {
-            this.log.debug('[Navigation] Studio Page');
-            this.dispatchEvent(new Event('page:studio'));
-        }
-        // studios wall
+        // studios page
         else if (this.matchUrl(location, /\/studios\?/)) {
-            this.log.debug('[Navigation] Wall-Studios Page');
+            this.log.debug('[Navigation] Studios Page');
             this.dispatchEvent(new Event('page:studios'));
         }
 
@@ -675,27 +753,24 @@ class Stash extends EventTarget {
         // tag scenes page
         else if (this.matchUrl(location, /\/tags\/\d+\?/)) {
             this.log.debug('[Navigation] Tag Page - Scenes');
-            this.processTagger();
             this.dispatchEvent(new Event('page:tag:scenes'));
-
-            this._listenForNonPageChanges("#tag-edit", "page:tag:edit", "Tag Page - Edit", false, true);
         }
-        // tag page
-        else if (this.matchUrl(location, /\/tags\/\d+/)) {
-            this.log.debug('[Navigation] Tag Page');
-            this.dispatchEvent(new Event('page:tag'));
-        }
-        // tags wall
+        // tags page
         else if (this.matchUrl(location, /\/tags\?/)) {
-            this.log.debug('[Navigation] Wall-Tags Page');
+            this.log.debug('[Navigation] Tags Page');
             this.dispatchEvent(new Event('page:tags'));
         }
 
         // settings page tasks tab
         else if (this.matchUrl(location, /\/settings\?tab=tasks/)) {
+            if(!new RegExp(/\/settings\?/).test(this.lastHref)){
+                this.log.debug('[Navigation] Settings Page');
+                this.dispatchEvent(new Event('page:settings'));
+                this.hidePluginTasks();
+            }
+
             this.log.debug('[Navigation] Settings Page Tasks Tab');
             this.dispatchEvent(new Event('page:settings:tasks'));
-            this.hidePluginTasks();
         }
         // settings page library tab
         else if (this.matchUrl(location, /\/settings\?tab=library/)) {
@@ -765,7 +840,7 @@ class Stash extends EventTarget {
             this.log.debug('[Navigation] Home Page');
             this.dispatchEvent(new Event('page:home'));
 
-            this._listenForNonPageChanges(".recommendations-container-edit", "page:home:edit", "Home Page - Edit", false, true);
+            this._listenForNonPageChanges({selector: ".recommendations-container-edit", event: "page:home:edit", eventMessage: "Home Page - Edit", reRunGmMain: true})
         }
     }
     addEventListeners(events, callback, ...options) {
