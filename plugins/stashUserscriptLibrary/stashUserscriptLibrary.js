@@ -45,7 +45,7 @@ class Stash extends EventTarget {
         this._pageUrlCheckInterval = pageUrlCheckInterval;
         this._detectReRenders = detectReRenders;
         this.fireOnHashChangesToo = true;
-        waitForElementQuerySelector(".main > div", () => {
+        waitForElementQuerySelector(this._detectReRenders ? ".main > div" : "html", () => {
             this.pageURLCheckTimer = setInterval(() => {
                 // Loop every 100 ms
                 if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash) || this.lastHref !== location.href || (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)) {
@@ -56,8 +56,8 @@ class Stash extends EventTarget {
                     this.lastQueryStr = location.search;
                     this.lastHashStr = location.hash;
                     this.lastHref = location.href;
-                    waitForElementQuerySelector(".main > div", (query, element) => {
-                        if (this._detectReRenders) element.setAttribute("stashUserscriptLibrary", "");
+                    if (this._detectReRenders) waitForElementQuerySelector(".main > div", (query, element) => {
+                        element.setAttribute("stashUserscriptLibrary", "");
                     }, 10)
                 }
             }, this._pageUrlCheckInterval);
@@ -496,7 +496,7 @@ class Stash extends EventTarget {
         // Run parent page specific functions
         // detect performer edit page
         if (this.matchUrl(location, /\/performers\/\d+/)) {
-            if(!new RegExp(/\/performers\/\d+/).test(this.lastHref)){
+            if(!new RegExp(/\/performers\/\d+/).test(lastHref)){
                 this.log.debug('[Navigation] Performer Page');
                 this.processTagger();
                 this.dispatchEvent(new Event('page:performer'));
@@ -511,7 +511,7 @@ class Stash extends EventTarget {
         }
         // detect studio edit page
         else if (this.matchUrl(location, /\/studios\/\d+/)) {
-            if(!new RegExp(/\/studios\/\d+/).test(this.lastHref)){
+            if(!new RegExp(/\/studios\/\d+/).test(lastHref)){
                 this.log.debug('[Navigation] Studio Page');
                 this.processTagger();
                 this.dispatchEvent(new Event('page:studio'));
@@ -526,7 +526,7 @@ class Stash extends EventTarget {
         }
         // detect tag edit page
         else if (this.matchUrl(location, /\/tags\/\d+/)) {
-            if(!new RegExp(/\/tags\/\d+/).test(this.lastHref)){
+            if(!new RegExp(/\/tags\/\d+/).test(lastHref)){
                 this.log.debug('[Navigation] Tag Page');
                 this.processTagger();
                 this.dispatchEvent(new Event('page:tag'));
@@ -765,7 +765,7 @@ class Stash extends EventTarget {
 
         // settings page tasks tab
         else if (this.matchUrl(location, /\/settings\?tab=tasks/)) {
-            if(!new RegExp(/\/settings\?/).test(this.lastHref)){
+            if(!new RegExp(/\/settings\?/).test(lastHref)){
                 this.log.debug('[Navigation] Settings Page');
                 this.dispatchEvent(new Event('page:settings'));
                 this.hidePluginTasks();
