@@ -517,7 +517,7 @@ class Stash extends EventTarget {
     _dispatchPageEvent(event, addToHistory = true) {
         this.dispatchEvent(new CustomEvent(event, {
             detail: {
-event: event,
+                event: event,
                 lastEventState: {
                     lastPathStr: this._lastPathStr,
                     lastQueryStr: this._lastQueryStr,
