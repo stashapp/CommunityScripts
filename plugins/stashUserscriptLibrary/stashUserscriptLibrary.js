@@ -61,6 +61,7 @@ class Stash extends EventTarget {
                     (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)
                 ) {
                     this._dispatchPageEvent("stash:page", false)
+
                     this.gmMain({
                         lastPathStr: this._lastPathStr,
                         lastQueryStr: this._lastQueryStr,
@@ -68,10 +69,12 @@ class Stash extends EventTarget {
                         lastHref: this._lastHref,
                         lastStashPageEvent: this._lastStashPageEvent,
                     });
+
                     this._lastPathStr = location.pathname
                     this._lastQueryStr = location.search
                     this._lastHashStr = location.hash
                     this._lastHref = location.href
+
                     if (this._detectReRenders) {
                         this.waitForElement(".main > div", 10000).then((element) => {
                             element.setAttribute("stashUserscriptLibrary", "");
@@ -472,24 +475,34 @@ class Stash extends EventTarget {
     }
     async _listenForNonPageChanges({selector = "", location = document.body, listenType = "", event = "", recursive = false, reRunGmMain = false, condition = () => true, listenDefaultTab = true, callback = () => {}} = {}){
         if (recursive) return
+
         if (listenType === "tabs") {
             const locationElement = await this.waitForElement(location, 10000, document.body, true)
             const stash = this
             let previousEvent = ""
+
             function listenForTabClicks(domEvent) {
                 const clickedChild = domEvent.target ? domEvent.target : domEvent;
+
                 if(!clickedChild.classList?.contains("nav-link")) return
+
                 const tagName = clickedChild.getAttribute("data-rb-event-key")
                 const parentEvent = tagName.split("-")[0]
                 const childEvent = tagName.split("-").slice(1, -1).join("-")
+
                 event = `stash:page:${parentEvent}:${childEvent}`
+
                 if (previousEvent === event || !condition()) return
                 previousEvent = event
+
                 stash._dispatchPageEvent(`stash:page:any:${childEvent}`, false)
                 stash._dispatchPageEvent(event)
             }
+
             if (listenDefaultTab) listenForTabClicks(locationElement.querySelector(".nav-link.active"))
+
             locationElement.addEventListener("click", listenForTabClicks);
+
             function removeEventListenerOnPageChange() {
                 locationElement.removeEventListener("click", listenForTabClicks)
                 stash.removeEventListener("stash:page", removeEventListenerOnPageChange)
@@ -497,6 +510,7 @@ class Stash extends EventTarget {
             stash.addEventListener("stash:page", removeEventListenerOnPageChange)
         } else if (await this.waitForElement(selector, null, location, true)) {
             this._dispatchPageEvent(event)
+
             if (await this.waitForElementDeath(selector, location, true)) {
                 if (this._lastPathStr === window.location.pathname && !reRunGmMain) {
                     await this._listenForNonPageChanges({selector: selector, event: event})
@@ -542,6 +556,7 @@ class Stash extends EventTarget {
                 callBack: callBack,
                 manuallyHandleDispatchEvent: manuallyHandleDispatchEvent
             }
+
             return event
         } else {
             if (this._pageListeners[event] !== undefined) {
@@ -551,6 +566,7 @@ class Stash extends EventTarget {
             } else {
                 console.error(`Can't add page listener: Missing required argument(s) "event", "regex"`)
             }
+
             return false
         }
     }
@@ -566,6 +582,7 @@ class Stash extends EventTarget {
             } else {
                 console.error(`Can't remove page listener: Missing "event" argument`)
             }
+
             return false
         }
     }
