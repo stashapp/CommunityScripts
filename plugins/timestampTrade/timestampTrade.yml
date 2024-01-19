@@ -35,6 +35,10 @@ tasks:
     description: Submit markers to timestamp.trade
     defaultArgs:
       mode: submitScene
+  - name: 'Submit Scenes with linked movies'
+    description: Submit movie information to timestamp.trade
+    defaultArgs:
+      mode: submitMovieScene
   - name: 'Sync'
     description: Get markers for all scenes with a stashid
     defaultArgs:
