@@ -1,0 +1,11 @@
+name: Toastify JS
+description: Pure JavaScript library for better notification messages
+version: 1.12.0
+ui:
+  css:
+  - toastify.css
+  javascript:
+  - toastify.js
+
+# note - not minimized for more transparency around updates & diffs against source code
+# https://github.com/apvarun/toastify-js
