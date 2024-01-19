@@ -26,6 +26,6 @@ hooks:
       - Scene.Update.Post
 tasks:
   - name: 'process all'
-    description: Submit markers to timestamp.trade
+    description: Process all scenes and add extra tags if configured 
     defaultArgs:
       mode: processScenes
