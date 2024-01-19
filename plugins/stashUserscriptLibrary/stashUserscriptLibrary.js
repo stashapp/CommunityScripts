@@ -115,7 +115,7 @@ class Stash extends EventTarget {
         this.performers = {};
         this.userscripts = [];
         this._pageListeners = {};
-        this.assignPageListeners()
+        this._initDefaultPageListeners()
     }
     async getVersion() {
         const reqData = {
@@ -572,7 +572,7 @@ class Stash extends EventTarget {
     stopPageListener() {
         clearInterval(this._pageURLCheckTimerId)
     }
-    assignPageListeners() {
+    _initDefaultPageListeners() {
         this._pageListeners = {
             // scenes tab
             "stash:page:scenes": {
