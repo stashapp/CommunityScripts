@@ -93,11 +93,15 @@ def processVRTags(scene,tags):
                 found=True
     if found:
         if 'vrTag' in stash.get_configuration()['ui']:
-            vr_tag=stash.get_configuration()['ui']['vrTag']
-            if vr_tag:
-                tags.append(vr_tag)
-            else:
-                tags.append('VR')
+            if 'vrTag' in stash.get_configuration()['ui']:
+                vr_tag=stash.get_configuration()['ui']['vrTag']
+                if vr_tag:
+                    tags.append(vr_tag)
+                else:
+                    tags.append('VR')
+        else:
+            tags.append('VR')
+
         else:
             tags.append('VR')
     return None
@@ -142,8 +146,6 @@ if 'mode' in json_input['args']:
     PLUGIN_ARGS = json_input['args']["mode"]
     if 'processScenes' in PLUGIN_ARGS:
         processScenes()
-    elif 'test' in PLUGIN_ARGS:
-        log.debug(stash.get_configuration()['ui']['vrTag'])
 
 
 
