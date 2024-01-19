@@ -20,12 +20,12 @@ settings:
     description: Comma seperated list of studio number in your instance to tag with export_devor,FLAT for use with stash-vr-companion
     type: STRING
 hooks:
-  - name: process Scene
-    description: Makes Markers checking against timestamp.trade
+  - name: Process Scene
+    description: Adds extra tags to scenes
     triggeredBy:
       - Scene.Update.Post
 tasks:
-  - name: 'process all'
-    description: Process all scenes and add extra tags if configured 
+  - name: Process all
+    description: Process all scenes and add extra tags if configured
     defaultArgs:
       mode: processScenes

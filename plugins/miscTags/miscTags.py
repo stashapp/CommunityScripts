@@ -93,15 +93,11 @@ def processVRTags(scene,tags):
                 found=True
     if found:
         if 'vrTag' in stash.get_configuration()['ui']:
-            if 'vrTag' in stash.get_configuration()['ui']:
-                vr_tag=stash.get_configuration()['ui']['vrTag']
-                if vr_tag:
-                    tags.append(vr_tag)
-                else:
-                    tags.append('VR')
-        else:
-            tags.append('VR')
-
+            vr_tag=stash.get_configuration()['ui']['vrTag']
+            if vr_tag:
+                tags.append(vr_tag)
+            else:
+                tags.append('VR')
         else:
             tags.append('VR')
     return None
