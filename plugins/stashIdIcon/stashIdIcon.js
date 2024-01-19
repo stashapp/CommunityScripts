@@ -33,7 +33,6 @@
             if (studioData?.stash_ids.length) {
                 const el = createElementFromHTML(`<div class="studio-stashid-icon" title="Has StashID">`);
                 el.appendChild(createCheckmarkElement());
-
                 studioCard.appendChild(el);
             }
         }
@@ -44,7 +43,6 @@
             if (studioData?.stash_ids.length) {
                 const el = createElementFromHTML(`<div class="studio-stashid-icon" title="Has StashID">`);
                 el.appendChild(createCheckmarkElement());
-
                 studioCard.parentElement.appendChild(el);
             }
         }
