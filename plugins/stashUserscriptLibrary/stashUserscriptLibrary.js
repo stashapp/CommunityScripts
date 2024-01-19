@@ -45,23 +45,41 @@ class Stash extends EventTarget {
         this._pageUrlCheckInterval = pageUrlCheckInterval;
         this._detectReRenders = detectReRenders;
         this.fireOnHashChangesToo = true;
-        waitForElementQuerySelector(this._detectReRenders ? ".main > div" : "html", () => {
-            this.pageURLCheckTimer = setInterval(() => {
+        this._lastPathStr = "";
+        this._lastQueryStr = "";
+        this._lastHashStr = "";
+        this._lastHref = "";
+        this._lastStashPageEvent = "";
+        this.waitForElement(this._detectReRenders ? ".main > div" : "html").then(() => {
+            this._pageURLCheckTimerId = setInterval(() => {
                 // Loop every 100 ms
-                if (this.lastPathStr !== location.pathname || this.lastQueryStr !== location.search || (this.fireOnHashChangesToo && this.lastHashStr !== location.hash) || this.lastHref !== location.href || (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)) {
-                    this.log.debug('[Navigation] Page Changed');
-                    this.dispatchEvent(new Event('page'));
-                    this.gmMain(false, this.lastHref);
-                    this.lastPathStr = location.pathname;
-                    this.lastQueryStr = location.search;
-                    this.lastHashStr = location.hash;
-                    this.lastHref = location.href;
-                    if (this._detectReRenders) waitForElementQuerySelector(".main > div", (query, element) => {
-                        element.setAttribute("stashUserscriptLibrary", "");
-                    }, 10)
+                if (
+                    this._lastPathStr !== location.pathname ||
+                    this._lastQueryStr !== location.search ||
+                    (this.fireOnHashChangesToo && this._lastHashStr !== location.hash) ||
+                    this._lastHref !== location.href ||
+                    (!document.querySelector(".main > div[stashUserscriptLibrary]") && this._detectReRenders)
+                ) {
+                    this._dispatchPageEvent("stash:page", false)
+                    this.gmMain({
+                        lastPathStr: this._lastPathStr,
+                        lastQueryStr: this._lastQueryStr,
+                        lastHashStr: this._lastHashStr,
+                        lastHref: this._lastHref,
+                        lastStashPageEvent: this._lastStashPageEvent,
+                    });
+                    this._lastPathStr = location.pathname
+                    this._lastQueryStr = location.search
+                    this._lastHashStr = location.hash
+                    this._lastHref = location.href
+                    if (this._detectReRenders) {
+                        this.waitForElement(".main > div", 10000).then((element) => {
+                            element.setAttribute("stashUserscriptLibrary", "");
+                        })
+                    }
                 }
             }, this._pageUrlCheckInterval);
-        }, 1)
+        })
         stashListener.addEventListener('response', (evt) => {
             if (evt.detail.data?.plugins) {
                 this.getPluginVersion(evt.detail);
@@ -96,17 +114,18 @@ class Stash extends EventTarget {
         this.studios = {};
         this.performers = {};
         this.userscripts = [];
+        this._pageListeners = {};
+        this.assignPageListeners()
     }
     async getVersion() {
         const reqData = {
             "operationName": "",
             "variables": {},
             "query": `query version {
-    version {
-        version
-    }
-}
-`
+                version {
+                    version
+                }
+            }`
         };
         const data = await this.callGQL(reqData);
         const versionString = data.data.version.version;
@@ -267,10 +286,10 @@ class Stash extends EventTarget {
         };
         return this.callGQL(reqData);
     }
-    matchUrl(location, fragment) {
-        const regexp = concatRegexp(new RegExp(location.origin), fragment);
+    matchUrl(href, fragment) {
+        const regexp = concatRegexp(new RegExp(window.location.origin), fragment);
         this.log.debug(regexp, location.href.match(regexp));
-        return location.href.match(regexp) != null;
+        return href.match(regexp) != null;
     }
     createSettings() {
         waitForElementId('configuration-tabs-tabpane-system', async (elementId, el) => {
@@ -421,9 +440,9 @@ class Stash extends EventTarget {
             if (disconnectOnPageChange) {
                 function disconnect() {
                     observer.disconnect()
-                    stash.removeEventListener("page", disconnect)
+                    stash.removeEventListener("stash:page", disconnect)
                 }
-                this.addEventListener("page", disconnect)
+                stash.addEventListener("stash:page", disconnect)
             }
         })
     }
@@ -445,14 +464,14 @@ class Stash extends EventTarget {
             if (disconnectOnPageChange) {
                 function disconnect() {
                     observer.disconnect()
-                    stash.removeEventListener("page", disconnect)
+                    stash.removeEventListener("stash:page", disconnect)
                 }
-                this.addEventListener("page", disconnect)
+                stash.addEventListener("stash:page", disconnect)
             }
         })
     }
-    async _listenForNonPageChanges({selector = "", location = document.body, listenType = "", event = "", eventMessage = "", isRecursive = false, reRunGmMain = false, condition = () => true, listenDefaultTab = true, callback = () => {}} = {}){
-        if (isRecursive) return
+    async _listenForNonPageChanges({selector = "", location = document.body, listenType = "", event = "", recursive = false, reRunGmMain = false, condition = () => true, listenDefaultTab = true, callback = () => {}} = {}){
+        if (recursive) return
         if (listenType === "tabs") {
             const locationElement = await this.waitForElement(location, 10000, document.body, true)
             const stash = this
@@ -463,386 +482,431 @@ class Stash extends EventTarget {
                 const tagName = clickedChild.getAttribute("data-rb-event-key")
                 const parentEvent = tagName.split("-")[0]
                 const childEvent = tagName.split("-").slice(1, -1).join("-")
-                event = `page:${parentEvent}:${childEvent}`
+                event = `stash:page:${parentEvent}:${childEvent}`
                 if (previousEvent === event || !condition()) return
                 previousEvent = event
-                stash.log.debug("[Navigation] " + `${parentEvent[0].toUpperCase() + parentEvent.slice(1)} Page - ${childEvent[0].toUpperCase() + childEvent.slice(1)}`);
-                stash.dispatchEvent(new Event(event));
+                stash._dispatchPageEvent(`stash:page:any:${childEvent}`, false)
+                stash._dispatchPageEvent(event)
             }
             if (listenDefaultTab) listenForTabClicks(locationElement.querySelector(".nav-link.active"))
             locationElement.addEventListener("click", listenForTabClicks);
             function removeEventListenerOnPageChange() {
                 locationElement.removeEventListener("click", listenForTabClicks)
-                stash.removeEventListener("page", removeEventListenerOnPageChange)
+                stash.removeEventListener("stash:page", removeEventListenerOnPageChange)
             }
-            stash.addEventListener("page", removeEventListenerOnPageChange)
+            stash.addEventListener("stash:page", removeEventListenerOnPageChange)
         } else if (await this.waitForElement(selector, null, location, true)) {
-            this.log.debug("[Navigation] " + eventMessage);
-            this.dispatchEvent(new Event(event));
+            this._dispatchPageEvent(event)
             if (await this.waitForElementDeath(selector, location, true)) {
-                if (this.lastPathStr === window.location.pathname && !reRunGmMain) {
-                    this._listenForNonPageChanges({selector: selector, event: event, eventMessage: eventMessage})
-                } else if (this.lastPathStr === window.location.pathname && reRunGmMain)  {
-                    this.gmMain(true, this.lastHref)
+                if (this._lastPathStr === window.location.pathname && !reRunGmMain) {
+                    await this._listenForNonPageChanges({selector: selector, event: event})
+                } else if (this._lastPathStr === window.location.pathname && reRunGmMain)  {
+                    this.gmMain({
+                        recursive: true,
+                        lastPathStr: this._lastPathStr,
+                        lastQueryStr: this._lastQueryStr,
+                        lastHashStr: this._lastHashStr,
+                        lastHref: this._lastHref,
+                        lastStashPageEvent: this._lastStashPageEvent,
+                    });
                 }
             }
         }
     callback()
     }
-    gmMain(isRecursive = false, lastHref) {
-        const location = window.location;
-        this.log.debug(URL, window.location);
-
-        // Run parent page specific functions
-        // detect performer edit page
-        if (this.matchUrl(location, /\/performers\/\d+/)) {
-            if(!new RegExp(/\/performers\/\d+/).test(lastHref)){
-                this.log.debug('[Navigation] Performer Page');
-                this.processTagger();
-                this.dispatchEvent(new Event('page:performer'));
-            }
-
-            this._listenForNonPageChanges({selector: "#performer-edit", event: "page:performer:edit", eventMessage: "Performer Page - Edit", reRunGmMain: true, callback: () => {
-                if (this._detectReRenders) {
-                    this.log.debug('[Navigation] Performer Page');
-                    this.dispatchEvent(new Event('page:performer'));  
+    _dispatchPageEvent(event, addToHistory = true) {
+        this.dispatchEvent(new CustomEvent(event, {
+            detail: {
+event: event,
+                lastEventState: {
+                    lastPathStr: this._lastPathStr,
+                    lastQueryStr: this._lastQueryStr,
+                    lastHashStr: this._lastHashStr,
+                    lastHref: this._lastHref,
+                    lastStashPageEvent: this._lastStashPageEvent,
                 }
-            }})
-        }
-        // detect studio edit page
-        else if (this.matchUrl(location, /\/studios\/\d+/)) {
-            if(!new RegExp(/\/studios\/\d+/).test(lastHref)){
-                this.log.debug('[Navigation] Studio Page');
-                this.processTagger();
-                this.dispatchEvent(new Event('page:studio'));
             }
-
-            this._listenForNonPageChanges({selector: "#studio-edit", event: "page:studio:edit", eventMessage: "Studio Page - Edit", reRunGmMain: true, callback: () => {
-                if (this._detectReRenders) {
-                    this.log.debug('[Navigation] Studio Page');
-                    this.dispatchEvent(new Event('page:studio'));    
-                }
-            }})
-        }
-        // detect tag edit page
-        else if (this.matchUrl(location, /\/tags\/\d+/)) {
-            if(!new RegExp(/\/tags\/\d+/).test(lastHref)){
-                this.log.debug('[Navigation] Tag Page');
-                this.processTagger();
-                this.dispatchEvent(new Event('page:tag'));
+        }))
+        if (addToHistory) {
+            this.log.debug(`[Navigation] ${event}`);
+            if (event.startsWith("stash:")) {
+                this._lastStashPageEvent = event;
             }
+        }
+    }
+    addPageListener(eventData) {
+        const {event, regex, callBack = () => {}, manuallyHandleDispatchEvent = false} = eventData
+        if (event && !event?.startsWith("stash:") && regex && this._pageListeners[event] === undefined){
+            this._pageListeners[event] = {
+                regex: regex,
+                callBack: callBack,
+                manuallyHandleDispatchEvent: manuallyHandleDispatchEvent
+            }
+            return event
+        } else {
+            if (this._pageListeners[event] !== undefined) {
+                console.error(`Can't add page listener: Event ${event} already exists`)
+            } else if (event?.startsWith("stash:")) {
+                console.error(`Can't add page listener: Event name can't start with "stash:"`)
+            } else {
+                console.error(`Can't add page listener: Missing required argument(s) "event", "regex"`)
+            }
+            return false
+        }
+    }
+    removePageListener(event) {
+        if(event && !event?.startsWith("stash:") && this._pageListeners[event]){
+            delete this._pageListeners[event]
+            return event
+        } else {
+            if (this._pageListeners[event] === undefined && event) {
+                console.error(`Can't remove page listener: Event ${event} doesn't exists`)
+            } else if (event?.startsWith("stash:")) {
+                console.error(`Can't remove page listener: Event ${event} is a built in event`)
+            } else {
+                console.error(`Can't remove page listener: Missing "event" argument`)
+            }
+            return false
+        }
+    }
+    stopPageListener() {
+        clearInterval(this._pageURLCheckTimerId)
+    }
+    assignPageListeners() {
+        this._pageListeners = {
+            // scenes tab
+            "stash:page:scenes": {
+                regex: /\/scenes\?/,
+                handleDisplayView: true,
+                callBack: () => this.processTagger()
+            },
+            "stash:page:scene:new": {
+                regex: /\/scenes\/new/
+            },
+            "stash:page:scene": {
+                regex: /\/scenes\/\d+/,
+                callBack: ({recursive = false}) => this._listenForNonPageChanges({
+                    location: ".scene-tabs .nav-tabs",
+                    listenType: "tabs",
+                    recursive: recursive
+                })
+            },
 
-            this._listenForNonPageChanges({selector: "#tag-edit", event: "page:tag:edit", eventMessage: "Tag Page - Edit", reRunGmMain: true, callback: () => {
-                if (this._detectReRenders) {
-                    this.log.debug('[Navigation] Tag Page');
-                    this.dispatchEvent(new Event('page:tag'));  
+            // images tab
+            "stash:page:images": {
+                regex: /\/images\?/,
+                handleDisplayView: true,
+            },
+            "stash:page:image": {
+                regex: /\/images\/\d+/,
+                callBack: ({recursive = false}) => this._listenForNonPageChanges({
+                    location: ".image-tabs .nav-tabs",
+                    listenType: "tabs",
+                    recursive: recursive
+                })
+            },
+
+            // movies tab
+            "stash:page:movies": {
+                regex: /\/movies\?/,
+            },
+            "stash:page:movie": {
+                regex: /\/movies\/\d+/,
+            },
+            "stash:page:movie:scenes": {
+                regex: /\/movies\/\d+\?/,
+                callBack: () => this.processTagger()
+            },
+
+            // markers tab
+            "stash:page:markers": {
+                regex: /\/scenes\/markers/
+            },
+
+            // galleries tab
+            "stash:page:galleries": {
+                regex: /\/galleries\?/,
+                handleDisplayView: true,
+            },
+            "stash:page:gallery:new": {
+                regex: /\/galleries\/new/,
+            },
+            "stash:page:gallery:images": {
+                regex: /\/galleries\/\d+\?/,
+                manuallyHandleDispatchEvent: true,
+                handleDisplayView: "ignoreDisplayViewCondition",
+                callBack: ({lastHref, recursive = false}, event) => {
+                    if(!this.matchUrl(lastHref, /\/galleries\/\d+/)){
+                        this._dispatchPageEvent("stash:page:gallery");
+                        this._listenForNonPageChanges({selector: ".gallery-tabs .nav-tabs .nav-link.active", event: "stash:page:gallery:details"})
+                    }
+        
+                    this._dispatchPageEvent(event);
+                    
+                    this._listenForNonPageChanges({
+                        location: ".gallery-tabs .nav-tabs",
+                        listenType: "tabs",
+                        recursive: recursive,
+                        listenDefaultTab: false
+                    })
                 }
-            }})
-        }
+            },
+            "stash:page:gallery:add": {
+                regex: /\/galleries\/\d+\/add/,
+                manuallyHandleDispatchEvent: true,
+                handleDisplayView: "ignoreDisplayViewCondition",
+                callBack: ({lastHref, recursive = false}, event) => {
+                    if(!this.matchUrl(lastHref, /\/galleries\/\d+/)){
+                        this._dispatchPageEvent("stash:page:gallery");
+                        this._listenForNonPageChanges({selector: ".gallery-tabs .nav-tabs .nav-link.active", event: "stash:page:gallery:details"})
+                    }
+        
+                    this._dispatchPageEvent(event);
+                    
+                    this._listenForNonPageChanges({
+                        location: ".gallery-tabs .nav-tabs",
+                        listenType: "tabs",
+                        recursive: recursive,
+                        listenDefaultTab: false
+                    })
+                }
+            },
 
-        // markers page
-        if (this.matchUrl(location, /\/scenes\/markers/)) {
-            this.log.debug('[Navigation] Markers Page');
-            this.dispatchEvent(new Event('page:markers'));
+            // performers tab
+            "stash:page:performers": {
+                regex: /\/performers\?/,
+                manuallyHandleDispatchEvent: true,
+                handleDisplayView: true, 
+                callBack: ({lastHref}, event) => !this.matchUrl(lastHref, /\/performers\?/) || this._detectReRenders ? this._dispatchPageEvent(event) : null
+            },
+            "stash:page:performer:new": {
+                regex: /\/performers\/new/
+            },
+            "stash:page:performer": {
+                regex: /\/performers\/\d+/,
+                manuallyHandleDispatchEvent: true,
+                callBack: ({lastHref}, event) => {
+                    if(!this.matchUrl(lastHref, /\/performers\/\d+/)){
+                        this._dispatchPageEvent(event);
+                        this.processTagger();
+                    }
+
+                    this._listenForNonPageChanges({
+                        selector: "#performer-edit",
+                        event: "stash:page:performer:edit",
+                        reRunGmMain: true,
+                        callback: () => this._detectReRenders ? this._dispatchPageEvent(event) : null
+                    })
+                }
+            },
+            "stash:page:performer:scenes": {
+                regex: /\/performers\/\d+\?/,
+                handleDisplayView: true,
+            },
+            "stash:page:performer:galleries": {
+                regex: /\/performers\/\d+\/galleries/,
+                handleDisplayView: true
+            },
+            "stash:page:performer:images": {
+                regex: /\/performers\/\d+\/images/,
+                handleDisplayView: true
+            },
+            "stash:page:performer:movies": {
+                regex: /\/performers\/\d+\/movies/
+            },
+            "stash:page:performer:appearswith": {
+                regex: /\/performers\/\d+\/appearswith/,
+                handleDisplayView: true,
+                callBack: () => this.processTagger()
+            },
+
+            // studios tab
+            "stash:page:studios": {
+                regex: /\/studios\?/,
+                handleDisplayView: true,
+            },
+            "stash:page:studio:new": {
+                regex: /\/studios\/new/
+            },
+            "stash:page:studio": {
+                regex: /\/studios\/\d+/,
+                manuallyHandleDispatchEvent: true,
+                callBack: ({lastHref}, event) => {
+                    if(!this.matchUrl(lastHref, /\/studios\/\d+/)){
+                        this._dispatchPageEvent(event);
+                        this.processTagger();
+                    }
+
+                    this._listenForNonPageChanges({
+                        selector: "#studio-edit",
+                        event: "stash:page:studio:edit",
+                        reRunGmMain: true,
+                        callback: () => this._detectReRenders ? this._dispatchPageEvent(event) : null
+                    })
+                }
+            },
+            "stash:page:studio:scenes": {
+                regex: /\/studios\/\d+\?/,
+                handleDisplayView: true,
+            },
+            "stash:page:studio:galleries": {
+                regex: /\/studios\/\d+\/galleries/,
+                handleDisplayView: true,
+            },
+            "stash:page:studio:images": {
+                regex: /\/studios\/\d+\/images/,
+                handleDisplayView: true,
+            },
+            "stash:page:studio:performers": {
+                regex: /\/studios\/\d+\/performers/,
+                handleDisplayView: true,
+            },
+            "stash:page:studio:movies": {
+                regex: /\/studios\/\d+\/movies/
+            },
+            "stash:page:studio:childstudios": {
+                regex: /\/studios\/\d+\/childstudios/,
+                handleDisplayView: true,
+            },
+
+            // tags tab
+            "stash:page:tags": {
+                regex: /\/tags\?/,
+                handleDisplayView: true,
+            },
+            "stash:page:tag:new": {
+                regex: /\/tags\/new/
+            },
+            "stash:page:tag": {
+                regex: /\/tags\/\d+/,
+                manuallyHandleDispatchEvent: true,
+                callBack: ({lastHref}, event) => {
+                    if(!this.matchUrl(lastHref, /\/tags\/\d+/)){
+                        this._dispatchPageEvent(event);
+                        this.processTagger();
+                    }
+
+                    this._listenForNonPageChanges({
+                        selector: "#tag-edit",
+                        event: "stash:page:tag:edit",
+                        reRunGmMain: true,
+                        callback: () => this._detectReRenders ? this._dispatchPageEvent(event) : null
+                    })
+                }
+            },
+            "stash:page:tag:scenes": {
+                regex: /\/tags\/\d+\?/,
+                handleDisplayView: true,
+            },
+            "stash:page:tag:galleries": {
+                regex: /\/tags\/\d+\/galleries/,
+                handleDisplayView: true,
+            },
+            "stash:page:tag:images": {
+                regex: /\/tags\/\d+\/images/,
+                handleDisplayView: true,
+            },
+            "stash:page:tag:markers": {
+                regex: /\/tags\/\d+\/markers/
+            },
+            "stash:page:tag:performers": {
+                regex: /\/tags\/\d+\/performers/,
+                handleDisplayView: true,
+            },
+
+            // settings page
+            "stash:page:settings": {
+                regex: /\/settings/,
+                manuallyHandleDispatchEvent: true,
+                callBack: ({lastHref}, event) => !this.matchUrl(lastHref, /\/settings/) ? this._dispatchPageEvent(event) : null
+            },
+            "stash:page:settings:tasks": {
+                regex: /\/settings\?tab=tasks/,
+                callback: () => this.hidePluginTasks()
+            },
+            "stash:page:settings:library": {
+                regex: /\/settings\?tab=library/
+            },
+            "stash:page:settings:interface": {
+                regex: /\/settings\?tab=interface/
+            },
+            "stash:page:settings:security": {
+                regex: /\/settings\?tab=security/
+            },
+            "stash:page:settings:metadata-providers": {
+                regex: /\/settings\?tab=metadata-providers/
+            },
+            "stash:page:settings:services": {
+                regex: /\/settings\?tab=services/
+            },
+            "stash:page:settings:system": {
+                regex: /\/settings\?tab=system/,
+                callBack: () => this.createSettings()
+            },
+            "stash:page:settings:plugins": {
+                regex: /\/settings\?tab=plugins/
+            },
+            "stash:page:settings:logs": {
+                regex: /\/settings\?tab=logs/
+            },
+            "stash:page:settings:tools": {
+                regex: /\/settings\?tab=tools/
+            },
+            "stash:page:settings:changelog": {
+                regex: /\/settings\?tab=changelog/
+            },
+            "stash:page:settings:about": {
+                regex: /\/settings\?tab=about/
+            },
+
+            // stats page
+            "stash:page:stats": {
+                regex: /\/stats/
+            },
+
+            // home page
+            "stash:page:home": {
+                regex: /\/$/,
+                callBack: () => this._listenForNonPageChanges({selector: ".recommendations-container-edit", event: "stash:page:home:edit", reRunGmMain: true})
+            },
         }
-        // create scene page
-        else if (this.matchUrl(location, /\/scenes\/new/)) {
-            this.log.debug('[Navigation] Create Scene Page');
-            this.dispatchEvent(new Event('page:scene:new'));
-        }
-        // scene page
-        else if (this.matchUrl(location, /\/scenes\/\d+/)) {
-            this.log.debug('[Navigation] Scene Page');
-            this.dispatchEvent(new Event('page:scene'));
+    }
+    gmMain(args) {
+        const events = Object.keys(this._pageListeners)
+
+        for (const event of events) {
+            const {regex, callBack = async () => {}, manuallyHandleDispatchEvent = false, handleDisplayView = false} = this._pageListeners[event]
             
-            this._listenForNonPageChanges({
-                location: ".scene-tabs .nav-tabs",
-                listenType: "tabs",
-                isRecursive: isRecursive
-            })
-        }
-        // scenes page
-        else if (this.matchUrl(location, /\/scenes\?/)) {
-            this.log.debug('[Navigation] Scenes Page');
-            this.processTagger();
-            this.dispatchEvent(new Event('page:scenes'));
-        }
-
-        // image page
-        else if (this.matchUrl(location, /\/images\/\d+/)) {
-            this.log.debug('[Navigation] Image Page');
-            this.dispatchEvent(new Event('page:image'));
-
-            this._listenForNonPageChanges({
-                location: ".image-tabs .nav-tabs",
-                listenType: "tabs",
-                isRecursive: isRecursive
-            })
-        }
-        // images page
-        else if (this.matchUrl(location, /\/images\?/)) {
-            this.log.debug('[Navigation] Images Page');
-            this.dispatchEvent(new Event('page:images'));
-        }
-
-        // movie scenes page
-        else if (this.matchUrl(location, /\/movies\/\d+\?/)) {
-            this.log.debug('[Navigation] Movie Page - Scenes');
-            this.processTagger();
-            this.dispatchEvent(new Event('page:movie:scenes'));
-        }
-        // movie page
-        else if (this.matchUrl(location, /\/movies\/\d+/)) {
-            this.log.debug('[Navigation] Movie Page');
-            this.dispatchEvent(new Event('page:movie'));
-        }
-        // movies page
-        else if (this.matchUrl(location, /\/movies\?/)) {
-            this.log.debug('[Navigation] Movies Page');
-            this.dispatchEvent(new Event('page:movies'));
-        }
-
-                // create gallery page
-                else if (this.matchUrl(location, /\/galleries\/new/)) {
-                    this.log.debug('[Navigation] Create Gallery Page');
-                    this.dispatchEvent(new Event('page:gallery:new'));
-                }
-        // gallery add page
-        else if (this.matchUrl(location, /\/galleries\/\d+\/add/)) {
-            if(!new RegExp(/\/galleries\/\d+/).test(lastHref)){
-                this.log.debug('[Navigation] Gallery Page');
-                this.dispatchEvent(new Event('page:gallery'));
-                this._listenForNonPageChanges({selector: ".gallery-tabs .nav-tabs .nav-link.active", event: "page:gallery:details", eventMessage: "Gallery Page - Details"})
-            }
-
-            this.log.debug('[Navigation] Gallery Page - Add');
-            this.dispatchEvent(new Event('page:gallery:add'));  
+            let isDisplayViewPage = false
+            let isListPage, isWallPage, isTaggerPage
             
-            this._listenForNonPageChanges({
-                location: ".gallery-tabs .nav-tabs",
-                listenType: "tabs",
-                isRecursive: isRecursive,
-                listenDefaultTab: false
-            })
-        }
-        // gallery page
-        else if (this.matchUrl(location, /\/galleries\/\d+/)) {
-            if(!new RegExp(/\/galleries\/\d+/).test(lastHref)){
-                this.log.debug('[Navigation] Gallery Page');
-                this.dispatchEvent(new Event('page:gallery'));
-                this._listenForNonPageChanges({selector: ".gallery-tabs .nav-tabs .nav-link.active", event: "page:gallery:details", eventMessage: "Gallery Page - Details"})
+            if (handleDisplayView) {
+                isListPage = this.matchUrl(window.location.href, concatRegexp(regex, /.*disp=1/))
+                isWallPage = this.matchUrl(window.location.href, concatRegexp(regex, /.*disp=2/))
+                isTaggerPage = this.matchUrl(window.location.href, concatRegexp(regex, /.*disp=3/))
+                
+                if (isListPage || isWallPage || isTaggerPage) isDisplayViewPage = true
             }
 
-            this.log.debug('[Navigation] Gallery Page - Images');
-            this.dispatchEvent(new Event('page:gallery:images'));
+            const handleDisplayViewCondition = handleDisplayView !== true || (handleDisplayView && (!isDisplayViewPage || args.lastHref === ""))
 
-            this._listenForNonPageChanges({
-                location: ".gallery-tabs .nav-tabs",
-                listenType: "tabs",
-                isRecursive: isRecursive,
-                listenDefaultTab: false
-            })
-        }
-        // galleries page
-        else if (this.matchUrl(location, /\/galleries\?/)) {
-            this.log.debug('[Navigation] Galleries Page');
-            this.dispatchEvent(new Event('page:galleries'));
-        }
-
-        // performer galleries page
-        else if (this.matchUrl(location, /\/performers\/\d+\/galleries/)) {
-            this.log.debug('[Navigation] Performer Page - Galleries');
-            this.dispatchEvent(new Event('page:performer:galleries'));
-        }
-        // performer images page
-        else if (this.matchUrl(location, /\/performers\/\d+\/images/)) {
-            this.log.debug('[Navigation] Performer Page - Images');
-            this.dispatchEvent(new Event('page:performer:images'));
-        }
-        // performer movies page
-        else if (this.matchUrl(location, /\/performers\/\d+\/movies/)) {
-            this.log.debug('[Navigation] Performer Page - Movies');
-            this.dispatchEvent(new Event('page:performer:movies'));
-        }
-        // performer appearswith page
-        else if (this.matchUrl(location, /\/performers\/\d+\/appearswith/)) {
-            this.log.debug('[Navigation] Performer Page - Appears With');
-            this.processTagger();
-            this.dispatchEvent(new Event('page:performer:appearswith'));
-        }
-        // create performer page
-        else if (this.matchUrl(location, /\/performers\/new/)) {
-            this.log.debug('[Navigation] Create Performer Page');
-            this.dispatchEvent(new Event('page:performer:new'));
-        }
-        // performer scenes page
-        else if (this.matchUrl(location, /\/performers\/\d+\?/)) {
-            this.log.debug('[Navigation] Performer Page - Scenes');
-            this.dispatchEvent(new Event('page:performer:scenes'));
-        }
-        // performers page
-        else if (this.matchUrl(location, /\/performers\?/)) {
-            this.log.debug('[Navigation] Performers Page');
-            this.dispatchEvent(new Event('page:performers'));
-        }
-
-        // studio galleries page
-        else if (this.matchUrl(location, /\/studios\/\d+\/galleries/)) {
-            this.log.debug('[Navigation] Studio Page - Galleries');
-            this.dispatchEvent(new Event('page:studio:galleries'));
-        }
-        // studio images page
-        else if (this.matchUrl(location, /\/studios\/\d+\/images/)) {
-            this.log.debug('[Navigation] Studio Page - Images');
-            this.dispatchEvent(new Event('page:studio:images'));
-        }
-        // studio performers page
-        else if (this.matchUrl(location, /\/studios\/\d+\/performers/)) {
-            this.log.debug('[Navigation] Studio Page - Performers');
-            this.dispatchEvent(new Event('page:studio:performers'));
-        }
-        // studio movies page
-        else if (this.matchUrl(location, /\/studios\/\d+\/movies/)) {
-            this.log.debug('[Navigation] Studio Page - Movies');
-            this.dispatchEvent(new Event('page:studio:movies'));
-        }
-        // studio childstudios page
-        else if (this.matchUrl(location, /\/studios\/\d+\/childstudios/)) {
-            this.log.debug('[Navigation] Studio Page - Child Studios');
-            this.dispatchEvent(new Event('page:studio:childstudios'));
-        }
-        // create studio page
-        else if (this.matchUrl(location, /\/studios\/new/)) {
-            this.log.debug('[Navigation] Create Studio Page');
-            this.dispatchEvent(new Event('page:studio:new'));
-        }
-        // studio scenes page
-        else if (this.matchUrl(location, /\/studios\/\d+\?/)) {
-            this.log.debug('[Navigation] Studio Page - Scenes');
-            this.dispatchEvent(new Event('page:studio:scenes'));
-        }
-        // studios page
-        else if (this.matchUrl(location, /\/studios\?/)) {
-            this.log.debug('[Navigation] Studios Page');
-            this.dispatchEvent(new Event('page:studios'));
-        }
-
-        // tag galleries page
-        else if (this.matchUrl(location, /\/tags\/\d+\/galleries/)) {
-            this.log.debug('[Navigation] Tag Page - Galleries');
-            this.dispatchEvent(new Event('page:tag:galleries'));
-        }
-        // tag images page
-        else if (this.matchUrl(location, /\/tags\/\d+\/images/)) {
-            this.log.debug('[Navigation] Tag Page - Images');
-            this.dispatchEvent(new Event('page:tag:images'));
-        }
-        // tag markers page
-        else if (this.matchUrl(location, /\/tags\/\d+\/markers/)) {
-            this.log.debug('[Navigation] Tag Page - Markers');
-            this.dispatchEvent(new Event('page:tag:markers'));
-        }
-        // tag performers page
-        else if (this.matchUrl(location, /\/tags\/\d+\/performers/)) {
-            this.log.debug('[Navigation] Tag Page - Performers');
-            this.dispatchEvent(new Event('page:tag:performers'));
-        }
-        // create tag page
-        else if (this.matchUrl(location, /\/tags\/new/)) {
-            this.log.debug('[Navigation] Create Tag Page');
-            this.dispatchEvent(new Event('page:tag:new'));
-        }
-        // tag scenes page
-        else if (this.matchUrl(location, /\/tags\/\d+\?/)) {
-            this.log.debug('[Navigation] Tag Page - Scenes');
-            this.dispatchEvent(new Event('page:tag:scenes'));
-        }
-        // tags page
-        else if (this.matchUrl(location, /\/tags\?/)) {
-            this.log.debug('[Navigation] Tags Page');
-            this.dispatchEvent(new Event('page:tags'));
-        }
-
-        // settings page tasks tab
-        else if (this.matchUrl(location, /\/settings\?tab=tasks/)) {
-            if(!new RegExp(/\/settings\?/).test(lastHref)){
-                this.log.debug('[Navigation] Settings Page');
-                this.dispatchEvent(new Event('page:settings'));
-                this.hidePluginTasks();
+            if (this.matchUrl(window.location.href, regex) && handleDisplayViewCondition) {
+                if (!manuallyHandleDispatchEvent) this._dispatchPageEvent(event)
+                callBack({...args, location: window.location}, event)
             }
 
-            this.log.debug('[Navigation] Settings Page Tasks Tab');
-            this.dispatchEvent(new Event('page:settings:tasks'));
-        }
-        // settings page library tab
-        else if (this.matchUrl(location, /\/settings\?tab=library/)) {
-            this.log.debug('[Navigation] Settings Page Library Tab');
-            this.dispatchEvent(new Event('page:settings:library'));
-        }
-        // settings page interface tab
-        else if (this.matchUrl(location, /\/settings\?tab=interface/)) {
-            this.log.debug('[Navigation] Settings Page Interface Tab');
-            this.dispatchEvent(new Event('page:settings:interface'));
-        }
-        // settings page security tab
-        else if (this.matchUrl(location, /\/settings\?tab=security/)) {
-            this.log.debug('[Navigation] Settings Page Security Tab');
-            this.dispatchEvent(new Event('page:settings:security'));
-        }
-        // settings page metadata providers tab
-        else if (this.matchUrl(location, /\/settings\?tab=metadata-providers/)) {
-            this.log.debug('[Navigation] Settings Page Metadata Providers Tab');
-            this.dispatchEvent(new Event('page:settings:metadata-providers'));
-        }
-        // settings page services tab
-        else if (this.matchUrl(location, /\/settings\?tab=services/)) {
-            this.log.debug('[Navigation] Settings Page Services Tab');
-            this.dispatchEvent(new Event('page:settings:services'));
-        }
-        // settings page system tab
-        else if (this.matchUrl(location, /\/settings\?tab=system/)) {
-            this.log.debug('[Navigation] Settings Page System Tab');
-            this.createSettings();
-            this.dispatchEvent(new Event('page:settings:system'));
-        }
-        // settings page plugins tab
-        else if (this.matchUrl(location, /\/settings\?tab=plugins/)) {
-            this.log.debug('[Navigation] Settings Page Plugins Tab');
-            this.dispatchEvent(new Event('page:settings:plugins'));
-        }
-        // settings page logs tab
-        else if (this.matchUrl(location, /\/settings\?tab=logs/)) {
-            this.log.debug('[Navigation] Settings Page Logs Tab');
-            this.dispatchEvent(new Event('page:settings:logs'));
-        }
-        // settings page tools tab
-        else if (this.matchUrl(location, /\/settings\?tab=tools/)) {
-            this.log.debug('[Navigation] Settings Page Tools Tab');
-            this.dispatchEvent(new Event('page:settings:tools'));
-        }
-        // settings page changelog tab
-        else if (this.matchUrl(location, /\/settings\?tab=changelog/)) {
-            this.log.debug('[Navigation] Settings Page Changelog Tab');
-            this.dispatchEvent(new Event('page:settings:changelog'));
-        }
-        // settings page about tab
-        else if (this.matchUrl(location, /\/settings\?tab=about/)) {
-            this.log.debug('[Navigation] Settings Page About Tab');
-            this.dispatchEvent(new Event('page:settings:about'));
-        }
-
-        // stats page
-        else if (this.matchUrl(location, /\/stats/)) {
-            this.log.debug('[Navigation] Stats Page');
-            this.dispatchEvent(new Event('page:stats'));
-        }
-
-        // home page
-        else if (this.matchUrl(location, /\/$/)) {
-            this.log.debug('[Navigation] Home Page');
-            this.dispatchEvent(new Event('page:home'));
-
-            this._listenForNonPageChanges({selector: ".recommendations-container-edit", event: "page:home:edit", eventMessage: "Home Page - Edit", reRunGmMain: true})
+            if (handleDisplayView) {
+                if (isListPage) {
+                    this._dispatchPageEvent("stash:page:any:list", false);
+                    this._dispatchPageEvent(event + ":list");
+                } else if (isWallPage) {
+                    this._dispatchPageEvent("stash:page:any:wall", false);
+                    this._dispatchPageEvent(event + ":wall");
+                } else if (isTaggerPage) {
+                    this._dispatchPageEvent("stash:page:any:tagger", false);
+                    this._dispatchPageEvent(event + ":tagger");
+                }
+            }
         }
     }
     addEventListeners(events, callback, ...options) {

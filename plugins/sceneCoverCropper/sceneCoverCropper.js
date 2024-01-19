@@ -139,7 +139,7 @@
         cropBtnContainer.appendChild(cropInfo);
     }
 
-    stash.addEventListener('page:scene', function () {
+    stash.addEventListener('stash:page:scene', function () {
         waitForElementId('scene-edit-details', setupCropper);
     });
 })();
