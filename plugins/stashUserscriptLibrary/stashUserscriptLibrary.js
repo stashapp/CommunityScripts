@@ -62,7 +62,7 @@ class Stash extends EventTarget {
                 ) {
                     this._dispatchPageEvent("stash:page", false)
 
-                    this.gmMain({
+                    this._handlePageChange({
                         lastPathStr: this._lastPathStr,
                         lastQueryStr: this._lastQueryStr,
                         lastHashStr: this._lastHashStr,
@@ -291,7 +291,6 @@ class Stash extends EventTarget {
     }
     matchUrl(href, fragment) {
         const regexp = concatRegexp(new RegExp(window.location.origin), fragment);
-        this.log.debug(regexp, location.href.match(regexp));
         return href.match(regexp) != null;
     }
     createSettings() {
@@ -473,7 +472,7 @@ class Stash extends EventTarget {
             }
         })
     }
-    async _listenForNonPageChanges({selector = "", location = document.body, listenType = "", event = "", recursive = false, reRunGmMain = false, condition = () => true, listenDefaultTab = true, callback = () => {}} = {}){
+    async _listenForNonPageChanges({selector = "", location = document.body, listenType = "", event = "", recursive = false, reRunHandlePageChange = false, condition = () => true, listenDefaultTab = true, callback = () => {}} = {}){
         if (recursive) return
 
         if (listenType === "tabs") {
@@ -512,10 +511,10 @@ class Stash extends EventTarget {
             this._dispatchPageEvent(event)
 
             if (await this.waitForElementDeath(selector, location, true)) {
-                if (this._lastPathStr === window.location.pathname && !reRunGmMain) {
+                if (this._lastPathStr === window.location.pathname && !reRunHandlePageChange) {
                     await this._listenForNonPageChanges({selector: selector, event: event})
-                } else if (this._lastPathStr === window.location.pathname && reRunGmMain)  {
-                    this.gmMain({
+                } else if (this._lastPathStr === window.location.pathname && reRunHandlePageChange)  {
+                    this._handlePageChange({
                         recursive: true,
                         lastPathStr: this._lastPathStr,
                         lastQueryStr: this._lastQueryStr,
@@ -601,7 +600,7 @@ class Stash extends EventTarget {
                 regex: /\/scenes\/new/
             },
             "stash:page:scene": {
-                regex: /\/scenes\/\d+/,
+                regex: /\/scenes\/\d+\?/,
                 callBack: ({recursive = false}) => this._listenForNonPageChanges({
                     location: ".scene-tabs .nav-tabs",
                     listenType: "tabs",
@@ -653,7 +652,7 @@ class Stash extends EventTarget {
                 manuallyHandleDispatchEvent: true,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 callBack: ({lastHref, recursive = false}, event) => {
-                    if(!this.matchUrl(lastHref, /\/galleries\/\d+/)){
+                    if(!this.matchUrl(lastHref, /\/galleries\/\d+\//)){
                         this._dispatchPageEvent("stash:page:gallery");
                         this._listenForNonPageChanges({selector: ".gallery-tabs .nav-tabs .nav-link.active", event: "stash:page:gallery:details"})
                     }
@@ -711,7 +710,7 @@ class Stash extends EventTarget {
                     this._listenForNonPageChanges({
                         selector: "#performer-edit",
                         event: "stash:page:performer:edit",
-                        reRunGmMain: true,
+                        reRunHandlePageChange: true,
                         callback: () => this._detectReRenders ? this._dispatchPageEvent(event) : null
                     })
                 }
@@ -757,7 +756,7 @@ class Stash extends EventTarget {
                     this._listenForNonPageChanges({
                         selector: "#studio-edit",
                         event: "stash:page:studio:edit",
-                        reRunGmMain: true,
+                        reRunHandlePageChange: true,
                         callback: () => this._detectReRenders ? this._dispatchPageEvent(event) : null
                     })
                 }
@@ -806,7 +805,7 @@ class Stash extends EventTarget {
                     this._listenForNonPageChanges({
                         selector: "#tag-edit",
                         event: "stash:page:tag:edit",
-                        reRunGmMain: true,
+                        reRunHandlePageChange: true,
                         callback: () => this._detectReRenders ? this._dispatchPageEvent(event) : null
                     })
                 }
@@ -884,11 +883,11 @@ class Stash extends EventTarget {
             // home page
             "stash:page:home": {
                 regex: /\/$/,
-                callBack: () => this._listenForNonPageChanges({selector: ".recommendations-container-edit", event: "stash:page:home:edit", reRunGmMain: true})
+                callBack: () => this._listenForNonPageChanges({selector: ".recommendations-container-edit", event: "stash:page:home:edit", reRunHandlePageChange: true})
             },
         }
     }
-    gmMain(args) {
+    _handlePageChange(args) {
         const events = Object.keys(this._pageListeners)
 
         for (const event of events) {
