@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  let REALBOORU_API_URL = "https://hysts-deepdanbooru.hf.space/api/predict";
+  let REALBOORU_API_URL = "https://cc1234-deepdanbooru.hf.space/api/predict";
   let THRESHOLD = 0.6; // remove matches with a distance higher than this
 
 
