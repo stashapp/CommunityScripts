@@ -44,7 +44,6 @@ class Stash extends EventTarget {
         this.log = new Logger(logging);
         this._pageUrlCheckInterval = pageUrlCheckInterval;
         this._detectReRenders = detectReRenders;
-        this.fireOnHashChangesToo = true;
         this._lastPathStr = "";
         this._lastQueryStr = "";
         this._lastHref = "";
