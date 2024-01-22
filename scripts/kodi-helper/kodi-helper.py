@@ -229,8 +229,7 @@ def generateSTRM(scene):
     return scene["paths"]["stream"]
 
 def generateNFO(scene, args):
-    ret = """
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+    ret = """<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <movie>
     <title>{title}</title>
     <userrating>{rating}</userrating>
@@ -243,8 +242,7 @@ def generateNFO(scene, args):
     {thumbs}
     {fanart}
     {genres}
-</movie>
-"""
+</movie>"""
     tags = ""
     for t in scene["tags"]:
         tags = tags + """
