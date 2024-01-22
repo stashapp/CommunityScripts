@@ -3615,7 +3615,7 @@
   	}
   }
 
-  stash.addEventListener("page:scene", function () {
+  stash.addEventListener("stash:page:scene", function () {
       let elms = ".ml-auto .btn-group";
       waitForElm(elms).then(() => {
           if (!document.querySelector("#stashmarker")) {
@@ -3623,7 +3623,7 @@
           }
       });
   });
-  stash.addEventListener("page:scene", function () {
+  stash.addEventListener("stash:page:scene", function () {
       let elms = ".ml-auto .btn-group";
       waitForElm(elms).then(() => {
           if (!document.querySelector("#stashtag")) {

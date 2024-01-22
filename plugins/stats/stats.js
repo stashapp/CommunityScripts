@@ -113,7 +113,7 @@
         createStatElement(row, totalCount, 'Markers');
     }
 
-    stash.addEventListener('page:stats', function() {
+    stash.addEventListener('stash:page:stats', function() {
         waitForElementByXpath("//div[contains(@class, 'container-fluid')]/div[@class='mt-5']", function(xpath, el) {
             if (!document.getElementById('custom-stats-row')) {
                 const changelog = el.querySelector('div.changelog');
