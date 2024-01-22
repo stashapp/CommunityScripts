@@ -10054,7 +10054,7 @@
   	}
   }
 
-  stash.addEventListener("page:image", function () {
+  stash.addEventListener("stash:page:image", function () {
       let elms = ".ml-auto .btn-group";
       waitForElm(elms).then(() => {
           if (!document.querySelector("#stashrealbooru")) {

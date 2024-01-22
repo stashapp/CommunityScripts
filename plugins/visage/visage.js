@@ -11785,7 +11785,7 @@
   	}
   }
 
-  stash.addEventListener("page:scene", function () {
+  stash.addEventListener("stash:page:scene", function () {
       let elms = ".ml-auto .btn-group";
       waitForElm(elms).then(() => {
           const e = document.querySelector(elms);
@@ -11798,7 +11798,7 @@
           }
       });
   });
-  stash.addEventListener("page:image", function () {
+  stash.addEventListener("stash:page:image", function () {
       let elms = ".ml-auto .btn-group";
       waitForElm(elms).then(() => {
           if (!document.querySelector("#visage")) {
