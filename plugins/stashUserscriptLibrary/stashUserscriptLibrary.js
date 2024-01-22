@@ -438,9 +438,10 @@ class Stash extends EventTarget {
                 subtree: true,
             })
 
-            const stash = this
             if (disconnectOnPageChange) {
+                const stash = this
                 function disconnect() {
+                    resolve(false)
                     observer.disconnect()
                     stash.removeEventListener("stash:page", disconnect)
                 }
@@ -462,9 +463,10 @@ class Stash extends EventTarget {
                 subtree: true,
             })
 
-            const stash = this
             if (disconnectOnPageChange) {
+                const stash = this
                 function disconnect() {
+                    resolve(false)
                     observer.disconnect()
                     stash.removeEventListener("stash:page", disconnect)
                 }
@@ -525,7 +527,7 @@ class Stash extends EventTarget {
                 }
             }
         }
-    callback()
+        callback()
     }
     _dispatchPageEvent(event, addToHistory = true) {
         this.dispatchEvent(new CustomEvent(event, {
