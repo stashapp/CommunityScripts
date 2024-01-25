@@ -1,14 +1,23 @@
 # example plugin config
 name: Scene Marker Tags to Scene
-description: Adds primary tag of Scene Marker to the Scene on marker create/update.
+description: Adds primary tag or all tags of Scene Marker to the Scene on marker create/update, or when task is run.
 url: https://github.com/stashapp/CommunityScripts
-version: 1.0
+version: 1.1
 exec:
   - markerTagToScene.js
 interface: js
 hooks:
-  - name: Update scene with scene marker tag
-    description: Adds primary tag of Scene Marker to the Scene on marker create/update.
+  - name: Update scene with scene marker tag(s)
+    description: Adds primary tag or all tags of Scene Marker to the Scene on marker create/update.
     triggeredBy: 
       - SceneMarker.Create.Post
       - SceneMarker.Update.Post
+tasks:
+  - name: Update Scenes Tags
+    description: Adds primary tag or all tags of Scene Markers to their Scenes
+    defaultArgs:
+      mode: updateAllScenes
+  - name: Dry Run
+    description: Dry run of adding tags of Scene Markers to their Scenes
+    defaultArgs:
+      mode: dryRunUpdateAllScenes
