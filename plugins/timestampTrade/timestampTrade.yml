@@ -3,51 +3,51 @@ description: Sync Markers with timestamp.trade, a new database for sharing marke
 version: 0.4
 url: https://github.com/stashapp/CommunityScripts/
 exec:
-  - python
-  - "{pluginDir}/timestampTrade.py"
+    - python
+    - "{pluginDir}/timestampTrade.py"
 interface: raw
 settings:
-  createGalleryFromScene:
-    displayName: Create Gallery from scene
-    description: If there is a gallery linked to the scene in the timestamp.trade database and a gallery with the same file hash is found create a gallery inside stash
-    type: BOOLEAN
-  createMovieFromScene:
-    displayName: Create Movie from scene
-    description: If there is a Movie linked to the scene in the timestamp.trade database automatically create a movie in stash with that info
-    type: BOOLEAN
-  extraUrls:
-    displayName: Add extra urls if they exist on timestamp.trade
-    description: Extra urls can be submitted to timestamp.trade, add them to the scene if they exist
-    type: BOOLEAN
+    createGalleryFromScene:
+        displayName: Create Gallery from scene
+        description: If there is a gallery linked to the scene in the timestamp.trade database and a gallery with the same file hash is found create a gallery inside stash
+        type: BOOLEAN
+    createMovieFromScene:
+        displayName: Create Movie from scene
+        description: If there is a Movie linked to the scene in the timestamp.trade database automatically create a movie in stash with that info
+        type: BOOLEAN
+    extraUrls:
+        displayName: Add extra urls if they exist on timestamp.trade
+        description: Extra urls can be submitted to timestamp.trade, add them to the scene if they exist
+        type: BOOLEAN
 
 hooks:
-  - name: Add Marker to Scene
-    description: Makes Markers checking against timestamp.trade
-    triggeredBy:
-      - Scene.Update.Post
-  - name: Gallery lookup
-    description: Look up gallery metadata from timestamp.trade
-    triggeredBy:
-      - Gallery.Create.Post
+    - name: Add Marker to Scene
+      description: Makes Markers checking against timestamp.trade
+      triggeredBy:
+          - Scene.Update.Post
+    - name: Gallery lookup
+      description: Look up gallery metadata from timestamp.trade
+      triggeredBy:
+          - Gallery.Create.Post
 
 tasks:
-  - name: 'Submit'
-    description: Submit markers to timestamp.trade
-    defaultArgs:
-      mode: submitScene
-  - name: 'Submit Scenes with linked movies'
-    description: Submit movie information to timestamp.trade
-    defaultArgs:
-      mode: submitMovieScene
-  - name: 'Sync'
-    description: Get markers for all scenes with a stashid
-    defaultArgs:
-      mode: processScene
-  - name: 'Submit Gallery'
-    description: Submit gallery info to timestamp.trade
-    defaultArgs:
-      mode: submitGallery
-  - name: 'Sync Gallery'
-    description: get gallery info from timestamp.trade
-    defaultArgs:
-      mode: processGallery
+    - name: "Submit"
+      description: Submit markers to timestamp.trade
+      defaultArgs:
+          mode: submitScene
+    - name: "Submit Scenes with linked movies"
+      description: Submit movie information to timestamp.trade
+      defaultArgs:
+          mode: submitMovieScene
+    - name: "Sync"
+      description: Get markers for all scenes with a stashid
+      defaultArgs:
+          mode: processScene
+    - name: "Submit Gallery"
+      description: Submit gallery info to timestamp.trade
+      defaultArgs:
+          mode: submitGallery
+    - name: "Sync Gallery"
+      description: get gallery info from timestamp.trade
+      defaultArgs:
+          mode: processGallery

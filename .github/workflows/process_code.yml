@@ -1,0 +1,70 @@
+name: Pull Request
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+permissions:
+    contents: write
+
+jobs:
+    format_js:
+        name: Format JS code
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.head_ref }}
+
+            - name: Prettify code
+              uses: creyD/prettier_action@v4.3
+              with:
+                  prettier_options: --write .
+                  only_changed: true
+                  commit_message: "gh-actions: format code"
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    lint_js:
+        name: Lint JS code
+        runs-on: ubuntu-latest
+        needs: format_js
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.head_ref }}
+
+            - name: Install node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20.x
+
+            - name: Install repository dependencies
+              run: npm ci
+
+            - name: Run eslint
+              run: npm run lint-errors
+
+    format_py:
+        name: Format py code
+        runs-on: ubuntu-latest
+        needs: lint_js
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.head_ref }}
+
+            - name: Format py code
+              uses: psf/black@stable

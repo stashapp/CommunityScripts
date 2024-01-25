@@ -3,12 +3,13 @@
 Updates scene info based on the file path.
 
 ## Contents
-* [Hooks](#hooks)
-* [Triggers](#triggers)
-* [Rules](#rules)
-* [Patterns](#patterns)
-* [Fields](#fields)
-* [Examples](#examples)
+
+-   [Hooks](#hooks)
+-   [Triggers](#triggers)
+-   [Rules](#rules)
+-   [Patterns](#patterns)
+-   [Fields](#fields)
+-   [Examples](#examples)
 
 ## Hooks
 
@@ -20,10 +21,10 @@ You can disable this hook by deleting the following section from `pathParser.yml
 
 ```yml
 hooks:
-  - name: Run Rules on scan
-    description: Updates scene info whenever a new scene is added.
-    triggeredBy: 
-      - Scene.Create.Post
+    - name: Run Rules on scan
+      description: Updates scene info whenever a new scene is added.
+      triggeredBy:
+          - Scene.Create.Post
 ```
 
 ## Triggers
@@ -35,12 +36,12 @@ Adds the \[Run\] and \[Test\] tags (configurable from pathParser.yml).
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
 ```yml
-  - name: Create Tags
-    description: Create tags used by the path parser tasks.
-    defaultArgs:
+- name: Create Tags
+  description: Create tags used by the path parser tasks.
+  defaultArgs:
       task: createTags
-      runTag: '[Run]'
-      testTag: '[Test]'
+      runTag: "[Run]"
+      testTag: "[Test]"
 ```
 
 ### Remove Tags
@@ -50,12 +51,12 @@ Removes the \[Run\] and \[Test\] tags (configurable from pathParser.yml).
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
 ```yml
-  - name: Remove Tags
-    description: Remove tags used by the path parser tasks.
-    defaultArgs:
+- name: Remove Tags
+  description: Remove tags used by the path parser tasks.
+  defaultArgs:
       task: removeTags
-      runTag: '[Run]'
-      testTag: '[Test]'
+      runTag: "[Run]"
+      testTag: "[Test]"
 ```
 
 ### Run Rules
@@ -65,11 +66,11 @@ Run rules for scenes containing the \[Run\] tag (configurable from pathParser.ym
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
 ```yml
-  - name: Run Rules
-    description: Run rules for scenes containing the run tag.
-    defaultArgs:
+- name: Run Rules
+  description: Run rules for scenes containing the run tag.
+  defaultArgs:
       task: runRules
-      runTag: '[Run]'
+      runTag: "[Run]"
 ```
 
 ### Test Rules
@@ -79,11 +80,11 @@ Test rules for scenes containing the \[Test\] tag (configurable from pathParser.
 You can remove this trigger by deleting the following section from `pathParser.yml`:
 
 ```yml
-  - name: Test Rules
-    description: Test rules for scenes containing the test tag.
-    defaultArgs:
+- name: Test Rules
+  description: Test rules for scenes containing the test tag.
+  defaultArgs:
       task: testRules
-      testTag: '[Test]'
+      testTag: "[Test]"
 ```
 
 ## Rules
@@ -92,20 +93,16 @@ A single rule must have a name, pattern, and fields:
 
 ```jsonc
 {
-  name: 'Your Rule',
+    "name": "Your Rule",
 
-  // This pattern would match a scene with the path: folder/folder/file.mp4
-  pattern: [
-    'folder',
-    'folder',
-    'file'
-  ],
+    // This pattern would match a scene with the path: folder/folder/file.mp4
+    "pattern": ["folder", "folder", "file"],
 
-  // The matched scene would update it's title and studio
-  fields: {
-    title: 'Scene Title',
-    studio: 'Studio'
-  }
+    // The matched scene would update it's title and studio
+    "fields": {
+        "title": "Scene Title",
+        "studio": "Studio",
+    },
 }
 ```
 
@@ -116,7 +113,7 @@ Each entry in pattern will match a folder or the filename (without extension).
 Patterns behave differently depending on the type:
 
 | Type     | Format                             | Description                                |
-|:---------|:-----------------------------------|:-------------------------------------------|
+| :------- | :--------------------------------- | :----------------------------------------- |
 | null     | `null`                             | Matches any value                          |
 | String   | `'string'`                         | Matches a specific value exactly           |
 | RegExp   | `/regex/`                          | Match using a regex<sup>1</sup>            |
@@ -130,7 +127,7 @@ Patterns behave differently depending on the type:
 The first matching rule will update the scene with the fields indicated:
 
 | Field       | Format                            |
-| :-----------|:----------------------------------|
+| :---------- | :-------------------------------- |
 | title       | `'New Title'`                     |
 | studio      | `'Studio Name'`                   |
 | movie_title | `'Movie Name'`                    |

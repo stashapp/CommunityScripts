@@ -22,7 +22,7 @@ _These steps are optional, by default this theme uses the Github hosted image li
 
 1. Download [background.png](https://user-images.githubusercontent.com/63812189/79506691-4af78900-7feb-11ea-883e-87b8e05ceb1c.png) and [noise.png](https://user-images.githubusercontent.com/63812189/79506696-4c28b600-7feb-11ea-8176-12a46454d87a.png)
 
-2. Place `background.png` and `noise.png` in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows. Then edit the `background-image: url("")` attributes like below:  
+2. Place `background.png` and `noise.png` in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows. Then edit the `background-image: url("")` attributes like below:
 
 The [body](https://github.com/stashapp/CommunityScripts/blob/main/themes/Theme-Plex/Theme-Plex.css#L7) one `background-image: url("./background.png");`
 

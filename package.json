@@ -1,0 +1,15 @@
+{
+    "name": "community-scripts",
+    "description": "This is a public repository containing plugin and utility scripts created by the Stash Community.",
+    "scripts": {
+        "format": "prettier --write .",
+        "format-py": "black ./",
+        "lint": "eslint ./**/*.js",
+        "lint-errors": "eslint ./**/*.js --quiet",
+        "lint-fix": "eslint ./**/*.js --fix"
+    },
+    "devDependencies": {
+        "eslint": "^8.56.0",
+        "prettier": "^3.2.4"
+    }
+}

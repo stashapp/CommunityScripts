@@ -2,5 +2,5 @@ name: Theme - Rounded Yellow
 description: Theme with rounded corners and yellow accents
 version: 1.0
 ui:
-  css:
-  - Theme-RoundedYellow.css
+    css:
+        - Theme-RoundedYellow.css

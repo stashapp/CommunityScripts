@@ -2,13 +2,11 @@ name: Date Parser
 description: Find date in path or filename and add it
 version: 0.2
 exec:
-  - python
-  - "{pluginDir}/date_parser.py"
+    - python
+    - "{pluginDir}/date_parser.py"
 interface: raw
 tasks:
-  - name: Find gallery dates
-    description: Add the date on galleries based on their path
-    defaultArgs:
-      mode: gallery
-
-      
+    - name: Find gallery dates
+      description: Add the date on galleries based on their path
+      defaultArgs:
+          mode: gallery

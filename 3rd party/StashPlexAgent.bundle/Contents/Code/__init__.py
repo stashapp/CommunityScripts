@@ -4,11 +4,12 @@ from urllib2 import quote
 
 # preferences
 preference = Prefs
-DEBUG = preference['debug']
+DEBUG = preference["debug"]
 if DEBUG:
-  Log('Agent debug logging is enabled!')
+    Log("Agent debug logging is enabled!")
 else:
-  Log('Agent debug logging is disabled!')
+    Log("Agent debug logging is disabled!")
+
 
 def ValidatePrefs():
     pass
@@ -16,67 +17,72 @@ def ValidatePrefs():
 
 def Start():
     Log("Stash metadata agent started")
-    HTTP.Headers['Accept'] = 'application/json'
+    HTTP.Headers["Accept"] = "application/json"
     HTTP.CacheTime = 0.1
     ValidatePrefs()
 
 
 def HttpReq(url, authenticate=True, retry=True):
     Log("Requesting: %s" % url)
-    api_string = ''
-    if Prefs['APIKey']:
-        api_string = '&apikey=%s' % Prefs['APIKey']
+    api_string = ""
+    if Prefs["APIKey"]:
+        api_string = "&apikey=%s" % Prefs["APIKey"]
 
-    if Prefs['UseHTTPS']:
-        connectstring = 'https://%s:%s/graphql?query=%s%s'
+    if Prefs["UseHTTPS"]:
+        connectstring = "https://%s:%s/graphql?query=%s%s"
     else:
-        connectstring = 'http://%s:%s/graphql?query=%s%s'
+        connectstring = "http://%s:%s/graphql?query=%s%s"
     try:
-        connecttoken = connectstring % (Prefs['Hostname'].strip(), Prefs['Port'].strip(), url, api_string)
+        connecttoken = connectstring % (Prefs["Hostname"].strip(), Prefs["Port"].strip(), url, api_string)
         Log(connecttoken)
-        return JSON.ObjectFromString(
-            HTTP.Request(connecttoken).content)
+        return JSON.ObjectFromString(HTTP.Request(connecttoken).content)
     except Exception as e:
         if not retry:
             raise e
         return HttpReq(url, authenticate, False)
 
+
 class StashPlexAgent(Agent.Movies):
-    name = 'Stash Plex Agent'
+    name = "Stash Plex Agent"
     languages = [Locale.Language.English]
     primary_provider = True
-    accepts_from = ['com.plexapp.agents.localmedia', 'com.plexapp.agents.xbmcnfo', 'com.plexapp.agents.phoenixadult', 'com.plexapp.agents.data18-phoenix', 'com.plexapp.agents.adultdvdempire']
+    accepts_from = [
+        "com.plexapp.agents.localmedia",
+        "com.plexapp.agents.xbmcnfo",
+        "com.plexapp.agents.phoenixadult",
+        "com.plexapp.agents.data18-phoenix",
+        "com.plexapp.agents.adultdvdempire",
+    ]
 
     def search(self, results, media, lang):
-        DEBUG = Prefs['debug']
+        DEBUG = Prefs["debug"]
         file_query = r"""query{findScenes(scene_filter:{path:{value:"\"<FILENAME>\"",modifier:INCLUDES}}){scenes{id,title,date,studio{id,name}}}}"""
         mediaFile = media.items[0].parts[0].file
-        filename = String.Unquote(mediaFile).encode('utf8', 'ignore')
+        filename = String.Unquote(mediaFile).encode("utf8", "ignore")
         filename = os.path.splitext(os.path.basename(filename))[0]
         if filename:
-            filename = str(quote(filename.encode('UTF-8')))
+            filename = str(quote(filename.encode("UTF-8")))
             query = file_query.replace("<FILENAME>", filename)
             request = HttpReq(query)
             if DEBUG:
                 Log(request)
-            movie_data = request['data']['findScenes']['scenes']
+            movie_data = request["data"]["findScenes"]["scenes"]
             score = 100 if len(movie_data) == 1 else 85
             for scene in movie_data:
-                if scene['date']:
-                    title = scene['title'] + ' - ' + scene['date']
+                if scene["date"]:
+                    title = scene["title"] + " - " + scene["date"]
                 else:
-                    title = scene['title']
-                Log("Title Found: " + title + " Score: " + str(score) + " ID:" + scene['id'])
-                results.Append(MetadataSearchResult(id = str(scene['id']), name = title, score = int(score), lang = lang))
-
+                    title = scene["title"]
+                Log("Title Found: " + title + " Score: " + str(score) + " ID:" + scene["id"])
+                results.Append(MetadataSearchResult(id=str(scene["id"]), name=title, score=int(score), lang=lang))
 
     def update(self, metadata, media, lang, force=False):
-        DEBUG = Prefs['debug']
+        DEBUG = Prefs["debug"]
         Log("update(%s)" % metadata.id)
         mid = metadata.id
         id_query = "query{findScene(id:%s){path,id,title,details,url,date,rating,paths{screenshot,stream}movies{movie{id,name}}studio{id,name,image_path,parent_studio{id,name,details}}organized,stash_ids{stash_id}tags{id,name}performers{name,image_path,tags{id,name}}movies{movie{name}}galleries{id,title,url,images{id,title,path,file{size,width,height}}}}}"
         data = HttpReq(id_query % mid)
-        data = data['data']['findScene']
+        data = data["data"]["findScene"]
         metadata.collections.clear()
 
         allow_scrape = False
@@ -101,13 +107,13 @@ class StashPlexAgent(Agent.Movies):
             allow_scrape = False
 
         if allow_scrape:
-            if data['date']:
+            if data["date"]:
                 try:
                     Log("Trying to parse:" + data["date"])
-                    date=dateparser().parse(data["date"])
+                    date = dateparser().parse(data["date"])
                 except Exception as ex:
                     Log(ex)
-                    date=None
+                    date = None
                     pass
                 # Set the date and year if found.
                 if date is not None:
@@ -115,7 +121,7 @@ class StashPlexAgent(Agent.Movies):
                     metadata.year = date.year
 
             # Get the title
-            if data['title']:
+            if data["title"]:
                 metadata.title = data["title"]
 
             # Get the Studio
@@ -135,7 +141,7 @@ class StashPlexAgent(Agent.Movies):
                             pass
 
             # Set the summary
-            if data['details']:
+            if data["details"]:
                 summary = data["details"].replace("\n", " ").replace("\r", "").replace("\t", "")
                 metadata.summary = summary
 
@@ -241,9 +247,13 @@ class StashPlexAgent(Agent.Movies):
                         if performer["tags"]:
                             genres = performer["tags"]
                             for genre in genres:
-                                if not genre["id"] in ignore_tags and "ambiguous" not in genre["name"].lower() and genre["name"] not in metadata.genres:
+                                if (
+                                    not genre["id"] in ignore_tags
+                                    and "ambiguous" not in genre["name"].lower()
+                                    and genre["name"] not in metadata.genres
+                                ):
                                     if DEBUG:
-                                        Log("Added Performer (" + performer['name'] + ") tag to scene: " + genre['name'] )
+                                        Log("Added Performer (" + performer["name"] + ") tag to scene: " + genre["name"])
                                     metadata.genres.add(genre["name"])
                                     if genre["id"] in collection_tags:
                                         try:
@@ -261,9 +271,9 @@ class StashPlexAgent(Agent.Movies):
             try:
                 if data["performers"]:
                     api_string = ""
-                    if Prefs['APIKey']:
-                        api_string = '&apikey=%s' % Prefs['APIKey']
-                    models=data["performers"]
+                    if Prefs["APIKey"]:
+                        api_string = "&apikey=%s" % Prefs["APIKey"]
+                    models = data["performers"]
                     for model in models:
                         if DEBUG:
                             Log("Pulling Model: " + model["name"] + " With Image: " + model["image_path"])
@@ -276,8 +286,8 @@ class StashPlexAgent(Agent.Movies):
             # Add posters and fan art.
             if not data["paths"]["screenshot"] is None:
                 api_string = ""
-                if Prefs['APIKey']:
-                    api_string = '&apikey=%s' % Prefs['APIKey']
+                if Prefs["APIKey"]:
+                    api_string = "&apikey=%s" % Prefs["APIKey"]
                 try:
                     thumb = HTTP.Request(data["paths"]["screenshot"] + api_string)
                     metadata.posters[data["paths"]["screenshot"] + api_string] = Proxy.Preview(thumb, sort_order=0)
@@ -287,12 +297,12 @@ class StashPlexAgent(Agent.Movies):
 
             if Prefs["IncludeGalleryImages"]:
                 api_string = ""
-                if Prefs['APIKey']:
-                    api_string = '&apikey=%s' % Prefs['APIKey']
-                if Prefs['UseHTTPS']:
-                    imagestring = 'https://%s:%s/image/%s/image' + api_string
+                if Prefs["APIKey"]:
+                    api_string = "&apikey=%s" % Prefs["APIKey"]
+                if Prefs["UseHTTPS"]:
+                    imagestring = "https://%s:%s/image/%s/image" + api_string
                 else:
-                    imagestring = 'http://%s:%s/image/%s/image' + api_string
+                    imagestring = "http://%s:%s/image/%s/image" + api_string
                 if not data["galleries"] is None:
                     for gallery in data["galleries"]:
                         for image in gallery["images"]:
@@ -303,16 +313,32 @@ class StashPlexAgent(Agent.Movies):
                                     image_orientation = "background"
                             else:
                                 image_orientation = "all"
-                            imageurl = imagestring % (Prefs['Hostname'], Prefs['Port'], image["id"])
+                            imageurl = imagestring % (Prefs["Hostname"], Prefs["Port"], image["id"])
                             try:
                                 thumb = HTTP.Request(imageurl)
                                 if image_orientation == "poster" or image_orientation == "all":
                                     if DEBUG:
-                                        Log("Inserting Poster image: " + image["title"] + " (" + str(image["file"]["width"]) + "x" + str(image["file"]["height"]) + " WxH)")
+                                        Log(
+                                            "Inserting Poster image: "
+                                            + image["title"]
+                                            + " ("
+                                            + str(image["file"]["width"])
+                                            + "x"
+                                            + str(image["file"]["height"])
+                                            + " WxH)"
+                                        )
                                     metadata.posters[imageurl] = Proxy.Preview(thumb)
                                 if image_orientation == "background" or image_orientation == "all":
                                     if DEBUG:
-                                        Log("Inserting Background image: " + image["title"] + " (" + str(image["file"]["width"]) + "x" + str(image["file"]["height"]) + " WxH)")
+                                        Log(
+                                            "Inserting Background image: "
+                                            + image["title"]
+                                            + " ("
+                                            + str(image["file"]["width"])
+                                            + "x"
+                                            + str(image["file"]["height"])
+                                            + " WxH)"
+                                        )
                                         metadata.art[imageurl] = Proxy.Preview(thumb)
                             except Exception as e:
                                 pass

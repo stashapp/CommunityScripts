@@ -142,5 +142,5 @@
         "label": "Use debug logging",
         "type": "bool",
         "default": false
-    },
+    }
 ]

@@ -2,71 +2,71 @@
 /* STASH GENERAL */
 /* Set Background to Black & Optional Custom Image */
 body {
-	background: black url("") no-repeat fixed center;
-	background-size: contain;
+    background: black url("") no-repeat fixed center;
+    background-size: contain;
 }
 
 /* Change Top Nav Bar Colors */
 .bg-dark {
-    background-color: #000000!important;
+    background-color: #000000 !important;
 }
 
 /* Set Red Border on Button on Hover */
 .btn-primary.btn:hover {
-  border: 1px solid red;
+    border: 1px solid red;
 }
 
 /* Set Background to Transparent for Tags/Performers Popups*/
 .fade.hover-popover-content {
-  background: transparent;
+    background: transparent;
 }
 
 /* Zoom Performers image when Hover*/
 .hover-popover-content {
-  max-width: initial;
+    max-width: initial;
 }
 .image-thumbnail:hover {
-  height: 100%;
+    height: 100%;
 }
 
 /* Set Opacity Studio Logo to 100% */
 .scene-studio-overlay {
-	opacity: 100%;
+    opacity: 100%;
 }
 
 /* Making Checkbox Slightly Bigger */
 .grid-card .card-check {
-	top: 0.9rem;
-	width: 1.75rem;
+    top: 0.9rem;
+    width: 1.75rem;
 }
 
 /* Center Titles on Cards */
 .grid-card a .card-section-title {
-	text-align: center;
+    text-align: center;
 }
 
 /* Setting Background on Cards to Black and Borders to "Stash Grey" */
 .card {
-	background-color: black;
-	border: 1px solid #30404d;
+    background-color: black;
+    border: 1px solid #30404d;
 }
 
 /* STASH MAIN PAGE*/
 /* Change Card Header Color */
 .card-header {
-  background: black;
-  border: 1px solid white;
+    background: black;
+    border: 1px solid white;
 }
 /* Change Markdown Color */
 .card-body {
-  background: black;
-  border: 1px solid white;
+    background: black;
+    border: 1px solid white;
 }
 
 /* SCENE PAGE */
 /* Hide the scene scrubber */
 .scrubber-wrapper {
-  display: none;
+    display: none;
 }
 
 /* Setting Row "Scrape With" Background to Black */
@@ -81,8 +81,9 @@ div.react-select__control {
 
 /* SETTING */
 /* Setting Text Input Border to White */
-.input-control, .text-input {
-	border: 1px solid white;
+.input-control,
+.text-input {
+    border: 1px solid white;
 }
 
 /* Setting Background on Task Queue to Black */

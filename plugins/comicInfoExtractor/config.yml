@@ -5,8 +5,8 @@
 #Fields that can contain multiple values (tags, performers) will be expected as a comma separated string, like
 #<Genre>Outdoor, Blonde</Genre>
 ImportList:
-  Genre: tags
-  Title: title
-  Writer: studio
-  Year: date
-  Summary: details
+    Genre: tags
+    Title: title
+    Writer: studio
+    Year: date
+    Summary: details
