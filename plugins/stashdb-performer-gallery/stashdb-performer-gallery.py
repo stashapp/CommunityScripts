@@ -43,6 +43,8 @@ def processPerformers():
 def processPerformer( performer):
     dir=Path(settings['path']) / performer['id']
     dir.mkdir(parents=True, exist_ok=True)
+    nogallery=dir / '.nogallery'
+    nogallery.touch()
     for sid in performer['stash_ids']:
         log.debug(sid)
         processPerformerStashid(sid['endpoint'],sid['stash_id'],performer)
