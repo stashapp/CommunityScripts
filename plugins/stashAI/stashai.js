@@ -95,7 +95,6 @@
   }
 
 
-
   /**
    * Returns an array with the scenario and scenario ID parsed from the current URL.
    * @returns {Array<string>} An array with the scenario and scenario ID.
@@ -1621,7 +1620,7 @@
   	return child_ctx;
   }
 
-  // (93:10) {#each filteredFrames as frame (frame.id)}
+  // (97:10) {#each filteredFrames as frame (frame.id)}
   function create_each_block$2(key_1, ctx) {
   	let div;
   	let marker;
@@ -1658,7 +1657,7 @@
   			t = space();
   			attr_dev(div, "class", "svelte-qsvzsw");
   			toggle_class(div, "selected", /*selected*/ ctx[3] === /*frame*/ ctx[19].id);
-  			add_location(div, file$4, 93, 12, 2646);
+  			add_location(div, file$4, 97, 12, 2701);
   			this.first = div;
   		},
   		m: function mount(target, anchor) {
@@ -1726,14 +1725,14 @@
   		block,
   		id: create_each_block$2.name,
   		type: "each",
-  		source: "(93:10) {#each filteredFrames as frame (frame.id)}",
+  		source: "(97:10) {#each filteredFrames as frame (frame.id)}",
   		ctx
   	});
 
   	return block;
   }
 
-  // (114:12) {#if saving}
+  // (118:12) {#if saving}
   function create_if_block$1(ctx) {
   	let div;
 
@@ -1741,7 +1740,7 @@
   		c: function create() {
   			div = element("div");
   			attr_dev(div, "class", "lds-dual-ring");
-  			add_location(div, file$4, 114, 14, 3426);
+  			add_location(div, file$4, 118, 14, 3481);
   		},
   		m: function mount(target, anchor) {
   			insert_dev(target, div, anchor);
@@ -1755,7 +1754,7 @@
   		block,
   		id: create_if_block$1.name,
   		type: "if",
-  		source: "(114:12) {#if saving}",
+  		source: "(118:12) {#if saving}",
   		ctx
   	});
 
@@ -1836,30 +1835,30 @@
   			attr_dev(input, "id", "stash-tag-threshold");
   			set_style(input, "margin", "0px");
   			set_style(input, "height", "10px");
-  			add_location(input, file$4, 78, 19, 2149);
+  			add_location(input, file$4, 82, 19, 2204);
   			attr_dev(div0, "class", "modal-header svelte-qsvzsw");
-  			add_location(div0, file$4, 77, 6, 2103);
+  			add_location(div0, file$4, 81, 6, 2158);
   			attr_dev(div1, "class", "row justify-content-center");
-  			add_location(div1, file$4, 91, 8, 2540);
+  			add_location(div1, file$4, 95, 8, 2595);
   			attr_dev(div2, "class", "modal-body");
-  			add_location(div2, file$4, 90, 6, 2507);
+  			add_location(div2, file$4, 94, 6, 2562);
   			attr_dev(button0, "id", "tags-cancel");
   			attr_dev(button0, "type", "button");
   			attr_dev(button0, "class", "ml-2 btn btn-secondary");
-  			add_location(button0, file$4, 106, 10, 3128);
+  			add_location(button0, file$4, 110, 10, 3183);
   			attr_dev(button1, "id", "tags-accept");
   			attr_dev(button1, "type", "button");
   			attr_dev(button1, "class", "ml-2 btn btn-primary");
-  			add_location(button1, file$4, 112, 10, 3299);
-  			add_location(div3, file$4, 105, 8, 3112);
+  			add_location(button1, file$4, 116, 10, 3354);
+  			add_location(div3, file$4, 109, 8, 3167);
   			attr_dev(div4, "class", "ModalFooter modal-footer svelte-qsvzsw");
-  			add_location(div4, file$4, 104, 6, 3065);
+  			add_location(div4, file$4, 108, 6, 3120);
   			attr_dev(div5, "class", "modal-content");
-  			add_location(div5, file$4, 76, 4, 2069);
+  			add_location(div5, file$4, 80, 4, 2124);
   			attr_dev(div6, "class", "modal-dialog modal-xl top-accent");
-  			add_location(div6, file$4, 75, 2, 2018);
+  			add_location(div6, file$4, 79, 2, 2073);
   			attr_dev(div7, "class", "tagger-tabs svelte-qsvzsw");
-  			add_location(div7, file$4, 74, 0, 1973);
+  			add_location(div7, file$4, 78, 0, 2028);
   		},
   		l: function claim(nodes) {
   			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2027,14 +2026,16 @@
   	async function addMarker(frame) {
   		const [,scene_id] = getScenarioAndID();
   		let time;
+  		let tagId;
   		const tagLower = frame.tag.label.toLowerCase();
 
   		if (tags[tagLower] === undefined) {
   			const tagID = await createTag(tagLower);
   			tags[tagLower] = tagID;
+  			tagId = tagID;
+  		} else {
+  			tagId = tags[tagLower];
   		}
-
-  		let tagId = tags[tagLower];
 
   		if (selected && selected === frame.id) {
   			const video = getCurrentVideo();
@@ -2048,13 +2049,13 @@
   		$$invalidate(3, selected = null);
   	}
 
-  	function saveAll() {
+  	async function saveAll() {
   		$$invalidate(3, selected = null);
   		$$invalidate(4, saving = true);
 
-  		filteredFrames.forEach(async frame => {
+  		for (const frame of filteredFrames) {
   			await addMarker(frame);
-  		});
+  		}
 
   		$$invalidate(4, saving = false);
   		window.location.reload();
