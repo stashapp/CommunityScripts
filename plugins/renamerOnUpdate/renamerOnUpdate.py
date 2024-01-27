@@ -769,9 +769,72 @@ def makePath(scene_information: dict, query: str) -> str:
     return r
 
 
-def capitalizeWords(s: str):
-    # thanks to BCFC_1982 for it
-    return re.sub(r"[A-Za-z]+('[A-Za-z]+)?", lambda word: word.group(0).capitalize(), s)
+def capitalizeWords(s: str) -> str:
+    """
+    Converts a filename to title case. Capitalizes all words except for certain
+    conjunctions, prepositions, and articles, unless they are the first or
+    last word of a segment of the filename. Recognizes standard apostrophes, right
+    single quotation marks (U+2019), and left single quotation marks (U+2018) within words.
+
+    Ignores all caps words and abbreviations, e.g., MILF, BBW, VR, PAWGs.
+    Ignores words with mixed case, e.g., LaSirena69, VRCosplayX, xHamster.
+    Ignores resolutions, e.g., 1080p, 4k.
+
+    Args:
+        s (str): The string to capitalize.
+
+    Returns:
+        str: The capitalized string.
+
+    Raises:
+        ValueError: If the input is not a string.
+
+    About the regex:
+        The first \b marks the starting word boundary.
+        [A-Z]? allows for an optional initial uppercase letter.
+        [a-z\'\u2019\u2018]+ matches one or more lowercase letters, apostrophes, right single quotation marks, or left single quotation marks.
+            If a word contains multiple uppercase letters, it does not match.
+        The final \b marks the ending word boundary, ensuring the expression matches whole words.
+    """
+    if not isinstance(s, str):
+        raise ValueError("Input must be a string.")
+
+    # Function to capitalize words based on their position and value.
+    def process_word(match):
+        word = match.group(0)
+        preceding_char, following_char = None, None
+
+        # List of words to avoid capitalizing if found between other words.
+        exceptions = {"and", "of", "the"}
+
+        # Find the nearest non-space character before the current word
+        if match.start() > 0:
+            for i in range(match.start() - 1, -1, -1):
+                if not match.string[i].isspace():
+                    preceding_char = match.string[i]
+                    break
+
+        # Find the nearest non-space character after the current word
+        if match.end() < len(s):
+            for i in range(match.end(), len(s)):
+                if not match.string[i].isspace():
+                    following_char = match.string[i]
+                    break
+
+        # Determine capitalization based on the position and the exception rules
+        if (
+            match.start() == 0
+            or match.end() == len(s)
+            or word.lower() not in exceptions
+            or (preceding_char and not preceding_char.isalnum())
+            or (following_char and not following_char.isalnum())
+        ):
+            return word.capitalize()
+        else:
+            return word.lower()
+
+    # Apply the regex pattern and the process_word function.
+    return re.sub(r"\b[A-Z]?[a-z\'\u2019\u2018]+\b", process_word, s)
 
 
 def create_new_filename(scene_info: dict, template: str):
