@@ -42,7 +42,9 @@ function getSceneFilename(sceneID) {
     var query = "\
 query findScene($id: ID) {\
     findScene(id: $id) {\
-        path\
+        files {\
+            path\
+        }\
     }\
 }";
 
@@ -56,7 +58,7 @@ query findScene($id: ID) {\
         return null;
     }
 
-    var path = findScene.path;
+    var path = findScene.files[0].path;
     return path.substring(path.lastIndexOf('/') + 1);
 }
 
@@ -81,7 +83,9 @@ function getGalleryFilename(galleryID) {
     var query = "\
 query findGallery($id: ID!) {\
     findGallery(id: $id) {\
-        path\
+        files {\
+            path\
+        }\
     }\
 }";
 
@@ -95,7 +99,7 @@ query findGallery($id: ID!) {\
         return null;
     }
 
-    var path = findGallery.path;
+    var path = findGallery.files[0].path;
     return path.substring(path.lastIndexOf('/') + 1);
 }
 
@@ -157,12 +161,15 @@ function cleanFilename(name) {
         .replace(/\((.*?)\)/g, '$1')
         // replace {...} with just ...
         .replace(/{(.*?)}/g, '$1')
-    ;
+        ;
 
     var blockList = [
         'mp4',
         'mov',
+        'mkv',
         'zip',
+        'cbz',
+        'cbr',
         'xxx',
         '4k',
         '4096x2160',
@@ -188,7 +195,7 @@ function cleanFilename(name) {
         .replace(/^(_|[^\w\d])+/, '')
         // Remove everything except letters and digits at the end
         .replace(/(_|[^\w\d])+$/, '')
-    ;
+        ;
 
     return name;
 }
@@ -289,7 +296,7 @@ query findPerformers($performer_filter: PerformerFilterType, $filter: FindFilter
         performers {\
             id\
             name\
-            aliases\
+            alias_list\
         }\
     }\
 }"
