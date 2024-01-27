@@ -4,6 +4,8 @@ const {
     fetch: originalFetch
 } = window;
 
+const baseURL = document.querySelector("base")?.getAttribute("href") ?? "/";
+
 window.fetch = async (...args) => {
     let [resource, config] = args;
     // request interceptor here
@@ -172,7 +174,7 @@ class Stash extends EventTarget {
         }
 
         try {
-            const res = await window.fetch('/graphql', options);
+            const res = await window.fetch(baseURL + 'graphql', options);
             this.log.debug(res);
             return res.json();
         } catch (err) {
@@ -285,7 +287,7 @@ class Stash extends EventTarget {
         return this.callGQL(reqData);
     }
     matchUrl(href, fragment) {
-        const regexp = concatRegexp(new RegExp(window.location.origin), fragment);
+        const regexp = concatRegexp(new RegExp(window.location.origin + baseURL), fragment);
         return href.match(regexp) != null;
     }
     createSettings() {
@@ -401,7 +403,7 @@ class Stash extends EventTarget {
         return document.getElementById(inputId);
     }
     get serverUrl() {
-        return window.location.origin;
+        return window.location.origin + baseURL;
     }
     async waitForElement(selector, timeout = null, location = document.body, disconnectOnPageChange = false) {
         return new Promise((resolve) => {
@@ -590,7 +592,7 @@ class Stash extends EventTarget {
         this._pageListeners = {
             // scenes tab
             "stash:page:scenes": {
-                regex: /\/scenes\?/,
+                regex: /scenes\?/,
                 manuallyHandleDispatchEvent: true,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 callback: ({lastHref, event, regex}) => {
@@ -601,10 +603,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:scene:new": {
-                regex: /\/scenes\/new/
+                regex: /scenes\/new/
             },
             "stash:page:scene": {
-                regex: /\/scenes\/\d+\?/,
+                regex: /scenes\/\d+\?/,
                 callback: ({recursive = false}) => this._listenForNonPageChanges({
                     selector: ".scene-tabs .nav-tabs",
                     listenType: "tabs",
@@ -614,7 +616,7 @@ class Stash extends EventTarget {
 
             // images tab
             "stash:page:images": {
-                regex: /\/images\?/,
+                regex: /images\?/,
                 handleDisplayView: true,
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -624,7 +626,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:image": {
-                regex: /\/images\/\d+/,
+                regex: /images\/\d+/,
                 callback: ({recursive = false}) => this._listenForNonPageChanges({
                     selector: ".image-tabs .nav-tabs",
                     listenType: "tabs",
@@ -634,24 +636,24 @@ class Stash extends EventTarget {
 
             // movies tab
             "stash:page:movies": {
-                regex: /\/movies\?/,
+                regex: /movies\?/,
             },
             "stash:page:movie": {
-                regex: /\/movies\/\d+/,
+                regex: /movies\/\d+/,
             },
             "stash:page:movie:scenes": {
-                regex: /\/movies\/\d+\?/,
+                regex: /movies\/\d+\?/,
                 callback: () => this.processTagger()
             },
 
             // markers tab
             "stash:page:markers": {
-                regex: /\/scenes\/markers/
+                regex: /scenes\/markers/
             },
 
             // galleries tab
             "stash:page:galleries": {
-                regex: /\/galleries\?/,
+                regex: /galleries\?/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -661,10 +663,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:gallery:new": {
-                regex: /\/galleries\/new/,
+                regex: /galleries\/new/,
             },
             "stash:page:gallery:images": {
-                regex: /\/galleries\/\d+\?/,
+                regex: /galleries\/\d+\?/,
                 manuallyHandleDispatchEvent: true,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 callback: ({lastHref, lastPathStr, recursive = false, event}) => {
@@ -684,7 +686,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:gallery:add": {
-                regex: /\/galleries\/\d+\/add/,
+                regex: /galleries\/\d+\/add/,
                 manuallyHandleDispatchEvent: true,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 callback: ({lastHref, lastPathStr, recursive = false, event}) => {
@@ -706,7 +708,7 @@ class Stash extends EventTarget {
 
             // performers tab
             "stash:page:performers": {
-                regex: /\/performers\?/,
+                regex: /performers\?/,
                 handleDisplayView: "ignoreDisplayViewCondition", 
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -716,10 +718,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:performer:new": {
-                regex: /\/performers\/new/
+                regex: /performers\/new/
             },
             "stash:page:performer": {
-                regex: /\/performers\/\d+/,
+                regex: /performers\/\d+/,
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
                     if (!this.matchUrl(lastHref, regex)) {
@@ -736,7 +738,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:performer:scenes": {
-                regex: /\/performers\/\d+\?/,
+                regex: /performers\/\d+\?/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -746,7 +748,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:performer:galleries": {
-                regex: /\/performers\/\d+\/galleries/,
+                regex: /performers\/\d+\/galleries/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -756,7 +758,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:performer:images": {
-                regex: /\/performers\/\d+\/images/,
+                regex: /performers\/\d+\/images/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -766,10 +768,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:performer:movies": {
-                regex: /\/performers\/\d+\/movies/
+                regex: /performers\/\d+\/movies/
             },
             "stash:page:performer:appearswith": {
-                regex: /\/performers\/\d+\/appearswith/,
+                regex: /performers\/\d+\/appearswith/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -782,7 +784,7 @@ class Stash extends EventTarget {
 
             // studios tab
             "stash:page:studios": {
-                regex: /\/studios\?/,
+                regex: /studios\?/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -792,10 +794,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:studio:new": {
-                regex: /\/studios\/new/
+                regex: /studios\/new/
             },
             "stash:page:studio": {
-                regex: /\/studios\/\d+/,
+                regex: /studios\/\d+/,
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
                     if (!this.matchUrl(lastHref, regex)) {
@@ -812,7 +814,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:studio:scenes": {
-                regex: /\/studios\/\d+\?/,
+                regex: /studios\/\d+\?/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -822,7 +824,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:studio:galleries": {
-                regex: /\/studios\/\d+\/galleries/,
+                regex: /studios\/\d+\/galleries/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -832,7 +834,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:studio:images": {
-                regex: /\/studios\/\d+\/images/,
+                regex: /studios\/\d+\/images/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -842,7 +844,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:studio:performers": {
-                regex: /\/studios\/\d+\/performers/,
+                regex: /studios\/\d+\/performers/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -852,10 +854,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:studio:movies": {
-                regex: /\/studios\/\d+\/movies/
+                regex: /studios\/\d+\/movies/
             },
             "stash:page:studio:childstudios": {
-                regex: /\/studios\/\d+\/childstudios/,
+                regex: /studios\/\d+\/childstudios/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -867,7 +869,7 @@ class Stash extends EventTarget {
 
             // tags tab
             "stash:page:tags": {
-                regex: /\/tags\?/,
+                regex: /tags\?/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -877,10 +879,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:tag:new": {
-                regex: /\/tags\/new/
+                regex: /tags\/new/
             },
             "stash:page:tag": {
-                regex: /\/tags\/\d+/,
+                regex: /tags\/\d+/,
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
                     if (!this.matchUrl(lastHref, regex)) {
@@ -897,7 +899,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:tag:scenes": {
-                regex: /\/tags\/\d+\?/,
+                regex: /tags\/\d+\?/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -907,7 +909,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:tag:galleries": {
-                regex: /\/tags\/\d+\/galleries/,
+                regex: /tags\/\d+\/galleries/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -917,7 +919,7 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:tag:images": {
-                regex: /\/tags\/\d+\/images/,
+                regex: /tags\/\d+\/images/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -927,10 +929,10 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:tag:markers": {
-                regex: /\/tags\/\d+\/markers/
+                regex: /tags\/\d+\/markers/
             },
             "stash:page:tag:performers": {
-                regex: /\/tags\/\d+\/performers/,
+                regex: /tags\/\d+\/performers/,
                 handleDisplayView: "ignoreDisplayViewCondition",
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
@@ -942,7 +944,7 @@ class Stash extends EventTarget {
 
             // settings page
             "stash:page:settings": {
-                regex: /\/settings/,
+                regex: /settings/,
                 manuallyHandleDispatchEvent: true,
                 callback: ({lastHref, event, regex}) => {
                     if (!this.matchUrl(lastHref, regex)) {
@@ -951,52 +953,52 @@ class Stash extends EventTarget {
                 }
             },
             "stash:page:settings:tasks": {
-                regex: /\/settings\?tab=tasks/,
+                regex: /settings\?tab=tasks/,
                 callback: () => this.hidePluginTasks()
             },
             "stash:page:settings:library": {
-                regex: /\/settings\?tab=library/
+                regex: /settings\?tab=library/
             },
             "stash:page:settings:interface": {
-                regex: /\/settings\?tab=interface/
+                regex: /settings\?tab=interface/
             },
             "stash:page:settings:security": {
-                regex: /\/settings\?tab=security/
+                regex: /settings\?tab=security/
             },
             "stash:page:settings:metadata-providers": {
-                regex: /\/settings\?tab=metadata-providers/
+                regex: /settings\?tab=metadata-providers/
             },
             "stash:page:settings:services": {
-                regex: /\/settings\?tab=services/
+                regex: /settings\?tab=services/
             },
             "stash:page:settings:system": {
-                regex: /\/settings\?tab=system/,
+                regex: /settings\?tab=system/,
                 callback: () => this.createSettings()
             },
             "stash:page:settings:plugins": {
-                regex: /\/settings\?tab=plugins/
+                regex: /settings\?tab=plugins/
             },
             "stash:page:settings:logs": {
-                regex: /\/settings\?tab=logs/
+                regex: /settings\?tab=logs/
             },
             "stash:page:settings:tools": {
-                regex: /\/settings\?tab=tools/
+                regex: /settings\?tab=tools/
             },
             "stash:page:settings:changelog": {
-                regex: /\/settings\?tab=changelog/
+                regex: /settings\?tab=changelog/
             },
             "stash:page:settings:about": {
-                regex: /\/settings\?tab=about/
+                regex: /settings\?tab=about/
             },
 
             // stats page
             "stash:page:stats": {
-                regex: /\/stats/
+                regex: /stats/
             },
 
             // home page
             "stash:page:home": {
-                regex: /\/$/,
+                regex: /$/,
                 callback: () => this._listenForNonPageChanges({selector: ".recommendations-container-edit", event: "stash:page:home:edit", reRunHandlePageChange: true})
             },
         }
@@ -1318,7 +1320,7 @@ class Stash extends EventTarget {
     parseSearchItem(searchItem) {
         const urlNode = searchItem.querySelector('a.scene-link');
         const url = new URL(urlNode.href);
-        const id = url.pathname.replace('/scenes/', '');
+        const id = url.pathname.replace(baseURL + 'scenes/', '');
         const data = this.scenes[id];
         const nameNode = searchItem.querySelector('a.scene-link > div.TruncatedText');
         const name = nameNode.innerText;
