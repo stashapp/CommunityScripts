@@ -1,7 +1,7 @@
 name: Stash AI
 # requires: StashUserscriptLibrary
 description: Add Tags or Markers to a video using AI
-version: 1.0.1
+version: 1.0.2
 ui:
   requires: 
   - StashUserscriptLibrary
