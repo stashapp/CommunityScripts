@@ -8,12 +8,12 @@ exec:
 interface: raw
 hooks:
   - name: Add Marker to Scene
-    description: Makes Markers checking against timestamp.trade
+    description: Makes Markers checking against The Porn DB aka metadataapi.net
     triggeredBy:
       - Scene.Update.Post
 
 tasks:
   - name: 'Sync'
-    description: Get markers for all scenes with a stashid and no markers
+    description: Get markers for all scenes with a stashid from metadataapi.net and no markers
     defaultArgs:
       mode: processScene
