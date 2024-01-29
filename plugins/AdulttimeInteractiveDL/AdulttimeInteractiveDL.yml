@@ -1,0 +1,22 @@
+name: "Adulttime Interactive Downloader"
+description: Download Interactive Files for Adulttime Scenes
+version: 0.1.1
+url: https://github.com/tooliload/StashAppCommunityScripts/tree/main/plugins/AdulttimeInteractiveDL
+exec:
+  - python
+  - "{pluginDir}/AdulttimeInteractiveDL.py"
+interface: raw
+tasks:
+  - name: 'Download'
+    description: 'Download Interactive Files from Adulttime Scenes'
+    defaultArgs:
+      mode: download
+  - name: 'Clear Cache'
+    description: 'Clean cached JSON Answers and Interactive Cache'
+    defaultArgs:
+      mode: cacheclean
+hooks:
+  - name: download
+    description: Try download if Scene updated
+    triggeredBy:
+      - Scene.Update.Post
