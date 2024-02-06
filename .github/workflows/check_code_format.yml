@@ -45,3 +45,6 @@ jobs:
 
       - name: Check format
         uses: psf/black@stable
+        with:
+          options: '--exclude="3rd party"'
+          src: "."

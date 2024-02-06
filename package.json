@@ -4,7 +4,7 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "format": "prettier --write .",
-    "format-py": "black --exclude=\"3rd party\" ./"
+    "format-py": "black --exclude=\"3rd party\" ."
   },
   "devDependencies": {
     "prettier": "^3.2.5"
