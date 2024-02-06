@@ -3,12 +3,12 @@ name: Stash AI
 description: Add Tags or Markers to a video using AI
 version: 1.0.2
 ui:
-  requires: 
-  - StashUserscriptLibrary
+  requires:
+    - StashUserscriptLibrary
   javascript:
-  - stashai.js
+    - stashai.js
   css:
-  - stashai.css
+    - stashai.css
   csp:
     connect-src:
-    - "https://cc1234-stashtag.hf.space"
+      - "https://cc1234-stashtag.hf.space"

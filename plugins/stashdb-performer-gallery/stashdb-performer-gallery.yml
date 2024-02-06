@@ -26,13 +26,12 @@ hooks:
     triggeredBy:
       - Image.Update.Post
 
-
 tasks:
-  - name: 'Process Performers'
+  - name: "Process Performers"
     description: Fetch performer images for performers with the [performer gallery] tag
     defaultArgs:
       mode: processPerformers
-  - name: 'relink missing images'
+  - name: "relink missing images"
     description: reprocess missing images
     defaultArgs:
       mode: processImages
