@@ -97,7 +97,8 @@
  .btn-primary:hover {
      color: #fff;
      background-color: #e59029;
-     border-color: #e59029 font-weight: bold;
+     border-color: #e59029;
+     font-weight: bold;
 }
  .nav-tabs .nav-link.active {
      color: #eee;

@@ -586,7 +586,7 @@ h5.card-section-title, .scene-tabs .scene-header {
 .overlay-resolution {color:#eee;}
 
 /* --- Changes the spaces between the items on the Scenes page --- */
-.zoom-0 {margin: 4px 0.50% 10px; !important }
+.zoom-0 {margin: 4px 0.50% 10px !important }
 
 
 .scene-card-link {height:195px; overflow:hidden;}
