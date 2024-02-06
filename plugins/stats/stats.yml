@@ -3,7 +3,7 @@ name: Extended Stats
 description: Adds new stats to the stats page
 version: 1.0
 ui:
-  requires: 
-  - StashUserscriptLibrary
+  requires:
+    - StashUserscriptLibrary
   javascript:
-  - stats.js
+    - stats.js

@@ -13,7 +13,7 @@ hooks:
       - Scene.Update.Post
 
 tasks:
-  - name: 'Sync'
+  - name: "Sync"
     description: Get markers for all scenes with a stashid from metadataapi.net and no markers
     defaultArgs:
       mode: processScene

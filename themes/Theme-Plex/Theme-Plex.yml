@@ -3,4 +3,4 @@ description: Plex Theme for Stash by Fidelio 2020
 version: 1.0.5
 ui:
   css:
-  - Theme-Plex.css
+    - Theme-Plex.css

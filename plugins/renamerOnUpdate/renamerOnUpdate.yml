@@ -12,20 +12,19 @@ hooks:
     triggeredBy:
       - Scene.Update.Post
 tasks:
-  - name: 'Disable'
+  - name: "Disable"
     description: Disable the hook
     defaultArgs:
       mode: disable
-  - name: 'Enable'
+  - name: "Enable"
     description: Enable the hook
     defaultArgs:
       mode: enable
-  - name: 'Dryrun'
+  - name: "Dryrun"
     description: Enable/disable dry-run
     defaultArgs:
       mode: dryrun
-  - name: 'Rename scenes'
+  - name: "Rename scenes"
     description: Rename all your scenes based on your config.
     defaultArgs:
       mode: bulk
-

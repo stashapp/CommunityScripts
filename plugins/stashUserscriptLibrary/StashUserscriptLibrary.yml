@@ -3,4 +3,4 @@ description: Exports utility functions and a Stash class that emits events whene
 version: 1.0
 ui:
   javascript:
-  - stashUserscriptLibrary.js
+    - stashUserscriptLibrary.js

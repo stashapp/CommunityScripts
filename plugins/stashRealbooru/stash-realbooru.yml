@@ -3,12 +3,12 @@ name: Stash Realbooru
 description: Add tags based on the realbooru model, This works on individual images.
 version: 1.0.1
 ui:
-  requires: 
-  - StashUserscriptLibrary
+  requires:
+    - StashUserscriptLibrary
   javascript:
-  - stash-realbooru.js
+    - stash-realbooru.js
   css:
-  - stash-realbooru.css
+    - stash-realbooru.css
   csp:
     connect-src:
-    - "https://cc1234-deepdanbooru.hf.space"
+      - "https://cc1234-deepdanbooru.hf.space"
