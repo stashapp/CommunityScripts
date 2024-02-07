@@ -54,22 +54,30 @@ Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with 
 
 ## Contributing
 
-Formatting is enforced on all files.
+### Formatting
 
-[Yarn](https://yarnpkg.com/en/docs/install) must be installed to run the formatting tools. Python dependencies must also be installed to format `py` files.
+Formatting is enforced on all files. Follow this setup guide:
 
-### Formatting non-`py` files
+1. **[Yarn](https://yarnpkg.com/en/docs/install)** and **its dependencies** must be installed to run the formatting tools.
+    ```sh
+    yarn install --frozen-lockfile
+    ```
 
-For non-`py` files, files may be formatted using `prettier`
+2. **Python dependencies** must also be installed to format `py` files.
+    ```sh
+    pip install -r requirements.txt
+    ```
 
-After installing `yarn` and before running prettier for the first time, `prettier` must be installed by running: `yarn install --frozen-lockfile`
+#### Formatting non-`py` files
 
-To run `prettier` to format non-`py` files, run the following: `yarn run format`
+```sh
+yarn run format
+```
 
-### Formatting `py` files
+#### Formatting `py` files
 
-`py` files are formatted using `black` which must be installed first.
+`py` files are formatted using [`black`](https://pypi.org/project/black/).
 
-After installing `yarn` and before formatting for the first time, `black` must be installed by running: `pip install -r requirements.txt`
-
-To run `black` to format `py` files, run the following: `yarn run format-py`
+```sh
+yarn run format-py
+```
