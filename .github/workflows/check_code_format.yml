@@ -26,7 +26,7 @@ jobs:
       - name: Check format
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --check
+          prettier_options: --check .
           dry: true
           only_changed: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
