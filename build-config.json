@@ -1,0 +1,7 @@
+{
+  "plugins": ["plugins/*", "themes/*"],
+  "outDir": "dist/stable",
+  "stashPluginSubDir": "community",
+  "include": ["README.md", "LICENSE"],
+  "externalFilesPath": "dist"
+}

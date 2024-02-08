@@ -2,11 +2,18 @@
   "name": "community-scripts",
   "description": "This repository contains plugin and utility scripts created by the Stash community and hosted on the official GitHub repo.",
   "license": "AGPL-3.0-only",
+  "type": "module",
   "scripts": {
     "format": "prettier --write .",
-    "format-py": "black --exclude=\"3rd party\" ."
+    "format-py": "black --exclude=\"3rd party\" .",
+    "build": "stash-plugin-builder --build",
+    "watch": "stash-plugin-builder --watch",
+    "build-dist": "stash-plugin-builder --out=dist --minify",
+    "build-all": "node --no-warnings build.js --script --build",
+    "build-all-dist": "node --no-warnings build.js --script --dist"
   },
   "devDependencies": {
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "stash-plugin-builder": "^1.0.0"
   }
 }
