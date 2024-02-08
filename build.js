@@ -209,7 +209,9 @@ if (config.excludePluginFolders?.length) {
 
 allPluginFolders.normalPluginPaths.forEach(({ pluginPath, pluginDistPath }) => {
   SPB.Glob.copy(pluginPath, config.outDir);
-  console.log("built:", pluginPath);
+
+  console.log(path.basename(pluginPath), "built ✅");
+
   if (!isWin && config.mode.dist)
     indexYml.push(Utils.packPlugin(pluginPath, pluginDistPath)); // works only on linux
 });
