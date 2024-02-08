@@ -1,0 +1,8 @@
+name: VideoScrollWheel
+description: Adds functionality to change volume/time in scene video player by hovering over left/right side of player and scrolling with mouse scrollwheel. Scroll while hovering on left side to adjust volume, scroll on right side to skip forward/back.
+version: 0.1
+ui:
+  requires:
+    - StashUserscriptLibrary
+  javascript:
+    - videoScrollWheel.js
