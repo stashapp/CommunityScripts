@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/**
+      - plugins/**
+      - themes/**
+      - build.js
 
 permissions:
   contents: write
