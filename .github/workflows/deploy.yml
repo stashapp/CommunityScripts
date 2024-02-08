@@ -8,6 +8,7 @@ on:
       - .github/workflows/**
       - plugins/**
       - themes/**
+      - build-config.json
       - build.js
 
 permissions:
