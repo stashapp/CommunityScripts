@@ -187,7 +187,7 @@ function cleanFilename(name) {
   ];
   var regExp = new RegExp(
     "(_|[^\\w\\d]|^)(" + blockList.join("|") + ")(_|[^\\w\\d]|$)",
-    "i",
+    "i"
   );
   while (regExp.test(name)) {
     name = name.replace(regExp, "$1$3");

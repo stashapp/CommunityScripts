@@ -359,7 +359,7 @@
   function custom_event(
     type,
     detail,
-    { bubbles = false, cancelable = false } = {},
+    { bubbles = false, cancelable = false } = {}
   ) {
     const e = document.createEvent("CustomEvent");
     e.initCustomEvent(type, bubbles, cancelable, detail);
@@ -398,7 +398,7 @@
       rules[name] = true;
       stylesheet.insertRule(
         `@keyframes ${name} ${rule}`,
-        stylesheet.cssRules.length,
+        stylesheet.cssRules.length
       );
     }
     const animation = node.style.animation || "";
@@ -411,7 +411,7 @@
     const next = previous.filter(
       name
         ? (anim) => anim.indexOf(name) < 0 // remove specific animation
-        : (anim) => anim.indexOf("__svelte") === -1, // remove all Svelte animations
+        : (anim) => anim.indexOf("__svelte") === -1 // remove all Svelte animations
     );
     const deleted = previous.length - next.length;
     if (deleted) {
@@ -663,7 +663,7 @@
     const filtered = [];
     const targets = [];
     render_callbacks.forEach((c) =>
-      fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c),
+      fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c)
     );
     targets.forEach((c) => c());
     render_callbacks = filtered;
@@ -747,7 +747,7 @@
           delay,
           easing,
           css,
-          uid++,
+          uid++
         );
       tick(0, 1);
       const start_time = now() + delay;
@@ -877,7 +877,7 @@
     destroy,
     create_each_block,
     next,
-    get_context,
+    get_context
   ) {
     let o = old_blocks.length;
     let n = list.length;
@@ -1019,7 +1019,7 @@
     not_equal,
     props,
     append_styles,
-    dirty = [-1],
+    dirty = [-1]
   ) {
     const parent_component = current_component;
     set_current_component(component);
@@ -1038,8 +1038,7 @@
       before_update: [],
       after_update: [],
       context: new Map(
-        options.context ||
-          (parent_component ? parent_component.$$.context : []),
+        options.context || (parent_component ? parent_component.$$.context : [])
       ),
       // everything else
       callbacks: blank_object(),
@@ -1079,7 +1078,7 @@
         component,
         options.target,
         options.anchor,
-        options.customElement,
+        options.customElement
       );
       flush();
     }
@@ -1118,7 +1117,7 @@
     document.dispatchEvent(
       custom_event(type, Object.assign({ version: "3.59.2" }, detail), {
         bubbles: true,
-      }),
+      })
     );
   }
   function append_dev(target, node) {
@@ -1140,7 +1139,7 @@
     options,
     has_prevent_default,
     has_stop_propagation,
-    has_stop_immediate_propagation,
+    has_stop_immediate_propagation
   ) {
     const modifiers =
       options === true
@@ -1292,7 +1291,7 @@
 
     for (let i = 0; i < each_value.length; i += 1) {
       each_blocks[i] = create_each_block$3(
-        get_each_context$3(ctx, each_value, i),
+        get_each_context$3(ctx, each_value, i)
       );
     }
 
@@ -1326,13 +1325,13 @@
             /*frame*/ ctx[0].offset[0] +
             "px -" +
             /*frame*/ ctx[0].offset[1] +
-            "px",
+            "px"
         );
         set_style(div0, "background-image", "url('" + /*url*/ ctx[1] + "')");
         attr_dev(
           div0,
           "data-offset",
-          (div0_data_offset_value = /*frame*/ ctx[0].offset),
+          (div0_data_offset_value = /*frame*/ ctx[0].offset)
         );
         add_location(div0, file$5, 47, 2, 1619);
         attr_dev(
@@ -1341,14 +1340,14 @@
           (div1_class_value =
             "progress-bar progress-bar-striped bg-" +
             confidence$1(/*frame*/ ctx[0].tag.prob) +
-            " svelte-zeu5yg"),
+            " svelte-zeu5yg")
         );
         attr_dev(div1, "role", "progressbar");
         set_style(div1, "width", /*frame*/ ctx[0].tag.prob * 100 + "%");
         attr_dev(
           div1,
           "aria-valuenow",
-          (div1_aria_valuenow_value = /*frame*/ ctx[0].tag.prob * 100),
+          (div1_aria_valuenow_value = /*frame*/ ctx[0].tag.prob * 100)
         );
         attr_dev(div1, "aria-valuemin", 0);
         attr_dev(div1, "aria-valuemax", 100);
@@ -1359,7 +1358,7 @@
         attr_dev(
           path0,
           "d",
-          "M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z",
+          "M313.4 32.9c26 5.2 42.9 30.5 37.7 56.5l-2.3 11.4c-5.3 26.7-15.1 52.1-28.8 75.2H464c26.5 0 48 21.5 48 48c0 18.5-10.5 34.6-25.9 42.6C497 275.4 504 288.9 504 304c0 23.4-16.8 42.9-38.9 47.1c4.4 7.3 6.9 15.8 6.9 24.9c0 21.3-13.9 39.4-33.1 45.6c.7 3.3 1.1 6.8 1.1 10.4c0 26.5-21.5 48-48 48H294.5c-19 0-37.5-5.6-53.3-16.1l-38.5-25.7C176 420.4 160 390.4 160 358.3V320 272 247.1c0-29.2 13.3-56.7 36-75l7.4-5.9c26.5-21.2 44.6-51 51.2-84.2l2.3-11.4c5.2-26 30.5-42.9 56.5-37.7zM32 192H96c17.7 0 32 14.3 32 32V448c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V224c0-17.7 14.3-32 32-32z"
         );
         add_location(path0, file$5, 81, 9, 2640);
         attr_dev(svg0, "class", "tag-item-accept svelte-zeu5yg");
@@ -1374,13 +1373,13 @@
         attr_dev(select, "class", "tag-item-select svelte-zeu5yg");
         if (/*frame*/ ctx[0].tag.label === void 0)
           add_render_callback(() =>
-            /*select_change_handler*/ ctx[5].call(select),
+            /*select_change_handler*/ ctx[5].call(select)
           );
         add_location(select, file$5, 86, 4, 3272);
         attr_dev(
           path1,
           "d",
-          "M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z",
+          "M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z"
         );
         add_location(path1, file$5, 105, 7, 3754);
         attr_dev(svg1, "height", "20");
@@ -1397,7 +1396,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -1434,7 +1433,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               div0,
@@ -1443,7 +1442,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               div0,
@@ -1452,7 +1451,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               div3,
@@ -1461,7 +1460,7 @@
               { once: true },
               false,
               false,
-              false,
+              false
             ),
             listen_dev(select, "change", /*select_change_handler*/ ctx[5]),
             listen_dev(
@@ -1471,7 +1470,7 @@
               { once: true },
               false,
               false,
-              false,
+              false
             ),
           ];
 
@@ -1487,7 +1486,7 @@
               /*frame*/ ctx[0].offset[0] +
               "px -" +
               /*frame*/ ctx[0].offset[1] +
-              "px",
+              "px"
           );
         }
 
@@ -1712,25 +1711,25 @@
 
     get frame() {
       throw new Error(
-        "<Marker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Marker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set frame(value) {
       throw new Error(
-        "<Marker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Marker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get url() {
       throw new Error(
-        "<Marker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Marker>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set url(value) {
       throw new Error(
-        "<Marker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Marker>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -1788,7 +1787,7 @@
       x = 0,
       y = 0,
       opacity = 0,
-    } = {},
+    } = {}
   ) {
     const style = getComputedStyle(node);
     const target_opacity = +style.opacity;
@@ -1834,7 +1833,7 @@
         value,
         /*frame*/ ctx[19],
         /*each_value*/ ctx[20],
-        /*frame_index*/ ctx[21],
+        /*frame_index*/ ctx[21]
       );
     }
 
@@ -1861,7 +1860,7 @@
         toggle_class(
           div,
           "selected",
-          /*selected*/ ctx[3] === /*frame*/ ctx[19].id,
+          /*selected*/ ctx[3] === /*frame*/ ctx[19].id
         );
         add_location(div, file$4, 97, 12, 2701);
         this.first = div;
@@ -1889,7 +1888,7 @@
           toggle_class(
             div,
             "selected",
-            /*selected*/ ctx[3] === /*frame*/ ctx[19].id,
+            /*selected*/ ctx[3] === /*frame*/ ctx[19].id
           );
         }
       },
@@ -2010,7 +2009,7 @@
       let key = get_key(child_ctx);
       each_1_lookup.set(
         key,
-        (each_blocks[i] = create_each_block$2(key, child_ctx)),
+        (each_blocks[i] = create_each_block$2(key, child_ctx))
       );
     }
 
@@ -2078,7 +2077,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -2124,7 +2123,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               button0,
@@ -2133,7 +2132,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               button1,
@@ -2142,7 +2141,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
           ];
 
@@ -2181,7 +2180,7 @@
             fix_and_outro_and_destroy_block,
             create_each_block$2,
             null,
-            get_each_context$2,
+            get_each_context$2
           );
           for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].a();
           check_outros();
@@ -2267,7 +2266,7 @@
       $$invalidate(
         0,
         (threshold =
-          Number(localStorage.getItem("stash-marker-threshold")) || 0.4),
+          Number(localStorage.getItem("stash-marker-threshold")) || 0.4)
       );
     });
 
@@ -2425,7 +2424,7 @@
       if ($$self.$$.dirty & /*frames, threshold*/ 2049) {
         $$invalidate(
           5,
-          (filteredFrames = frames.filter((x) => x.tag.prob > threshold)),
+          (filteredFrames = frames.filter((x) => x.tag.prob > threshold))
         );
       }
     };
@@ -2471,37 +2470,37 @@
 
     get url() {
       throw new Error(
-        "<MarkerMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<MarkerMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set url(value) {
       throw new Error(
-        "<MarkerMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<MarkerMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get frames() {
       throw new Error(
-        "<MarkerMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<MarkerMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set frames(value) {
       throw new Error(
-        "<MarkerMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<MarkerMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get threshold() {
       throw new Error(
-        "<MarkerMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<MarkerMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set threshold(value) {
       throw new Error(
-        "<MarkerMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<MarkerMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -2524,7 +2523,7 @@
         attr_dev(
           path,
           "d",
-          "M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z",
+          "M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"
         );
         add_location(path, file$3, 70, 77, 2369);
         attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
@@ -2540,7 +2539,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -2556,7 +2555,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -2608,7 +2607,7 @@
 
       if (!url) {
         alert(
-          "No sprite found, please ensure you have sprites enabled and generated for your scenes.",
+          "No sprite found, please ensure you have sprites enabled and generated for your scenes."
         );
         $$invalidate(0, (scanner = false));
         return;
@@ -2636,7 +2635,7 @@
           if (response.status !== 200) {
             $$invalidate(0, (scanner = false));
             alert(
-              "Something went wrong. It's likely a server issue, Please try again later.",
+              "Something went wrong. It's likely a server issue, Please try again later."
             );
             return;
           }
@@ -2783,7 +2782,7 @@
 
     for (let i = 0; i < each_value.length; i += 1) {
       each_blocks[i] = create_each_block$1(
-        get_each_context$1(ctx, each_value, i),
+        get_each_context$1(ctx, each_value, i)
       );
     }
 
@@ -2813,13 +2812,13 @@
             /*data*/ ctx[1].offset[0] +
             "px -" +
             /*data*/ ctx[1].offset[1] +
-            "px",
+            "px"
         );
         set_style(div0, "background-image", "url('" + /*url*/ ctx[2] + "')");
         attr_dev(
           div0,
           "data-offset",
-          (div0_data_offset_value = /*data*/ ctx[1].offset),
+          (div0_data_offset_value = /*data*/ ctx[1].offset)
         );
         add_location(div0, file$2, 54, 2, 1571);
         attr_dev(
@@ -2828,14 +2827,14 @@
           (div1_class_value =
             "progress-bar progress-bar-striped bg-" +
             confidence(/*data*/ ctx[1].prob) +
-            " svelte-1d03wug"),
+            " svelte-1d03wug")
         );
         attr_dev(div1, "role", "progressbar");
         set_style(div1, "width", /*data*/ ctx[1].prob * 100 + "%");
         attr_dev(
           div1,
           "aria-valuenow",
-          (div1_aria_valuenow_value = /*data*/ ctx[1].prob * 100),
+          (div1_aria_valuenow_value = /*data*/ ctx[1].prob * 100)
         );
         attr_dev(div1, "aria-valuemin", "0");
         attr_dev(div1, "aria-valuemax", "100");
@@ -2847,13 +2846,13 @@
         attr_dev(select, "class", "tag-item-select svelte-1d03wug");
         if (/*name*/ ctx[0] === void 0)
           add_render_callback(() =>
-            /*select_change_handler*/ ctx[4].call(select),
+            /*select_change_handler*/ ctx[4].call(select)
           );
         add_location(select, file$2, 72, 4, 2159);
         attr_dev(
           path,
           "d",
-          "M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z",
+          "M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z"
         );
         add_location(path, file$2, 87, 7, 2586);
         attr_dev(svg, "height", "20");
@@ -2866,7 +2865,7 @@
         attr_dev(
           span,
           "class",
-          "tag-item badge badge-secondary svelte-1d03wug",
+          "tag-item badge badge-secondary svelte-1d03wug"
         );
         add_location(span, file$2, 71, 2, 2109);
         set_style(div3, "padding", "20px");
@@ -2874,7 +2873,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -2907,7 +2906,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               div0,
@@ -2916,7 +2915,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(select, "change", /*select_change_handler*/ ctx[4]),
             listen_dev(
@@ -2926,7 +2925,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
           ];
 
@@ -2942,7 +2941,7 @@
               /*data*/ ctx[1].offset[0] +
               "px -" +
               /*data*/ ctx[1].offset[1] +
-              "px",
+              "px"
           );
         }
 
@@ -3165,37 +3164,37 @@
 
     get name() {
       throw new Error(
-        "<Tag>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tag>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set name(value) {
       throw new Error(
-        "<Tag>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tag>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get data() {
       throw new Error(
-        "<Tag>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tag>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set data(value) {
       throw new Error(
-        "<Tag>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tag>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get url() {
       throw new Error(
-        "<Tag>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tag>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set url(value) {
       throw new Error(
-        "<Tag>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tag>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -3257,7 +3256,7 @@
       let key = get_key(child_ctx);
       each_1_lookup.set(
         key,
-        (each_blocks[i] = create_each_block(key, child_ctx)),
+        (each_blocks[i] = create_each_block(key, child_ctx))
       );
     }
 
@@ -3328,7 +3327,7 @@
         attr_dev(
           div7,
           "class",
-          "modal-dialog modal-xl top-accent svelte-9viihb",
+          "modal-dialog modal-xl top-accent svelte-9viihb"
         );
         add_location(div7, file$1, 91, 4, 2127);
         attr_dev(div8, "role", "dialog");
@@ -3382,7 +3381,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               button1,
@@ -3391,7 +3390,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(input, "change", /*input_change_input_handler*/ ctx[12]),
             listen_dev(input, "input", /*input_change_input_handler*/ ctx[12]),
@@ -3402,7 +3401,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
           ];
 
@@ -3428,7 +3427,7 @@
             fix_and_outro_and_destroy_block,
             create_each_block,
             null,
-            get_each_context,
+            get_each_context
           );
           for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].a();
           check_outros();
@@ -3530,7 +3529,7 @@
         value,
         /*tagName*/ ctx[15],
         /*each_value*/ ctx[17],
-        /*each_index*/ ctx[18],
+        /*each_index*/ ctx[18]
       );
     }
 
@@ -3672,7 +3671,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -3881,7 +3880,7 @@
       if ($$self.$$.dirty & /*matches, threshold*/ 1025) {
         $$invalidate(
           5,
-          (filteredMatches = matches.filter((x) => x[1].prob > threshold)),
+          (filteredMatches = matches.filter((x) => x[1].prob > threshold))
         );
       }
     };
@@ -3923,37 +3922,37 @@
 
     get matches() {
       throw new Error(
-        "<TagMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<TagMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set matches(value) {
       throw new Error(
-        "<TagMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<TagMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get url() {
       throw new Error(
-        "<TagMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<TagMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set url(value) {
       throw new Error(
-        "<TagMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<TagMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get threshold() {
       throw new Error(
-        "<TagMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<TagMatches>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set threshold(value) {
       throw new Error(
-        "<TagMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<TagMatches>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -3979,7 +3978,7 @@
         attr_dev(
           path,
           "d",
-          "m21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4a2 2 0 0 0-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58c.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41c0-.55-.23-1.06-.59-1.42M5.5 7A1.5 1.5 0 0 1 4 5.5A1.5 1.5 0 0 1 5.5 4A1.5 1.5 0 0 1 7 5.5A1.5 1.5 0 0 1 5.5 7m11.77 8.27L13 19.54l-4.27-4.27A2.52 2.52 0 0 1 8 13.5a2.5 2.5 0 0 1 2.5-2.5c.69 0 1.32.28 1.77.74l.73.72l.73-.73c.45-.45 1.08-.73 1.77-.73a2.5 2.5 0 0 1 2.5 2.5c0 .69-.28 1.32-.73 1.77Z",
+          "m21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4a2 2 0 0 0-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58c.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41c0-.55-.23-1.06-.59-1.42M5.5 7A1.5 1.5 0 0 1 4 5.5A1.5 1.5 0 0 1 5.5 4A1.5 1.5 0 0 1 7 5.5A1.5 1.5 0 0 1 5.5 7m11.77 8.27L13 19.54l-4.27-4.27A2.52 2.52 0 0 1 8 13.5a2.5 2.5 0 0 1 2.5-2.5c.69 0 1.32.28 1.77.74l.73.72l.73-.73c.45-.45 1.08-.73 1.77-.73a2.5 2.5 0 0 1 2.5 2.5c0 .69-.28 1.32-.73 1.77Z"
         );
         add_location(path, file, 78, 85, 2558);
         attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
@@ -3995,7 +3994,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -4011,7 +4010,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -4054,7 +4053,7 @@
 
       if (!url) {
         alert(
-          "No sprite found, please ensure you have sprites enabled and generated for your scenes.",
+          "No sprite found, please ensure you have sprites enabled and generated for your scenes."
         );
         $$invalidate(0, (scanner = false));
         return;
@@ -4094,7 +4093,7 @@
           if (response.status !== 200) {
             $$invalidate(0, (scanner = false));
             alert(
-              "Something went wrong. It's likely a server issue, Please try again later.",
+              "Something went wrong. It's likely a server issue, Please try again later."
             );
             return;
           }
