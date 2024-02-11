@@ -22,7 +22,7 @@ config.mode.dist = getArgv("dist");
 if (config.mode.build) {
   config.outDir = path.join(
     process.env.STASH_PLUGIN_DIR,
-    config.stashPluginSubDir ?? "",
+    config.stashPluginSubDir ?? ""
   );
 }
 
@@ -80,18 +80,18 @@ class UtilsModules {
 
       if (isParentDir && SPB.Glob.fsExsists(_path)) {
         const recursivePluginPaths = this.getAllPluginFolders(
-          SPB.Glob.fsExsists(Glob.getChildDirs(_path, true)),
+          SPB.Glob.fsExsists(Glob.getChildDirs(_path, true))
         );
 
         pluginPaths.normalPluginPaths.push(
-          ...recursivePluginPaths.normalPluginPaths,
+          ...recursivePluginPaths.normalPluginPaths
         );
         pluginPaths.stashPluginBuilderPluginPaths.push(
-          ...recursivePluginPaths.stashPluginBuilderPluginPaths,
+          ...recursivePluginPaths.stashPluginBuilderPluginPaths
         );
       } else if (SPB.Glob.fsExsists(_path)) {
         const isSettingsYmlPresent = SPB.Glob.fsExsists(
-          path.join(_path, "settings.yml"),
+          path.join(_path, "settings.yml")
         );
         const settingsYmlId = isSettingsYmlPresent
           ? SPB.Glob.getYml(path.join(_path, "settings.yml"))?.id
@@ -129,7 +129,7 @@ class UtilsModules {
 
       indexYmlChunk.id = path.basename(
         pluginYmlPath,
-        path.extname(pluginYmlPath),
+        path.extname(pluginYmlPath)
       );
 
       indexYmlChunk.name = pluginYmlData.name;
@@ -142,17 +142,17 @@ class UtilsModules {
       indexYmlChunk.version = `${pluginRawYml.match(/^version:\s*(['"]?)([0-9]+(?:\.[0-9]+)*)\1/m)?.[2]?.trim() ?? ""}-${Shell.run(`git log -n 1 --pretty=format:%h -- "${pluginPath}"/*`)}`;
 
       indexYmlChunk.date = Shell.run(
-        `TZ=UTC0 git log -n 1 --date="format-local:%F %T" --pretty=format:%ad -- "${pluginPath}"/*`,
+        `TZ=UTC0 git log -n 1 --date="format-local:%F %T" --pretty=format:%ad -- "${pluginPath}"/*`
       );
 
       indexYmlChunk.path = `${indexYmlChunk.id}.zip`;
 
       Shell.run(
-        `cd ${pluginDistPath} && zip -r ../${indexYmlChunk.id}.zip . && cd .. && rm -r ${path.basename(pluginDistPath)}`,
+        `cd ${pluginDistPath} && zip -r ../${indexYmlChunk.id}.zip . && cd .. && rm -r ${path.basename(pluginDistPath)}`
       );
 
       indexYmlChunk.sha256 = Shell.run(
-        `sha256sum "${path.join(config.outDir, indexYmlChunk.path)}" | cut -d' ' -f1`,
+        `sha256sum "${path.join(config.outDir, indexYmlChunk.path)}" | cut -d' ' -f1`
       );
 
       if (pluginYmlData.ui?.requires?.length)
@@ -198,12 +198,12 @@ if (config.excludePluginFolders?.length) {
   allPluginFolders.normalPluginPaths =
     allPluginFolders.normalPluginPaths.filter(
       ({ pluginPath }) =>
-        !config.excludePluginFolders.includes(path.basename(pluginPath)),
+        !config.excludePluginFolders.includes(path.basename(pluginPath))
     );
   allPluginFolders.stashPluginBuilderPluginPaths =
     allPluginFolders.stashPluginBuilderPluginPaths.filter(
       ({ pluginPath }) =>
-        !config.excludePluginFolders.includes(path.basename(pluginPath)),
+        !config.excludePluginFolders.includes(path.basename(pluginPath))
     );
 }
 
@@ -219,12 +219,12 @@ allPluginFolders.stashPluginBuilderPluginPaths.forEach(
   ({ pluginPath, pluginDistPath }) => {
     console.log(
       Shell.run(
-        `npx stash-plugin-builder --in=${pluginPath} --out=${config.outDir}${config.mode.dist ? " --minify" : ""}`,
-      ),
+        `npx stash-plugin-builder --in=${pluginPath} --out=${config.outDir}${config.mode.dist ? " --minify" : ""}`
+      )
     );
     if (!isWin && config.mode.dist)
       indexYml.push(Utils.packPlugin(pluginPath, pluginDistPath)); // works only on linux
-  },
+  }
 );
 
 if (indexYml.length && !isWin && config.mode.dist)
@@ -233,6 +233,6 @@ if (indexYml.length && !isWin && config.mode.dist)
 if (config.include?.length && config.mode.dist) {
   Utils.copyExternalFiles(
     config.include,
-    config.externalFilesPath ?? config.outDir,
+    config.externalFilesPath ?? config.outDir
   );
 }
