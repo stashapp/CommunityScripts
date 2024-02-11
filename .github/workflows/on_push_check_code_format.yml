@@ -1,0 +1,49 @@
+name: Check Code Format
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check_js_code_format:
+    name: Check JS code format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Check format
+        uses: creyD/prettier_action@v4.3
+        with:
+          prettier_options: --check .
+          dry: true
+          only_changed: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  check_py_code_format:
+    name: Check PY code format
+    runs-on: ubuntu-latest
+    needs: check_js_code_format
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Check format
+        uses: psf/black@stable
+        with:
+          options: '--exclude="3rd party"'
+          src: "."
