@@ -41,7 +41,7 @@
     createStatElement(
       row,
       ((stashIdCount / totalCount) * 100).toFixed(2) + "%",
-      "Scene StashIDs",
+      "Scene StashIDs"
     );
   }
 
@@ -73,7 +73,7 @@
     createStatElement(
       row,
       ((stashIdCount / totalCount) * 100).toFixed(2) + "%",
-      "Performer StashIDs",
+      "Performer StashIDs"
     );
   }
 
@@ -103,7 +103,7 @@
     createStatElement(
       row,
       ((stashIdCount / totalCount) * 100).toFixed(2) + "%",
-      "Studio StashIDs",
+      "Studio StashIDs"
     );
   }
 
@@ -153,7 +153,7 @@
           createPerformerFavorites(row);
           createMarkersStat(row);
         }
-      },
+      }
     );
   });
 })();

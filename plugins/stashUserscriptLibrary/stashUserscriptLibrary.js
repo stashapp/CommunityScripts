@@ -20,7 +20,7 @@ window.fetch = async (...args) => {
       stashListener.dispatchEvent(
         new CustomEvent("response", {
           detail: data,
-        }),
+        })
       );
     } catch (e) {}
   }
@@ -82,7 +82,7 @@ class Stash extends EventTarget {
             }
           }
         }, this._pageUrlCheckInterval);
-      },
+      }
     );
     stashListener.addEventListener("response", (evt) => {
       if (evt.detail.data?.plugins) {
@@ -97,7 +97,7 @@ class Stash extends EventTarget {
       this.dispatchEvent(
         new CustomEvent("stash:response", {
           detail: evt.detail,
-        }),
+        })
       );
     });
     stashListener.addEventListener("pluginVersion", (evt) => {
@@ -106,7 +106,7 @@ class Stash extends EventTarget {
         this.dispatchEvent(
           new CustomEvent("stash:pluginVersion", {
             detail: evt.detail,
-          }),
+          })
         );
       }
     });
@@ -226,7 +226,7 @@ class Stash extends EventTarget {
       data.rank = doc.querySelector("rank-chart-button");
       console.log(data.rank);
       data.views = doc.querySelector(
-        ".d-none.d-m-flex.flex-column.align-items-center.global-header > div.font-weight-bold",
+        ".d-none.d-m-flex.flex-column.align-items-center.global-header > div.font-weight-bold"
       ).textContent;
       data.votes = "0";
       return JSON.stringify(data);
@@ -271,7 +271,7 @@ class Stash extends EventTarget {
     stashListener.dispatchEvent(
       new CustomEvent("pluginVersion", {
         detail: version,
-      }),
+      })
     );
   }
   async getStashBoxes() {
@@ -309,7 +309,7 @@ class Stash extends EventTarget {
   matchUrl(href, fragment) {
     const regexp = concatRegexp(
       new RegExp(window.location.origin + baseURL),
-      fragment,
+      fragment
     );
     return href.match(regexp) != null;
   }
@@ -337,7 +337,7 @@ class Stash extends EventTarget {
             "Stash Server URL",
             "",
             "Server URL…",
-            true,
+            true
           );
           serverUrlInput.addEventListener("change", () => {
             const value = serverUrlInput.value || "";
@@ -365,7 +365,7 @@ class Stash extends EventTarget {
             "Stash API Key",
             "",
             "API Key…",
-            true,
+            true
           );
           apiKeyInput.addEventListener("change", () => {
             const value = apiKeyInput.value || "";
@@ -383,7 +383,7 @@ class Stash extends EventTarget {
               return this.updateConfigValueTask(
                 "STASH",
                 "api_key",
-                expectedApiKey,
+                expectedApiKey
               );
             }
           });
@@ -399,10 +399,10 @@ class Stash extends EventTarget {
           this.dispatchEvent(
             new CustomEvent("stash:pluginVersion", {
               detail: this.pluginVersion,
-            }),
+            })
           );
         }
-      },
+      }
     );
   }
   addSystemSetting(callback) {
@@ -417,7 +417,7 @@ class Stash extends EventTarget {
     settingsId,
     inputId,
     settingsHeader,
-    settingsSubheader,
+    settingsSubheader
   ) {
     const section = document.createElement("div");
     section.setAttribute("id", settingsId);
@@ -445,7 +445,7 @@ class Stash extends EventTarget {
     settingsHeader,
     settingsSubheader,
     placeholder,
-    visible,
+    visible
   ) {
     const section = document.createElement("div");
     section.setAttribute("id", settingsId);
@@ -472,7 +472,7 @@ class Stash extends EventTarget {
     selector,
     timeout = null,
     location = document.body,
-    disconnectOnPageChange = false,
+    disconnectOnPageChange = false
   ) {
     return new Promise((resolve) => {
       if (document.querySelector(selector)) {
@@ -517,7 +517,7 @@ class Stash extends EventTarget {
   async waitForElementDeath(
     selector,
     location = document.body,
-    disconnectOnPageChange = false,
+    disconnectOnPageChange = false
   ) {
     return new Promise((resolve) => {
       const observer = new MutationObserver(async () => {
@@ -560,7 +560,7 @@ class Stash extends EventTarget {
         selector,
         10000,
         location,
-        true,
+        true
       );
       const stash = this;
       let previousEvent = "";
@@ -592,7 +592,7 @@ class Stash extends EventTarget {
         tabsContainer.removeEventListener("click", listenForTabClicks);
         stash.removeEventListener(
           "stash:page",
-          removeEventListenerOnPageChange,
+          removeEventListenerOnPageChange
         );
       }
       stash.addEventListener("stash:page", removeEventListenerOnPageChange);
@@ -630,7 +630,7 @@ class Stash extends EventTarget {
             lastStashPageEvent: this._lastStashPageEvent,
           },
         },
-      }),
+      })
     );
 
     if (addToHistory) {
@@ -667,11 +667,11 @@ class Stash extends EventTarget {
         console.error(`Can't add page listener: Event ${event} already exists`);
       } else if (event?.startsWith("stash:")) {
         console.error(
-          `Can't add page listener: Event name can't start with "stash:"`,
+          `Can't add page listener: Event name can't start with "stash:"`
         );
       } else {
         console.error(
-          `Can't add page listener: Missing required argument(s) "event", "regex"`,
+          `Can't add page listener: Missing required argument(s) "event", "regex"`
         );
       }
 
@@ -685,11 +685,11 @@ class Stash extends EventTarget {
     } else {
       if (this._pageListeners[event] === undefined && event) {
         console.error(
-          `Can't remove page listener: Event ${event} doesn't exists`,
+          `Can't remove page listener: Event ${event} doesn't exists`
         );
       } else if (event?.startsWith("stash:")) {
         console.error(
-          `Can't remove page listener: Event ${event} is a built in event`,
+          `Can't remove page listener: Event ${event} is a built in event`
         );
       } else {
         console.error(`Can't remove page listener: Missing "event" argument`);
@@ -1169,19 +1169,19 @@ class Stash extends EventTarget {
       if (handleDisplayView) {
         isGridPage = this.matchUrl(
           window.location.href,
-          concatRegexp(regex, /(?!.*disp=)/),
+          concatRegexp(regex, /(?!.*disp=)/)
         );
         isListPage = this.matchUrl(
           window.location.href,
-          concatRegexp(regex, /.*disp=1/),
+          concatRegexp(regex, /.*disp=1/)
         );
         isWallPage = this.matchUrl(
           window.location.href,
-          concatRegexp(regex, /.*disp=2/),
+          concatRegexp(regex, /.*disp=2/)
         );
         isTaggerPage = this.matchUrl(
           window.location.href,
-          concatRegexp(regex, /.*disp=3/),
+          concatRegexp(regex, /.*disp=3/)
         );
 
         if (isListPage || isWallPage || isTaggerPage) isDisplayViewPage = true;
@@ -1192,11 +1192,11 @@ class Stash extends EventTarget {
         if (childAnyEventCondition) {
           stash._dispatchPageEvent(
             "stash:page:" + tabPage.page + `:any:${view}`,
-            false,
+            false
           );
           stash._dispatchPageEvent(
             "stash:page:any:" + tabPage.tab + `:${view}`,
-            false,
+            false
           );
         } else {
           stash._dispatchPageEvent(`stash:page:any:${view}`, false);
@@ -1255,7 +1255,7 @@ class Stash extends EventTarget {
           task.classList.add(
             this.visiblePluginTasks.indexOf(taskName) === -1
               ? "d-none"
-              : "d-flex",
+              : "d-flex"
           );
           this.dispatchEvent(
             new CustomEvent("stash:plugin:task", {
@@ -1263,10 +1263,10 @@ class Stash extends EventTarget {
                 taskName,
                 task,
               },
-            }),
+            })
           );
         }
-      },
+      }
     );
   }
   async updateConfigValueTask(sectionKey, propName, value) {
@@ -1348,7 +1348,7 @@ class Stash extends EventTarget {
       this.dispatchEvent(
         new CustomEvent("tagger", {
           detail: el,
-        }),
+        })
       );
 
       const searchItemContainer =
@@ -1367,7 +1367,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             } else if (
               node?.classList?.contains("entity-name") &&
@@ -1379,7 +1379,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             } else if (
               node.tagName === "SPAN" &&
@@ -1391,7 +1391,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             } else if (node.tagName === "UL") {
               this.dispatchEvent(
@@ -1400,7 +1400,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             } else if (node?.classList?.contains("col-lg-6")) {
               this.dispatchEvent(
@@ -1409,7 +1409,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             } else if (node.tagName === "H5") {
               // scene date
@@ -1419,7 +1419,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             } else if (
               node.tagName === "DIV" &&
@@ -1433,7 +1433,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             } else {
               this.dispatchEvent(
@@ -1442,7 +1442,7 @@ class Stash extends EventTarget {
                     node,
                     mutation,
                   },
-                }),
+                })
               );
             }
           });
@@ -1450,7 +1450,7 @@ class Stash extends EventTarget {
         this.dispatchEvent(
           new CustomEvent("tagger:mutations:searchitems", {
             detail: mutations,
-          }),
+          })
         );
       });
       observer.observe(searchItemContainer, {
@@ -1459,16 +1459,16 @@ class Stash extends EventTarget {
       });
 
       const taggerContainerHeader = document.querySelector(
-        ".tagger-container-header",
+        ".tagger-container-header"
       );
       const taggerContainerHeaderObserver = new MutationObserver(
         (mutations) => {
           this.dispatchEvent(
             new CustomEvent("tagger:mutations:header", {
               detail: mutations,
-            }),
+            })
           );
-        },
+        }
       );
       taggerContainerHeaderObserver.observe(taggerContainerHeader, {
         childList: true,
@@ -1479,13 +1479,13 @@ class Stash extends EventTarget {
         this.dispatchEvent(
           new CustomEvent("tagger:searchitem", {
             detail: searchItem,
-          }),
+          })
         );
       }
 
       if (!document.getElementById("progress-bar")) {
         const progressBar = createElementFromHTML(
-          `<div id="progress-bar" class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`,
+          `<div id="progress-bar" class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>`
         );
         progressBar.classList.add("progress");
         progressBar.style.display = "none";
@@ -1498,9 +1498,9 @@ class Stash extends EventTarget {
         this.dispatchEvent(
           new CustomEvent("tagger:configuration", {
             detail: el,
-          }),
+          })
         );
-      },
+      }
     );
   }
   setProgress(value) {
@@ -1560,12 +1560,12 @@ class Stash extends EventTarget {
     const id = url.pathname.replace(baseURL + "scenes/", "");
     const data = this.scenes[id];
     const nameNode = searchItem.querySelector(
-      "a.scene-link > div.TruncatedText",
+      "a.scene-link > div.TruncatedText"
     );
     const name = nameNode.innerText;
     const queryInput = searchItem.querySelector("input.text-input");
     const performerNodes = searchItem.querySelectorAll(
-      ".performer-tag-container",
+      ".performer-tag-container"
     );
 
     return {
@@ -1581,14 +1581,14 @@ class Stash extends EventTarget {
   }
   parseSearchResultItem(searchResultItem) {
     const remoteUrlNode = searchResultItem.querySelector(
-      ".scene-details .optional-field .optional-field-content a",
+      ".scene-details .optional-field .optional-field-content a"
     );
     const remoteId = remoteUrlNode?.href.split("/").pop();
     const remoteUrl = remoteUrlNode?.href ? new URL(remoteUrlNode.href) : null;
     const remoteData = this.remoteScenes[remoteId];
 
     const sceneDetailNodes = searchResultItem.querySelectorAll(
-      ".scene-details .optional-field .optional-field-content",
+      ".scene-details .optional-field .optional-field-content"
     );
     let urlNode = null;
     let detailsNode = null;
@@ -1604,15 +1604,15 @@ class Stash extends EventTarget {
     }
 
     const imageNode = searchResultItem.querySelector(
-      ".scene-image-container .optional-field .optional-field-content",
+      ".scene-image-container .optional-field .optional-field-content"
     );
 
     const metadataNode = searchResultItem.querySelector(".scene-metadata");
     const titleNode = metadataNode.querySelector(
-      "h4 .optional-field .optional-field-content",
+      "h4 .optional-field .optional-field-content"
     );
     const codeAndDateNodes = metadataNode.querySelectorAll(
-      "h5 .optional-field .optional-field-content",
+      "h5 .optional-field .optional-field-content"
     );
     let codeNode = null;
     let dateNode = null;
@@ -1636,7 +1636,7 @@ class Stash extends EventTarget {
     }
 
     const matchNodes = searchResultItem.querySelectorAll(
-      "div.col-lg-6 div.mt-2 div.row.no-gutters.my-2 span.ml-auto",
+      "div.col-lg-6 div.mt-2 div.row.no-gutters.my-2 span.ml-auto"
     );
     const matches = [];
     for (const matchNode of matchNodes) {
@@ -1644,7 +1644,7 @@ class Stash extends EventTarget {
       const entityNode = matchNode.parentElement.querySelector(".entity-name");
 
       const matchName = matchNode.querySelector(
-        ".optional-field-content b",
+        ".optional-field-content b"
       ).innerText;
       const remoteName = entityNode.querySelector("b").innerText;
 
@@ -1653,7 +1653,7 @@ class Stash extends EventTarget {
         matchType = "performer";
         if (remoteData) {
           data = remoteData.performers.find(
-            (performer) => performer.name === remoteName,
+            (performer) => performer.name === remoteName
           );
         }
       } else if (entityNode.innerText.startsWith("Studio:")) {
@@ -1747,7 +1747,7 @@ function getElementByXpath(xpath, contextNode) {
     contextNode || document,
     null,
     XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
+    null
   ).singleNodeValue;
 }
 
@@ -1765,7 +1765,7 @@ function getElementByXpath(xpath, contextNode) {
     contextNode || document,
     null,
     XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
+    null
   ).singleNodeValue;
 }
 
@@ -1775,7 +1775,7 @@ function getElementsByXpath(xpath, contextNode) {
     contextNode || document,
     null,
     XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-    null,
+    null
   );
 }
 
@@ -1798,7 +1798,7 @@ function setNativeValue(element, value) {
   const prototype = Object.getPrototypeOf(element);
   const prototypeValueSetter = Object.getOwnPropertyDescriptor(
     prototype,
-    "value",
+    "value"
   ).set;
 
   if (valueSetter && valueSetter !== prototypeValueSetter) {
@@ -1813,7 +1813,7 @@ function updateTextInput(element, value) {
   element.dispatchEvent(
     new Event("input", {
       bubbles: true,
-    }),
+    })
   );
 }
 
@@ -1874,5 +1874,5 @@ const reloadImg = (url) =>
   }).then(() =>
     document.body
       .querySelectorAll(`img[src='${url}']`)
-      .forEach((img) => (img.src = url)),
+      .forEach((img) => (img.src = url))
   );

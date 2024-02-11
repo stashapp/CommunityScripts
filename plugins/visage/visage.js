@@ -155,7 +155,7 @@
     };
     var result = await stash.callGQL(reqData);
     return result.data.scrapeSinglePerformer.filter(
-      (p) => p.remote_site_id === stash_id,
+      (p) => p.remote_site_id === stash_id
     )[0];
   }
 
@@ -185,7 +185,7 @@
         },
         {
           once: true,
-        },
+        }
       );
     }
 
@@ -325,14 +325,14 @@
     ctx,
     $$scope,
     slot_changes,
-    get_slot_context_fn,
+    get_slot_context_fn
   ) {
     if (slot_changes) {
       const slot_context = get_slot_context(
         slot_definition,
         ctx,
         $$scope,
-        get_slot_context_fn,
+        get_slot_context_fn
       );
       slot.p(slot_context, slot_changes);
     }
@@ -464,7 +464,7 @@
   function custom_event(
     type,
     detail,
-    { bubbles = false, cancelable = false } = {},
+    { bubbles = false, cancelable = false } = {}
   ) {
     const e = document.createEvent("CustomEvent");
     e.initCustomEvent(type, bubbles, cancelable, detail);
@@ -503,7 +503,7 @@
       rules[name] = true;
       stylesheet.insertRule(
         `@keyframes ${name} ${rule}`,
-        stylesheet.cssRules.length,
+        stylesheet.cssRules.length
       );
     }
     const animation = node.style.animation || "";
@@ -516,7 +516,7 @@
     const next = previous.filter(
       name
         ? (anim) => anim.indexOf(name) < 0 // remove specific animation
-        : (anim) => anim.indexOf("__svelte") === -1, // remove all Svelte animations
+        : (anim) => anim.indexOf("__svelte") === -1 // remove all Svelte animations
     );
     const deleted = previous.length - next.length;
     if (deleted) {
@@ -785,7 +785,7 @@
     const filtered = [];
     const targets = [];
     render_callbacks.forEach((c) =>
-      fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c),
+      fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c)
     );
     targets.forEach((c) => c());
     render_callbacks = filtered;
@@ -869,7 +869,7 @@
           delay,
           easing,
           css,
-          uid++,
+          uid++
         );
       tick(0, 1);
       const start_time = now() + delay;
@@ -1004,7 +1004,7 @@
     destroy,
     create_each_block,
     next,
-    get_context,
+    get_context
   ) {
     let o = old_blocks.length;
     let n = list.length;
@@ -1146,7 +1146,7 @@
     not_equal,
     props,
     append_styles,
-    dirty = [-1],
+    dirty = [-1]
   ) {
     const parent_component = current_component;
     set_current_component(component);
@@ -1165,8 +1165,7 @@
       before_update: [],
       after_update: [],
       context: new Map(
-        options.context ||
-          (parent_component ? parent_component.$$.context : []),
+        options.context || (parent_component ? parent_component.$$.context : [])
       ),
       // everything else
       callbacks: blank_object(),
@@ -1206,7 +1205,7 @@
         component,
         options.target,
         options.anchor,
-        options.customElement,
+        options.customElement
       );
       flush();
     }
@@ -1245,7 +1244,7 @@
     document.dispatchEvent(
       custom_event(type, Object.assign({ version: "3.59.2" }, detail), {
         bubbles: true,
-      }),
+      })
     );
   }
   function append_dev(target, node) {
@@ -1267,7 +1266,7 @@
     options,
     has_prevent_default,
     has_stop_propagation,
-    has_stop_immediate_propagation,
+    has_stop_immediate_propagation
   ) {
     const modifiers =
       options === true
@@ -1415,7 +1414,7 @@
       default_slot_template,
       ctx,
       /*$$scope*/ ctx[3],
-      null,
+      null
     );
 
     const block = {
@@ -1427,7 +1426,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -1447,7 +1446,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -1466,9 +1465,9 @@
                     default_slot_template,
                     /*$$scope*/ ctx[3],
                     dirty,
-                    null,
+                    null
                   ),
-              null,
+              null
             );
           }
         }
@@ -1508,7 +1507,7 @@
     arr.splice(index, 1);
 
     selectedStore.update((selected) =>
-      selected === item ? arr[index] || arr[arr.length - 1] : selected,
+      selected === item ? arr[index] || arr[arr.length - 1] : selected
     );
   }
 
@@ -1525,7 +1524,7 @@
     const selectedTab = writable(null);
     validate_store(selectedTab, "selectedTab");
     component_subscribe($$self, selectedTab, (value) =>
-      $$invalidate(5, ($selectedTab = value)),
+      $$invalidate(5, ($selectedTab = value))
     );
     const selectedPanel = writable(null);
 
@@ -1669,13 +1668,13 @@
 
     get initialSelectedIndex() {
       throw new Error(
-        "<Tabs>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tabs>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set initialSelectedIndex(value) {
       throw new Error(
-        "<Tabs>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Tabs>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -1695,7 +1694,7 @@
       default_slot_template,
       ctx,
       /*$$scope*/ ctx[8],
-      null,
+      null
     );
 
     const block = {
@@ -1707,13 +1706,13 @@
         attr_dev(
           li,
           "aria-controls",
-          (li_aria_controls_value = /*$controls*/ ctx[2][/*tab*/ ctx[3].id]),
+          (li_aria_controls_value = /*$controls*/ ctx[2][/*tab*/ ctx[3].id])
         );
         attr_dev(li, "aria-selected", /*isSelected*/ ctx[1]);
         attr_dev(
           li,
           "tabindex",
-          (li_tabindex_value = /*isSelected*/ ctx[1] ? 0 : -1),
+          (li_tabindex_value = /*isSelected*/ ctx[1] ? 0 : -1)
         );
         attr_dev(li, "class", "svelte-tabs__tab svelte-1fbofsd");
         toggle_class(li, "svelte-tabs__selected", /*isSelected*/ ctx[1]);
@@ -1721,7 +1720,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -1742,7 +1741,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -1761,9 +1760,9 @@
                     default_slot_template,
                     /*$$scope*/ ctx[8],
                     dirty,
-                    null,
+                    null
                   ),
-              null,
+              null
             );
           }
         }
@@ -1840,11 +1839,11 @@
     } = getContext(TABS);
     validate_store(selectedTab, "selectedTab");
     component_subscribe($$self, selectedTab, (value) =>
-      $$invalidate(7, ($selectedTab = value)),
+      $$invalidate(7, ($selectedTab = value))
     );
     validate_store(controls, "controls");
     component_subscribe($$self, controls, (value) =>
-      $$invalidate(2, ($controls = value)),
+      $$invalidate(2, ($controls = value))
     );
     let isSelected;
     registerTab(tab);
@@ -1954,7 +1953,7 @@
       default_slot_template,
       ctx,
       /*$$scope*/ ctx[0],
-      null,
+      null
     );
 
     const block = {
@@ -1967,7 +1966,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -1993,9 +1992,9 @@
                     default_slot_template,
                     /*$$scope*/ ctx[0],
                     dirty,
-                    null,
+                    null
                   ),
-              null,
+              null
             );
           }
         }
@@ -2072,7 +2071,7 @@
       default_slot_template,
       ctx,
       /*$$scope*/ ctx[5],
-      null,
+      null
     );
 
     const block = {
@@ -2100,9 +2099,9 @@
                     default_slot_template,
                     /*$$scope*/ ctx[5],
                     dirty,
-                    null,
+                    null
                   ),
-              null,
+              null
             );
           }
         }
@@ -2148,7 +2147,7 @@
           div,
           "aria-labelledby",
           (div_aria_labelledby_value =
-            /*$labeledBy*/ ctx[0][/*panel*/ ctx[2].id]),
+            /*$labeledBy*/ ctx[0][/*panel*/ ctx[2].id])
         );
         attr_dev(div, "class", "svelte-tabs__tab-panel svelte-epfyet");
         attr_dev(div, "role", "tabpanel");
@@ -2156,7 +2155,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -2233,11 +2232,11 @@
     const { registerPanel, selectedPanel, labeledBy } = getContext(TABS);
     validate_store(selectedPanel, "selectedPanel");
     component_subscribe($$self, selectedPanel, (value) =>
-      $$invalidate(1, ($selectedPanel = value)),
+      $$invalidate(1, ($selectedPanel = value))
     );
     validate_store(labeledBy, "labeledBy");
     component_subscribe($$self, labeledBy, (value) =>
-      $$invalidate(0, ($labeledBy = value)),
+      $$invalidate(0, ($labeledBy = value))
     );
     registerPanel(panel);
     const writable_props = [];
@@ -2318,7 +2317,7 @@
       x = 0,
       y = 0,
       opacity = 0,
-    } = {},
+    } = {}
   ) {
     const style = getComputedStyle(node);
     const target_opacity = +style.opacity;
@@ -2456,7 +2455,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               button1,
@@ -2465,7 +2464,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
           ];
 
@@ -2540,7 +2539,7 @@
         if (
           !src_url_equal(
             img.src,
-            (img_src_value = "data:image/jpg;base64," + /*face*/ ctx[10].image),
+            (img_src_value = "data:image/jpg;base64," + /*face*/ ctx[10].image)
           )
         )
           attr_dev(img, "src", img_src_value);
@@ -2557,7 +2556,7 @@
           dirty & /*matches*/ 1 &&
           !src_url_equal(
             img.src,
-            (img_src_value = "data:image/jpg;base64," + /*face*/ ctx[10].image),
+            (img_src_value = "data:image/jpg;base64," + /*face*/ ctx[10].image)
           )
         ) {
           attr_dev(img, "src", img_src_value);
@@ -2659,7 +2658,7 @@
       let key = get_key(child_ctx);
       each_1_lookup.set(
         key,
-        (each_blocks[i] = create_each_block_2(key, child_ctx)),
+        (each_blocks[i] = create_each_block_2(key, child_ctx))
       );
     }
 
@@ -2699,7 +2698,7 @@
             outro_and_destroy_block,
             create_each_block_2,
             each_1_anchor,
-            get_each_context_2,
+            get_each_context_2
           );
           check_outros();
         }
@@ -2809,7 +2808,7 @@
           (span0_class_value =
             "performer-card__country-flag fi fi-" +
             /*match*/ ctx[14].country?.toLowerCase() +
-            " svelte-ssoxzi"),
+            " svelte-ssoxzi")
         );
         add_location(span0, file$3, 173, 26, 4990);
         attr_dev(div0, "class", "thumbnail-section svelte-ssoxzi");
@@ -2818,7 +2817,7 @@
           a,
           "href",
           (a_href_value =
-            "https://stashdb.org/performers/" + /*match*/ ctx[14].id),
+            "https://stashdb.org/performers/" + /*match*/ ctx[14].id)
         );
         attr_dev(a, "target", "_blank");
         attr_dev(a, "class", "svelte-ssoxzi");
@@ -2869,7 +2868,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
             listen_dev(
               div4,
@@ -2878,7 +2877,7 @@
               false,
               false,
               false,
-              false,
+              false
             ),
           ];
 
@@ -2976,7 +2975,7 @@
       let key = get_key(child_ctx);
       each_1_lookup.set(
         key,
-        (each_blocks[i] = create_each_block_1(key, child_ctx)),
+        (each_blocks[i] = create_each_block_1(key, child_ctx))
       );
     }
 
@@ -3024,7 +3023,7 @@
             destroy_block,
             create_each_block_1,
             null,
-            get_each_context_1,
+            get_each_context_1
           );
         }
       },
@@ -3140,7 +3139,7 @@
       let key = get_key(child_ctx);
       each_1_lookup.set(
         key,
-        (each_blocks[i] = create_each_block$1(key, child_ctx)),
+        (each_blocks[i] = create_each_block$1(key, child_ctx))
       );
     }
 
@@ -3194,7 +3193,7 @@
             outro_and_destroy_block,
             create_each_block$1,
             each_1_anchor,
-            get_each_context$1,
+            get_each_context$1
           );
           check_outros();
         }
@@ -3253,7 +3252,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -3335,7 +3334,7 @@
       $$invalidate(
         2,
         (modal.style.opacity = modal.style.opacity == "0.1" ? "1.0" : "0.1"),
-        modal,
+        modal
       );
     }
 
@@ -3522,13 +3521,13 @@
 
     get matches() {
       throw new Error(
-        "<Match>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Match>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set matches(value) {
       throw new Error(
-        "<Match>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Match>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -3592,9 +3591,7 @@
       function __extends(d, b) {
         if (typeof b !== "function" && b !== null)
           throw new TypeError(
-            "Class extends value " +
-              String(b) +
-              " is not a constructor or null",
+            "Class extends value " + String(b) + " is not a constructor or null"
           );
         extendStatics(d, b);
         function __() {
@@ -3774,7 +3771,7 @@
             this.left + x,
             this.top + y,
             this.width + w,
-            this.height + h,
+            this.height + h
           );
         };
         Bounds.fromClientRect = function (context, clientRect) {
@@ -3782,7 +3779,7 @@
             clientRect.left + context.windowBounds.left,
             clientRect.top + context.windowBounds.top,
             clientRect.width,
-            clientRect.height,
+            clientRect.height
           );
         };
         Bounds.fromDOMRectList = function (context, domRectList) {
@@ -3794,7 +3791,7 @@
                 domRect.left + context.windowBounds.left,
                 domRect.top + context.windowBounds.top,
                 domRect.width,
-                domRect.height,
+                domRect.height
               )
             : Bounds.EMPTY;
         };
@@ -3813,12 +3810,12 @@
         var width = Math.max(
           Math.max(body.scrollWidth, documentElement.scrollWidth),
           Math.max(body.offsetWidth, documentElement.offsetWidth),
-          Math.max(body.clientWidth, documentElement.clientWidth),
+          Math.max(body.clientWidth, documentElement.clientWidth)
         );
         var height = Math.max(
           Math.max(body.scrollHeight, documentElement.scrollHeight),
           Math.max(body.offsetHeight, documentElement.offsetHeight),
-          Math.max(body.clientHeight, documentElement.clientHeight),
+          Math.max(body.clientHeight, documentElement.clientHeight)
         );
         return new Bounds(0, 0, width, height);
       };
@@ -3838,7 +3835,7 @@
             var extra = str.charCodeAt(i++);
             if ((extra & 0xfc00) === 0xdc00) {
               codePoints.push(
-                ((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000,
+                ((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000
               );
             } else {
               codePoints.push(value);
@@ -3873,7 +3870,7 @@
             codePoint -= 0x10000;
             codeUnits.push(
               (codePoint >> 10) + 0xd800,
-              (codePoint % 0x400) + 0xdc00,
+              (codePoint % 0x400) + 0xdc00
             );
           }
           if (index + 1 === length || codeUnits.length > 0x4000) {
@@ -3954,7 +3951,7 @@
             (buffer[i + 3] << 24) |
               (buffer[i + 2] << 16) |
               (buffer[i + 1] << 8) |
-              buffer[i],
+              buffer[i]
           );
         }
         return bytes;
@@ -4053,7 +4050,7 @@
           view32[2],
           view32[3],
           index,
-          data,
+          data
         );
       };
       var Trie$1 = /** @class */ (function () {
@@ -4063,7 +4060,7 @@
           highStart,
           highValueIndex,
           index,
-          data,
+          data
         ) {
           this.initialValue = initialValue;
           this.errorValue = errorValue;
@@ -4278,7 +4275,7 @@
         a,
         b,
         currentIndex,
-        classTypes,
+        classTypes
       ) {
         var current = classTypes[currentIndex];
         if (Array.isArray(a) ? a.indexOf(current) !== -1 : a === current) {
@@ -4336,7 +4333,7 @@
         classTypes,
         indicies,
         index,
-        forbiddenBreaks,
+        forbiddenBreaks
       ) {
         if (indicies[index] === 0) {
           return BREAK_NOT_ALLOWED$1;
@@ -4609,7 +4606,7 @@
         Break.prototype.slice = function () {
           return fromCodePoint$1.apply(
             void 0,
-            this.codePoints.slice(this.start, this.end),
+            this.codePoints.slice(this.start, this.end)
           );
         };
         return Break;
@@ -4636,7 +4633,7 @@
                 classTypes,
                 indicies,
                 ++nextIndex,
-                forbiddenBreakpoints,
+                forbiddenBreakpoints
               )) === BREAK_NOT_ALLOWED$1
             ) {}
             if (lineBreak !== BREAK_NOT_ALLOWED$1 || nextIndex === length) {
@@ -4928,7 +4925,7 @@
                 isNumberStart(
                   codePoint,
                   this.peekCodePoint(0),
-                  this.peekCodePoint(1),
+                  this.peekCodePoint(1)
                 )
               ) {
                 this.reconsumeCodePoint(codePoint);
@@ -4960,7 +4957,7 @@
                 isNumberStart(
                   codePoint,
                   this.peekCodePoint(0),
-                  this.peekCodePoint(1),
+                  this.peekCodePoint(1)
                 )
               ) {
                 this.reconsumeCodePoint(codePoint);
@@ -5106,18 +5103,18 @@
                 void 0,
                 digits.map(function (digit) {
                   return digit === QUESTION_MARK ? ZERO : digit;
-                }),
+                })
               ),
-              16,
+              16
             );
             var end = parseInt(
               fromCodePoint$1.apply(
                 void 0,
                 digits.map(function (digit) {
                   return digit === QUESTION_MARK ? F : digit;
-                }),
+                })
               ),
-              16,
+              16
             );
             return {
               type: 30 /* UNICODE_RANGE_TOKEN */,
@@ -5251,7 +5248,7 @@
             var amount = Math.min(SLICE_STACK_SIZE, count);
             value += fromCodePoint$1.apply(
               void 0,
-              this._value.splice(0, amount),
+              this._value.splice(0, amount)
             );
             count -= amount;
           }
@@ -5417,7 +5414,7 @@
           }
           if (token.type === 32 /* EOF_TOKEN */) {
             throw new SyntaxError(
-              "Error parsing CSS component value, unexpected EOF",
+              "Error parsing CSS component value, unexpected EOF"
             );
           }
           this.reconsumeToken(token);
@@ -5429,7 +5426,7 @@
             return value;
           }
           throw new SyntaxError(
-            "Error parsing CSS component value, multiple values found when expecting only one",
+            "Error parsing CSS component value, multiple values found when expecting only one"
           );
         };
         Parser.prototype.parseComponentValues = function () {
@@ -5528,7 +5525,7 @@
           if (token.type === 4 /* COMMA_TOKEN */) {
             if (arg.length === 0) {
               throw new Error(
-                "Error parsing function args, zero tokens for arg",
+                "Error parsing function args, zero tokens for arg"
               );
             }
             args.push(arg);
@@ -5707,7 +5704,7 @@
               throw new Error(
                 'Attempting to parse an unsupported color function "' +
                   value.name +
-                  '"',
+                  '"'
               );
             }
             return colorFunction(context, value.values);
@@ -5721,7 +5718,7 @@
                 parseInt(r + r, 16),
                 parseInt(g + g, 16),
                 parseInt(b + b, 16),
-                1,
+                1
               );
             }
             if (value.value.length === 4) {
@@ -5733,7 +5730,7 @@
                 parseInt(r + r, 16),
                 parseInt(g + g, 16),
                 parseInt(b + b, 16),
-                parseInt(a + a, 16) / 255,
+                parseInt(a + a, 16) / 255
               );
             }
             if (value.value.length === 6) {
@@ -5751,7 +5748,7 @@
                 parseInt(r, 16),
                 parseInt(g, 16),
                 parseInt(b, 16),
-                parseInt(a, 16) / 255,
+                parseInt(a, 16) / 255
               );
             }
           }
@@ -5865,7 +5862,7 @@
       var parseColor = function (context, value) {
         return color$1.parse(
           context,
-          Parser.create(value).parseComponentValue(),
+          Parser.create(value).parseComponentValue()
         );
       };
       var COLORS = {
@@ -6159,7 +6156,7 @@
           {
             optimumDistance: closest ? Infinity : -Infinity,
             optimumCorner: null,
-          },
+          }
         ).optimumCorner;
       };
       var calculateRadius = function (gradient, x, y, width, height) {
@@ -6174,7 +6171,7 @@
                 Math.abs(x),
                 Math.abs(x - width),
                 Math.abs(y),
-                Math.abs(y - height),
+                Math.abs(y - height)
               );
             } else if (gradient.shape === 1 /* ELLIPSE */) {
               rx = Math.min(Math.abs(x), Math.abs(x - width));
@@ -6189,7 +6186,7 @@
                 distance(x, y),
                 distance(x, y - height),
                 distance(x - width, y),
-                distance(x - width, y - height),
+                distance(x - width, y - height)
               );
             } else if (gradient.shape === 1 /* ELLIPSE */) {
               // Compute the ratio ry/rx (which is to be the same as for "closest-side")
@@ -6210,7 +6207,7 @@
                 Math.abs(x),
                 Math.abs(x - width),
                 Math.abs(y),
-                Math.abs(y - height),
+                Math.abs(y - height)
               );
             } else if (gradient.shape === 1 /* ELLIPSE */) {
               rx = Math.max(Math.abs(x), Math.abs(x - width));
@@ -6225,7 +6222,7 @@
                 distance(x, y),
                 distance(x, y - height),
                 distance(x - width, y),
-                distance(x - width, y - height),
+                distance(x - width, y - height)
               );
             } else if (gradient.shape === 1 /* ELLIPSE */) {
               // Compute the ratio ry/rx (which is to be the same as for "farthest-side")
@@ -6548,7 +6545,7 @@
               throw new Error(
                 'Attempting to parse an unsupported image function "' +
                   value.name +
-                  '"',
+                  '"'
               );
             }
             return imageFunction(context, value.values);
@@ -6711,7 +6708,7 @@
           type: 1 /* LIST */,
           parse: function (_context, tokens) {
             return parseLengthPercentageTuple(
-              tokens.filter(isLengthPercentage),
+              tokens.filter(isLengthPercentage)
             );
           },
         };
@@ -7270,7 +7267,7 @@
               throw new Error(
                 'Attempting to parse an unsupported transform function "' +
                   token.name +
-                  '"',
+                  '"'
               );
             }
             return transformFunction(token.values);
@@ -7773,122 +7770,122 @@
           this.animationDuration = parse(
             context,
             duration,
-            declaration.animationDuration,
+            declaration.animationDuration
           );
           this.backgroundClip = parse(
             context,
             backgroundClip,
-            declaration.backgroundClip,
+            declaration.backgroundClip
           );
           this.backgroundColor = parse(
             context,
             backgroundColor,
-            declaration.backgroundColor,
+            declaration.backgroundColor
           );
           this.backgroundImage = parse(
             context,
             backgroundImage,
-            declaration.backgroundImage,
+            declaration.backgroundImage
           );
           this.backgroundOrigin = parse(
             context,
             backgroundOrigin,
-            declaration.backgroundOrigin,
+            declaration.backgroundOrigin
           );
           this.backgroundPosition = parse(
             context,
             backgroundPosition,
-            declaration.backgroundPosition,
+            declaration.backgroundPosition
           );
           this.backgroundRepeat = parse(
             context,
             backgroundRepeat,
-            declaration.backgroundRepeat,
+            declaration.backgroundRepeat
           );
           this.backgroundSize = parse(
             context,
             backgroundSize,
-            declaration.backgroundSize,
+            declaration.backgroundSize
           );
           this.borderTopColor = parse(
             context,
             borderTopColor,
-            declaration.borderTopColor,
+            declaration.borderTopColor
           );
           this.borderRightColor = parse(
             context,
             borderRightColor,
-            declaration.borderRightColor,
+            declaration.borderRightColor
           );
           this.borderBottomColor = parse(
             context,
             borderBottomColor,
-            declaration.borderBottomColor,
+            declaration.borderBottomColor
           );
           this.borderLeftColor = parse(
             context,
             borderLeftColor,
-            declaration.borderLeftColor,
+            declaration.borderLeftColor
           );
           this.borderTopLeftRadius = parse(
             context,
             borderTopLeftRadius,
-            declaration.borderTopLeftRadius,
+            declaration.borderTopLeftRadius
           );
           this.borderTopRightRadius = parse(
             context,
             borderTopRightRadius,
-            declaration.borderTopRightRadius,
+            declaration.borderTopRightRadius
           );
           this.borderBottomRightRadius = parse(
             context,
             borderBottomRightRadius,
-            declaration.borderBottomRightRadius,
+            declaration.borderBottomRightRadius
           );
           this.borderBottomLeftRadius = parse(
             context,
             borderBottomLeftRadius,
-            declaration.borderBottomLeftRadius,
+            declaration.borderBottomLeftRadius
           );
           this.borderTopStyle = parse(
             context,
             borderTopStyle,
-            declaration.borderTopStyle,
+            declaration.borderTopStyle
           );
           this.borderRightStyle = parse(
             context,
             borderRightStyle,
-            declaration.borderRightStyle,
+            declaration.borderRightStyle
           );
           this.borderBottomStyle = parse(
             context,
             borderBottomStyle,
-            declaration.borderBottomStyle,
+            declaration.borderBottomStyle
           );
           this.borderLeftStyle = parse(
             context,
             borderLeftStyle,
-            declaration.borderLeftStyle,
+            declaration.borderLeftStyle
           );
           this.borderTopWidth = parse(
             context,
             borderTopWidth,
-            declaration.borderTopWidth,
+            declaration.borderTopWidth
           );
           this.borderRightWidth = parse(
             context,
             borderRightWidth,
-            declaration.borderRightWidth,
+            declaration.borderRightWidth
           );
           this.borderBottomWidth = parse(
             context,
             borderBottomWidth,
-            declaration.borderBottomWidth,
+            declaration.borderBottomWidth
           );
           this.borderLeftWidth = parse(
             context,
             borderLeftWidth,
-            declaration.borderLeftWidth,
+            declaration.borderLeftWidth
           );
           this.boxShadow = parse(context, boxShadow, declaration.boxShadow);
           this.color = parse(context, color, declaration.color);
@@ -7901,41 +7898,41 @@
           this.fontVariant = parse(
             context,
             fontVariant,
-            declaration.fontVariant,
+            declaration.fontVariant
           );
           this.fontWeight = parse(context, fontWeight, declaration.fontWeight);
           this.letterSpacing = parse(
             context,
             letterSpacing,
-            declaration.letterSpacing,
+            declaration.letterSpacing
           );
           this.lineBreak = parse(context, lineBreak, declaration.lineBreak);
           this.lineHeight = parse(context, lineHeight, declaration.lineHeight);
           this.listStyleImage = parse(
             context,
             listStyleImage,
-            declaration.listStyleImage,
+            declaration.listStyleImage
           );
           this.listStylePosition = parse(
             context,
             listStylePosition,
-            declaration.listStylePosition,
+            declaration.listStylePosition
           );
           this.listStyleType = parse(
             context,
             listStyleType,
-            declaration.listStyleType,
+            declaration.listStyleType
           );
           this.marginTop = parse(context, marginTop, declaration.marginTop);
           this.marginRight = parse(
             context,
             marginRight,
-            declaration.marginRight,
+            declaration.marginRight
           );
           this.marginBottom = parse(
             context,
             marginBottom,
-            declaration.marginBottom,
+            declaration.marginBottom
           );
           this.marginLeft = parse(context, marginLeft, declaration.marginLeft);
           this.opacity = parse(context, opacity, declaration.opacity);
@@ -7945,23 +7942,23 @@
           this.overflowWrap = parse(
             context,
             overflowWrap,
-            declaration.overflowWrap,
+            declaration.overflowWrap
           );
           this.paddingTop = parse(context, paddingTop, declaration.paddingTop);
           this.paddingRight = parse(
             context,
             paddingRight,
-            declaration.paddingRight,
+            declaration.paddingRight
           );
           this.paddingBottom = parse(
             context,
             paddingBottom,
-            declaration.paddingBottom,
+            declaration.paddingBottom
           );
           this.paddingLeft = parse(
             context,
             paddingLeft,
-            declaration.paddingLeft,
+            declaration.paddingLeft
           );
           this.paintOrder = parse(context, paintOrder, declaration.paintOrder);
           this.position = parse(context, position, declaration.position);
@@ -7971,37 +7968,37 @@
             textDecorationColor,
             (_a = declaration.textDecorationColor) !== null && _a !== void 0
               ? _a
-              : declaration.color,
+              : declaration.color
           );
           this.textDecorationLine = parse(
             context,
             textDecorationLine,
             (_b = declaration.textDecorationLine) !== null && _b !== void 0
               ? _b
-              : declaration.textDecoration,
+              : declaration.textDecoration
           );
           this.textShadow = parse(context, textShadow, declaration.textShadow);
           this.textTransform = parse(
             context,
             textTransform,
-            declaration.textTransform,
+            declaration.textTransform
           );
           this.transform = parse(context, transform$1, declaration.transform);
           this.transformOrigin = parse(
             context,
             transformOrigin,
-            declaration.transformOrigin,
+            declaration.transformOrigin
           );
           this.visibility = parse(context, visibility, declaration.visibility);
           this.webkitTextStrokeColor = parse(
             context,
             webkitTextStrokeColor,
-            declaration.webkitTextStrokeColor,
+            declaration.webkitTextStrokeColor
           );
           this.webkitTextStrokeWidth = parse(
             context,
             webkitTextStrokeWidth,
-            declaration.webkitTextStrokeWidth,
+            declaration.webkitTextStrokeWidth
           );
           this.wordBreak = parse(context, wordBreak, declaration.wordBreak);
           this.zIndex = parse(context, zIndex, declaration.zIndex);
@@ -8052,12 +8049,12 @@
           this.counterIncrement = parse(
             context,
             counterIncrement,
-            declaration.counterIncrement,
+            declaration.counterIncrement
           );
           this.counterReset = parse(
             context,
             counterReset,
-            declaration.counterReset,
+            declaration.counterReset
           );
         }
         return CSSParsedCounterDeclaration;
@@ -8076,7 +8073,7 @@
             var token = parser.parseComponentValue();
             return descriptor.parse(
               context,
-              isIdentToken(token) ? token.value : descriptor.initialValue,
+              isIdentToken(token) ? token.value : descriptor.initialValue
             );
           case 0 /* VALUE */:
             return descriptor.parse(context, parser.parseComponentValue());
@@ -8137,7 +8134,7 @@
           }
           this.styles = new CSSParsedDeclaration(
             context,
-            window.getComputedStyle(element, null),
+            window.getComputedStyle(element, null)
           );
           if (isHTMLElementNode(element)) {
             if (
@@ -8230,7 +8227,7 @@
             (buffer[i + 3] << 24) |
               (buffer[i + 2] << 16) |
               (buffer[i + 1] << 8) |
-              buffer[i],
+              buffer[i]
           );
         }
         return bytes;
@@ -8329,7 +8326,7 @@
           view32[2],
           view32[3],
           index,
-          data,
+          data
         );
       };
       var Trie = /** @class */ (function () {
@@ -8339,7 +8336,7 @@
           highStart,
           highValueIndex,
           index,
-          data,
+          data
         ) {
           this.initialValue = initialValue;
           this.errorValue = errorValue;
@@ -8442,7 +8439,7 @@
             var extra = str.charCodeAt(i++);
             if ((extra & 0xfc00) === 0xdc00) {
               codePoints.push(
-                ((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000,
+                ((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000
               );
             } else {
               codePoints.push(value);
@@ -8477,7 +8474,7 @@
             codePoint -= 0x10000;
             codeUnits.push(
               (codePoint >> 10) + 0xd800,
-              (codePoint % 0x400) + 0xdc00,
+              (codePoint % 0x400) + 0xdc00
             );
           }
           if (index + 1 === length || codeUnits.length > 0x4000) {
@@ -8577,13 +8574,13 @@
               (graphemeBreak = _graphemeBreakAtIndex(
                 codePoints,
                 classTypes,
-                ++index,
+                ++index
               )) === BREAK_NOT_ALLOWED
             ) {}
             if (graphemeBreak !== BREAK_NOT_ALLOWED || index === length) {
               var value = fromCodePoint.apply(
                 null,
-                codePoints.slice(lastEnd, index),
+                codePoints.slice(lastEnd, index)
               );
               lastEnd = index;
               return { value: value, done: false };
@@ -8714,7 +8711,7 @@
             // Firefox 55 does not render inline <img /> tags
             return isGreenPixel(data)
               ? loadSerializedSVG$1(
-                  createForeignObjectSVG(size, size, 0, 0, node),
+                  createForeignObjectSVG(size, size, 0, 0, node)
                 )
               : Promise.reject(false);
           })
@@ -8834,7 +8831,7 @@
               var clientRects = createRange(
                 node,
                 offset,
-                text.length,
+                text.length
               ).getClientRects();
               if (clientRects.length > 1) {
                 var subSegments = segmentGraphemes(text);
@@ -8848,10 +8845,10 @@
                         createRange(
                           node,
                           subOffset_1 + offset,
-                          subSegment.length,
-                        ).getClientRects(),
-                      ),
-                    ),
+                          subSegment.length
+                        ).getClientRects()
+                      )
+                    )
                   );
                   subOffset_1 += subSegment.length;
                 });
@@ -8859,14 +8856,14 @@
                 textBounds.push(
                   new TextBounds(
                     text,
-                    Bounds.fromDOMRectList(context, clientRects),
-                  ),
+                    Bounds.fromDOMRectList(context, clientRects)
+                  )
                 );
               }
             } else {
               var replacementNode = node.splitText(text.length);
               textBounds.push(
-                new TextBounds(text, getWrapperBounds(context, node)),
+                new TextBounds(text, getWrapperBounds(context, node))
               );
               node = replacementNode;
             }
@@ -9090,14 +9087,14 @@
             bounds.left + (bounds.width - bounds.height) / 2,
             bounds.top,
             bounds.height,
-            bounds.height,
+            bounds.height
           );
         } else if (bounds.width < bounds.height) {
           return new Bounds(
             bounds.left,
             bounds.top + (bounds.height - bounds.width) / 2,
             bounds.width,
-            bounds.width,
+            bounds.width
           );
         }
         return bounds;
@@ -9199,7 +9196,7 @@
             ) {
               _this.tree = parseTree(
                 context,
-                iframe.contentWindow.document.documentElement,
+                iframe.contentWindow.document.documentElement
               );
               // http://www.w3.org/TR/css3-background/#special-backgrounds
               var documentBackgroundColor = iframe.contentWindow.document
@@ -9207,15 +9204,15 @@
                 ? parseColor(
                     context,
                     getComputedStyle(
-                      iframe.contentWindow.document.documentElement,
-                    ).backgroundColor,
+                      iframe.contentWindow.document.documentElement
+                    ).backgroundColor
                   )
                 : COLORS.TRANSPARENT;
               var bodyBackgroundColor = iframe.contentWindow.document.body
                 ? parseColor(
                     context,
                     getComputedStyle(iframe.contentWindow.document.body)
-                      .backgroundColor,
+                      .backgroundColor
                   )
                 : COLORS.TRANSPARENT;
               _this.backgroundColor = isTransparent(documentBackgroundColor)
@@ -9240,7 +9237,7 @@
           nextNode = childNode.nextSibling;
           if (isTextNode(childNode) && childNode.data.trim().length > 0) {
             parent.textNodes.push(
-              new TextContainer(context, childNode, parent.styles),
+              new TextContainer(context, childNode, parent.styles)
             );
           } else if (isElementNode(childNode)) {
             if (isSlotElement(childNode) && childNode.assignedNodes) {
@@ -9601,7 +9598,7 @@
         max,
         symbols,
         fallback,
-        suffix,
+        suffix
       ) {
         if (value < min || value > max) {
           return createCounterText(value, fallback, suffix.length > 0);
@@ -9620,7 +9617,7 @@
         value,
         codePointRangeLength,
         isNumeric,
-        resolver,
+        resolver
       ) {
         var string = "";
         do {
@@ -9637,7 +9634,7 @@
         codePointRangeStart,
         codePointRangeEnd,
         isNumeric,
-        suffix,
+        suffix
       ) {
         var codePointRangeLength = codePointRangeEnd - codePointRangeStart + 1;
         return (
@@ -9649,9 +9646,9 @@
             function (codePoint) {
               return fromCodePoint$1(
                 Math.floor(codePoint % codePointRangeLength) +
-                  codePointRangeStart,
+                  codePointRangeStart
               );
-            },
+            }
           ) +
             suffix)
         );
@@ -9668,7 +9665,7 @@
             false,
             function (codePoint) {
               return symbols[Math.floor(codePoint % codePointRangeLength)];
-            },
+            }
           ) + suffix
         );
       };
@@ -9682,13 +9679,13 @@
         multipliers,
         negativeSign,
         suffix,
-        flags,
+        flags
       ) {
         if (value < -9999 || value > 9999) {
           return createCounterText(
             value,
             4 /* CJK_DECIMAL */,
-            suffix.length > 0,
+            suffix.length > 0
           );
         }
         var tmp = Math.abs(value);
@@ -9751,14 +9748,14 @@
               48,
               57,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
             return string.length < 4 ? "0" + string : string;
           case 4 /* CJK_DECIMAL */:
             return createCounterStyleFromSymbols(
               value,
               "〇一二三四五六七八九",
-              cjkSuffix,
+              cjkSuffix
             );
           case 6 /* LOWER_ROMAN */:
             return createAdditiveCounter(
@@ -9767,7 +9764,7 @@
               3999,
               ROMAN_UPPER,
               3 /* DECIMAL */,
-              defaultSuffix,
+              defaultSuffix
             ).toLowerCase();
           case 7 /* UPPER_ROMAN */:
             return createAdditiveCounter(
@@ -9776,7 +9773,7 @@
               3999,
               ROMAN_UPPER,
               3 /* DECIMAL */,
-              defaultSuffix,
+              defaultSuffix
             );
           case 8 /* LOWER_GREEK */:
             return createCounterStyleFromRange(
@@ -9784,7 +9781,7 @@
               945,
               969,
               false,
-              defaultSuffix,
+              defaultSuffix
             );
           case 9 /* LOWER_ALPHA */:
             return createCounterStyleFromRange(
@@ -9792,7 +9789,7 @@
               97,
               122,
               false,
-              defaultSuffix,
+              defaultSuffix
             );
           case 10 /* UPPER_ALPHA */:
             return createCounterStyleFromRange(
@@ -9800,7 +9797,7 @@
               65,
               90,
               false,
-              defaultSuffix,
+              defaultSuffix
             );
           case 11 /* ARABIC_INDIC */:
             return createCounterStyleFromRange(
@@ -9808,7 +9805,7 @@
               1632,
               1641,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 12 /* ARMENIAN */:
           case 49 /* UPPER_ARMENIAN */:
@@ -9818,7 +9815,7 @@
               9999,
               ARMENIAN,
               3 /* DECIMAL */,
-              defaultSuffix,
+              defaultSuffix
             );
           case 35 /* LOWER_ARMENIAN */:
             return createAdditiveCounter(
@@ -9827,7 +9824,7 @@
               9999,
               ARMENIAN,
               3 /* DECIMAL */,
-              defaultSuffix,
+              defaultSuffix
             ).toLowerCase();
           case 13 /* BENGALI */:
             return createCounterStyleFromRange(
@@ -9835,7 +9832,7 @@
               2534,
               2543,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 14 /* CAMBODIAN */:
           case 30 /* KHMER */:
@@ -9844,19 +9841,19 @@
               6112,
               6121,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 15 /* CJK_EARTHLY_BRANCH */:
             return createCounterStyleFromSymbols(
               value,
               "子丑寅卯辰巳午未申酉戌亥",
-              cjkSuffix,
+              cjkSuffix
             );
           case 16 /* CJK_HEAVENLY_STEM */:
             return createCounterStyleFromSymbols(
               value,
               "甲乙丙丁戊己庚辛壬癸",
-              cjkSuffix,
+              cjkSuffix
             );
           case 17 /* CJK_IDEOGRAPHIC */:
           case 48 /* TRAD_CHINESE_INFORMAL */:
@@ -9868,7 +9865,7 @@
               cjkSuffix,
               CJK_TEN_COEFFICIENTS |
                 CJK_TEN_HIGH_COEFFICIENTS |
-                CJK_HUNDRED_COEFFICIENTS,
+                CJK_HUNDRED_COEFFICIENTS
             );
           case 47 /* TRAD_CHINESE_FORMAL */:
             return createCJKCounter(
@@ -9880,7 +9877,7 @@
               CJK_ZEROS |
                 CJK_TEN_COEFFICIENTS |
                 CJK_TEN_HIGH_COEFFICIENTS |
-                CJK_HUNDRED_COEFFICIENTS,
+                CJK_HUNDRED_COEFFICIENTS
             );
           case 42 /* SIMP_CHINESE_INFORMAL */:
             return createCJKCounter(
@@ -9891,7 +9888,7 @@
               cjkSuffix,
               CJK_TEN_COEFFICIENTS |
                 CJK_TEN_HIGH_COEFFICIENTS |
-                CJK_HUNDRED_COEFFICIENTS,
+                CJK_HUNDRED_COEFFICIENTS
             );
           case 41 /* SIMP_CHINESE_FORMAL */:
             return createCJKCounter(
@@ -9903,7 +9900,7 @@
               CJK_ZEROS |
                 CJK_TEN_COEFFICIENTS |
                 CJK_TEN_HIGH_COEFFICIENTS |
-                CJK_HUNDRED_COEFFICIENTS,
+                CJK_HUNDRED_COEFFICIENTS
             );
           case 26 /* JAPANESE_INFORMAL */:
             return createCJKCounter(
@@ -9912,7 +9909,7 @@
               "十百千万",
               JAPANESE_NEGATIVE,
               cjkSuffix,
-              0,
+              0
             );
           case 25 /* JAPANESE_FORMAL */:
             return createCJKCounter(
@@ -9921,7 +9918,7 @@
               "拾百千万",
               JAPANESE_NEGATIVE,
               cjkSuffix,
-              CJK_ZEROS | CJK_TEN_COEFFICIENTS | CJK_TEN_HIGH_COEFFICIENTS,
+              CJK_ZEROS | CJK_TEN_COEFFICIENTS | CJK_TEN_HIGH_COEFFICIENTS
             );
           case 31 /* KOREAN_HANGUL_FORMAL */:
             return createCJKCounter(
@@ -9930,7 +9927,7 @@
               "십백천만",
               KOREAN_NEGATIVE,
               koreanSuffix,
-              CJK_ZEROS | CJK_TEN_COEFFICIENTS | CJK_TEN_HIGH_COEFFICIENTS,
+              CJK_ZEROS | CJK_TEN_COEFFICIENTS | CJK_TEN_HIGH_COEFFICIENTS
             );
           case 33 /* KOREAN_HANJA_INFORMAL */:
             return createCJKCounter(
@@ -9939,7 +9936,7 @@
               "十百千萬",
               KOREAN_NEGATIVE,
               koreanSuffix,
-              0,
+              0
             );
           case 32 /* KOREAN_HANJA_FORMAL */:
             return createCJKCounter(
@@ -9948,7 +9945,7 @@
               "拾百千",
               KOREAN_NEGATIVE,
               koreanSuffix,
-              CJK_ZEROS | CJK_TEN_COEFFICIENTS | CJK_TEN_HIGH_COEFFICIENTS,
+              CJK_ZEROS | CJK_TEN_COEFFICIENTS | CJK_TEN_HIGH_COEFFICIENTS
             );
           case 18 /* DEVANAGARI */:
             return createCounterStyleFromRange(
@@ -9956,7 +9953,7 @@
               0x966,
               0x96f,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 20 /* GEORGIAN */:
             return createAdditiveCounter(
@@ -9965,7 +9962,7 @@
               19999,
               GEORGIAN,
               3 /* DECIMAL */,
-              defaultSuffix,
+              defaultSuffix
             );
           case 21 /* GUJARATI */:
             return createCounterStyleFromRange(
@@ -9973,7 +9970,7 @@
               0xae6,
               0xaef,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 22 /* GURMUKHI */:
             return createCounterStyleFromRange(
@@ -9981,7 +9978,7 @@
               0xa66,
               0xa6f,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 22 /* HEBREW */:
             return createAdditiveCounter(
@@ -9990,17 +9987,17 @@
               10999,
               HEBREW,
               3 /* DECIMAL */,
-              defaultSuffix,
+              defaultSuffix
             );
           case 23 /* HIRAGANA */:
             return createCounterStyleFromSymbols(
               value,
-              "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをん",
+              "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわゐゑをん"
             );
           case 24 /* HIRAGANA_IROHA */:
             return createCounterStyleFromSymbols(
               value,
-              "いろはにほへとちりぬるをわかよたれそつねならむうゐのおくやまけふこえてあさきゆめみしゑひもせす",
+              "いろはにほへとちりぬるをわかよたれそつねならむうゐのおくやまけふこえてあさきゆめみしゑひもせす"
             );
           case 27 /* KANNADA */:
             return createCounterStyleFromRange(
@@ -10008,19 +10005,19 @@
               0xce6,
               0xcef,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 28 /* KATAKANA */:
             return createCounterStyleFromSymbols(
               value,
               "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヰヱヲン",
-              cjkSuffix,
+              cjkSuffix
             );
           case 29 /* KATAKANA_IROHA */:
             return createCounterStyleFromSymbols(
               value,
               "イロハニホヘトチリヌルヲワカヨタレソツネナラムウヰノオクヤマケフコエテアサキユメミシヱヒモセス",
-              cjkSuffix,
+              cjkSuffix
             );
           case 34 /* LAO */:
             return createCounterStyleFromRange(
@@ -10028,7 +10025,7 @@
               0xed0,
               0xed9,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 37 /* MONGOLIAN */:
             return createCounterStyleFromRange(
@@ -10036,7 +10033,7 @@
               0x1810,
               0x1819,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 38 /* MYANMAR */:
             return createCounterStyleFromRange(
@@ -10044,7 +10041,7 @@
               0x1040,
               0x1049,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 39 /* ORIYA */:
             return createCounterStyleFromRange(
@@ -10052,7 +10049,7 @@
               0xb66,
               0xb6f,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 40 /* PERSIAN */:
             return createCounterStyleFromRange(
@@ -10060,7 +10057,7 @@
               0x6f0,
               0x6f9,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 43 /* TAMIL */:
             return createCounterStyleFromRange(
@@ -10068,7 +10065,7 @@
               0xbe6,
               0xbef,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 44 /* TELUGU */:
             return createCounterStyleFromRange(
@@ -10076,7 +10073,7 @@
               0xc66,
               0xc6f,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 45 /* THAI */:
             return createCounterStyleFromRange(
@@ -10084,7 +10081,7 @@
               0xe50,
               0xe59,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 46 /* TIBETAN */:
             return createCounterStyleFromRange(
@@ -10092,7 +10089,7 @@
               0xf20,
               0xf29,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
           case 3 /* DECIMAL */:
           default:
@@ -10101,7 +10098,7 @@
               48,
               57,
               true,
-              defaultSuffix,
+              defaultSuffix
             );
         }
       };
@@ -10120,12 +10117,12 @@
           }
           this.documentElement = this.cloneNode(
             element.ownerDocument.documentElement,
-            false,
+            false
           );
         }
         DocumentCloner.prototype.toIFrame = function (
           ownerDocument,
-          windowSize,
+          windowSize
         ) {
           var _this = this;
           var iframe = createIFrameContainer(ownerDocument, windowSize);
@@ -10154,14 +10151,14 @@
                           cloneWindow.scrollX !== windowSize.left)
                       ) {
                         this.context.logger.warn(
-                          "Unable to restore scroll position for cloned document",
+                          "Unable to restore scroll position for cloned document"
                         );
                         this.context.windowBounds =
                           this.context.windowBounds.add(
                             cloneWindow.scrollX - windowSize.left,
                             cloneWindow.scrollY - windowSize.top,
                             0,
-                            0,
+                            0
                           );
                       }
                     }
@@ -10173,7 +10170,7 @@
                         Promise.reject(
                           "Error finding the " +
                             this.referenceElement.nodeName +
-                            " in the cloned document",
+                            " in the cloned document"
                         ),
                       ];
                     }
@@ -10210,17 +10207,17 @@
           });
           documentClone.open();
           documentClone.write(
-            serializeDoctype(document.doctype) + "<html></html>",
+            serializeDoctype(document.doctype) + "<html></html>"
           );
           // Chrome scrolls the parent document for some reason after the write to the cloned window???
           restoreOwnerScroll(
             this.referenceElement.ownerDocument,
             scrollX,
-            scrollY,
+            scrollY
           );
           documentClone.replaceChild(
             documentClone.adoptNode(this.documentElement),
-            documentClone.documentElement,
+            documentClone.documentElement
           );
           documentClone.close();
           return iframeLoad;
@@ -10268,7 +10265,7 @@
             if (sheet && sheet.cssRules) {
               var css = [].slice.call(sheet.cssRules, 0).reduce(function (
                 css,
-                rule,
+                rule
               ) {
                 if (rule && typeof rule.cssText === "string") {
                   return css + rule.cssText;
@@ -10298,7 +10295,7 @@
             } catch (e) {
               this.context.logger.info(
                 "Unable to inline canvas contents, canvas is tainted",
-                canvas,
+                canvas
               );
             }
           }
@@ -10313,7 +10310,7 @@
                 clonedCtx.putImageData(
                   ctx.getImageData(0, 0, canvas.width, canvas.height),
                   0,
-                  0,
+                  0
                 );
               } else {
                 var gl =
@@ -10329,7 +10326,7 @@
                   ) {
                     this.context.logger.warn(
                       "Unable to clone WebGL context as it has preserveDrawingBuffer=false",
-                      canvas,
+                      canvas
                     );
                   }
                 }
@@ -10340,7 +10337,7 @@
           } catch (e) {
             this.context.logger.info(
               "Unable to clone canvas as it is tainted",
-              canvas,
+              canvas
             );
           }
           return clonedCanvas;
@@ -10361,7 +10358,7 @@
           } catch (e) {
             this.context.logger.info(
               "Unable to clone video as it is tainted",
-              video,
+              video
             );
           }
           var blankCanvas = video.ownerDocument.createElement("canvas");
@@ -10372,7 +10369,7 @@
         DocumentCloner.prototype.appendChildNode = function (
           clone,
           child,
-          copyStyles,
+          copyStyles
         ) {
           if (
             !isElementNode(child) ||
@@ -10393,7 +10390,7 @@
         DocumentCloner.prototype.cloneChildNodes = function (
           node,
           clone,
-          copyStyles,
+          copyStyles
         ) {
           var _this = this;
           for (
@@ -10444,13 +10441,13 @@
               createPseudoHideStyles(clone);
             }
             var counters = this.counters.parse(
-              new CSSParsedCounterDeclaration(this.context, style),
+              new CSSParsedCounterDeclaration(this.context, style)
             );
             var before = this.resolvePseudoContent(
               node,
               clone,
               styleBefore,
-              PseudoElementType.BEFORE,
+              PseudoElementType.BEFORE
             );
             if (isCustomElement(node)) {
               copyStyles = true;
@@ -10465,7 +10462,7 @@
               node,
               clone,
               styleAfter,
-              PseudoElementType.AFTER,
+              PseudoElementType.AFTER
             );
             if (after) {
               clone.appendChild(after);
@@ -10500,7 +10497,7 @@
           node,
           clone,
           style,
-          pseudoElt,
+          pseudoElt
         ) {
           var _this = this;
           if (!style) {
@@ -10518,17 +10515,17 @@
             return;
           }
           this.counters.parse(
-            new CSSParsedCounterDeclaration(this.context, style),
+            new CSSParsedCounterDeclaration(this.context, style)
           );
           var declaration = new CSSParsedPseudoDeclaration(this.context, style);
           var anonymousReplacedElement = document.createElement(
-            "html2canvaspseudoelement",
+            "html2canvaspseudoelement"
           );
           copyCSSStyles(style, anonymousReplacedElement);
           declaration.content.forEach(function (token) {
             if (token.type === 0 /* STRING_TOKEN */) {
               anonymousReplacedElement.appendChild(
-                document.createTextNode(token.value),
+                document.createTextNode(token.value)
               );
             } else if (token.type === 22 /* URL_TOKEN */) {
               var img = document.createElement("img");
@@ -10541,8 +10538,8 @@
                 if (attr.length) {
                   anonymousReplacedElement.appendChild(
                     document.createTextNode(
-                      node.getAttribute(attr[0].value) || "",
-                    ),
+                      node.getAttribute(attr[0].value) || ""
+                    )
                   );
                 }
               } else if (token.name === "counter") {
@@ -10551,7 +10548,7 @@
                   counterStyle = _a[1];
                 if (counter && isIdentToken(counter)) {
                   var counterState = _this.counters.getCounterValue(
-                    counter.value,
+                    counter.value
                   );
                   var counterType =
                     counterStyle && isIdentToken(counterStyle)
@@ -10559,8 +10556,8 @@
                       : 3; /* DECIMAL */
                   anonymousReplacedElement.appendChild(
                     document.createTextNode(
-                      createCounterText(counterState, counterType, false),
-                    ),
+                      createCounterText(counterState, counterType, false)
+                    )
                   );
                 }
               } else if (token.name === "counters") {
@@ -10570,7 +10567,7 @@
                   counterStyle = _b[2];
                 if (counter && isIdentToken(counter)) {
                   var counterStates = _this.counters.getCounterValues(
-                    counter.value,
+                    counter.value
                   );
                   var counterType_1 =
                     counterStyle && isIdentToken(counterStyle)
@@ -10586,7 +10583,7 @@
                     })
                     .join(separator);
                   anonymousReplacedElement.appendChild(
-                    document.createTextNode(text),
+                    document.createTextNode(text)
                   );
                 }
               } else;
@@ -10595,21 +10592,21 @@
                 case "open-quote":
                   anonymousReplacedElement.appendChild(
                     document.createTextNode(
-                      getQuote(declaration.quotes, _this.quoteDepth++, true),
-                    ),
+                      getQuote(declaration.quotes, _this.quoteDepth++, true)
+                    )
                   );
                   break;
                 case "close-quote":
                   anonymousReplacedElement.appendChild(
                     document.createTextNode(
-                      getQuote(declaration.quotes, --_this.quoteDepth, false),
-                    ),
+                      getQuote(declaration.quotes, --_this.quoteDepth, false)
+                    )
                   );
                   break;
                 default:
                   // safari doesn't parse string tokens correctly because of lack of quotes
                   anonymousReplacedElement.appendChild(
-                    document.createTextNode(token.value),
+                    document.createTextNode(token.value)
                   );
               }
             }
@@ -10708,7 +10705,7 @@
           if (ignoredStyleProperties.indexOf(property) === -1) {
             target.style.setProperty(
               property,
-              style.getPropertyValue(property),
+              style.getPropertyValue(property)
             );
           }
         }
@@ -10769,7 +10766,7 @@
             "\n         ." +
             PSEUDO_HIDE_ELEMENT_CLASS_AFTER +
             PSEUDO_AFTER +
-            PSEUDO_HIDE_ELEMENT_STYLE,
+            PSEUDO_HIDE_ELEMENT_STYLE
         );
       };
       var createStyles = function (body, styles) {
@@ -10864,7 +10861,7 @@
                   _a.label = 2;
                 case 2:
                   this.context.logger.debug(
-                    "Added image " + key.substring(0, 256),
+                    "Added image " + key.substring(0, 256)
                   );
                   return [
                     4 /*yield*/,
@@ -10890,7 +10887,7 @@
                           return reject(
                             "Timed out (" +
                               _this._options.imageTimeout +
-                              "ms) loading image",
+                              "ms) loading image"
                           );
                         }, _this._options.imageTimeout);
                       }
@@ -10929,14 +10926,14 @@
                     function () {
                       return resolve(reader_1.result);
                     },
-                    false,
+                    false
                   );
                   reader_1.addEventListener(
                     "error",
                     function (e) {
                       return reject(e);
                     },
-                    false,
+                    false
                   );
                   reader_1.readAsDataURL(xhr.response);
                 }
@@ -10945,7 +10942,7 @@
                   "Failed to proxy resource " +
                     key +
                     " with status code " +
-                    xhr.status,
+                    xhr.status
                 );
               }
             };
@@ -10959,7 +10956,7 @@
                 "url=" +
                 encodeURIComponent(src) +
                 "&responseType=" +
-                responseType,
+                responseType
             );
             if (responseType !== "text" && xhr instanceof XMLHttpRequest) {
               xhr.responseType = responseType;
@@ -10969,7 +10966,7 @@
               xhr.timeout = timeout_1;
               xhr.ontimeout = function () {
                 return reject(
-                  "Timed out (" + timeout_1 + "ms) proxying " + key,
+                  "Timed out (" + timeout_1 + "ms) proxying " + key
                 );
               };
             }
@@ -11036,7 +11033,7 @@
             this.start.add(deltaX, deltaY),
             this.startControl.add(deltaX, deltaY),
             this.endControl.add(deltaX, deltaY),
-            this.end.add(deltaX, deltaY),
+            this.end.add(deltaX, deltaY)
           );
         };
         BezierCurve.prototype.reverse = function () {
@@ -11044,7 +11041,7 @@
             this.end,
             this.endControl,
             this.startControl,
-            this.start,
+            this.start
           );
         };
         return BezierCurve;
@@ -11060,28 +11057,28 @@
           var _a = getAbsoluteValueForTuple(
               styles.borderTopLeftRadius,
               bounds.width,
-              bounds.height,
+              bounds.height
             ),
             tlh = _a[0],
             tlv = _a[1];
           var _b = getAbsoluteValueForTuple(
               styles.borderTopRightRadius,
               bounds.width,
-              bounds.height,
+              bounds.height
             ),
             trh = _b[0],
             trv = _b[1];
           var _c = getAbsoluteValueForTuple(
               styles.borderBottomRightRadius,
               bounds.width,
-              bounds.height,
+              bounds.height
             ),
             brh = _c[0],
             brv = _c[1];
           var _d = getAbsoluteValueForTuple(
               styles.borderBottomLeftRadius,
               bounds.width,
-              bounds.height,
+              bounds.height
             ),
             blh = _d[0],
             blv = _d[1];
@@ -11111,19 +11108,19 @@
           var borderLeftWidth = styles.borderLeftWidth;
           var paddingTop = getAbsoluteValue(
             styles.paddingTop,
-            element.bounds.width,
+            element.bounds.width
           );
           var paddingRight = getAbsoluteValue(
             styles.paddingRight,
-            element.bounds.width,
+            element.bounds.width
           );
           var paddingBottom = getAbsoluteValue(
             styles.paddingBottom,
-            element.bounds.width,
+            element.bounds.width
           );
           var paddingLeft = getAbsoluteValue(
             styles.paddingLeft,
-            element.bounds.width,
+            element.bounds.width
           );
           this.topLeftBorderDoubleOuterBox =
             tlh > 0 || tlv > 0
@@ -11132,11 +11129,11 @@
                   bounds.top + borderTopWidth / 3,
                   tlh - borderLeftWidth / 3,
                   tlv - borderTopWidth / 3,
-                  CORNER.TOP_LEFT,
+                  CORNER.TOP_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth / 3,
-                  bounds.top + borderTopWidth / 3,
+                  bounds.top + borderTopWidth / 3
                 );
           this.topRightBorderDoubleOuterBox =
             tlh > 0 || tlv > 0
@@ -11145,11 +11142,11 @@
                   bounds.top + borderTopWidth / 3,
                   trh - borderRightWidth / 3,
                   trv - borderTopWidth / 3,
-                  CORNER.TOP_RIGHT,
+                  CORNER.TOP_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - borderRightWidth / 3,
-                  bounds.top + borderTopWidth / 3,
+                  bounds.top + borderTopWidth / 3
                 );
           this.bottomRightBorderDoubleOuterBox =
             brh > 0 || brv > 0
@@ -11158,11 +11155,11 @@
                   bounds.top + rightHeight,
                   brh - borderRightWidth / 3,
                   brv - borderBottomWidth / 3,
-                  CORNER.BOTTOM_RIGHT,
+                  CORNER.BOTTOM_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - borderRightWidth / 3,
-                  bounds.top + bounds.height - borderBottomWidth / 3,
+                  bounds.top + bounds.height - borderBottomWidth / 3
                 );
           this.bottomLeftBorderDoubleOuterBox =
             blh > 0 || blv > 0
@@ -11171,11 +11168,11 @@
                   bounds.top + leftHeight,
                   blh - borderLeftWidth / 3,
                   blv - borderBottomWidth / 3,
-                  CORNER.BOTTOM_LEFT,
+                  CORNER.BOTTOM_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth / 3,
-                  bounds.top + bounds.height - borderBottomWidth / 3,
+                  bounds.top + bounds.height - borderBottomWidth / 3
                 );
           this.topLeftBorderDoubleInnerBox =
             tlh > 0 || tlv > 0
@@ -11184,11 +11181,11 @@
                   bounds.top + (borderTopWidth * 2) / 3,
                   tlh - (borderLeftWidth * 2) / 3,
                   tlv - (borderTopWidth * 2) / 3,
-                  CORNER.TOP_LEFT,
+                  CORNER.TOP_LEFT
                 )
               : new Vector(
                   bounds.left + (borderLeftWidth * 2) / 3,
-                  bounds.top + (borderTopWidth * 2) / 3,
+                  bounds.top + (borderTopWidth * 2) / 3
                 );
           this.topRightBorderDoubleInnerBox =
             tlh > 0 || tlv > 0
@@ -11197,11 +11194,11 @@
                   bounds.top + (borderTopWidth * 2) / 3,
                   trh - (borderRightWidth * 2) / 3,
                   trv - (borderTopWidth * 2) / 3,
-                  CORNER.TOP_RIGHT,
+                  CORNER.TOP_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - (borderRightWidth * 2) / 3,
-                  bounds.top + (borderTopWidth * 2) / 3,
+                  bounds.top + (borderTopWidth * 2) / 3
                 );
           this.bottomRightBorderDoubleInnerBox =
             brh > 0 || brv > 0
@@ -11210,11 +11207,11 @@
                   bounds.top + rightHeight,
                   brh - (borderRightWidth * 2) / 3,
                   brv - (borderBottomWidth * 2) / 3,
-                  CORNER.BOTTOM_RIGHT,
+                  CORNER.BOTTOM_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - (borderRightWidth * 2) / 3,
-                  bounds.top + bounds.height - (borderBottomWidth * 2) / 3,
+                  bounds.top + bounds.height - (borderBottomWidth * 2) / 3
                 );
           this.bottomLeftBorderDoubleInnerBox =
             blh > 0 || blv > 0
@@ -11223,11 +11220,11 @@
                   bounds.top + leftHeight,
                   blh - (borderLeftWidth * 2) / 3,
                   blv - (borderBottomWidth * 2) / 3,
-                  CORNER.BOTTOM_LEFT,
+                  CORNER.BOTTOM_LEFT
                 )
               : new Vector(
                   bounds.left + (borderLeftWidth * 2) / 3,
-                  bounds.top + bounds.height - (borderBottomWidth * 2) / 3,
+                  bounds.top + bounds.height - (borderBottomWidth * 2) / 3
                 );
           this.topLeftBorderStroke =
             tlh > 0 || tlv > 0
@@ -11236,11 +11233,11 @@
                   bounds.top + borderTopWidth / 2,
                   tlh - borderLeftWidth / 2,
                   tlv - borderTopWidth / 2,
-                  CORNER.TOP_LEFT,
+                  CORNER.TOP_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth / 2,
-                  bounds.top + borderTopWidth / 2,
+                  bounds.top + borderTopWidth / 2
                 );
           this.topRightBorderStroke =
             tlh > 0 || tlv > 0
@@ -11249,11 +11246,11 @@
                   bounds.top + borderTopWidth / 2,
                   trh - borderRightWidth / 2,
                   trv - borderTopWidth / 2,
-                  CORNER.TOP_RIGHT,
+                  CORNER.TOP_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - borderRightWidth / 2,
-                  bounds.top + borderTopWidth / 2,
+                  bounds.top + borderTopWidth / 2
                 );
           this.bottomRightBorderStroke =
             brh > 0 || brv > 0
@@ -11262,11 +11259,11 @@
                   bounds.top + rightHeight,
                   brh - borderRightWidth / 2,
                   brv - borderBottomWidth / 2,
-                  CORNER.BOTTOM_RIGHT,
+                  CORNER.BOTTOM_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - borderRightWidth / 2,
-                  bounds.top + bounds.height - borderBottomWidth / 2,
+                  bounds.top + bounds.height - borderBottomWidth / 2
                 );
           this.bottomLeftBorderStroke =
             blh > 0 || blv > 0
@@ -11275,11 +11272,11 @@
                   bounds.top + leftHeight,
                   blh - borderLeftWidth / 2,
                   blv - borderBottomWidth / 2,
-                  CORNER.BOTTOM_LEFT,
+                  CORNER.BOTTOM_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth / 2,
-                  bounds.top + bounds.height - borderBottomWidth / 2,
+                  bounds.top + bounds.height - borderBottomWidth / 2
                 );
           this.topLeftBorderBox =
             tlh > 0 || tlv > 0
@@ -11288,7 +11285,7 @@
                   bounds.top,
                   tlh,
                   tlv,
-                  CORNER.TOP_LEFT,
+                  CORNER.TOP_LEFT
                 )
               : new Vector(bounds.left, bounds.top);
           this.topRightBorderBox =
@@ -11298,7 +11295,7 @@
                   bounds.top,
                   trh,
                   trv,
-                  CORNER.TOP_RIGHT,
+                  CORNER.TOP_RIGHT
                 )
               : new Vector(bounds.left + bounds.width, bounds.top);
           this.bottomRightBorderBox =
@@ -11308,11 +11305,11 @@
                   bounds.top + rightHeight,
                   brh,
                   brv,
-                  CORNER.BOTTOM_RIGHT,
+                  CORNER.BOTTOM_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width,
-                  bounds.top + bounds.height,
+                  bounds.top + bounds.height
                 );
           this.bottomLeftBorderBox =
             blh > 0 || blv > 0
@@ -11321,7 +11318,7 @@
                   bounds.top + leftHeight,
                   blh,
                   blv,
-                  CORNER.BOTTOM_LEFT,
+                  CORNER.BOTTOM_LEFT
                 )
               : new Vector(bounds.left, bounds.top + bounds.height);
           this.topLeftPaddingBox =
@@ -11331,11 +11328,11 @@
                   bounds.top + borderTopWidth,
                   Math.max(0, tlh - borderLeftWidth),
                   Math.max(0, tlv - borderTopWidth),
-                  CORNER.TOP_LEFT,
+                  CORNER.TOP_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth,
-                  bounds.top + borderTopWidth,
+                  bounds.top + borderTopWidth
                 );
           this.topRightPaddingBox =
             trh > 0 || trv > 0
@@ -11347,11 +11344,11 @@
                     ? 0
                     : Math.max(0, trh - borderRightWidth),
                   Math.max(0, trv - borderTopWidth),
-                  CORNER.TOP_RIGHT,
+                  CORNER.TOP_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - borderRightWidth,
-                  bounds.top + borderTopWidth,
+                  bounds.top + borderTopWidth
                 );
           this.bottomRightPaddingBox =
             brh > 0 || brv > 0
@@ -11362,11 +11359,11 @@
                     Math.min(rightHeight, bounds.height - borderBottomWidth),
                   Math.max(0, brh - borderRightWidth),
                   Math.max(0, brv - borderBottomWidth),
-                  CORNER.BOTTOM_RIGHT,
+                  CORNER.BOTTOM_RIGHT
                 )
               : new Vector(
                   bounds.left + bounds.width - borderRightWidth,
-                  bounds.top + bounds.height - borderBottomWidth,
+                  bounds.top + bounds.height - borderBottomWidth
                 );
           this.bottomLeftPaddingBox =
             blh > 0 || blv > 0
@@ -11376,11 +11373,11 @@
                     Math.min(leftHeight, bounds.height - borderBottomWidth),
                   Math.max(0, blh - borderLeftWidth),
                   Math.max(0, blv - borderBottomWidth),
-                  CORNER.BOTTOM_LEFT,
+                  CORNER.BOTTOM_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth,
-                  bounds.top + bounds.height - borderBottomWidth,
+                  bounds.top + bounds.height - borderBottomWidth
                 );
           this.topLeftContentBox =
             tlh > 0 || tlv > 0
@@ -11389,11 +11386,11 @@
                   bounds.top + borderTopWidth + paddingTop,
                   Math.max(0, tlh - (borderLeftWidth + paddingLeft)),
                   Math.max(0, tlv - (borderTopWidth + paddingTop)),
-                  CORNER.TOP_LEFT,
+                  CORNER.TOP_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth + paddingLeft,
-                  bounds.top + borderTopWidth + paddingTop,
+                  bounds.top + borderTopWidth + paddingTop
                 );
           this.topRightContentBox =
             trh > 0 || trv > 0
@@ -11401,20 +11398,20 @@
                   bounds.left +
                     Math.min(
                       topWidth,
-                      bounds.width + borderLeftWidth + paddingLeft,
+                      bounds.width + borderLeftWidth + paddingLeft
                     ),
                   bounds.top + borderTopWidth + paddingTop,
                   topWidth > bounds.width + borderLeftWidth + paddingLeft
                     ? 0
                     : trh - borderLeftWidth + paddingLeft,
                   trv - (borderTopWidth + paddingTop),
-                  CORNER.TOP_RIGHT,
+                  CORNER.TOP_RIGHT
                 )
               : new Vector(
                   bounds.left +
                     bounds.width -
                     (borderRightWidth + paddingRight),
-                  bounds.top + borderTopWidth + paddingTop,
+                  bounds.top + borderTopWidth + paddingTop
                 );
           this.bottomRightContentBox =
             brh > 0 || brv > 0
@@ -11422,16 +11419,16 @@
                   bounds.left +
                     Math.min(
                       bottomWidth,
-                      bounds.width - (borderLeftWidth + paddingLeft),
+                      bounds.width - (borderLeftWidth + paddingLeft)
                     ),
                   bounds.top +
                     Math.min(
                       rightHeight,
-                      bounds.height + borderTopWidth + paddingTop,
+                      bounds.height + borderTopWidth + paddingTop
                     ),
                   Math.max(0, brh - (borderRightWidth + paddingRight)),
                   brv - (borderBottomWidth + paddingBottom),
-                  CORNER.BOTTOM_RIGHT,
+                  CORNER.BOTTOM_RIGHT
                 )
               : new Vector(
                   bounds.left +
@@ -11439,7 +11436,7 @@
                     (borderRightWidth + paddingRight),
                   bounds.top +
                     bounds.height -
-                    (borderBottomWidth + paddingBottom),
+                    (borderBottomWidth + paddingBottom)
                 );
           this.bottomLeftContentBox =
             blh > 0 || blv > 0
@@ -11448,13 +11445,13 @@
                   bounds.top + leftHeight,
                   Math.max(0, blh - (borderLeftWidth + paddingLeft)),
                   blv - (borderBottomWidth + paddingBottom),
-                  CORNER.BOTTOM_LEFT,
+                  CORNER.BOTTOM_LEFT
                 )
               : new Vector(
                   bounds.left + borderLeftWidth + paddingLeft,
                   bounds.top +
                     bounds.height -
-                    (borderBottomWidth + paddingBottom),
+                    (borderBottomWidth + paddingBottom)
                 );
         }
         return BoundCurves;
@@ -11478,21 +11475,21 @@
               new Vector(x, ym),
               new Vector(x, ym - oy),
               new Vector(xm - ox, y),
-              new Vector(xm, y),
+              new Vector(xm, y)
             );
           case CORNER.TOP_RIGHT:
             return new BezierCurve(
               new Vector(x, y),
               new Vector(x + ox, y),
               new Vector(xm, ym - oy),
-              new Vector(xm, ym),
+              new Vector(xm, ym)
             );
           case CORNER.BOTTOM_RIGHT:
             return new BezierCurve(
               new Vector(xm, y),
               new Vector(xm, y + oy),
               new Vector(x + ox, ym),
-              new Vector(x, ym),
+              new Vector(x, ym)
             );
           case CORNER.BOTTOM_LEFT:
           default:
@@ -11500,7 +11497,7 @@
               new Vector(xm, ym),
               new Vector(xm - ox, ym),
               new Vector(x, y + oy),
-              new Vector(x, y),
+              new Vector(x, y)
             );
         }
       };
@@ -11628,12 +11625,12 @@
               this.effects.push(
                 new ClipEffect(
                   borderBox,
-                  2 /* BACKGROUND_BORDERS */ | 4 /* CONTENT */,
-                ),
+                  2 /* BACKGROUND_BORDERS */ | 4 /* CONTENT */
+                )
               );
             } else {
               this.effects.push(
-                new ClipEffect(borderBox, 2 /* BACKGROUND_BORDERS */),
+                new ClipEffect(borderBox, 2 /* BACKGROUND_BORDERS */)
               );
               this.effects.push(new ClipEffect(paddingBox, 4 /* CONTENT */));
             }
@@ -11642,7 +11639,7 @@
         ElementPaint.prototype.getEffects = function (target) {
           var inFlow =
             [2 /* ABSOLUTE */, 3 /* FIXED */].indexOf(
-              this.container.styles.position,
+              this.container.styles.position
             ) === -1;
           var parent = this.parent;
           var effects = this.effects.slice(0);
@@ -11658,7 +11655,7 @@
               effects.unshift.apply(effects, croplessEffects);
               inFlow =
                 [2 /* ABSOLUTE */, 3 /* FIXED */].indexOf(
-                  parent.container.styles.position,
+                  parent.container.styles.position
                 ) === -1;
               if (parent.container.styles.overflowX !== 0 /* VISIBLE */) {
                 var borderBox = calculateBorderBoxPath(parent.curves);
@@ -11667,8 +11664,8 @@
                   effects.unshift(
                     new ClipEffect(
                       paddingBox,
-                      2 /* BACKGROUND_BORDERS */ | 4 /* CONTENT */,
-                    ),
+                      2 /* BACKGROUND_BORDERS */ | 4 /* CONTENT */
+                    )
                   );
                 }
               }
@@ -11687,16 +11684,16 @@
         parent,
         stackingContext,
         realStackingContext,
-        listItems,
+        listItems
       ) {
         parent.container.elements.forEach(function (child) {
           var treatAsRealStackingContext = contains(
             child.flags,
-            4 /* CREATES_REAL_STACKING_CONTEXT */,
+            4 /* CREATES_REAL_STACKING_CONTEXT */
           );
           var createsStackingContext = contains(
             child.flags,
-            2 /* CREATES_STACKING_CONTEXT */,
+            2 /* CREATES_STACKING_CONTEXT */
           );
           var paintContainer = new ElementPaint(child, parent);
           if (contains(child.styles.display, 2048 /* LIST_ITEM */)) {
@@ -11757,7 +11754,7 @@
               paintContainer,
               stack,
               treatAsRealStackingContext ? stack : realStackingContext,
-              listOwnerItems,
+              listOwnerItems
             );
           } else {
             if (child.styles.isInlineLevel()) {
@@ -11769,7 +11766,7 @@
               paintContainer,
               stackingContext,
               realStackingContext,
-              listOwnerItems,
+              listOwnerItems
             );
           }
           if (contains(child.flags, 8 /* IS_LIST_OWNER */)) {
@@ -11793,7 +11790,7 @@
           item.listValue = createCounterText(
             numbering,
             item.container.styles.listStyleType,
-            true,
+            true
           );
           numbering += reversed ? -1 : 1;
         }
@@ -11814,21 +11811,21 @@
               curves.topLeftBorderBox,
               curves.topLeftPaddingBox,
               curves.topRightBorderBox,
-              curves.topRightPaddingBox,
+              curves.topRightPaddingBox
             );
           case 1:
             return createPathFromCurves(
               curves.topRightBorderBox,
               curves.topRightPaddingBox,
               curves.bottomRightBorderBox,
-              curves.bottomRightPaddingBox,
+              curves.bottomRightPaddingBox
             );
           case 2:
             return createPathFromCurves(
               curves.bottomRightBorderBox,
               curves.bottomRightPaddingBox,
               curves.bottomLeftBorderBox,
-              curves.bottomLeftPaddingBox,
+              curves.bottomLeftPaddingBox
             );
           case 3:
           default:
@@ -11836,7 +11833,7 @@
               curves.bottomLeftBorderBox,
               curves.bottomLeftPaddingBox,
               curves.topLeftBorderBox,
-              curves.topLeftPaddingBox,
+              curves.topLeftPaddingBox
             );
         }
       };
@@ -11847,21 +11844,21 @@
               curves.topLeftBorderBox,
               curves.topLeftBorderDoubleOuterBox,
               curves.topRightBorderBox,
-              curves.topRightBorderDoubleOuterBox,
+              curves.topRightBorderDoubleOuterBox
             );
           case 1:
             return createPathFromCurves(
               curves.topRightBorderBox,
               curves.topRightBorderDoubleOuterBox,
               curves.bottomRightBorderBox,
-              curves.bottomRightBorderDoubleOuterBox,
+              curves.bottomRightBorderDoubleOuterBox
             );
           case 2:
             return createPathFromCurves(
               curves.bottomRightBorderBox,
               curves.bottomRightBorderDoubleOuterBox,
               curves.bottomLeftBorderBox,
-              curves.bottomLeftBorderDoubleOuterBox,
+              curves.bottomLeftBorderDoubleOuterBox
             );
           case 3:
           default:
@@ -11869,7 +11866,7 @@
               curves.bottomLeftBorderBox,
               curves.bottomLeftBorderDoubleOuterBox,
               curves.topLeftBorderBox,
-              curves.topLeftBorderDoubleOuterBox,
+              curves.topLeftBorderDoubleOuterBox
             );
         }
       };
@@ -11880,21 +11877,21 @@
               curves.topLeftBorderDoubleInnerBox,
               curves.topLeftPaddingBox,
               curves.topRightBorderDoubleInnerBox,
-              curves.topRightPaddingBox,
+              curves.topRightPaddingBox
             );
           case 1:
             return createPathFromCurves(
               curves.topRightBorderDoubleInnerBox,
               curves.topRightPaddingBox,
               curves.bottomRightBorderDoubleInnerBox,
-              curves.bottomRightPaddingBox,
+              curves.bottomRightPaddingBox
             );
           case 2:
             return createPathFromCurves(
               curves.bottomRightBorderDoubleInnerBox,
               curves.bottomRightPaddingBox,
               curves.bottomLeftBorderDoubleInnerBox,
-              curves.bottomLeftPaddingBox,
+              curves.bottomLeftPaddingBox
             );
           case 3:
           default:
@@ -11902,7 +11899,7 @@
               curves.bottomLeftBorderDoubleInnerBox,
               curves.bottomLeftPaddingBox,
               curves.topLeftBorderDoubleInnerBox,
-              curves.topLeftPaddingBox,
+              curves.topLeftPaddingBox
             );
         }
       };
@@ -11911,23 +11908,23 @@
           case 0:
             return createStrokePathFromCurves(
               curves.topLeftBorderStroke,
-              curves.topRightBorderStroke,
+              curves.topRightBorderStroke
             );
           case 1:
             return createStrokePathFromCurves(
               curves.topRightBorderStroke,
-              curves.bottomRightBorderStroke,
+              curves.bottomRightBorderStroke
             );
           case 2:
             return createStrokePathFromCurves(
               curves.bottomRightBorderStroke,
-              curves.bottomLeftBorderStroke,
+              curves.bottomLeftBorderStroke
             );
           case 3:
           default:
             return createStrokePathFromCurves(
               curves.bottomLeftBorderStroke,
-              curves.topLeftBorderStroke,
+              curves.topLeftBorderStroke
             );
         }
       };
@@ -11977,7 +11974,7 @@
           styles.borderLeftWidth,
           styles.borderTopWidth,
           -(styles.borderRightWidth + styles.borderLeftWidth),
-          -(styles.borderTopWidth + styles.borderBottomWidth),
+          -(styles.borderTopWidth + styles.borderBottomWidth)
         );
       };
       var contentBox = function (element) {
@@ -11988,7 +11985,7 @@
         var paddingTop = getAbsoluteValue(styles.paddingTop, bounds.width);
         var paddingBottom = getAbsoluteValue(
           styles.paddingBottom,
-          bounds.width,
+          bounds.width
         );
         return bounds.add(
           paddingLeft + styles.borderLeftWidth,
@@ -12004,13 +12001,13 @@
             styles.borderBottomWidth +
             paddingTop +
             paddingBottom
-          ),
+          )
         );
       };
 
       var calculateBackgroundPositioningArea = function (
         backgroundOrigin,
-        element,
+        element
       ) {
         if (backgroundOrigin === 0 /* BORDER_BOX */) {
           return element.bounds;
@@ -12032,37 +12029,37 @@
       var calculateBackgroundRendering = function (
         container,
         index,
-        intrinsicSize,
+        intrinsicSize
       ) {
         var backgroundPositioningArea = calculateBackgroundPositioningArea(
           getBackgroundValueForIndex(container.styles.backgroundOrigin, index),
-          container,
+          container
         );
         var backgroundPaintingArea = calculateBackgroundPaintingArea(
           getBackgroundValueForIndex(container.styles.backgroundClip, index),
-          container,
+          container
         );
         var backgroundImageSize = calculateBackgroundSize(
           getBackgroundValueForIndex(container.styles.backgroundSize, index),
           intrinsicSize,
-          backgroundPositioningArea,
+          backgroundPositioningArea
         );
         var sizeWidth = backgroundImageSize[0],
           sizeHeight = backgroundImageSize[1];
         var position = getAbsoluteValueForTuple(
           getBackgroundValueForIndex(
             container.styles.backgroundPosition,
-            index,
+            index
           ),
           backgroundPositioningArea.width - sizeWidth,
-          backgroundPositioningArea.height - sizeHeight,
+          backgroundPositioningArea.height - sizeHeight
         );
         var path = calculateBackgroundRepeatPath(
           getBackgroundValueForIndex(container.styles.backgroundRepeat, index),
           position,
           backgroundImageSize,
           backgroundPositioningArea,
-          backgroundPaintingArea,
+          backgroundPaintingArea
         );
         var offsetX = Math.round(backgroundPositioningArea.left + position[0]);
         var offsetY = Math.round(backgroundPositioningArea.top + position[1]);
@@ -12193,7 +12190,7 @@
         _a,
         _b,
         backgroundPositioningArea,
-        backgroundPaintingArea,
+        backgroundPaintingArea
       ) {
         var x = _a[0],
           y = _a[1];
@@ -12204,96 +12201,96 @@
             return [
               new Vector(
                 Math.round(backgroundPositioningArea.left),
-                Math.round(backgroundPositioningArea.top + y),
+                Math.round(backgroundPositioningArea.top + y)
               ),
               new Vector(
                 Math.round(
                   backgroundPositioningArea.left +
-                    backgroundPositioningArea.width,
+                    backgroundPositioningArea.width
                 ),
-                Math.round(backgroundPositioningArea.top + y),
+                Math.round(backgroundPositioningArea.top + y)
               ),
               new Vector(
                 Math.round(
                   backgroundPositioningArea.left +
-                    backgroundPositioningArea.width,
+                    backgroundPositioningArea.width
                 ),
-                Math.round(height + backgroundPositioningArea.top + y),
+                Math.round(height + backgroundPositioningArea.top + y)
               ),
               new Vector(
                 Math.round(backgroundPositioningArea.left),
-                Math.round(height + backgroundPositioningArea.top + y),
+                Math.round(height + backgroundPositioningArea.top + y)
               ),
             ];
           case 3 /* REPEAT_Y */:
             return [
               new Vector(
                 Math.round(backgroundPositioningArea.left + x),
-                Math.round(backgroundPositioningArea.top),
+                Math.round(backgroundPositioningArea.top)
               ),
               new Vector(
                 Math.round(backgroundPositioningArea.left + x + width),
-                Math.round(backgroundPositioningArea.top),
+                Math.round(backgroundPositioningArea.top)
               ),
               new Vector(
                 Math.round(backgroundPositioningArea.left + x + width),
                 Math.round(
                   backgroundPositioningArea.height +
-                    backgroundPositioningArea.top,
-                ),
+                    backgroundPositioningArea.top
+                )
               ),
               new Vector(
                 Math.round(backgroundPositioningArea.left + x),
                 Math.round(
                   backgroundPositioningArea.height +
-                    backgroundPositioningArea.top,
-                ),
+                    backgroundPositioningArea.top
+                )
               ),
             ];
           case 1 /* NO_REPEAT */:
             return [
               new Vector(
                 Math.round(backgroundPositioningArea.left + x),
-                Math.round(backgroundPositioningArea.top + y),
+                Math.round(backgroundPositioningArea.top + y)
               ),
               new Vector(
                 Math.round(backgroundPositioningArea.left + x + width),
-                Math.round(backgroundPositioningArea.top + y),
+                Math.round(backgroundPositioningArea.top + y)
               ),
               new Vector(
                 Math.round(backgroundPositioningArea.left + x + width),
-                Math.round(backgroundPositioningArea.top + y + height),
+                Math.round(backgroundPositioningArea.top + y + height)
               ),
               new Vector(
                 Math.round(backgroundPositioningArea.left + x),
-                Math.round(backgroundPositioningArea.top + y + height),
+                Math.round(backgroundPositioningArea.top + y + height)
               ),
             ];
           default:
             return [
               new Vector(
                 Math.round(backgroundPaintingArea.left),
-                Math.round(backgroundPaintingArea.top),
+                Math.round(backgroundPaintingArea.top)
               ),
               new Vector(
                 Math.round(
-                  backgroundPaintingArea.left + backgroundPaintingArea.width,
+                  backgroundPaintingArea.left + backgroundPaintingArea.width
                 ),
-                Math.round(backgroundPaintingArea.top),
+                Math.round(backgroundPaintingArea.top)
               ),
               new Vector(
                 Math.round(
-                  backgroundPaintingArea.left + backgroundPaintingArea.width,
+                  backgroundPaintingArea.left + backgroundPaintingArea.width
                 ),
                 Math.round(
-                  backgroundPaintingArea.height + backgroundPaintingArea.top,
-                ),
+                  backgroundPaintingArea.height + backgroundPaintingArea.top
+                )
               ),
               new Vector(
                 Math.round(backgroundPaintingArea.left),
                 Math.round(
-                  backgroundPaintingArea.height + backgroundPaintingArea.top,
-                ),
+                  backgroundPaintingArea.height + backgroundPaintingArea.top
+                )
               ),
             ];
         }
@@ -12387,7 +12384,7 @@
               "x" +
               options.height +
               ") with scale " +
-              options.scale,
+              options.scale
           );
           return _this;
         }
@@ -12413,7 +12410,7 @@
               effect.matrix[2],
               effect.matrix[3],
               effect.matrix[4],
-              effect.matrix[5],
+              effect.matrix[5]
             );
             this.ctx.translate(-effect.offsetX, -effect.offsetY);
           }
@@ -12474,14 +12471,14 @@
         CanvasRenderer.prototype.renderTextWithLetterSpacing = function (
           text,
           letterSpacing,
-          baseline,
+          baseline
         ) {
           var _this = this;
           if (letterSpacing === 0) {
             this.ctx.fillText(
               text.text,
               text.bounds.left,
-              text.bounds.top + baseline,
+              text.bounds.top + baseline
             );
           } else {
             var letters = segmentGraphemes(text.text);
@@ -12546,7 +12543,7 @@
                       _this.renderTextWithLetterSpacing(
                         text,
                         styles.letterSpacing,
-                        baseline,
+                        baseline
                       );
                       var textShadows = styles.textShadow;
                       if (textShadows.length && text.text.trim().length) {
@@ -12563,7 +12560,7 @@
                             _this.renderTextWithLetterSpacing(
                               text,
                               styles.letterSpacing,
-                              baseline,
+                              baseline
                             );
                           });
                         _this.ctx.shadowColor = "";
@@ -12573,7 +12570,7 @@
                       }
                       if (styles.textDecorationLine.length) {
                         _this.ctx.fillStyle = asString(
-                          styles.textDecorationColor || styles.color,
+                          styles.textDecorationColor || styles.color
                         );
                         styles.textDecorationLine.forEach(
                           function (textDecorationLine) {
@@ -12586,7 +12583,7 @@
                                   text.bounds.left,
                                   Math.round(text.bounds.top + baseline),
                                   text.bounds.width,
-                                  1,
+                                  1
                                 );
                                 break;
                               case 2 /* OVERLINE */:
@@ -12594,7 +12591,7 @@
                                   text.bounds.left,
                                   Math.round(text.bounds.top),
                                   text.bounds.width,
-                                  1,
+                                  1
                                 );
                                 break;
                               case 3 /* LINE_THROUGH */:
@@ -12603,11 +12600,11 @@
                                   text.bounds.left,
                                   Math.ceil(text.bounds.top + middle),
                                   text.bounds.width,
-                                  1,
+                                  1
                                 );
                                 break;
                             }
-                          },
+                          }
                         );
                       }
                       break;
@@ -12617,7 +12614,7 @@
                         text.text.trim().length
                       ) {
                         _this.ctx.strokeStyle = asString(
-                          styles.webkitTextStrokeColor,
+                          styles.webkitTextStrokeColor
                         );
                         _this.ctx.lineWidth = styles.webkitTextStrokeWidth;
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12627,7 +12624,7 @@
                         _this.ctx.strokeText(
                           text.text,
                           text.bounds.left,
-                          text.bounds.top + baseline,
+                          text.bounds.top + baseline
                         );
                       }
                       _this.ctx.strokeStyle = "";
@@ -12644,7 +12641,7 @@
         CanvasRenderer.prototype.renderReplacedElement = function (
           container,
           curves,
-          image,
+          image
         ) {
           if (
             image &&
@@ -12665,7 +12662,7 @@
               box.left,
               box.top,
               box.width,
-              box.height,
+              box.height
             );
             this.ctx.restore();
           }
@@ -12728,7 +12725,7 @@
                 case 7:
                   _c.sent();
                   this.context.logger.error(
-                    "Error loading image " + container.src,
+                    "Error loading image " + container.src
                   );
                   return [3 /*break*/, 8];
                 case 8:
@@ -12736,7 +12733,7 @@
                     this.renderReplacedElement(
                       container,
                       curves,
-                      container.canvas,
+                      container.canvas
                     );
                   }
                   if (!(container instanceof SVGElementContainer))
@@ -12752,7 +12749,7 @@
                 case 11:
                   _c.sent();
                   this.context.logger.error(
-                    "Error loading svg " + container.svg.substring(0, 255),
+                    "Error loading svg " + container.svg.substring(0, 255)
                   );
                   return [3 /*break*/, 12];
                 case 12:
@@ -12784,7 +12781,7 @@
                       container.bounds.left,
                       container.bounds.top,
                       container.bounds.width,
-                      container.bounds.height,
+                      container.bounds.height
                     );
                   }
                   _c.label = 14;
@@ -12792,7 +12789,7 @@
                   if (container instanceof InputElementContainer) {
                     size = Math.min(
                       container.bounds.width,
-                      container.bounds.height,
+                      container.bounds.height
                     );
                     if (container.type === CHECKBOX) {
                       if (container.checked) {
@@ -12800,31 +12797,31 @@
                         this.path([
                           new Vector(
                             container.bounds.left + size * 0.39363,
-                            container.bounds.top + size * 0.79,
+                            container.bounds.top + size * 0.79
                           ),
                           new Vector(
                             container.bounds.left + size * 0.16,
-                            container.bounds.top + size * 0.5549,
+                            container.bounds.top + size * 0.5549
                           ),
                           new Vector(
                             container.bounds.left + size * 0.27347,
-                            container.bounds.top + size * 0.44071,
+                            container.bounds.top + size * 0.44071
                           ),
                           new Vector(
                             container.bounds.left + size * 0.39694,
-                            container.bounds.top + size * 0.5649,
+                            container.bounds.top + size * 0.5649
                           ),
                           new Vector(
                             container.bounds.left + size * 0.72983,
-                            container.bounds.top + size * 0.23,
+                            container.bounds.top + size * 0.23
                           ),
                           new Vector(
                             container.bounds.left + size * 0.84,
-                            container.bounds.top + size * 0.34085,
+                            container.bounds.top + size * 0.34085
                           ),
                           new Vector(
                             container.bounds.left + size * 0.39363,
-                            container.bounds.top + size * 0.79,
+                            container.bounds.top + size * 0.79
                           ),
                         ]);
                         this.ctx.fillStyle = asString(INPUT_COLOR);
@@ -12841,7 +12838,7 @@
                           size / 4,
                           0,
                           Math.PI * 2,
-                          true,
+                          true
                         );
                         this.ctx.fillStyle = asString(INPUT_COLOR);
                         this.ctx.fill();
@@ -12855,13 +12852,13 @@
                       (fontSize = _b[1]);
                     baseline = this.fontMetrics.getMetrics(
                       fontFamily,
-                      fontSize,
+                      fontSize
                     ).baseline;
                     this.ctx.font = fontFamily;
                     this.ctx.fillStyle = asString(styles.color);
                     this.ctx.textBaseline = "alphabetic";
                     this.ctx.textAlign = canvasTextAlign(
-                      container.styles.textAlign,
+                      container.styles.textAlign
                     );
                     bounds = contentBox(container);
                     x = 0;
@@ -12880,7 +12877,7 @@
                       new Vector(bounds.left + bounds.width, bounds.top),
                       new Vector(
                         bounds.left + bounds.width,
-                        bounds.top + bounds.height,
+                        bounds.top + bounds.height
                       ),
                       new Vector(bounds.left, bounds.top + bounds.height),
                     ]);
@@ -12888,7 +12885,7 @@
                     this.renderTextWithLetterSpacing(
                       new TextBounds(container.value, textBounds),
                       styles.letterSpacing,
-                      baseline,
+                      baseline
                     );
                     this.ctx.restore();
                     this.ctx.textBaseline = "alphabetic";
@@ -12911,13 +12908,13 @@
                   this.ctx.drawImage(
                     image,
                     container.bounds.left - (image.width + 10),
-                    container.bounds.top,
+                    container.bounds.top
                   );
                   return [3 /*break*/, 18];
                 case 17:
                   _c.sent();
                   this.context.logger.error(
-                    "Error loading list-style-image " + url,
+                    "Error loading list-style-image " + url
                   );
                   return [3 /*break*/, 18];
                 case 18:
@@ -12937,25 +12934,25 @@
                       container.bounds.top +
                         getAbsoluteValue(
                           container.styles.paddingTop,
-                          container.bounds.width,
+                          container.bounds.width
                         ),
                       container.bounds.width,
                       computeLineHeight(
                         styles.lineHeight,
-                        styles.fontSize.number,
+                        styles.fontSize.number
                       ) /
                         2 +
-                        1,
+                        1
                     );
                     this.renderTextWithLetterSpacing(
                       new TextBounds(paint.listValue, bounds),
                       styles.letterSpacing,
                       computeLineHeight(
                         styles.lineHeight,
-                        styles.fontSize.number,
+                        styles.fontSize.number
                       ) /
                         2 +
-                        2,
+                        2
                     );
                     this.ctx.textBaseline = "bottom";
                     this.ctx.textAlign = "left";
@@ -12996,7 +12993,7 @@
                   if (
                     contains(
                       stack.element.container.flags,
-                      16 /* DEBUG_RENDER */,
+                      16 /* DEBUG_RENDER */
                     )
                   ) {
                     debugger;
@@ -13143,7 +13140,7 @@
                 point.endControl.x,
                 point.endControl.y,
                 point.end.x,
-                point.end.y,
+                point.end.y
               );
             }
           });
@@ -13152,7 +13149,7 @@
           path,
           pattern,
           offsetX,
-          offsetY,
+          offsetY
         ) {
           this.path(path);
           this.ctx.fillStyle = pattern;
@@ -13182,7 +13179,7 @@
             0,
             0,
             width,
-            height,
+            height
           );
           return canvas;
         };
@@ -13253,7 +13250,7 @@
                         case 3:
                           _h.sent();
                           this_1.context.logger.error(
-                            "Error loading background-image " + url,
+                            "Error loading background-image " + url
                           );
                           return [3 /*break*/, 4];
                         case 4:
@@ -13265,7 +13262,7 @@
                                 image.width,
                                 image.height,
                                 image.width / image.height,
-                              ],
+                              ]
                             )),
                               (path = _c[0]),
                               (x = _c[1]),
@@ -13274,7 +13271,7 @@
                               (height = _c[4]);
                             pattern = this_1.ctx.createPattern(
                               this_1.resizeImage(image, width, height),
-                              "repeat",
+                              "repeat"
                             );
                             this_1.renderRepeat(path, pattern, x, y);
                           }
@@ -13284,7 +13281,7 @@
                             (_d = calculateBackgroundRendering(
                               container,
                               index,
-                              [null, null, null],
+                              [null, null, null]
                             )),
                               (path = _d[0]),
                               (x = _d[1]),
@@ -13294,7 +13291,7 @@
                             (_e = calculateGradientDirection(
                               backgroundImage.angle,
                               width,
-                              height,
+                              height
                             )),
                               (lineLength = _e[0]),
                               (x0 = _e[1]),
@@ -13309,15 +13306,15 @@
                               x0,
                               y0,
                               x1,
-                              y1,
+                              y1
                             );
                             processColorStops(
                               backgroundImage.stops,
-                              lineLength,
+                              lineLength
                             ).forEach(function (colorStop) {
                               return gradient_1.addColorStop(
                                 colorStop.stop,
-                                asString(colorStop.color),
+                                asString(colorStop.color)
                               );
                             });
                             ctx.fillStyle = gradient_1;
@@ -13325,7 +13322,7 @@
                             if (width > 0 && height > 0) {
                               pattern = this_1.ctx.createPattern(
                                 canvas,
-                                "repeat",
+                                "repeat"
                               );
                               this_1.renderRepeat(path, pattern, x, y);
                             }
@@ -13333,7 +13330,7 @@
                             (_f = calculateBackgroundRendering(
                               container,
                               index,
-                              [null, null, null],
+                              [null, null, null]
                             )),
                               (path = _f[0]),
                               (left = _f[1]),
@@ -13347,14 +13344,14 @@
                             x = getAbsoluteValue(position[0], width);
                             y = getAbsoluteValue(
                               position[position.length - 1],
-                              height,
+                              height
                             );
                             (_g = calculateRadius(
                               backgroundImage,
                               x,
                               y,
                               width,
-                              height,
+                              height
                             )),
                               (rx = _g[0]),
                               (ry = _g[1]);
@@ -13366,15 +13363,15 @@
                                   0,
                                   left + x,
                                   top_1 + y,
-                                  rx,
+                                  rx
                                 );
                               processColorStops(
                                 backgroundImage.stops,
-                                rx * 2,
+                                rx * 2
                               ).forEach(function (colorStop) {
                                 return radialGradient_1.addColorStop(
                                   colorStop.stop,
-                                  asString(colorStop.color),
+                                  asString(colorStop.color)
                                 );
                               });
                               this_1.path(path);
@@ -13396,7 +13393,7 @@
                                   left,
                                   invF * (top_1 - midY) + midY,
                                   width,
-                                  height * invF,
+                                  height * invF
                                 );
                                 this_1.ctx.restore();
                               } else {
@@ -13434,7 +13431,7 @@
         CanvasRenderer.prototype.renderSolidBorder = function (
           color,
           side,
-          curvePoints,
+          curvePoints
         ) {
           return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -13449,7 +13446,7 @@
           color,
           width,
           side,
-          curvePoints,
+          curvePoints
         ) {
           return __awaiter(this, void 0, void 0, function () {
             var outerPaths, innerPaths;
@@ -13478,7 +13475,7 @@
           });
         };
         CanvasRenderer.prototype.renderNodeBackgroundAndBorders = function (
-          paint,
+          paint
         ) {
           return __awaiter(this, void 0, void 0, function () {
             var styles,
@@ -13494,7 +13491,7 @@
               switch (_a.label) {
                 case 0:
                   this.applyEffects(
-                    paint.getEffects(2 /* BACKGROUND_BORDERS */),
+                    paint.getEffects(2 /* BACKGROUND_BORDERS */)
                   );
                   styles = paint.container.styles;
                   hasBackground =
@@ -13525,7 +13522,7 @@
                   backgroundPaintingArea =
                     calculateBackgroundCurvedPaintingArea(
                       getBackgroundValueForIndex(styles.backgroundClip, 0),
-                      paint.curves,
+                      paint.curves
                     );
                   if (!(hasBackground || styles.boxShadow.length))
                     return [3 /*break*/, 2];
@@ -13556,7 +13553,7 @@
                           (shadow.inset ? 1 : -1) * shadow.spread.number,
                         (shadow.inset ? 1 : -1) * shadow.spread.number,
                         shadow.spread.number * (shadow.inset ? -2 : 2),
-                        shadow.spread.number * (shadow.inset ? -2 : 2),
+                        shadow.spread.number * (shadow.inset ? -2 : 2)
                       );
                       if (shadow.inset) {
                         _this.path(borderBoxArea);
@@ -13603,7 +13600,7 @@
                       border.width,
                       side,
                       paint.curves,
-                      2 /* DASHED */,
+                      2 /* DASHED */
                     ),
                   ];
                 case 4:
@@ -13619,7 +13616,7 @@
                       border.width,
                       side,
                       paint.curves,
-                      3 /* DOTTED */,
+                      3 /* DOTTED */
                     ),
                   ];
                 case 6:
@@ -13634,7 +13631,7 @@
                       border.color,
                       border.width,
                       side,
-                      paint.curves,
+                      paint.curves
                     ),
                   ];
                 case 8:
@@ -13665,7 +13662,7 @@
           width,
           side,
           curvePoints,
-          style,
+          style
         ) {
           return __awaiter(this, void 0, void 0, function () {
             var strokePaths,
@@ -13734,7 +13731,7 @@
                 spaceLength *= multiplier;
               } else {
                 numberOfDashes = Math.floor(
-                  (length + spaceLength) / (dashLength + spaceLength),
+                  (length + spaceLength) / (dashLength + spaceLength)
                 );
                 minSpace =
                   (length - numberOfDashes * dashLength) / (numberOfDashes - 1);
@@ -13803,7 +13800,7 @@
                       this.options.x,
                       this.options.y,
                       this.options.width,
-                      this.options.height,
+                      this.options.height
                     );
                   }
                   stack = parseStackingContexts(element);
@@ -13889,7 +13886,7 @@
               "," +
               options.y +
               ") with scale " +
-              options.scale,
+              options.scale
           );
           return _this;
         }
@@ -13904,7 +13901,7 @@
                     this.options.height * this.options.scale,
                     this.options.scale,
                     this.options.scale,
-                    element,
+                    element
                   );
                   return [4 /*yield*/, loadSerializedSVG(svg)];
                 case 1:
@@ -13915,13 +13912,13 @@
                       0,
                       0,
                       this.options.width * this.options.scale,
-                      this.options.height * this.options.scale,
+                      this.options.height * this.options.scale
                     );
                   }
                   this.ctx.drawImage(
                     img,
                     -this.options.x * this.options.scale,
-                    -this.options.y * this.options.scale,
+                    -this.options.y * this.options.scale
                   );
                   return [2 /*return*/, this.canvas];
               }
@@ -13967,7 +13964,7 @@
               // eslint-disable-next-line no-console
               console.debug.apply(
                 console,
-                __spreadArray([this.id, this.getTime() + "ms"], args),
+                __spreadArray([this.id, this.getTime() + "ms"], args)
               );
             } else {
               this.info.apply(this, args);
@@ -13993,7 +13990,7 @@
               // eslint-disable-next-line no-console
               console.info.apply(
                 console,
-                __spreadArray([this.id, this.getTime() + "ms"], args),
+                __spreadArray([this.id, this.getTime() + "ms"], args)
               );
             }
           }
@@ -14014,7 +14011,7 @@
               // eslint-disable-next-line no-console
               console.warn.apply(
                 console,
-                __spreadArray([this.id, this.getTime() + "ms"], args),
+                __spreadArray([this.id, this.getTime() + "ms"], args)
               );
             } else {
               this.info.apply(this, args);
@@ -14037,7 +14034,7 @@
               // eslint-disable-next-line no-console
               console.error.apply(
                 console,
-                __spreadArray([this.id, this.getTime() + "ms"], args),
+                __spreadArray([this.id, this.getTime() + "ms"], args)
               );
             } else {
               this.info.apply(this, args);
@@ -14124,7 +14121,7 @@
                   return [
                     2 /*return*/,
                     Promise.reject(
-                      "Invalid element provided as first argument",
+                      "Invalid element provided as first argument"
                     ),
                   ];
                 }
@@ -14155,7 +14152,7 @@
                       (_e = opts.logging) !== null && _e !== void 0 ? _e : true,
                     cache: opts.cache,
                   },
-                  resourceOptions,
+                  resourceOptions
                 );
                 windowOptions = {
                   windowWidth:
@@ -14179,7 +14176,7 @@
                   windowOptions.scrollX,
                   windowOptions.scrollY,
                   windowOptions.windowWidth,
-                  windowOptions.windowHeight,
+                  windowOptions.windowHeight
                 );
                 context = new Context(contextOptions, windowBounds);
                 foreignObjectRendering =
@@ -14204,12 +14201,12 @@
                     " scrolled to " +
                     -windowBounds.left +
                     "," +
-                    -windowBounds.top,
+                    -windowBounds.top
                 );
                 documentCloner = new DocumentCloner(
                   context,
                   element,
-                  cloneOptions,
+                  cloneOptions
                 );
                 clonedElement = documentCloner.clonedReferenceElement;
                 if (!clonedElement) {
@@ -14235,7 +14232,7 @@
                 backgroundColor = parseBackgroundColor(
                   context,
                   clonedElement,
-                  opts.backgroundColor,
+                  opts.backgroundColor
                 );
                 renderOptions = {
                   canvas: opts.canvas,
@@ -14261,7 +14258,7 @@
                 };
                 if (!foreignObjectRendering) return [3 /*break*/, 3];
                 context.logger.debug(
-                  "Document cloned, using foreign object rendering",
+                  "Document cloned, using foreign object rendering"
                 );
                 renderer = new ForeignObjectRenderer(context, renderOptions);
                 return [4 /*yield*/, renderer.render(clonedElement)];
@@ -14278,7 +14275,7 @@
                     width +
                     "x" +
                     height +
-                    " using computed rendering",
+                    " using computed rendering"
                 );
                 context.logger.debug("Starting DOM parsing");
                 root = parseTree(context, clonedElement);
@@ -14293,7 +14290,7 @@
                     " with size " +
                     renderOptions.width +
                     "x" +
-                    renderOptions.height,
+                    renderOptions.height
                 );
                 renderer = new CanvasRenderer(context, renderOptions);
                 return [4 /*yield*/, renderer.render(root)];
@@ -14308,7 +14305,7 @@
                 ) {
                   if (!DocumentCloner.destroy(container)) {
                     context.logger.error(
-                      "Cannot detach cloned iframe as it is not in the DOM anymore",
+                      "Cannot detach cloned iframe as it is not in the DOM anymore"
                     );
                   }
                 }
@@ -14321,20 +14318,20 @@
       var parseBackgroundColor = function (
         context,
         element,
-        backgroundColorOverride,
+        backgroundColorOverride
       ) {
         var ownerDocument = element.ownerDocument;
         // http://www.w3.org/TR/css3-background/#special-backgrounds
         var documentBackgroundColor = ownerDocument.documentElement
           ? parseColor(
               context,
-              getComputedStyle(ownerDocument.documentElement).backgroundColor,
+              getComputedStyle(ownerDocument.documentElement).backgroundColor
             )
           : COLORS.TRANSPARENT;
         var bodyBackgroundColor = ownerDocument.body
           ? parseColor(
               context,
-              getComputedStyle(ownerDocument.body).backgroundColor,
+              getComputedStyle(ownerDocument.body).backgroundColor
             )
           : COLORS.TRANSPARENT;
         var defaultBackgroundColor =
@@ -14376,7 +14373,7 @@
         attr_dev(
           path,
           "d",
-          "M9,11.75A1.25,1.25 0 0,0 7.75,13A1.25,1.25 0 0,0 9,14.25A1.25,1.25 0 0,0 10.25,13A1.25,1.25 0 0,0 9,11.75M15,11.75A1.25,1.25 0 0,0 13.75,13A1.25,1.25 0 0,0 15,14.25A1.25,1.25 0 0,0 16.25,13A1.25,1.25 0 0,0 15,11.75M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20A8,8 0 0,1 4,12C3.97,11.71 3.97,11.43 4,11.14C6.38,10.1 8.27,8.17 9.26,5.77C11.13,8.42 14.17,10 17.42,10C18.18,10 18.93,9.91 19.67,9.74C20.92,14 18.5,18.43 14.26,19.67C13.5,19.89 12.76,20 12,20M0,2A2,2 0 0,1 2,0H6V2H2V6H0V2M24,22A2,2 0 0,1 22,24H18V22H22V18H24V22M2,24A2,2 0 0,1 0,22V18H2V22H6V24H2M22,0A2,2 0 0,1 24,2V6H22V2H18V0H22Z",
+          "M9,11.75A1.25,1.25 0 0,0 7.75,13A1.25,1.25 0 0,0 9,14.25A1.25,1.25 0 0,0 10.25,13A1.25,1.25 0 0,0 9,11.75M15,11.75A1.25,1.25 0 0,0 13.75,13A1.25,1.25 0 0,0 15,14.25A1.25,1.25 0 0,0 16.25,13A1.25,1.25 0 0,0 15,11.75M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20A8,8 0 0,1 4,12C3.97,11.71 3.97,11.43 4,11.14C6.38,10.1 8.27,8.17 9.26,5.77C11.13,8.42 14.17,10 17.42,10C18.18,10 18.93,9.91 19.67,9.74C20.92,14 18.5,18.43 14.26,19.67C13.5,19.89 12.76,20 12,20M0,2A2,2 0 0,1 2,0H6V2H2V6H0V2M24,22A2,2 0 0,1 22,24H18V22H22V18H24V22M2,24A2,2 0 0,1 0,22V18H2V22H6V24H2M22,0A2,2 0 0,1 24,2V6H22V2H18V0H22Z"
         );
         add_location(path, file$2, 66, 4, 1826);
         attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
@@ -14392,7 +14389,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -14408,7 +14405,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -14471,7 +14468,7 @@
             if (response.status !== 200) {
               $$invalidate(0, (scanner = false));
               alert(
-                "Something went wrong. It's likely a server issue, Please try again later.",
+                "Something went wrong. It's likely a server issue, Please try again later."
               );
               return;
             }
@@ -14559,7 +14556,7 @@
 
     set calls(value) {
       throw new Error(
-        "<SearchFaces>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<SearchFaces>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -14635,13 +14632,13 @@
             /*frame*/ ctx[10].offset[0] +
             "px -" +
             /*frame*/ ctx[10].offset[1] +
-            "px",
+            "px"
         );
         set_style(div0, "background-image", "url('" + /*url*/ ctx[0] + "')");
         attr_dev(
           div0,
           "data-offset",
-          (div0_data_offset_value = /*frame*/ ctx[10].offset),
+          (div0_data_offset_value = /*frame*/ ctx[10].offset)
         );
         add_location(div0, file$1, 57, 16, 1631);
         set_style(div1, "padding", "10px");
@@ -14650,7 +14647,7 @@
         toggle_class(
           div2,
           "selected",
-          /*selected*/ ctx[3] === /*frame*/ ctx[10].id,
+          /*selected*/ ctx[3] === /*frame*/ ctx[10].id
         );
         add_location(div2, file$1, 49, 12, 1317);
         this.first = div2;
@@ -14670,7 +14667,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -14686,7 +14683,7 @@
               /*frame*/ ctx[10].offset[0] +
               "px -" +
               /*frame*/ ctx[10].offset[1] +
-              "px",
+              "px"
           );
         }
 
@@ -14707,7 +14704,7 @@
           toggle_class(
             div2,
             "selected",
-            /*selected*/ ctx[3] === /*frame*/ ctx[10].id,
+            /*selected*/ ctx[3] === /*frame*/ ctx[10].id
           );
         }
       },
@@ -14793,7 +14790,7 @@
 
     searchfaces = new SearchFaces({ props: searchfaces_props, $$inline: true });
     binding_callbacks.push(() =>
-      bind(searchfaces, "calls", searchfaces_calls_binding),
+      bind(searchfaces, "calls", searchfaces_calls_binding)
     );
     let each_value = /*frames*/ ctx[1];
     validate_each_argument(each_value);
@@ -14805,7 +14802,7 @@
       let key = get_key(child_ctx);
       each_1_lookup.set(
         key,
-        (each_blocks[i] = create_each_block(key, child_ctx)),
+        (each_blocks[i] = create_each_block(key, child_ctx))
       );
     }
 
@@ -14848,7 +14845,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -14881,7 +14878,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -14915,7 +14912,7 @@
             fix_and_outro_and_destroy_block,
             create_each_block,
             null,
-            get_each_context,
+            get_each_context
           );
           for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].a();
           check_outros();
@@ -15090,25 +15087,25 @@
 
     get url() {
       throw new Error(
-        "<Faces>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Faces>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set url(value) {
       throw new Error(
-        "<Faces>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Faces>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     get frames() {
       throw new Error(
-        "<Faces>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Faces>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
 
     set frames(value) {
       throw new Error(
-        "<Faces>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'",
+        "<Faces>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'"
       );
     }
   }
@@ -15131,7 +15128,7 @@
         attr_dev(
           path,
           "d",
-          "M17,10.5L21,6.5V17.5L17,13.5V17A1,1 0 0,1 16,18H4A1,1 0 0,1 3,17V7A1,1 0 0,1 4,6H16A1,1 0 0,1 17,7V10.5M14,16V15C14,13.67 11.33,13 10,13C8.67,13 6,13.67 6,15V16H14M10,8A2,2 0 0,0 8,10A2,2 0 0,0 10,12A2,2 0 0,0 12,10A2,2 0 0,0 10,8Z",
+          "M17,10.5L21,6.5V17.5L17,13.5V17A1,1 0 0,1 16,18H4A1,1 0 0,1 3,17V7A1,1 0 0,1 4,6H16A1,1 0 0,1 17,7V10.5M14,16V15C14,13.67 11.33,13 10,13C8.67,13 6,13.67 6,15V16H14M10,8A2,2 0 0,0 8,10A2,2 0 0,0 10,12A2,2 0 0,0 12,10A2,2 0 0,0 10,8Z"
         );
         add_location(path, file, 69, 5, 2175);
         attr_dev(svg, "xmlns", "http://www.w3.org/2000/svg");
@@ -15147,7 +15144,7 @@
       },
       l: function claim(nodes) {
         throw new Error(
-          "options.hydrate only works if the component was compiled with the `hydratable: true` option",
+          "options.hydrate only works if the component was compiled with the `hydratable: true` option"
         );
       },
       m: function mount(target, anchor) {
@@ -15163,7 +15160,7 @@
             false,
             false,
             false,
-            false,
+            false
           );
           mounted = true;
         }
@@ -15215,7 +15212,7 @@
 
       if (!url) {
         alert(
-          "No sprite found, please ensure you have sprites enabled and generated for your scenes.",
+          "No sprite found, please ensure you have sprites enabled and generated for your scenes."
         );
         $$invalidate(0, (scanner = false));
         return;
@@ -15243,7 +15240,7 @@
           if (response.status !== 200) {
             $$invalidate(0, (scanner = false));
             alert(
-              "Something went wrong. It's likely a server issue, Please try again later.",
+              "Something went wrong. It's likely a server issue, Please try again later."
             );
             return;
           }

@@ -44,7 +44,7 @@
               Object.defineProperty(
                 e,
                 r,
-                Object.getOwnPropertyDescriptor(t, r),
+                Object.getOwnPropertyDescriptor(t, r)
               );
             });
     }
@@ -140,7 +140,7 @@
   }
   function _nonIterableSpread() {
     throw new TypeError(
-      "Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.",
+      "Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."
     );
   }
   function _toPrimitive(input, hint) {
@@ -753,7 +753,7 @@
             element.removeEventListener(
               event,
               listeners[event][listener],
-              options,
+              options
             );
           }
           listeners[event][listener] = _handler;
@@ -911,7 +911,7 @@
             startX: pageX,
             startY: pageY,
           },
-          end,
+          end
         );
   }
 
@@ -1058,15 +1058,15 @@
         width: minWidth,
         height: minHeight,
       },
-      "cover",
+      "cover"
     );
     var width = Math.min(
       maxSizes.width,
-      Math.max(minSizes.width, naturalWidth),
+      Math.max(minSizes.width, naturalWidth)
     );
     var height = Math.min(
       maxSizes.height,
-      Math.max(minSizes.height, naturalHeight),
+      Math.max(minSizes.height, naturalHeight)
     );
 
     // Note: should always use image's natural sizes for drawing as
@@ -1082,15 +1082,15 @@
         width: minWidth,
         height: minHeight,
       },
-      "cover",
+      "cover"
     );
     var destWidth = Math.min(
       destMaxSizes.width,
-      Math.max(destMinSizes.width, imageNaturalWidth),
+      Math.max(destMinSizes.width, imageNaturalWidth)
     );
     var destHeight = Math.min(
       destMaxSizes.height,
-      Math.max(destMinSizes.height, imageNaturalHeight),
+      Math.max(destMinSizes.height, imageNaturalHeight)
     );
     var params = [-destWidth / 2, -destHeight / 2, destWidth, destHeight];
     canvas.width = normalizeDecimalNumber(width);
@@ -1109,9 +1109,9 @@
         _toConsumableArray(
           params.map(function (param) {
             return Math.floor(normalizeDecimalNumber(param));
-          }),
-        ),
-      ),
+          })
+        )
+      )
     );
     context.restore();
     return canvas;
@@ -1167,7 +1167,7 @@
       // XXX: Babel's `toConsumableArray` helper will throw error in IE or Safari 9
       // eslint-disable-next-line prefer-spread
       chunks.push(
-        fromCharCode.apply(null, toArray(uint8.subarray(0, chunkSize))),
+        fromCharCode.apply(null, toArray(uint8.subarray(0, chunkSize)))
       );
       uint8 = uint8.subarray(chunkSize);
     }
@@ -1214,7 +1214,7 @@
             if (dataView.getUint16(tiffOffset + 2, littleEndian) === 0x002a) {
               var firstIFDOffset = dataView.getUint32(
                 tiffOffset + 4,
-                littleEndian,
+                littleEndian
               );
               if (firstIFDOffset >= 0x00000008) {
                 ifdStart = tiffOffset + firstIFDOffset;
@@ -1327,11 +1327,11 @@
       var containerData = {
         width: Math.max(
           container.offsetWidth,
-          minWidth >= 0 ? minWidth : MIN_CONTAINER_WIDTH,
+          minWidth >= 0 ? minWidth : MIN_CONTAINER_WIDTH
         ),
         height: Math.max(
           container.offsetHeight,
-          minHeight >= 0 ? minHeight : MIN_CONTAINER_HEIGHT,
+          minHeight >= 0 ? minHeight : MIN_CONTAINER_HEIGHT
         ),
       };
       this.containerData = containerData;
@@ -1380,11 +1380,11 @@
       this.limitCanvas(true, true);
       canvasData.width = Math.min(
         Math.max(canvasData.width, canvasData.minWidth),
-        canvasData.maxWidth,
+        canvasData.maxWidth
       );
       canvasData.height = Math.min(
         Math.max(canvasData.height, canvasData.minHeight),
-        canvasData.maxHeight,
+        canvasData.maxHeight
       );
       canvasData.left = (containerData.width - canvasData.width) / 2;
       canvasData.top = (containerData.height - canvasData.height) / 2;
@@ -1417,12 +1417,12 @@
           if (minCanvasWidth) {
             minCanvasWidth = Math.max(
               minCanvasWidth,
-              cropped ? cropBoxData.width : 0,
+              cropped ? cropBoxData.width : 0
             );
           } else if (minCanvasHeight) {
             minCanvasHeight = Math.max(
               minCanvasHeight,
-              cropped ? cropBoxData.height : 0,
+              cropped ? cropBoxData.height : 0
             );
           } else if (cropped) {
             minCanvasWidth = cropBoxData.width;
@@ -1457,11 +1457,11 @@
           if (cropped && this.limited) {
             canvasData.minLeft = Math.min(
               cropBoxData.left,
-              cropBoxData.left + (cropBoxData.width - canvasData.width),
+              cropBoxData.left + (cropBoxData.width - canvasData.width)
             );
             canvasData.minTop = Math.min(
               cropBoxData.top,
-              cropBoxData.top + (cropBoxData.height - canvasData.height),
+              cropBoxData.top + (cropBoxData.height - canvasData.height)
             );
             canvasData.maxLeft = cropBoxData.left;
             canvasData.maxTop = cropBoxData.top;
@@ -1521,20 +1521,20 @@
       }
       canvasData.width = Math.min(
         Math.max(canvasData.width, canvasData.minWidth),
-        canvasData.maxWidth,
+        canvasData.maxWidth
       );
       canvasData.height = Math.min(
         Math.max(canvasData.height, canvasData.minHeight),
-        canvasData.maxHeight,
+        canvasData.maxHeight
       );
       this.limitCanvas(false, true);
       canvasData.left = Math.min(
         Math.max(canvasData.left, canvasData.minLeft),
-        canvasData.maxLeft,
+        canvasData.maxLeft
       );
       canvasData.top = Math.min(
         Math.max(canvasData.top, canvasData.minTop),
-        canvasData.maxTop,
+        canvasData.maxTop
       );
       canvasData.oldLeft = canvasData.left;
       canvasData.oldTop = canvasData.top;
@@ -1548,8 +1548,8 @@
           getTransforms({
             translateX: canvasData.left,
             translateY: canvasData.top,
-          }),
-        ),
+          })
+        )
       );
       this.renderImage(changed);
       if (this.cropped && this.limited) {
@@ -1583,10 +1583,10 @@
                 translateX: imageData.left,
                 translateY: imageData.top,
               },
-              imageData,
-            ),
-          ),
-        ),
+              imageData
+            )
+          )
+        )
       );
       if (changed) {
         this.output();
@@ -1614,21 +1614,21 @@
       // Initialize auto crop area
       cropBoxData.width = Math.min(
         Math.max(cropBoxData.width, cropBoxData.minWidth),
-        cropBoxData.maxWidth,
+        cropBoxData.maxWidth
       );
       cropBoxData.height = Math.min(
         Math.max(cropBoxData.height, cropBoxData.minHeight),
-        cropBoxData.maxHeight,
+        cropBoxData.maxHeight
       );
 
       // The width/height of auto crop area must large than "minWidth/Height"
       cropBoxData.width = Math.max(
         cropBoxData.minWidth,
-        cropBoxData.width * autoCropArea,
+        cropBoxData.width * autoCropArea
       );
       cropBoxData.height = Math.max(
         cropBoxData.minHeight,
-        cropBoxData.height * autoCropArea,
+        cropBoxData.height * autoCropArea
       );
       cropBoxData.left =
         canvasData.left + (canvasData.width - cropBoxData.width) / 2;
@@ -1653,7 +1653,7 @@
               containerData.width,
               canvasData.width,
               canvasData.width + canvasData.left,
-              containerData.width - canvasData.left,
+              containerData.width - canvasData.left
             )
           : containerData.width;
         var maxCropBoxHeight = limited
@@ -1661,7 +1661,7 @@
               containerData.height,
               canvasData.height,
               canvasData.height + canvasData.top,
-              containerData.height - canvasData.top,
+              containerData.height - canvasData.top
             )
           : containerData.height;
 
@@ -1729,20 +1729,20 @@
       }
       cropBoxData.width = Math.min(
         Math.max(cropBoxData.width, cropBoxData.minWidth),
-        cropBoxData.maxWidth,
+        cropBoxData.maxWidth
       );
       cropBoxData.height = Math.min(
         Math.max(cropBoxData.height, cropBoxData.minHeight),
-        cropBoxData.maxHeight,
+        cropBoxData.maxHeight
       );
       this.limitCropBox(false, true);
       cropBoxData.left = Math.min(
         Math.max(cropBoxData.left, cropBoxData.minLeft),
-        cropBoxData.maxLeft,
+        cropBoxData.maxLeft
       );
       cropBoxData.top = Math.min(
         Math.max(cropBoxData.top, cropBoxData.minTop),
-        cropBoxData.maxTop,
+        cropBoxData.maxTop
       );
       cropBoxData.oldLeft = cropBoxData.left;
       cropBoxData.oldTop = cropBoxData.top;
@@ -1754,7 +1754,7 @@
           cropBoxData.width >= containerData.width &&
             cropBoxData.height >= containerData.height
             ? ACTION_MOVE
-            : ACTION_ALL,
+            : ACTION_ALL
         );
       }
       setStyle(
@@ -1767,8 +1767,8 @@
           getTransforms({
             translateX: cropBoxData.left,
             translateY: cropBoxData.top,
-          }),
-        ),
+          })
+        )
       );
       if (this.cropped && this.limited) {
         this.limitCanvas(true, true);
@@ -1879,10 +1879,10 @@
                 translateX: -left,
                 translateY: -top,
               },
-              imageData,
-            ),
-          ),
-        ),
+              imageData
+            )
+          )
+        )
       );
       forEach(this.previews, function (element) {
         var data = getData(element, DATA_PREVIEW);
@@ -1917,10 +1917,10 @@
                   translateX: -left * ratio,
                   translateY: -top * ratio,
                 },
-                imageData,
-              ),
-            ),
-          ),
+                imageData
+              )
+            )
+          )
         );
       });
     },
@@ -1949,7 +1949,7 @@
       addListener(
         cropper,
         EVENT_POINTER_DOWN,
-        (this.onCropStart = this.cropStart.bind(this)),
+        (this.onCropStart = this.cropStart.bind(this))
       );
       if (options.zoomable && options.zoomOnWheel) {
         addListener(
@@ -1959,31 +1959,31 @@
           {
             passive: false,
             capture: true,
-          },
+          }
         );
       }
       if (options.toggleDragModeOnDblclick) {
         addListener(
           cropper,
           EVENT_DBLCLICK,
-          (this.onDblclick = this.dblclick.bind(this)),
+          (this.onDblclick = this.dblclick.bind(this))
         );
       }
       addListener(
         element.ownerDocument,
         EVENT_POINTER_MOVE,
-        (this.onCropMove = this.cropMove.bind(this)),
+        (this.onCropMove = this.cropMove.bind(this))
       );
       addListener(
         element.ownerDocument,
         EVENT_POINTER_UP,
-        (this.onCropEnd = this.cropEnd.bind(this)),
+        (this.onCropEnd = this.cropEnd.bind(this))
       );
       if (options.responsive) {
         addListener(
           window,
           EVENT_RESIZE,
-          (this.onResize = this.resize.bind(this)),
+          (this.onResize = this.resize.bind(this))
         );
       }
     },
@@ -2019,7 +2019,7 @@
       removeListener(
         element.ownerDocument,
         EVENT_POINTER_MOVE,
-        this.onCropMove,
+        this.onCropMove
       );
       removeListener(element.ownerDocument, EVENT_POINTER_UP, this.onCropEnd);
       if (options.responsive) {
@@ -2053,12 +2053,12 @@
           this.setCanvasData(
             forEach(canvasData, function (n, i) {
               canvasData[i] = n * ratio;
-            }),
+            })
           );
           this.setCropBoxData(
             forEach(cropBoxData, function (n, i) {
               cropBoxData[i] = n * ratio;
-            }),
+            })
           );
         }
       }
@@ -2068,7 +2068,7 @@
         return;
       }
       this.setDragMode(
-        hasClass(this.dragBox, CLASS_CROP) ? DRAG_MODE_MOVE : DRAG_MODE_CROP,
+        hasClass(this.dragBox, CLASS_CROP) ? DRAG_MODE_MOVE : DRAG_MODE_CROP
       );
     },
     wheel: function wheel(event) {
@@ -2205,7 +2205,7 @@
         toggleClass(
           this.dragBox,
           CLASS_MODAL,
-          this.cropped && this.options.modal,
+          this.cropped && this.options.modal
         );
       }
       dispatchEvent(this.element, EVENT_CROP_END, {
@@ -2249,14 +2249,14 @@
           Math.min(
             containerData.width,
             canvasData.width,
-            canvasData.left + canvasData.width,
+            canvasData.left + canvasData.width
           );
         maxHeight =
           minTop +
           Math.min(
             containerData.height,
             canvasData.height,
-            canvasData.top + canvasData.height,
+            canvasData.top + canvasData.height
           );
       }
       var pointer = pointers[Object.keys(pointers)[0]];
@@ -2765,7 +2765,7 @@
         top = _this$canvasData.top;
       return this.moveTo(
         isUndefined(offsetX) ? offsetX : left + Number(offsetX),
-        isUndefined(offsetY) ? offsetY : top + Number(offsetY),
+        isUndefined(offsetY) ? offsetY : top + Number(offsetY)
       );
     },
     /**
@@ -2813,7 +2813,7 @@
       return this.zoomTo(
         (canvasData.width * ratio) / canvasData.naturalWidth,
         null,
-        _originalEvent,
+        _originalEvent
       );
     },
     /**
@@ -3082,7 +3082,7 @@
           ["left", "top", "width", "height", "naturalWidth", "naturalHeight"],
           function (n) {
             data[n] = canvasData[n];
-          },
+          }
         );
       }
       return data;
@@ -3182,7 +3182,7 @@
         this.image,
         this.imageData,
         canvasData,
-        options,
+        options
       );
 
       // Returns the source canvas if it is not cropped.
@@ -3213,7 +3213,7 @@
           width: options.minWidth || 0,
           height: options.minHeight || 0,
         },
-        "cover",
+        "cover"
       );
       var _getAdjustedSizes = getAdjustedSizes({
           aspectRatio: aspectRatio,
@@ -3294,7 +3294,7 @@
           dstX * scale,
           dstY * scale,
           dstWidth * scale,
-          dstHeight * scale,
+          dstHeight * scale
         );
       }
 
@@ -3306,9 +3306,9 @@
           _toConsumableArray(
             params.map(function (param) {
               return Math.floor(normalizeDecimalNumber(param));
-            }),
-          ),
-        ),
+            })
+          )
+        )
       );
       return canvas;
     },
@@ -3372,7 +3372,7 @@
       _classCallCheck(this, Cropper);
       if (!element || !REGEXP_TAG_NAME.test(element.tagName)) {
         throw new Error(
-          "The first argument is required and must be an <img> or <canvas> element.",
+          "The first argument is required and must be an <img> or <canvas> element."
         );
       }
       this.element = element;
@@ -3572,7 +3572,7 @@
             var isIOSWebKit =
               WINDOW.navigator &&
               /(?:iPad|iPhone|iPod).*?AppleWebKit/i.test(
-                WINDOW.navigator.userAgent,
+                WINDOW.navigator.userAgent
               );
             var done = function done(naturalWidth, naturalHeight) {
               assign(_this2.imageData, {
@@ -3644,16 +3644,16 @@
             var template = document.createElement("div");
             template.innerHTML = TEMPLATE;
             var cropper = template.querySelector(
-              ".".concat(NAMESPACE, "-container"),
+              ".".concat(NAMESPACE, "-container")
             );
             var canvas = cropper.querySelector(
-              ".".concat(NAMESPACE, "-canvas"),
+              ".".concat(NAMESPACE, "-canvas")
             );
             var dragBox = cropper.querySelector(
-              ".".concat(NAMESPACE, "-drag-box"),
+              ".".concat(NAMESPACE, "-drag-box")
             );
             var cropBox = cropper.querySelector(
-              ".".concat(NAMESPACE, "-crop-box"),
+              ".".concat(NAMESPACE, "-crop-box")
             );
             var face = cropBox.querySelector(".".concat(NAMESPACE, "-face"));
             this.container = container;
@@ -3662,7 +3662,7 @@
             this.dragBox = dragBox;
             this.cropBox = cropBox;
             this.viewBox = cropper.querySelector(
-              ".".concat(NAMESPACE, "-view-box"),
+              ".".concat(NAMESPACE, "-view-box")
             );
             this.face = face;
             canvas.appendChild(image);
@@ -3686,13 +3686,13 @@
             if (!options.guides) {
               addClass(
                 cropBox.getElementsByClassName("".concat(NAMESPACE, "-dashed")),
-                CLASS_HIDDEN,
+                CLASS_HIDDEN
               );
             }
             if (!options.center) {
               addClass(
                 cropBox.getElementsByClassName("".concat(NAMESPACE, "-center")),
-                CLASS_HIDDEN,
+                CLASS_HIDDEN
               );
             }
             if (options.background) {
@@ -3708,11 +3708,11 @@
             if (!options.cropBoxResizable) {
               addClass(
                 cropBox.getElementsByClassName("".concat(NAMESPACE, "-line")),
-                CLASS_HIDDEN,
+                CLASS_HIDDEN
               );
               addClass(
                 cropBox.getElementsByClassName("".concat(NAMESPACE, "-point")),
-                CLASS_HIDDEN,
+                CLASS_HIDDEN
               );
             }
             this.render();
@@ -3790,7 +3790,7 @@
             assign(DEFAULTS, isPlainObject(options) && options);
           },
         },
-      ],
+      ]
     );
     return Cropper;
   })();

@@ -128,7 +128,7 @@ function main() {
         " to " +
         name +
         " " +
-        ID,
+        ID
     );
   }
   for (var o = 0; o < defaultPerformers.length; o++) {
@@ -138,7 +138,7 @@ function main() {
         " to " +
         name +
         " " +
-        ID,
+        ID
     );
   }
   addStudio
@@ -148,7 +148,7 @@ function main() {
           " to " +
           name +
           " " +
-          ID,
+          ID
       )
     : "";
 }
@@ -315,7 +315,7 @@ function addAllData(
   defaultData,
   pTags,
   pPerformers,
-  pStudio,
+  pStudio
 ) {
   if (obj) {
     if (obj.paths) {
@@ -367,7 +367,7 @@ function addAllData(
           defaultData,
           pTags,
           pPerformers,
-          pStudio,
+          pStudio
         );
       }
     }
