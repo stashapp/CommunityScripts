@@ -23,7 +23,7 @@
 
   function toggleSearchItem(searchItem, toggleMode) {
     const searchResultItem = searchItem.querySelector(
-      "li.search-result.selected-result.active",
+      "li.search-result.selected-result.active"
     );
     if (!searchResultItem) return;
 
@@ -55,7 +55,7 @@
     } = stash.parseSearchResultItem(searchResultItem);
 
     const studioMatchNode = matches.find(
-      (o) => o.matchType === "studio",
+      (o) => o.matchType === "studio"
     )?.matchNode;
     const performerMatchNodes = matches
       .filter((o) => o.matchType === "performer")
@@ -66,17 +66,17 @@
     const includeDate = document.getElementById("result-toggle-date").checked;
     const includeCover = document.getElementById("result-toggle-cover").checked;
     const includeStashID = document.getElementById(
-      "result-toggle-stashid",
+      "result-toggle-stashid"
     ).checked;
     const includeURL = document.getElementById("result-toggle-url").checked;
     const includeDetails = document.getElementById(
-      "result-toggle-details",
+      "result-toggle-details"
     ).checked;
     const includeStudio = document.getElementById(
-      "result-toggle-studio",
+      "result-toggle-studio"
     ).checked;
     const includePerformers = document.getElementById(
-      "result-toggle-performers",
+      "result-toggle-performers"
     ).checked;
 
     let options = [];
@@ -115,7 +115,7 @@
         includePerformers,
         o,
         resolveToggle(o),
-      ]),
+      ])
     );
 
     for (const [
@@ -333,11 +333,11 @@
 
   async function loadSettings() {
     for (const input of document.querySelectorAll(
-      `#${resultToggleConfigId} input`,
+      `#${resultToggleConfigId} input`
     )) {
       input.checked = await sessionStorage.getItem(
         input.id,
-        input.dataset.default === "true",
+        input.dataset.default === "true"
       );
       input.addEventListener("change", async () => {
         await sessionStorage.setItem(input.id, input.checked);
@@ -346,32 +346,32 @@
   }
 
   stash.addEventListener("tagger:mutation:add:remoteperformer", (evt) =>
-    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0),
+    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0)
   );
   stash.addEventListener("tagger:mutation:add:remotestudio", (evt) =>
-    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0),
+    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0)
   );
   stash.addEventListener("tagger:mutation:add:local", (evt) =>
-    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0),
+    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0)
   );
   stash.addEventListener("tagger:mutation:add:container", (evt) =>
-    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0),
+    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0)
   );
   stash.addEventListener("tagger:mutation:add:subcontainer", (evt) =>
-    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0),
+    toggleSearchItem(getClosestAncestor(evt.detail.node, ".search-item"), 0)
   );
 
   function checkSaveButtonDisplay() {
     const taggerContainer = document.querySelector(".tagger-container");
     const saveButton = getElementByXpath(
       "//button[text()='Save']",
-      taggerContainer,
+      taggerContainer
     );
     btnGroup.style.display = saveButton ? "inline-block" : "none";
   }
 
   stash.addEventListener(
     "tagger:mutations:searchitems",
-    checkSaveButtonDisplay,
+    checkSaveButtonDisplay
   );
 })();
