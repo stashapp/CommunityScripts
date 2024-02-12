@@ -31,6 +31,7 @@ files {
 	height
 	bit_rate
 	mod_time
+	created_at
 	duration
 	frame_rate
 	video_codec
@@ -72,6 +73,7 @@ class StashScene:
 
         self.id = int(scene["id"])
         self.mod_time = parse_timestamp(file["mod_time"])
+        self.created_at = parse_timestamp(file["created_at"])
         if scene.get("date"):
             self.date = parse_timestamp(scene["date"], format="%Y-%m-%d")
         else:
