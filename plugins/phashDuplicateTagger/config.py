@@ -1,6 +1,9 @@
+from pathlib import Path
 import stashapi.log as log
 from stashapi.tools import human_bytes, human_bits
 
+# Path priority is from highest to lowest and works off the root of the path
+PATH_PRIORITY = ['/root/most/important/path','/root/least/important/path']
 PRIORITY = ["bitrate_per_pixel", "resolution", "bitrate", "encoding", "size", "age"]
 CODEC_PRIORITY = {
     "AV1": 0,
@@ -145,3 +148,33 @@ def compare_encoding(self, other):
         self,
         f"Prefer Codec {better.codec}({better.id}) over {worse.codec}({worse.id})",
     )
+
+
+def compare_path(self, other):
+    if PATH_PRIORITY[0] == '/root/most/important/path':
+        return
+    if not self.path or not other.path:
+        return
+    
+    self.path = Path(self.path)
+    other.path = Path(other.path)
+
+    min_score = len(PATH_PRIORITY)
+    self.score = min_score
+    other.score = min_score
+    for score, path in enumerate(PATH_PRIORITY):
+        path = Path(path)
+        if path in self.path.parents:
+            self.score = score
+        if path in other.path.parents:
+            other.score = score
+
+    if self.score == other.score:
+        return
+
+    if self.score < other.score:
+        better, worse = self, other
+    else:
+        worse, better = self, other
+    worse.remove_reason = "filepath"
+    return better, f"Prefer Filepath {PATH_PRIORITY[better.score]} | {better.id} better than {worse.id}"
