@@ -116,18 +116,18 @@ def compare_size(self, other):
 
 
 def compare_age(self, other):
-    if not (self.mod_time and other.mod_time):
+    if not (self.created_at and other.created_at):
         return
-    if self.mod_time == other.mod_time:
+    if self.created_at == other.created_at:
         return
-    if self.mod_time < other.mod_time:
+    if self.created_at < other.created_at:
         better, worse = self, other
     else:
         worse, better = self, other
     worse.remove_reason = "age"
     return (
         better,
-        f"Choose Oldest: Δ:{worse.mod_time-better.mod_time} | {better.id} older than {worse.id}",
+        f"Choose Oldest: Δ:{worse.created_at-better.created_at} | {better.id} older than {worse.id}",
     )
 
 

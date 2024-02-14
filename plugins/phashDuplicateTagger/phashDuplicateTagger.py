@@ -12,8 +12,10 @@ except ModuleNotFoundError:
         "You need to install the stashapi module. (pip install stashapp-tools)",
         file=sys.stderr,
     )
-
-import config
+try:
+    import config
+except ModuleNotFoundError:
+    log.error("Could not import 'config.py' did you copy and rename 'config_example.py'?")
 
 FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT["args"]["mode"]
