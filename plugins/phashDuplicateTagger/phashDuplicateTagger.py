@@ -32,7 +32,7 @@ files {
 	width
 	height
 	bit_rate
-	mod_time
+	created_at
 	duration
 	frame_rate
 	video_codec
@@ -75,7 +75,7 @@ class StashScene:
         file = scene["files"][0]
 
         self.id = int(scene["id"])
-        self.mod_time = parse_timestamp(file["mod_time"])
+        self.created_at = parse_timestamp(file["created_at"])
         if scene.get("date"):
             self.date = parse_timestamp(scene["date"], format="%Y-%m-%d")
         else:
@@ -106,7 +106,7 @@ class StashScene:
         return f"<StashScene ({self.id})>"
 
     def __str__(self) -> str:
-        return f"id:{self.id}, height:{self.height}, size:{human_bytes(self.size)}, file_mod_time:{self.mod_time}, title:{self.title}"
+        return f"id:{self.id}, height:{self.height}, size:{human_bytes(self.size)}, file_created_at:{self.created_at}, title:{self.title}"
 
     def compare(self, other):
         if not (isinstance(other, StashScene)):
