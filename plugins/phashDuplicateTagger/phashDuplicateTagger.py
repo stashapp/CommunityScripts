@@ -68,6 +68,8 @@ def parse_timestamp(ts, format="%Y-%m-%dT%H:%M:%S%z"):
 class StashScene:
 
     def __init__(self, scene=None) -> None:
+        if len(scene["files"]) != 1:
+            raise Exception(f"Scene has {len(scene['files'])} scene must have one file for comparing")
         file = scene["files"][0]
 
         self.id = int(scene["id"])
@@ -138,9 +140,14 @@ def process_duplicates(distance: PhashDistance = PhashDistance.EXACT):
     log.info(f"Found {total} sets of duplicates.")
 
     for i, group in enumerate(duplicate_list):
-        group = [StashScene(s) for s in group]
+        scene_group = []
+        for s in group:
+            try:
+                scene_group.append(StashScene(s))
+            except Exception as e:
+                log.warning(f"Issue parsing SceneID:{s['id']} - {e}")
         filtered_group = []
-        for scene in group:
+        for scene in scene_group:
             if ignore_tag_id in scene.tag_ids:
                 log.debug(f"Ignore {scene.id} {scene.title}")
             else:
