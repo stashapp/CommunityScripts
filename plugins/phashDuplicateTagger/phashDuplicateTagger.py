@@ -155,12 +155,12 @@ def process_duplicates(distance: PhashDistance = PhashDistance.EXACT):
 def tag_files(group):
 
     keep_reasons = []
-    keep_scene = None
+    keep_scene = group[0]
 
     total_size = group[0].size
     for scene in group[1:]:
         total_size += scene.size
-        better, msg = scene.compare(group[0])
+        better, msg = scene.compare(keep_scene)
         if better:
             keep_scene = better
             keep_reasons.append(msg)
