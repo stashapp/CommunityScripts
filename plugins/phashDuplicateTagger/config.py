@@ -1,7 +1,7 @@
 import stashapi.log as log
 from stashapi.tools import human_bytes, human_bits
 
-PRIORITY = ["bitrate_per_pixel", "resolution", "bitrate", "encoding", "size", "age_mod_time"]
+PRIORITY = ["bitrate_per_pixel", "resolution", "bitrate", "encoding", "size", "age"]
 CODEC_PRIORITY = {
     "AV1": 0,
     "H265": 1,
@@ -112,23 +112,7 @@ def compare_size(self, other):
     )
 
 
-def compare_age_mod_time(self, other):
-    if not (self.mod_time and other.mod_time):
-        return
-    if self.mod_time == other.mod_time:
-        return
-    if self.mod_time < other.mod_time:
-        better, worse = self, other
-    else:
-        worse, better = self, other
-    worse.remove_reason = "age_mod_time"
-    return (
-        better,
-        f"Choose Oldest by Update Time: Δ:{worse.mod_time-better.mod_time} | {better.id} older than {worse.id}",
-    )
-
-
-def compare_age_created_at(self, other):
+def compare_age(self, other):
     if not (self.created_at and other.created_at):
         return
     if self.created_at == other.created_at:
@@ -137,10 +121,10 @@ def compare_age_created_at(self, other):
         better, worse = self, other
     else:
         worse, better = self, other
-    worse.remove_reason = "age_created_at"
+    worse.remove_reason = "age"
     return (
         better,
-        f"Choose Oldest by Create Time: Δ:{worse.mod_time-better.mod_time} | {better.id} older than {worse.id}",
+        f"Choose Oldest: Δ:{worse.created_at-better.created_at} | {better.id} older than {worse.id}",
     )
 
 
