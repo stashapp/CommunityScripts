@@ -2,8 +2,6 @@ from pathlib import Path
 import stashapi.log as log
 from stashapi.tools import human_bytes, human_bits
 
-# Path priority is from highest to lowest and works off the root of the path
-PATH_PRIORITY = ['/root/most/important/path','/root/least/important/path']
 PRIORITY = ["bitrate_per_pixel", "resolution", "bitrate", "encoding", "size", "age"]
 CODEC_PRIORITY = {
     "AV1": 0,
@@ -17,6 +15,8 @@ CODEC_PRIORITY = {
     "VC1": 6,
     "SVQ3": 7,
 }
+# Path priority is from highest to lowest and works off the root of the path, to enable add "path" to the PRIORITY list
+PATH_PRIORITY = ["/root/most/important/path","/root/least/important/path"]
 
 KEEP_TAG_NAME = "[PDT: Keep]"
 REMOVE_TAG_NAME = "[PDT: Remove]"
@@ -151,7 +151,7 @@ def compare_encoding(self, other):
 
 
 def compare_path(self, other):
-    if PATH_PRIORITY[0] == '/root/most/important/path':
+    if PATH_PRIORITY[0] == "/root/most/important/path":
         return
     if not self.path or not other.path:
         return
