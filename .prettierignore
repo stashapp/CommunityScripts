@@ -1,0 +1,11 @@
+*.md
+
+# dependencies
+node_modules
+yarn.lock
+
+# production
+dist
+
+# workflows
+.github

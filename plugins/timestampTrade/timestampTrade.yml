@@ -31,23 +31,23 @@ hooks:
       - Gallery.Create.Post
 
 tasks:
-  - name: 'Submit'
+  - name: "Submit"
     description: Submit markers to timestamp.trade
     defaultArgs:
       mode: submitScene
-  - name: 'Submit Scenes with linked movies'
+  - name: "Submit Scenes with linked movies"
     description: Submit movie information to timestamp.trade
     defaultArgs:
       mode: submitMovieScene
-  - name: 'Sync'
+  - name: "Sync"
     description: Get markers for all scenes with a stashid
     defaultArgs:
       mode: processScene
-  - name: 'Submit Gallery'
+  - name: "Submit Gallery"
     description: Submit gallery info to timestamp.trade
     defaultArgs:
       mode: submitGallery
-  - name: 'Sync Gallery'
+  - name: "Sync Gallery"
     description: get gallery info from timestamp.trade
     defaultArgs:
       mode: processGallery

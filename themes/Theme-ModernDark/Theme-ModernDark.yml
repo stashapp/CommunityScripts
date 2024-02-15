@@ -3,4 +3,4 @@ description: ModernDark Theme for Stash by cj13
 version: 1.2
 ui:
   css:
-  - Theme-ModernDark.css
+    - Theme-ModernDark.css

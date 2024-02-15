@@ -51,3 +51,33 @@ We welcome new themes, as well as patches to existing themes.
 ---------|---------------|-----------|----
 StashDB  |[StashDB Submission Helper](/userscripts/StashDB_Submission_Helper)|Adds handy functions for StashDB submissions like buttons to add aliases in bulk to a performer|:x:
 Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with Kodi.|v0.7|:x:
+
+## Contributing
+
+### Formatting
+
+Formatting is enforced on all files. Follow this setup guide:
+
+1. **[Yarn](https://yarnpkg.com/en/docs/install)** and **its dependencies** must be installed to run the formatting tools.
+    ```sh
+    yarn install --frozen-lockfile
+    ```
+
+2. **Python dependencies** must also be installed to format `py` files.
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+#### Formatting non-`py` files
+
+```sh
+yarn run format
+```
+
+#### Formatting `py` files
+
+`py` files are formatted using [`black`](https://pypi.org/project/black/).
+
+```sh
+yarn run format-py
+```

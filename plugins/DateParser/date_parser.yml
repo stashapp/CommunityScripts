@@ -10,5 +10,3 @@ tasks:
     description: Add the date on galleries based on their path
     defaultArgs:
       mode: gallery
-
-      

@@ -2,23 +2,23 @@
 #       General information         #
 # -----------------------------------------------------------------
 # Available elements for renaming:
-#   $oshash 
-#   $checksum 
-#   $date 
+#   $oshash
+#   $checksum
+#   $date
 #   $date_format
-#   $year 
-#   $performer 
-#   $title 
-#   $height 
-#   $resolution 
+#   $year
+#   $performer
+#   $title
+#   $height
+#   $resolution
 #   $duration
 #   $bitrate (megabits per second)
-#   $studio 
-#   $parent_studio 
-#   $studio_family 
+#   $studio
+#   $parent_studio
+#   $studio_family
 #   $rating
 #   $tags
-#   $video_codec 
+#   $video_codec
 #   $audio_codec
 #   $movie_scene
 #   $movie_title
@@ -37,7 +37,7 @@
 # $movie_scene: "scene #" # = index scene
 # -----------------------------------------------------------------
 # Example templates:
-# 
+#
 # $title                                    == Her Fantasy Ball
 # $date $title                              == 2016-12-29 Her Fantasy Ball
 # $date.$title                              == 2016-12-29.Her Fantasy Ball
@@ -63,9 +63,7 @@ tag_templates = {
 }
 
 # Adjust the below if you want to use studio names instead of tags for the renaming templates
-studio_templates = {
-
-}
+studio_templates = {}
 
 # Change to True to use the default template if no specific tag/studio is found
 use_default_template = False
@@ -81,18 +79,15 @@ default_template = "$date $title"
 # trigger with a specific tag
 # "tagname": "path"
 # ex: "plugin_move": r"E:\Movies\R18\$studio_hierarchy"
-p_tag_templates = {
-}
+p_tag_templates = {}
 
 
-p_studio_templates = {
-}
+p_studio_templates = {}
 
 # match a path
 # "match path": "destination"
 # ex: r"E:\Film\R18\2. Test\A trier": r"E:\Film\R18\2. Test\A trier\$performer",
-p_path_templates = {
-}
+p_path_templates = {}
 
 # change to True to use the default template if no specific tag/studio is found
 p_use_default_template = False
@@ -108,8 +103,7 @@ p_non_organized = r""
 # inverse_performer: change the last/first name (Jane Doe -> Doe Jane)
 # dry_run: activate dry_run for this scene
 # ex: "plugin_move": ["clean_tag"]
-p_tag_option = {
-}
+p_tag_option = {}
 ######################################
 #               Logging              #
 
@@ -140,8 +134,7 @@ field_whitespaceSeperator = ""
 # Remove/Replace character from field (not using regex)
 # "field": {"replace": "foo","with": "bar"}
 # ex: "$studio": {"replace": "'","with": ""} My Dad's Hot Girlfriend --> My Dads Hot Girlfriend
-field_replacer = {
-}
+field_replacer = {}
 
 # Match and replace.
 # "match": ["replace with", "system"] the second element of the list determine the system used. If you don't put this element, the default is word
@@ -149,8 +142,7 @@ field_replacer = {
 # difference between 'word' & 'any': word is between seperator (space, _, -), any is anything ('ring' would replace 'during')
 # ex:   "Scene": ["Sc.", "word"]    - Replace Scene by Sc.
 #       r"S\d+:E\d+": ["", "regex"] - Remove Sxx:Ex (x is a digit)
-replace_words = {
-}
+replace_words = {}
 
 # Date format for $date_format field, check: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
 date_format = r"%Y-%m-%d"
@@ -180,7 +172,7 @@ performer_ignoreGender = []
 # word attached at end if multiple file for same scene [FileRefactor]
 duplicate_suffix = ["", "_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10"]
 
-# If $performer is before $title, prevent having duplicate text. 
+# If $performer is before $title, prevent having duplicate text.
 # e.g.:
 # Template used: $year $performer - $title
 # 2016 Dani Daniels - Dani Daniels in ***.mp4 --> 2016 Dani Daniels in ***.mp4
@@ -199,7 +191,7 @@ path_noperformer_folder = False
 path_keep_alrperf = True
 
 # Removes prepositions from the beginning of titles
-prepositions_list = ['The', 'A', 'An']
+prepositions_list = ["The", "A", "An"]
 prepositions_removal = False
 
 # Squeeze studio names removes all spaces in studio, parent studio and studio family name
@@ -222,14 +214,14 @@ tags_splitchar = " "
 # 	Tags will be compared strictly. "pantyhose" != "Pantyhose" and "panty hose" != "pantyhose"
 # Option 1: If you're using whitelist, every other tag which is not listed there will be ignored in the filename
 # Option 2: All tags in the tags_blacklist array will be ignored in the filename. Every other tag will be used.
-# Option 3: Leave both arrays empty if you're looking for every tag which is linked to the scene. 
+# Option 3: Leave both arrays empty if you're looking for every tag which is linked to the scene.
 # 			Attention: Only recommended if the scene linked tags number is not that big due to maxiumum filename length
 tags_whitelist = [
     # "Brunette", "Blowjob"
 ]
 
 tags_blacklist = [
-	# ignored tags...
+    # ignored tags...
 ]
 
 # Only rename 'Organized' scenes.
@@ -239,7 +231,18 @@ only_organized = False
 ignore_path_length = False
 
 # Field to remove if the path is too long. First in list will be removed then second then ... if length is still too long.
-order_field = ["$video_codec", "$audio_codec", "$resolution", "tags", "rating", "$height", "$studio_family", "$studio", "$parent_studio", "$performer"]
+order_field = [
+    "$video_codec",
+    "$audio_codec",
+    "$resolution",
+    "tags",
+    "rating",
+    "$height",
+    "$studio_family",
+    "$studio",
+    "$parent_studio",
+    "$performer",
+]
 
 # Alternate way to show diff. Not useful at all.
 alt_diff_display = False
@@ -249,7 +252,7 @@ batch_number_scene = -1
 
 # disable/enable the hook. You can edit this value in 'Plugin Tasks' inside of Stash.
 enable_hook = True
-# disable/enable dry mode. Do a trial run with no permanent changes. Can write into a file (dryrun_renamerOnUpdate.txt), set a path for log_file. 
+# disable/enable dry mode. Do a trial run with no permanent changes. Can write into a file (dryrun_renamerOnUpdate.txt), set a path for log_file.
 # You can edit this value in 'Plugin Tasks' inside of Stash.
 dry_run = False
 # Choose if you want to append to (True) or overwrite (False) the dry-run log file.
@@ -262,14 +265,13 @@ dry_run_append = True
 # = psutil module (https://pypi.org/project/psutil/) =
 # Gets a list of all processes instead of stopping after the first one. Enabling it slows down the plugin
 process_getall = False
-# If the file is used by a process, the plugin will kill it. IT CAN MAKE STASH CRASH TOO. 
+# If the file is used by a process, the plugin will kill it. IT CAN MAKE STASH CRASH TOO.
 process_kill_attach = False
 # =========================
 
 # = Unidecode module (https://pypi.org/project/Unidecode/) =
-# Check site mentioned for more details. 
+# Check site mentioned for more details.
 # TL;DR: Prevent having non common characters by replacing them.
 # Warning: If you have non-latin characters (Cyrillic, Kanji, Arabic, ...), the result will be extremely different.
-use_ascii = False 
+use_ascii = False
 # =========================
-

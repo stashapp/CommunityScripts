@@ -7,7 +7,7 @@ exec:
   - "{pluginDir}/dupeMarker.py"
 interface: raw
 tasks:
-  - name: 'Search'
+  - name: "Search"
     description: Search for duplicate markers
     defaultArgs:
       mode: search
