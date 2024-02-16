@@ -1,0 +1,12 @@
+name: Theme Switch
+description: Theme and CSS script manager located in main menu bar top right.
+url: 
+version: 2.1
+ui:
+  requires:
+  - stashUserscriptLibrary
+  javascript:
+  - themeSwitchMain.js
+  - themeSwitchCSS.js
+  css:
+  - themeSwtichDefault.css
