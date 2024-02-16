@@ -436,7 +436,9 @@
               fieldset.className = "checkbox-switch";
 
               // Loop over themes in each category
-              Object.entries(themesInCategory).forEach(([theme]) => {
+              Object.entries(themesInCategory).forEach(([themeId, theme]) => {
+                if (category === "Navigation") {
+                } else {
                   const forRow = document.createElement("div");
                   forRow.className = "checkbox-switch-form-row";
                   const legend = document.createElement("legend");
@@ -484,6 +486,7 @@
                   optionListFilter.appendChild(fieldset);
                   categoryDiv.append(categoryHeader);
                   accordion.append(categoryDiv);
+                }
               });
 
               Object.entries(themesInCategory).forEach(([themeId, theme]) => {
