@@ -1,4 +1,8 @@
-(function () {
+export default async () => {
+  while (!window.stash) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
   const svgChevDN =
     '<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="chevron-down" class="svg-inline--fa fa-chevron-down fa-icon collapse-icon fa-fw" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M201.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 338.7 54.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"></path></svg>';
   const svgChevUP =
@@ -680,4 +684,4 @@
   window.addEventListener("beforeunload", function () {
     menuCreated = false;
   });
-})();
+};
