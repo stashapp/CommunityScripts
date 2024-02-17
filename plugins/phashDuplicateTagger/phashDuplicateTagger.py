@@ -15,7 +15,9 @@ except ModuleNotFoundError:
 try:
     import config
 except ModuleNotFoundError:
-    log.error("Could not import 'config.py' did you copy and rename 'config_example.py'?")
+    log.error(
+        "Could not import 'config.py' did you copy and rename 'config_example.py'?"
+    )
 
 FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT["args"]["mode"]
@@ -71,7 +73,9 @@ class StashScene:
 
     def __init__(self, scene=None) -> None:
         if len(scene["files"]) != 1:
-            raise Exception(f"Scene has {len(scene['files'])} scene must have one file for comparing")
+            raise Exception(
+                f"Scene has {len(scene['files'])} scene must have one file for comparing"
+            )
         file = scene["files"][0]
 
         self.id = int(scene["id"])
