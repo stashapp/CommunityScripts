@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        StashDB Submission Helper
-// @author      halorrr
+// @author      mmenanno
 // @version     0.7
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/stashapp/stash/develop/ui/v2.5/public/favicon.png
-// @namespace   https://github.com/halorrr
+// @namespace   https://github.com/mmenanno
 // @match       https://stashdb.org/drafts/*
 // @match       https://stashdb.org/performers/*/edit
 // @match       https://stashdb.org/performers/add

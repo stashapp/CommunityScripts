@@ -12,8 +12,12 @@ except ModuleNotFoundError:
         "You need to install the stashapi module. (pip install stashapp-tools)",
         file=sys.stderr,
     )
-
-import config
+try:
+    import config
+except ModuleNotFoundError:
+    log.error(
+        "Could not import 'config.py' did you copy and rename 'config_example.py'?"
+    )
 
 FRAGMENT = json.loads(sys.stdin.read())
 MODE = FRAGMENT["args"]["mode"]
@@ -30,7 +34,7 @@ files {
 	width
 	height
 	bit_rate
-	mod_time
+	created_at
 	duration
 	frame_rate
 	video_codec
@@ -68,10 +72,14 @@ def parse_timestamp(ts, format="%Y-%m-%dT%H:%M:%S%z"):
 class StashScene:
 
     def __init__(self, scene=None) -> None:
+        if len(scene["files"]) != 1:
+            raise Exception(
+                f"Scene has {len(scene['files'])} scene must have one file for comparing"
+            )
         file = scene["files"][0]
 
         self.id = int(scene["id"])
-        self.mod_time = parse_timestamp(file["mod_time"])
+        self.created_at = parse_timestamp(file["created_at"])
         if scene.get("date"):
             self.date = parse_timestamp(scene["date"], format="%Y-%m-%d")
         else:
@@ -102,7 +110,7 @@ class StashScene:
         return f"<StashScene ({self.id})>"
 
     def __str__(self) -> str:
-        return f"id:{self.id}, height:{self.height}, size:{human_bytes(self.size)}, file_mod_time:{self.mod_time}, title:{self.title}"
+        return f"id:{self.id}, height:{self.height}, size:{human_bytes(self.size)}, file_created_at:{self.created_at}, title:{self.title}"
 
     def compare(self, other):
         if not (isinstance(other, StashScene)):
@@ -138,9 +146,14 @@ def process_duplicates(distance: PhashDistance = PhashDistance.EXACT):
     log.info(f"Found {total} sets of duplicates.")
 
     for i, group in enumerate(duplicate_list):
-        group = [StashScene(s) for s in group]
+        scene_group = []
+        for s in group:
+            try:
+                scene_group.append(StashScene(s))
+            except Exception as e:
+                log.warning(f"Issue parsing SceneID:{s['id']} - {e}")
         filtered_group = []
-        for scene in group:
+        for scene in scene_group:
             if ignore_tag_id in scene.tag_ids:
                 log.debug(f"Ignore {scene.id} {scene.title}")
             else:
@@ -155,12 +168,12 @@ def process_duplicates(distance: PhashDistance = PhashDistance.EXACT):
 def tag_files(group):
 
     keep_reasons = []
-    keep_scene = None
+    keep_scene = group[0]
 
     total_size = group[0].size
     for scene in group[1:]:
         total_size += scene.size
-        better, msg = scene.compare(group[0])
+        better, msg = scene.compare(keep_scene)
         if better:
             keep_scene = better
             keep_reasons.append(msg)
