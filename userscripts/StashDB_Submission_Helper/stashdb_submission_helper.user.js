@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        StashDB Submission Helper
-// @author      halorrr
+// @author      mmenanno
 // @version     0.7
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/stashapp/stash/develop/ui/v2.5/public/favicon.png
-// @namespace   https://github.com/halorrr
+// @namespace   https://github.com/mmenanno
 // @match       https://stashdb.org/drafts/*
 // @match       https://stashdb.org/performers/*/edit
 // @match       https://stashdb.org/performers/add
@@ -18,7 +18,7 @@ function setNativeValue(element, value) {
   const prototype = Object.getPrototypeOf(element);
   const prototypeValueSetter = Object.getOwnPropertyDescriptor(
     prototype,
-    "value",
+    "value"
   )?.set;
 
   if (prototypeValueSetter && valueSetter !== prototypeValueSetter) {
@@ -65,7 +65,7 @@ function unmatchedTargetElement(targetProperty) {
     document,
     null,
     XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
+    null
   ).singleNodeValue;
   return targetElement;
 }
@@ -88,7 +88,7 @@ function unmatchedTargetButton(targetProperty) {
     document,
     null,
     XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
+    null
   ).singleNodeValue;
   return targetElement;
 }
@@ -115,7 +115,7 @@ function formTab(tabName) {
     document,
     null,
     XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
+    null
   ).singleNodeValue;
 }
 
@@ -123,24 +123,22 @@ function addAlias(alias) {
   alias = alias.trim();
   const existingAliases = Array.from(
     document.querySelectorAll(
-      'label[for="aliases"] + div .react-select__multi-value__label',
-    ),
+      'label[for="aliases"] + div .react-select__multi-value__label'
+    )
   );
   let aliasMatch = existingAliases.find((element) => {
     return element.innerText == alias;
   });
   if (typeof aliasMatch !== "undefined") {
     console.warn(
-      "Skipping alias '" +
-        alias +
-        "' as it is already added to this performer.",
+      "Skipping alias '" + alias + "' as it is already added to this performer."
     );
     return;
   }
   const aliasInput = document.querySelector(aliasInputSelector);
   setNativeValue(aliasInput, alias);
   var addButton = document.querySelector(
-    'label[for="aliases"] + div .react-select__option',
+    'label[for="aliases"] + div .react-select__option'
   );
   formTab("Personal Information").click();
   addButton.click();
@@ -148,7 +146,7 @@ function addAlias(alias) {
 
 function existingUrlObjects() {
   const existingUrls = Array.from(
-    document.querySelectorAll(".URLInput ul .input-group"),
+    document.querySelectorAll(".URLInput ul .input-group")
   );
   const urlObjects = existingUrls.map((urlGroup) => {
     let site = urlGroup.childNodes[1].innerText;
@@ -166,7 +164,7 @@ function urlSite(url) {
   let site;
   if (
     /(^https?:\/\/(?:www\.)?adultfilmdatabase\.com\/(?:video|studio|actor)\/.+)\??/.test(
-      url,
+      url
     )
   ) {
     site = "AFDB";
@@ -174,7 +172,7 @@ function urlSite(url) {
     site = "Babepedia";
   } else if (
     /(^https?:\/\/(?:www\.)?bgafd\.co\.uk\/(?:films|actresses)\/details.php\/id\/[^?]+)\??/.test(
-      url,
+      url
     )
   ) {
     site = "BGAFD";
@@ -184,7 +182,7 @@ function urlSite(url) {
     site = "DATA18";
   } else if (
     /(^https?:\/\/(?:www\.)?egafd\.com\/(?:films|actresses)\/details.php\/id\/[^?]+)\??/.test(
-      url,
+      url
     )
   ) {
     site = "EGAFD";
@@ -230,7 +228,7 @@ function urlSite(url) {
     site = "XsList";
   } else if (
     /(^https?:\/\/(?:www.)?youtube\.com\/(?:c(?:hannel)?|user)\/[^?]+)/.test(
-      url,
+      url
     )
   ) {
     site = "YouTube";
@@ -243,7 +241,7 @@ function urlSite(url) {
 
 function siteMatch(url, selections) {
   const match = Array.from(selections.options).find(
-    (option) => option.text == urlSite(url),
+    (option) => option.text == urlSite(url)
   );
 
   return match;
@@ -256,7 +254,7 @@ function addUrl(url) {
   });
   if (typeof urlMatch !== "undefined") {
     console.warn(
-      "Skipping url '" + url + "' as it is already added to this performer.",
+      "Skipping url '" + url + "' as it is already added to this performer."
     );
     return;
   }
@@ -354,7 +352,7 @@ function isValidMeasurements(measurements) {
     console.warn(
       "Measurement format '" +
         measurements +
-        "' is invalid and cannot be automatically added.",
+        "' is invalid and cannot be automatically added."
     );
   }
   return measurementsRegex.test(measurements);
@@ -378,7 +376,7 @@ function addAliasInputContainer() {
   aliasField.setAttribute("size", "50px");
   aliasField.setAttribute(
     "style",
-    "border-radius: 0.25rem; margin-right: 0.5rem;",
+    "border-radius: 0.25rem; margin-right: 0.5rem;"
   );
 
   document.getElementById("aliasContainer").prepend(aliasField);

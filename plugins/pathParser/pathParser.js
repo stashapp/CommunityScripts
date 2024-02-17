@@ -295,7 +295,7 @@ function matchRuleWithPath(sceneId, path, cb) {
   // Remove extension from filename
   parts[parts.length - 1] = parts[parts.length - 1].slice(
     0,
-    parts[parts.length - 1].lastIndexOf("."),
+    parts[parts.length - 1].lastIndexOf(".")
   );
 
   for (var i = 0; i < rules.length; i++) {

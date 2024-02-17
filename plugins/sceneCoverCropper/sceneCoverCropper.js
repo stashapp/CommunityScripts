@@ -10,14 +10,14 @@
     new Cropper(img);
   } catch (e) {
     console.error(
-      "Cropper not loaded - please install 4. CropperJS from CommunityScripts",
+      "Cropper not loaded - please install 4. CropperJS from CommunityScripts"
     );
   }
   try {
     stash.getVersion();
   } catch (e) {
     console.error(
-      "Stash not loaded - please install 1. stashUserscriptLibrary from CommunityScripts",
+      "Stash not loaded - please install 1. stashUserscriptLibrary from CommunityScripts"
     );
   }
 
@@ -52,7 +52,7 @@
       "d-flex",
       "flex-row",
       "justify-content-center",
-      "align-items-center",
+      "align-items-center"
     );
     cropBtnContainer.style.gap = "10px";
     cropperModal.appendChild(cropBtnContainer);
