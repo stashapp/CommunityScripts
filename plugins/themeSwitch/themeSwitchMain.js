@@ -1,6 +1,6 @@
-(function () {
+(async () => {
   while (!window.stash) {
-    new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   const svgChevDN =
