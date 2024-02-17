@@ -1,4 +1,4 @@
-export default async () => {
+(async () => {
   while (!window.stash) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
@@ -684,4 +684,4 @@ export default async () => {
   window.addEventListener("beforeunload", function () {
     menuCreated = false;
   });
-};
+})();
