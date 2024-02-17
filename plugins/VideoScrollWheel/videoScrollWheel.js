@@ -1,4 +1,8 @@
-(function () {
+(async () => {
+  while (!window.stash) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
   const volumeScrollScale = -0.00065;
   const timeScrollScale = 0.01;
   const timeScrollFriction = 0.00015;
