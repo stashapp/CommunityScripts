@@ -27,7 +27,7 @@
     const NavButton = ({ onClickHandler }) => {
         const { Icon } = api.components;
         return (React.createElement(React.Fragment, null,
-            React.createElement(Button, { className: "minimal d-flex align-items-center h-100", title: "Notes", onClick: onClickHandler },
+            React.createElement(Button, { className: "nav-utility minimal", title: "Notes", onClick: onClickHandler },
                 React.createElement(Icon, { icon: faNoteSticky }))));
     };
     const NotesModal = ({ displayState, onCloseHandler, onSaveHandler, notesState, notesChangeHandler }) => {
