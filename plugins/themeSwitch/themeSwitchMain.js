@@ -1,6 +1,6 @@
-export default async () => {
+(function () {
   while (!window.stash) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   const svgChevDN =
@@ -684,4 +684,4 @@ export default async () => {
   window.addEventListener("beforeunload", function () {
     menuCreated = false;
   });
-};
+})();
