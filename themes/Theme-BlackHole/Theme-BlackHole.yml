@@ -1,0 +1,6 @@
+name: Theme - BlackHole
+description: BlackHole Theme for Stash by BViking78
+version: 2.0.0
+ui:
+  css:
+    - Theme-BlackHole.css

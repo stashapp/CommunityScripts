@@ -1,0 +1,6 @@
+name: Theme - PulsarLight
+description: Plex Theme for Stash by Fonzie 2021
+version: 0.3.1
+ui:
+  css:
+    - Theme-PulsarLight.css

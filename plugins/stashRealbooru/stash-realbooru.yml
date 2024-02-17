@@ -1,0 +1,14 @@
+name: Stash Realbooru
+# requires: StashUserscriptLibrary
+description: Add tags based on the realbooru model, This works on individual images.
+version: 1.0.1
+ui:
+  requires:
+    - StashUserscriptLibrary
+  javascript:
+    - stash-realbooru.js
+  css:
+    - stash-realbooru.css
+  csp:
+    connect-src:
+      - "https://cc1234-deepdanbooru.hf.space"

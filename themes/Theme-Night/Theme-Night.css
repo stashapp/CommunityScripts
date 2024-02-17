@@ -1,0 +1,193 @@
+/*
+Night theme Version 0.1.
+*/
+
+body {
+  color: #bb0009;
+  background-color: #000000;
+}
+
+.bg-dark {
+  background-color: #1a1a1b !important;
+}
+
+.card {
+  background-color: #30404d;
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1px rgba(16, 22, 26, 0.4),
+    0 0 0 rgba(16, 22, 26, 0),
+    0 0 0 rgba(16, 22, 26, 0);
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.bg-secondary {
+  background-color: #313437 !important;
+}
+
+.text-white {
+  color: #bb0009 !important;
+}
+
+.border-secondary {
+  border-color: #2f3335 !important;
+}
+
+.btn-secondary.filter-item.col-1.d-none.d-sm-inline.form-control {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+  color: #bb0009;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+  color: #bb0009;
+  background-color: #bb0009;
+}
+
+a {
+  color: hsla(0, 0%, 100%, 0.45);
+}
+
+.btn.active {
+  background-color: #2f3335;
+  color: #bb0009;
+}
+
+minimal.w-100.active.btn.btn-primary {
+  background-color: #bb0009;
+  color: #bb0009;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1a1a1b;
+  border-color: #374242;
+}
+
+.nav-tabs .nav-link.active {
+  color: #bb0009;
+}
+
+.nav-tabs .nav-link.active:hover {
+  border-bottom-color: #bb0009;
+  outline: 0;
+}
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}
+
+.btn-primary.btn.help-button.minimal {
+  display: none;
+}
+
+.changelog {
+  display: none;
+}
+
+.nav-tabs .nav-link {
+  outline: 0;
+  color: #bb0009;
+}
+
+.input-control,
+.input-control:focus {
+  background-color: rgba(16, 22, 26, 0.3);
+}
+
+#performer-page .image-container .performer {
+  background-color: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+.btn-primary:not(:disabled):not(.disabled).active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.show > .btn-primary.dropdown-toggle {
+  color: #fff;
+  border-color: #bb0009;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: #1a1a1b;
+}
+
+.btn-primary:not(:disabled):not(.disabled).active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.show > .btn-primary.dropdown-toggle {
+  color: #fff;
+  background-color: #2f3335;
+  border-color: #bb0009;
+}
+
+input[type="range"]::-moz-range-track {
+  background: hsla(0, 0%, 100%, 0.25);
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: #bcbcbc;
+}
+
+div.react-select__control {
+  background-color: hsla(0, 0%, 39.2%, 0.4);
+  color: #182026;
+  border-color: #394b59;
+  cursor: pointer;
+}
+
+.scene-wall-item-text-container {
+  background: radial-gradient(
+    farthest-corner at 50% 50%,
+    rgba(50, 50, 50, 0.5) 50%,
+    #323232 100%
+  );
+  color: #bb0009;
+}
+
+.btn-link {
+  font-weight: 500;
+  color: #bb0009;
+  text-decoration: none;
+}
+
+button.minimal.brand-link.d-none.d-md-inline-block.btn.btn-primary {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #bb0009;
+}
+
+a.minimal {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #bb0009;
+}
+a:hover {
+  color: hsla(0, 0%, 100%, 0.7);
+}
+
+option {
+  background-color: #1a1a1b;
+}
+.scrubber-tags-background {
+  background-color: #202351;
+}
+
+.btn-primary.btn.settings-button.minimal {
+  color: #007dd0;
+}
+
+button.minimal.btn.btn-primary {
+  color: #007dd0;
+}
+
+.btn-primary.btn.logout-button.minimal {
+  color: #00bb2f;
+}
+
+.scrubber-viewport {
+  background-color: #1f062d;
+}

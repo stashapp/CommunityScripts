@@ -1,0 +1,10 @@
+name: Cropper.JS
+description: Exports cropper.js functionality for JS/Userscripts
+version: 1.6.1
+ui:
+  css:
+    - cropper.css
+  javascript:
+    - cropper.js
+# note - not minimized for more transparency around updates & diffs against source code
+# https://github.com/fengyuanchen/cropperjs/tree/main/dist

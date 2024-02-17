@@ -1,7 +1,10 @@
 name: Scene Cover Cropper
+# requires: CropperJS
 description: Crop Scene Cover Images
 version: 1.0
 ui:
+  requires:
+    - CropperJS
   css:
   javascript:
-  - sceneCoverCropper.js
+    - sceneCoverCropper.js

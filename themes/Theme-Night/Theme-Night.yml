@@ -1,0 +1,6 @@
+name: Theme - Night
+description: Night Theme for Stash (unknown author)
+version: 0.1
+ui:
+  css:
+    - Theme-Night.css

@@ -1,0 +1,6 @@
+name: Theme - Pornhub
+description: PornHub Theme for Stash by ronilaukkarinen
+version: 1.0
+ui:
+  css:
+    - Theme-PornHub.css

@@ -8,28 +8,28 @@ interface: js
 hooks:
   - name: Run Rules on scan
     description: Updates scene info whenever a new scene is added.
-    triggeredBy: 
+    triggeredBy:
       - Scene.Create.Post
 tasks:
   - name: Create Tags
     description: Create tags used by the path parser tasks.
     defaultArgs:
       task: createTags
-      runTag: '[Run]'
-      testTag: '[Test]'
+      runTag: "[Run]"
+      testTag: "[Test]"
   - name: Remove Tags
     description: Remove tags used by the path parser tasks.
     defaultArgs:
       task: removeTags
-      runTag: '[Run]'
-      testTag: '[Test]'
+      runTag: "[Run]"
+      testTag: "[Test]"
   - name: Run Rules
     description: Run rules for scenes containing the run tag.
     defaultArgs:
       task: runRules
-      runTag: '[Run]'
+      runTag: "[Run]"
   - name: Test Rules
     description: Test rules for scenes containing the test tag.
     defaultArgs:
       task: testRules
-      testTag: '[Test]'
+      testTag: "[Test]"

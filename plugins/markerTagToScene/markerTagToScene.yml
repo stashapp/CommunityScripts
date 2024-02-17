@@ -9,6 +9,6 @@ interface: js
 hooks:
   - name: Update scene with scene marker tag
     description: Adds primary tag of Scene Marker to the Scene on marker create/update.
-    triggeredBy: 
+    triggeredBy:
       - SceneMarker.Create.Post
       - SceneMarker.Update.Post

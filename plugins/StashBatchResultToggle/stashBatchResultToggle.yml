@@ -1,0 +1,9 @@
+name: Stash Batch Result Toggle.
+# requires: StashUserscriptLibrary
+description: In Scene Tagger, adds button to toggle all stashdb scene match result fields. Saves clicks when you only want to save a few metadata fields. Instead of turning off every field, you batch toggle them off, then toggle on the ones you want
+version: 1.0
+ui:
+  requires:
+    - StashUserscriptLibrary
+  javascript:
+    - stashBatchResultToggle.js

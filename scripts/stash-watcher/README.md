@@ -39,14 +39,14 @@ There is currently no published docker image, so you'll have to build it yoursel
 version: "3.4"
 services:
   stash-watcher:
-  container_name: stash-watcher
-  build: <path_to_stash-watcher_directory>
-  volumes:
-    #This is only required if you have to modify config.toml (if the defaults are fine you don't have to map this file)
-    - ./config.toml:/config.toml:ro
-    #This is the path to your stash content.  If you have multiple paths, map them here
-    - /stash:/data:ro
-  restart: unless-stopped
+    container_name: stash-watcher
+    build: <path_to_stash-watcher_directory>
+    volumes:
+      #This is only required if you have to modify config.toml (if the defaults are fine you don't have to map this file)
+      - ./config.toml:/config.toml:ro
+      #This is the path to your stash content.  If you have multiple paths, map them here
+      - /stash:/data:ro
+    restart: unless-stopped
 ```
 
 Then you can run

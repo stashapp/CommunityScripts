@@ -13,12 +13,14 @@ import requests
 
 try:
     import psutil  # pip install psutil
+
     MODULE_PSUTIL = True
 except Exception:
     MODULE_PSUTIL = False
 
 try:
     import unidecode  # pip install Unidecode
+
     MODULE_UNIDECODE = True
 except Exception:
     MODULE_UNIDECODE = False
@@ -38,7 +40,9 @@ DRY_RUN = config.dry_run
 DRY_RUN_FILE = None
 
 if config.log_file:
-    DRY_RUN_FILE = os.path.join(os.path.dirname(config.log_file), "renamerOnUpdate_dryrun.txt")
+    DRY_RUN_FILE = os.path.join(
+        os.path.dirname(config.log_file), "renamerOnUpdate_dryrun.txt"
+    )
 
 if DRY_RUN:
     if DRY_RUN_FILE and not config.dry_run_append:
@@ -53,34 +57,40 @@ FRAGMENT_SERVER = FRAGMENT["server_connection"]
 PLUGIN_DIR = FRAGMENT_SERVER["PluginDir"]
 
 
-PLUGIN_ARGS = FRAGMENT['args'].get("mode")
+PLUGIN_ARGS = FRAGMENT["args"].get("mode")
 
-#log.LogDebug("{}".format(FRAGMENT))
+# log.LogDebug("{}".format(FRAGMENT))
 
 
 def callGraphQL(query, variables=None):
     # Session cookie for authentication
-    graphql_port = str(FRAGMENT_SERVER['Port'])
-    graphql_scheme = FRAGMENT_SERVER['Scheme']
-    graphql_cookies = {'session': FRAGMENT_SERVER['SessionCookie']['Value']}
+    graphql_port = str(FRAGMENT_SERVER["Port"])
+    graphql_scheme = FRAGMENT_SERVER["Scheme"]
+    graphql_cookies = {"session": FRAGMENT_SERVER["SessionCookie"]["Value"]}
     graphql_headers = {
         "Accept-Encoding": "gzip, deflate, br",
         "Content-Type": "application/json",
         "Accept": "application/json",
         "Connection": "keep-alive",
-        "DNT": "1"
+        "DNT": "1",
     }
-    graphql_domain = FRAGMENT_SERVER['Host']
+    graphql_domain = FRAGMENT_SERVER["Host"]
     if graphql_domain == "0.0.0.0":
         graphql_domain = "localhost"
     # Stash GraphQL endpoint
     graphql_url = f"{graphql_scheme}://{graphql_domain}:{graphql_port}/graphql"
 
-    json = {'query': query}
+    json = {"query": query}
     if variables is not None:
-        json['variables'] = variables
+        json["variables"] = variables
     try:
-        response = requests.post(graphql_url, json=json, headers=graphql_headers, cookies=graphql_cookies, timeout=20)
+        response = requests.post(
+            graphql_url,
+            json=json,
+            headers=graphql_headers,
+            cookies=graphql_cookies,
+            timeout=20,
+        )
     except Exception as e:
         exit_plugin(err=f"[FATAL] Error with the graphql request {e}")
     if response.status_code == 200:
@@ -94,11 +104,14 @@ def callGraphQL(query, variables=None):
     elif response.status_code == 401:
         exit_plugin(err="HTTP Error 401, Unauthorised.")
     else:
-        raise ConnectionError(f"GraphQL query failed: {response.status_code} - {response.content}")
+        raise ConnectionError(
+            f"GraphQL query failed: {response.status_code} - {response.content}"
+        )
 
 
 def graphql_getScene(scene_id):
-    query = """
+    query = (
+        """
     query FindScene($id: ID!, $checksum: String) {
         findScene(id: $id, checksum: $checksum) {
             ...SceneData
@@ -106,16 +119,16 @@ def graphql_getScene(scene_id):
     }
     fragment SceneData on Scene {
         id
-        oshash
-        checksum
         title
         date
-        rating
+        rating100
         stash_ids {
             endpoint
             stash_id
         }
-        organized""" + FILE_QUERY + """
+        organized"""
+        + FILE_QUERY
+        + """
         studio {
             id
             name
@@ -133,7 +146,7 @@ def graphql_getScene(scene_id):
             name
             gender
             favorite
-            rating
+            rating100
             stash_ids{
                 endpoint
                 stash_id
@@ -148,16 +161,16 @@ def graphql_getScene(scene_id):
         }
     }
     """
-    variables = {
-        "id": scene_id
-    }
+    )
+    variables = {"id": scene_id}
     result = callGraphQL(query, variables)
-    return result.get('findScene')
+    return result.get("findScene")
 
 
 # used for bulk
 def graphql_findScene(perPage, direc="DESC") -> dict:
-    query = """
+    query = (
+        """
     query FindScenes($filter: FindFilterType) {
         findScenes(filter: $filter) {
             count
@@ -168,17 +181,17 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
     }
     fragment SlimSceneData on Scene {
         id
-        oshash
-        checksum
         title
         date
-        rating
+        rating100
         organized
         stash_ids {
             endpoint
             stash_id
         }
-    """ + FILE_QUERY + """
+    """
+        + FILE_QUERY
+        + """
         studio {
             id
             name
@@ -196,7 +209,7 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
             name
             gender
             favorite
-            rating
+            rating100
             stash_ids{
                 endpoint
                 stash_id
@@ -211,8 +224,16 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
         }
     }
     """
+    )
     # ASC DESC
-    variables = {'filter': {"direction": direc, "page": 1, "per_page": perPage, "sort": "updated_at"}}
+    variables = {
+        "filter": {
+            "direction": direc,
+            "page": 1,
+            "per_page": perPage,
+            "sort": "updated_at",
+        }
+    }
     result = callGraphQL(query, variables)
     return result.get("findScenes")
 
@@ -232,22 +253,11 @@ def graphql_findScenebyPath(path, modifier) -> dict:
     """
     # ASC DESC
     variables = {
-        'filter': {
-            "direction": "ASC",
-            "page": 1,
-            "per_page": 40,
-            "sort": "updated_at"
-        },
-        "scene_filter": {
-            "path": {
-                "modifier": modifier,
-                "value": path
-            }
-        }
+        "filter": {"direction": "ASC", "page": 1, "per_page": 40, "sort": "updated_at"},
+        "scene_filter": {"path": {"modifier": modifier, "value": path}},
     }
     result = callGraphQL(query, variables)
     return result.get("findScenes")
-
 
 
 def graphql_getConfiguration():
@@ -261,7 +271,7 @@ def graphql_getConfiguration():
         }
     """
     result = callGraphQL(query)
-    return result.get('configuration')
+    return result.get("configuration")
 
 
 def graphql_getStudio(studio_id):
@@ -277,9 +287,7 @@ def graphql_getStudio(studio_id):
             }
         }
     """
-    variables = {
-        "id": studio_id
-    }
+    variables = {"id": studio_id}
     result = callGraphQL(query, variables)
     return result.get("findStudio")
 
@@ -292,7 +300,9 @@ def graphql_removeScenesTag(id_scenes: list, id_tags: list):
         }
     }
     """
-    variables = {'input': {"ids": id_scenes, "tag_ids": {"ids": id_tags, "mode": "REMOVE"}}}
+    variables = {
+        "input": {"ids": id_scenes, "tag_ids": {"ids": id_tags, "mode": "REMOVE"}}
+    }
     result = callGraphQL(query, variables)
     return result
 
@@ -306,21 +316,21 @@ def graphql_getBuild():
         }
     """
     result = callGraphQL(query)
-    return result['systemStatus']['databaseSchema']
+    return result["systemStatus"]["databaseSchema"]
 
 
 def find_diff_text(a: str, b: str):
     addi = minus = stay = ""
     minus_ = addi_ = 0
     for _, s in enumerate(difflib.ndiff(a, b)):
-        if s[0] == ' ':
+        if s[0] == " ":
             stay += s[-1]
             minus += "*"
             addi += "*"
-        elif s[0] == '-':
+        elif s[0] == "-":
             minus += s[-1]
             minus_ += 1
-        elif s[0] == '+':
+        elif s[0] == "+":
             addi += s[-1]
             addi_ += 1
     if minus_ > 20 or addi_ > 20:
@@ -328,7 +338,9 @@ def find_diff_text(a: str, b: str):
         log.LogDebug(f"OLD: {a}")
         log.LogDebug(f"NEW: {b}")
     else:
-        log.LogDebug(f"Original: {a}\n- Charac: {minus}\n+ Charac: {addi}\n  Result: {b}")
+        log.LogDebug(
+            f"Original: {a}\n- Charac: {minus}\n+ Charac: {addi}\n  Result: {b}"
+        )
     return
 
 
@@ -350,9 +362,9 @@ def has_handle(fpath, all_result=False):
 def config_edit(name: str, state: bool):
     found = 0
     try:
-        with open(config.__file__, 'r', encoding='utf8') as file:
+        with open(config.__file__, "r", encoding="utf8") as file:
             config_lines = file.readlines()
-        with open(config.__file__, 'w', encoding='utf8') as file_w:
+        with open(config.__file__, "w", encoding="utf8") as file_w:
             for line in config_lines:
                 if len(line.split("=")) > 1:
                     if name == line.split("=")[0].strip():
@@ -369,7 +381,9 @@ def check_longpath(path: str):
     # Trying to prevent error with long paths for Win10
     # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd
     if len(path) > 240 and not IGNORE_PATH_LENGTH:
-        log.LogError(f"The path is too long ({len(path)} > 240). You can look at 'order_field'/'ignore_path_length' in config.")
+        log.LogError(
+            f"The path is too long ({len(path)} > 240). You can look at 'order_field'/'ignore_path_length' in config."
+        )
         return 1
 
 
@@ -379,15 +393,21 @@ def get_template_filename(scene: dict):
     if scene.get("studio") and config.studio_templates:
         template_found = False
         current_studio = scene.get("studio")
-        if config.studio_templates.get(current_studio['name']):
-            template = config.studio_templates[current_studio['name']]
+        if config.studio_templates.get(current_studio["name"]):
+            template = config.studio_templates[current_studio["name"]]
             template_found = True
         # by first Parent found
         while current_studio.get("parent_studio") and not template_found:
-            if config.studio_templates.get(current_studio.get("parent_studio").get("name")):
-                template = config.studio_templates[current_studio['parent_studio']['name']]
+            if config.studio_templates.get(
+                current_studio.get("parent_studio").get("name")
+            ):
+                template = config.studio_templates[
+                    current_studio["parent_studio"]["name"]
+                ]
                 template_found = True
-            current_studio = graphql_getStudio(current_studio.get("parent_studio")['id'])
+            current_studio = graphql_getStudio(
+                current_studio.get("parent_studio")["id"]
+            )
 
     # Change by Tag
     tags = [x["name"] for x in scene["tags"]]
@@ -415,7 +435,9 @@ def get_template_path(scene: dict):
         # by Parent
         if scene["studio"].get("parent_studio"):
             if config.p_studio_templates.get(scene["studio"]["name"]):
-                template["destination"] = config.p_studio_templates[scene["studio"]["name"]]
+                template["destination"] = config.p_studio_templates[
+                    scene["studio"]["name"]
+                ]
 
     # Change by Tag
     tags = [x["name"] for x in scene["tags"]]
@@ -435,7 +457,7 @@ def get_template_path(scene: dict):
                         template["opt_details"]["clean_tag"].append(tag["id"])
                     else:
                         template["opt_details"] = {"clean_tag": [tag["id"]]}
-    if not scene['organized'] and PATH_NON_ORGANIZED:
+    if not scene["organized"] and PATH_NON_ORGANIZED:
         template["destination"] = PATH_NON_ORGANIZED
     return template
 
@@ -461,86 +483,114 @@ def extract_info(scene: dict, template: None):
     # Grabbing things from Stash
     scene_information = {}
 
-    scene_information['current_path'] = str(scene['path'])
+    scene_information["current_path"] = str(scene["path"])
     # note: contain the dot (.mp4)
-    scene_information['file_extension'] = os.path.splitext(scene_information['current_path'])[1]
+    scene_information["file_extension"] = os.path.splitext(
+        scene_information["current_path"]
+    )[1]
     # note: basename contains the extension
-    scene_information['current_filename'] = os.path.basename(scene_information['current_path'])
-    scene_information['current_directory'] = os.path.dirname(scene_information['current_path'])
-    scene_information['oshash'] = scene['oshash']
-    scene_information['checksum'] = scene.get("checksum")
-    scene_information['studio_code'] = scene.get("code")
+    scene_information["current_filename"] = os.path.basename(
+        scene_information["current_path"]
+    )
+    scene_information["current_directory"] = os.path.dirname(
+        scene_information["current_path"]
+    )
+    scene_information["oshash"] = scene.get("oshash")
+    scene_information["checksum"] = scene.get("checksum")
+    scene_information["studio_code"] = scene.get("code")
 
     if scene.get("stash_ids"):
-        #todo support other db that stashdb ?
-        scene_information['stashid_scene'] = scene['stash_ids'][0]["stash_id"]
+        # todo support other db that stashdb ?
+        scene_information["stashid_scene"] = scene["stash_ids"][0]["stash_id"]
 
     if template.get("path"):
         if "^*" in template["path"]["destination"]:
-            template["path"]["destination"] = template["path"]["destination"].replace("^*", scene_information['current_directory'])
-        scene_information['template_split'] = os.path.normpath(template["path"]["destination"]).split(os.sep)
-    scene_information['current_path_split'] = os.path.normpath(scene_information['current_path']).split(os.sep)
+            template["path"]["destination"] = template["path"]["destination"].replace(
+                "^*", scene_information["current_directory"]
+            )
+        scene_information["template_split"] = os.path.normpath(
+            template["path"]["destination"]
+        ).split(os.sep)
+    scene_information["current_path_split"] = os.path.normpath(
+        scene_information["current_path"]
+    ).split(os.sep)
 
     if FILENAME_ASTITLE and not scene.get("title"):
-        scene["title"] = scene_information['current_filename']
+        scene["title"] = scene_information["current_filename"]
 
     # Grab Title (without extension if present)
     if scene.get("title"):
         # Removing extension if present in title
-        scene_information['title'] = re.sub(fr"{scene_information['file_extension']}$", "", scene['title'])
+        scene_information["title"] = re.sub(
+            rf"{scene_information['file_extension']}$", "", scene["title"]
+        )
         if PREPOSITIONS_REMOVAL:
             for word in PREPOSITIONS_LIST:
-                scene_information['title'] = re.sub(fr"^{word}[\s_-]", "", scene_information['title'])
+                scene_information["title"] = re.sub(
+                    rf"^{word}[\s_-]", "", scene_information["title"]
+                )
 
     # Grab Date
-    scene_information['date'] = scene.get("date")
-    if scene_information['date']:
-        date_scene = datetime.strptime(scene_information['date'], r"%Y-%m-%d")
-        scene_information['date_format'] = datetime.strftime(date_scene, config.date_format)
+    scene_information["date"] = scene.get("date")
+    if scene_information["date"]:
+        date_scene = datetime.strptime(scene_information["date"], r"%Y-%m-%d")
+        scene_information["date_format"] = datetime.strftime(
+            date_scene, config.date_format
+        )
 
     # Grab Duration
-    scene_information['duration'] = scene['file']['duration']
+    scene_information["duration"] = scene["file"]["duration"]
     if config.duration_format:
-        scene_information['duration'] = time.strftime(config.duration_format, time.gmtime(scene_information['duration']))
+        scene_information["duration"] = time.strftime(
+            config.duration_format, time.gmtime(scene_information["duration"])
+        )
     else:
-        scene_information['duration'] = str(scene_information['duration'])
+        scene_information["duration"] = str(scene_information["duration"])
 
     # Grab Rating
-    if scene.get("rating"):
-        scene_information['rating'] = RATING_FORMAT.format(scene['rating'])
+    if scene.get("rating100"):
+        scene_information["rating"] = RATING_FORMAT.format(scene["rating100"])
 
     # Grab Performer
-    scene_information['performer_path'] = None
+    scene_information["performer_path"] = None
     if scene.get("performers"):
         perf_list = []
         perf_list_stashid = []
         perf_rating = {"0": []}
         perf_favorite = {"yes": [], "no": []}
-        for perf in scene['performers']:
+        for perf in scene["performers"]:
             if perf.get("gender"):
-                if perf['gender'] in PERFORMER_IGNOREGENDER:
+                if perf["gender"] in PERFORMER_IGNOREGENDER:
                     continue
             elif "UNDEFINED" in PERFORMER_IGNOREGENDER:
                 continue
             # path related
             if template.get("path"):
                 if "inverse_performer" in template["path"]["option"]:
-                    perf["name"] = re.sub(r"([a-zA-Z]+)(\s)([a-zA-Z]+)", r"\3 \1", perf["name"])
-            perf_list.append(perf['name'])
-            if perf.get('rating'):
-                if perf_rating.get(str(perf['rating'])) is None:
-                    perf_rating[str(perf['rating'])] = []
-                perf_rating[str(perf['rating'])].append(perf['name'])
+                    perf["name"] = re.sub(
+                        r"([a-zA-Z]+)(\s)([a-zA-Z]+)", r"\3 \1", perf["name"]
+                    )
+            perf_list.append(perf["name"])
+            if perf.get("rating100"):
+                if perf_rating.get(str(perf["rating100"])) is None:
+                    perf_rating[str(perf["rating100"])] = []
+                perf_rating[str(perf["rating100"])].append(perf["name"])
             else:
-                perf_rating["0"].append(perf['name'])
-            if perf.get('favorite'):
-                perf_favorite['yes'].append(perf['name'])
+                perf_rating["0"].append(perf["name"])
+            if perf.get("favorite"):
+                perf_favorite["yes"].append(perf["name"])
             else:
-                perf_favorite['no'].append(perf['name'])
+                perf_favorite["no"].append(perf["name"])
             # if the path already contains the name we keep this one
-            if perf["name"] in scene_information['current_path_split'] and scene_information.get('performer_path') is None and PATH_KEEP_ALRPERF:
-                scene_information['performer_path'] = perf["name"]
-                log.LogDebug(f"[PATH] Keeping the current name of the performer '{perf['name']}'")
+            if (
+                perf["name"] in scene_information["current_path_split"]
+                and scene_information.get("performer_path") is None
+                and PATH_KEEP_ALRPERF
+            ):
+                scene_information["performer_path"] = perf["name"]
+                log.LogDebug(
+                    f"[PATH] Keeping the current name of the performer '{perf['name']}'"
+                )
         perf_rating = sort_rating(perf_rating)
         # sort performer
         if PERFORMER_SORT == "rating":
@@ -565,88 +615,98 @@ def extract_info(scene: dict, template: None):
                         perf_list.append(n)
         elif PERFORMER_SORT == "name":
             perf_list.sort()
-        if not scene_information['performer_path'] and perf_list:
-            scene_information['performer_path'] = perf_list[0]
+        if not scene_information["performer_path"] and perf_list:
+            scene_information["performer_path"] = perf_list[0]
         if len(perf_list) > PERFORMER_LIMIT:
             if not PERFORMER_LIMIT_KEEP:
-                log.LogInfo(f"More than {PERFORMER_LIMIT} performer(s). Ignoring $performer")
+                log.LogInfo(
+                    f"More than {PERFORMER_LIMIT} performer(s). Ignoring $performer"
+                )
                 perf_list = []
             else:
                 log.LogInfo(f"Limited the amount of performer to {PERFORMER_LIMIT}")
-                perf_list = perf_list[0: PERFORMER_LIMIT]
-        scene_information['performer'] = PERFORMER_SPLITCHAR.join(perf_list)
+                perf_list = perf_list[0:PERFORMER_LIMIT]
+        scene_information["performer"] = PERFORMER_SPLITCHAR.join(perf_list)
         if perf_list:
             for p in perf_list:
-                for perf in scene['performers']:
-                    #todo support other db that stashdb ?
-                    if p == perf['name'] and perf.get('stash_ids'):
-                        perf_list_stashid.append(perf['stash_ids'][0]["stash_id"])
+                for perf in scene["performers"]:
+                    # todo support other db that stashdb ?
+                    if p == perf["name"] and perf.get("stash_ids"):
+                        perf_list_stashid.append(perf["stash_ids"][0]["stash_id"])
                         break
-            scene_information['stashid_performer'] = PERFORMER_SPLITCHAR.join(perf_list_stashid)
+            scene_information["stashid_performer"] = PERFORMER_SPLITCHAR.join(
+                perf_list_stashid
+            )
         if not PATH_ONEPERFORMER:
-            scene_information['performer_path'] = PERFORMER_SPLITCHAR.join(perf_list)
+            scene_information["performer_path"] = PERFORMER_SPLITCHAR.join(perf_list)
     elif PATH_NOPERFORMER_FOLDER:
-        scene_information['performer_path'] = "NoPerformer"
+        scene_information["performer_path"] = "NoPerformer"
 
     # Grab Studio name
     if scene.get("studio"):
         if SQUEEZE_STUDIO_NAMES:
-            scene_information['studio'] = scene['studio']['name'].replace(' ', '')
+            scene_information["studio"] = scene["studio"]["name"].replace(" ", "")
         else:
-            scene_information['studio'] = scene['studio']['name']
-        scene_information['studio_family'] = scene_information['studio']
-        studio_hierarchy = [scene_information['studio']]
+            scene_information["studio"] = scene["studio"]["name"]
+        scene_information["studio_family"] = scene_information["studio"]
+        studio_hierarchy = [scene_information["studio"]]
         # Grab Parent name
-        if scene['studio'].get("parent_studio"):
+        if scene["studio"].get("parent_studio"):
             if SQUEEZE_STUDIO_NAMES:
-                scene_information['parent_studio'] = scene['studio']['parent_studio']['name'].replace(' ', '')
+                scene_information["parent_studio"] = scene["studio"]["parent_studio"][
+                    "name"
+                ].replace(" ", "")
             else:
-                scene_information['parent_studio'] = scene['studio']['parent_studio']['name']
-            scene_information['studio_family'] = scene_information['parent_studio']
+                scene_information["parent_studio"] = scene["studio"]["parent_studio"][
+                    "name"
+                ]
+            scene_information["studio_family"] = scene_information["parent_studio"]
 
-            studio_p = scene['studio']
+            studio_p = scene["studio"]
             while studio_p.get("parent_studio"):
-                studio_p = graphql_getStudio(studio_p['parent_studio']['id'])
+                studio_p = graphql_getStudio(studio_p["parent_studio"]["id"])
                 if studio_p:
                     if SQUEEZE_STUDIO_NAMES:
-                        studio_hierarchy.append(studio_p['name'].replace(' ', ''))
+                        studio_hierarchy.append(studio_p["name"].replace(" ", ""))
                     else:
-                        studio_hierarchy.append(studio_p['name'])
+                        studio_hierarchy.append(studio_p["name"])
             studio_hierarchy.reverse()
-        scene_information['studio_hierarchy'] = studio_hierarchy
+        scene_information["studio_hierarchy"] = studio_hierarchy
     # Grab Tags
     if scene.get("tags"):
         tag_list = []
-        for tag in scene['tags']:
+        for tag in scene["tags"]:
             # ignore tag in blacklist
-            if tag['name'] in TAGS_BLACKLIST:
+            if tag["name"] in TAGS_BLACKLIST:
                 continue
             # check if there is a whilelist
             if len(TAGS_WHITELIST) > 0:
-                if tag['name'] in TAGS_WHITELIST:
-                    tag_list.append(tag['name'])
+                if tag["name"] in TAGS_WHITELIST:
+                    tag_list.append(tag["name"])
             else:
-                tag_list.append(tag['name'])
-        scene_information['tags'] = TAGS_SPLITCHAR.join(tag_list)
+                tag_list.append(tag["name"])
+        scene_information["tags"] = TAGS_SPLITCHAR.join(tag_list)
 
     # Grab Height (720p,1080p,4k...)
-    scene_information['bitrate'] = str(round(int(scene['file']['bitrate']) / 1000000, 2))
-    scene_information['resolution'] = 'SD'
-    scene_information['height'] = f"{scene['file']['height']}p"
-    if scene['file']['height'] >= 720:
-        scene_information['resolution'] = 'HD'
-    if scene['file']['height'] >= 2160:
-        scene_information['height'] = '4k'
-        scene_information['resolution'] = 'UHD'
-    if scene['file']['height'] >= 2880:
-        scene_information['height'] = '5k'
-    if scene['file']['height'] >= 3384:
-        scene_information['height'] = '6k'
-    if scene['file']['height'] >= 4320:
-        scene_information['height'] = '8k'
+    scene_information["bit_rate"] = str(
+        round(int(scene["file"]["bit_rate"]) / 1000000, 2)
+    )
+    scene_information["resolution"] = "SD"
+    scene_information["height"] = f"{scene['file']['height']}p"
+    if scene["file"]["height"] >= 720:
+        scene_information["resolution"] = "HD"
+    if scene["file"]["height"] >= 2160:
+        scene_information["height"] = "4k"
+        scene_information["resolution"] = "UHD"
+    if scene["file"]["height"] >= 2880:
+        scene_information["height"] = "5k"
+    if scene["file"]["height"] >= 3384:
+        scene_information["height"] = "6k"
+    if scene["file"]["height"] >= 4320:
+        scene_information["height"] = "8k"
     # For Phone ?
-    if scene['file']['height'] > scene['file']['width']:
-        scene_information['resolution'] = 'VERTICAL'
+    if scene["file"]["height"] > scene["file"]["width"]:
+        scene_information["resolution"] = "VERTICAL"
 
     if scene.get("movies"):
         scene_information["movie_title"] = scene["movies"][0]["movie"]["name"]
@@ -654,23 +714,33 @@ def extract_info(scene: dict, template: None):
             scene_information["movie_year"] = scene["movies"][0]["movie"]["date"][0:4]
         if scene["movies"][0].get("scene_index"):
             scene_information["movie_index"] = scene["movies"][0]["scene_index"]
-            scene_information["movie_scene"] = f"scene {scene_information['movie_index']}"
+            scene_information["movie_scene"] = (
+                f"scene {scene_information['movie_index']}"
+            )
 
     # Grab Video and Audio codec
-    scene_information['video_codec'] = scene['file']['video_codec'].upper()
-    scene_information['audio_codec'] = scene['file']['audio_codec'].upper()
+    scene_information["video_codec"] = scene["file"]["video_codec"].upper()
+    scene_information["audio_codec"] = scene["file"]["audio_codec"].upper()
 
     if scene_information.get("date"):
-        scene_information['year'] = scene_information['date'][0:4]
+        scene_information["year"] = scene_information["date"][0:4]
 
     if FIELD_WHITESPACE_SEP:
         for key, value in scene_information.items():
-            if key in ["current_path", "current_filename", "current_directory", "current_path_split", "template_split"]:
+            if key in [
+                "current_path",
+                "current_filename",
+                "current_directory",
+                "current_path_split",
+                "template_split",
+            ]:
                 continue
             if type(value) is str:
                 scene_information[key] = value.replace(" ", FIELD_WHITESPACE_SEP)
             elif type(value) is list:
-                scene_information[key] = [x.replace(" ", FIELD_WHITESPACE_SEP) for x in value]
+                scene_information[key] = [
+                    x.replace(" ", FIELD_WHITESPACE_SEP) for x in value
+                ]
     return scene_information
 
 
@@ -685,13 +755,13 @@ def replace_text(text: str):
                     log.LogDebug(f"Regex matched: {text} -> {tmp}")
             else:
                 if new[1] == "word":
-                    tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', text)
+                    tmp = re.sub(rf"([\s_-])({old})([\s_-])", f"\\1{new[0]}\\3", text)
                 elif new[1] == "any":
                     tmp = text.replace(old, new[0])
                 if tmp != text:
                     log.LogDebug(f"'{old}' changed with '{new[0]}'")
         else:
-            tmp = re.sub(fr'([\s_-])({old})([\s_-])', f'\\1{new[0]}\\3', text)
+            tmp = re.sub(rf"([\s_-])({old})([\s_-])", f"\\1{new[0]}\\3", text)
             if tmp != text:
                 log.LogDebug(f"'{old}' changed with '{new[0]}'")
         text = tmp
@@ -699,23 +769,23 @@ def replace_text(text: str):
 
 
 def cleanup_text(text: str):
-    text = re.sub(r'\(\W*\)|\[\W*\]|{[^a-zA-Z0-9]*}', '', text)
-    text = re.sub(r'[{}]', '', text)
+    text = re.sub(r"\(\W*\)|\[\W*\]|{[^a-zA-Z0-9]*}", "", text)
+    text = re.sub(r"[{}]", "", text)
     text = remove_consecutive_nonword(text)
     return text.strip(" -_.")
 
 
 def remove_consecutive_nonword(text: str):
     for _ in range(0, 10):
-        m = re.findall(r'(\W+)\1+', text)
+        m = re.findall(r"(\W+)\1+", text)
         if m:
-            text = re.sub(r'(\W+)\1+', r'\1', text)
+            text = re.sub(r"(\W+)\1+", r"\1", text)
         else:
             break
     return text
 
 
-def field_replacer(text: str, scene_information:dict):
+def field_replacer(text: str, scene_information: dict):
     field_found = re.findall(r"\$\w+", text)
     result = text
     title = None
@@ -725,17 +795,32 @@ def field_replacer(text: str, scene_information:dict):
     for i in range(0, len(field_found)):
         f = field_found[i].replace("$", "").strip("_")
         # If $performer is before $title, prevent having duplicate text.
-        if f == "performer" and len(field_found) > i + 1 and scene_information.get('performer'):
-            if field_found[i+1] == "$title" and scene_information.get('title') and PREVENT_TITLE_PERF:
-                if re.search(f"^{scene_information['performer'].lower()}", scene_information['title'].lower()):
-                    log.LogDebug("Ignoring the performer field because it's already in start of title")
+        if (
+            f == "performer"
+            and len(field_found) > i + 1
+            and scene_information.get("performer")
+        ):
+            if (
+                field_found[i + 1] == "$title"
+                and scene_information.get("title")
+                and PREVENT_TITLE_PERF
+            ):
+                if re.search(
+                    f"^{scene_information['performer'].lower()}",
+                    scene_information["title"].lower(),
+                ):
+                    log.LogDebug(
+                        "Ignoring the performer field because it's already in start of title"
+                    )
                     result = result.replace("$performer", "")
                     continue
         replaced_word = scene_information.get(f)
         if not replaced_word:
             replaced_word = ""
         if FIELD_REPLACER.get(f"${f}"):
-            replaced_word = replaced_word.replace(FIELD_REPLACER[f"${f}"]["replace"], FIELD_REPLACER[f"${f}"]["with"])
+            replaced_word = replaced_word.replace(
+                FIELD_REPLACER[f"${f}"]["replace"], FIELD_REPLACER[f"${f}"]["with"]
+            )
         if f == "title":
             title = replaced_word.strip()
             continue
@@ -757,7 +842,7 @@ def makeFilename(scene_information: dict, query: str) -> str:
     if t:
         r = r.replace("$title", t)
     # Replace spaces with splitchar
-    r = r.replace(' ', FILENAME_SPLITCHAR)
+    r = r.replace(" ", FILENAME_SPLITCHAR)
     return r
 
 
@@ -773,26 +858,93 @@ def makePath(scene_information: dict, query: str) -> str:
     return r
 
 
-def capitalizeWords(s: str):
-    # thanks to BCFC_1982 for it
-    return re.sub(r"[A-Za-z]+('[A-Za-z]+)?", lambda word: word.group(0).capitalize(), s)
+def capitalizeWords(s: str) -> str:
+    """
+    Converts a filename to title case. Capitalizes all words except for certain
+    conjunctions, prepositions, and articles, unless they are the first or
+    last word of a segment of the filename. Recognizes standard apostrophes, right
+    single quotation marks (U+2019), and left single quotation marks (U+2018) within words.
+
+    Ignores all caps words and abbreviations, e.g., MILF, BBW, VR, PAWGs.
+    Ignores words with mixed case, e.g., LaSirena69, VRCosplayX, xHamster.
+    Ignores resolutions, e.g., 1080p, 4k.
+
+    Args:
+        s (str): The string to capitalize.
+
+    Returns:
+        str: The capitalized string.
+
+    Raises:
+        ValueError: If the input is not a string.
+
+    About the regex:
+        The first \b marks the starting word boundary.
+        [A-Z]? allows for an optional initial uppercase letter.
+        [a-z\'\u2019\u2018]+ matches one or more lowercase letters, apostrophes, right single quotation marks, or left single quotation marks.
+            If a word contains multiple uppercase letters, it does not match.
+        The final \b marks the ending word boundary, ensuring the expression matches whole words.
+    """
+    if not isinstance(s, str):
+        raise ValueError("Input must be a string.")
+
+    # Function to capitalize words based on their position and value.
+    def process_word(match):
+        word = match.group(0)
+        preceding_char, following_char = None, None
+
+        # List of words to avoid capitalizing if found between other words.
+        exceptions = {"and", "of", "the"}
+
+        # Find the nearest non-space character before the current word
+        if match.start() > 0:
+            for i in range(match.start() - 1, -1, -1):
+                if not match.string[i].isspace():
+                    preceding_char = match.string[i]
+                    break
+
+        # Find the nearest non-space character after the current word
+        if match.end() < len(s):
+            for i in range(match.end(), len(s)):
+                if not match.string[i].isspace():
+                    following_char = match.string[i]
+                    break
+
+        # Determine capitalization based on the position and the exception rules
+        if (
+            match.start() == 0
+            or match.end() == len(s)
+            or word.lower() not in exceptions
+            or (preceding_char and not preceding_char.isalnum())
+            or (following_char and not following_char.isalnum())
+        ):
+            return word.capitalize()
+        else:
+            return word.lower()
+
+    # Apply the regex pattern and the process_word function.
+    return re.sub(r"\b[A-Z]?[a-z\'\u2019\u2018]+\b", process_word, s)
 
 
 def create_new_filename(scene_info: dict, template: str):
-    new_filename = makeFilename(scene_info, template) + DUPLICATE_SUFFIX[scene_info['file_index']] + scene_info['file_extension']
+    new_filename = (
+        makeFilename(scene_info, template)
+        + DUPLICATE_SUFFIX[scene_info["file_index"]]
+        + scene_info["file_extension"]
+    )
     if FILENAME_LOWER:
         new_filename = new_filename.lower()
     if FILENAME_TITLECASE:
         new_filename = capitalizeWords(new_filename)
     # Remove illegal character for Windows
-    new_filename = re.sub('[\\/:"*?<>|]+', '', new_filename)
+    new_filename = re.sub('[\\/:"*?<>|]+', "", new_filename)
 
     if FILENAME_REMOVECHARACTER:
-        new_filename = re.sub(f'[{FILENAME_REMOVECHARACTER}]+', '', new_filename)
+        new_filename = re.sub(f"[{FILENAME_REMOVECHARACTER}]+", "", new_filename)
 
     # Trying to remove non standard character
     if MODULE_UNIDECODE and UNICODE_USE:
-        new_filename = unidecode.unidecode(new_filename, errors='preserve')
+        new_filename = unidecode.unidecode(new_filename, errors="preserve")
     else:
         # Using typewriter for Apostrophe
         new_filename = re.sub("[’‘”“]+", "'", new_filename)
@@ -811,7 +963,7 @@ def remove_consecutive(liste: list):
 def create_new_path(scene_info: dict, template: dict):
     # Create the new path
     # Split the template path
-    path_split = scene_info['template_split']
+    path_split = scene_info["template_split"]
     path_list = []
     for part in path_split:
         if ":" in part and path_split[0]:
@@ -820,9 +972,11 @@ def create_new_path(scene_info: dict, template: dict):
             if not scene_info.get("studio_hierarchy"):
                 continue
             for p in scene_info["studio_hierarchy"]:
-                path_list.append(re.sub('[\\/:"*?<>|]+', '', p).strip())
+                path_list.append(re.sub('[\\/:"*?<>|]+', "", p).strip())
         else:
-            path_list.append(re.sub('[\\/:"*?<>|]+', '', makePath(scene_info, part)).strip())
+            path_list.append(
+                re.sub('[\\/:"*?<>|]+', "", makePath(scene_info, part)).strip()
+            )
     # Remove blank, empty string
     path_split = [x for x in path_list if x]
     # The first character was a seperator, so put it back.
@@ -834,13 +988,13 @@ def create_new_path(scene_info: dict, template: dict):
         path_split = remove_consecutive(path_split)
 
     if "^*" in template["path"]["destination"]:
-        if scene_info['current_directory'] != os.sep.join(path_split):
-            path_split.pop(len(scene_info['current_directory']))
+        if scene_info["current_directory"] != os.sep.join(path_split):
+            path_split.pop(len(scene_info["current_directory"]))
 
     path_edited = os.sep.join(path_split)
 
     if FILENAME_REMOVECHARACTER:
-        path_edited = re.sub(f'[{FILENAME_REMOVECHARACTER}]+', '', path_edited)
+        path_edited = re.sub(f"[{FILENAME_REMOVECHARACTER}]+", "", path_edited)
 
     # Using typewriter for Apostrophe
     new_path = re.sub("[’‘”“]+", "'", path_edited)
@@ -859,23 +1013,26 @@ def connect_db(path: str):
 
 
 def checking_duplicate_db(scene_info: dict):
-    scenes = graphql_findScenebyPath(scene_info['final_path'], "EQUALS")
+    scenes = graphql_findScenebyPath(scene_info["final_path"], "EQUALS")
     if scenes["count"] > 0:
         log.LogError("Duplicate path detected")
         for dupl_row in scenes["scenes"]:
             log.LogWarning(f"Identical path: [{dupl_row['id']}]")
         return 1
-    scenes = graphql_findScenebyPath(scene_info['new_filename'], "EQUALS")
+    scenes = graphql_findScenebyPath(scene_info["new_filename"], "EQUALS")
     if scenes["count"] > 0:
         for dupl_row in scenes["scenes"]:
-            if dupl_row['id'] != scene_info['scene_id']:
+            if dupl_row["id"] != scene_info["scene_id"]:
                 log.LogWarning(f"Duplicate filename: [{dupl_row['id']}]")
 
 
 def db_rename(stash_db: sqlite3.Connection, scene_info):
     cursor = stash_db.cursor()
     # Database rename
-    cursor.execute("UPDATE scenes SET path=? WHERE id=?;", [scene_info['final_path'], scene_info['scene_id']])
+    cursor.execute(
+        "UPDATE scenes SET path=? WHERE id=?;",
+        [scene_info["final_path"], scene_info["scene_id"]],
+    )
     stash_db.commit()
     # Close DB
     cursor.close()
@@ -884,23 +1041,25 @@ def db_rename(stash_db: sqlite3.Connection, scene_info):
 def db_rename_refactor(stash_db: sqlite3.Connection, scene_info):
     cursor = stash_db.cursor()
     # 2022-09-17T11:25:52+02:00
-    mod_time = datetime.now().astimezone().isoformat('T', 'seconds')
+    mod_time = datetime.now().astimezone().isoformat("T", "seconds")
 
     # get the next id that we should use if needed
     cursor.execute("SELECT MAX(id) from folders")
     new_id = cursor.fetchall()[0][0] + 1
 
     # get the old folder id
-    cursor.execute("SELECT id FROM folders WHERE path=?", [scene_info['current_directory']])
+    cursor.execute(
+        "SELECT id FROM folders WHERE path=?", [scene_info["current_directory"]]
+    )
     old_folder_id = cursor.fetchall()[0][0]
 
     # check if the folder of file is created in db
-    cursor.execute("SELECT id FROM folders WHERE path=?", [scene_info['new_directory']])
+    cursor.execute("SELECT id FROM folders WHERE path=?", [scene_info["new_directory"]])
     folder_id = cursor.fetchall()
     if not folder_id:
-        dir = scene_info['new_directory']
+        dir = scene_info["new_directory"]
         # reduce the path to find a parent folder
-        for _ in range(1, len(scene_info['new_directory'].split(os.sep))):
+        for _ in range(1, len(scene_info["new_directory"].split(os.sep))):
             dir = os.path.dirname(dir)
             cursor.execute("SELECT id FROM folders WHERE path=?", [dir])
             parent_id = cursor.fetchall()
@@ -909,16 +1068,25 @@ def db_rename_refactor(stash_db: sqlite3.Connection, scene_info):
                 cursor.execute(
                     "INSERT INTO 'main'.'folders'('id', 'path', 'parent_folder_id', 'mod_time', 'created_at', 'updated_at', 'zip_file_id') VALUES (?, ?, ?, ?, ?, ?, ?);",
                     [
-                        new_id, scene_info['new_directory'], parent_id[0][0],
-                        mod_time, mod_time, mod_time, None
-                    ])
+                        new_id,
+                        scene_info["new_directory"],
+                        parent_id[0][0],
+                        mod_time,
+                        mod_time,
+                        mod_time,
+                        None,
+                    ],
+                )
                 stash_db.commit()
                 folder_id = new_id
                 break
     else:
         folder_id = folder_id[0][0]
     if folder_id:
-        cursor.execute("SELECT file_id from scenes_files WHERE scene_id=?", [scene_info['scene_id']])
+        cursor.execute(
+            "SELECT file_id from scenes_files WHERE scene_id=?",
+            [scene_info["scene_id"]],
+        )
         file_ids = cursor.fetchall()
         file_id = None
         for f in file_ids:
@@ -930,15 +1098,20 @@ def db_rename_refactor(stash_db: sqlite3.Connection, scene_info):
                 file_id = f[0]
                 break
         if file_id:
-            #log.LogDebug(f"UPDATE files SET basename={scene_info['new_filename']}, parent_folder_id={folder_id}, updated_at={mod_time} WHERE id={file_id};")
-            cursor.execute("UPDATE files SET basename=?, parent_folder_id=?, updated_at=? WHERE id=?;", [scene_info['new_filename'], folder_id, mod_time, file_id])
+            # log.LogDebug(f"UPDATE files SET basename={scene_info['new_filename']}, parent_folder_id={folder_id}, updated_at={mod_time} WHERE id={file_id};")
+            cursor.execute(
+                "UPDATE files SET basename=?, parent_folder_id=?, updated_at=? WHERE id=?;",
+                [scene_info["new_filename"], folder_id, mod_time, file_id],
+            )
             cursor.close()
             stash_db.commit()
         else:
             raise Exception("Failed to find file_id")
     else:
         cursor.close()
-        raise Exception(f"You need to setup a library with the new location ({scene_info['new_directory']}) and scan at least 1 file")
+        raise Exception(
+            f"You need to setup a library with the new location ({scene_info['new_directory']}) and scan at least 1 file"
+        )
 
 
 def file_rename(current_path: str, new_path: str, scene_info: dict):
@@ -956,7 +1129,9 @@ def file_rename(current_path: str, new_path: str, scene_info: dict):
         shutil.move(current_path, new_path)
     except PermissionError as err:
         if "[WinError 32]" in str(err) and MODULE_PSUTIL:
-            log.LogWarning("A process is using this file (Probably FFMPEG), trying to find it ...")
+            log.LogWarning(
+                "A process is using this file (Probably FFMPEG), trying to find it ..."
+            )
             # Find which process accesses the file, it's ffmpeg for sure...
             process_use = has_handle(current_path, PROCESS_ALLRESULT)
             if process_use:
@@ -970,7 +1145,9 @@ def file_rename(current_path: str, new_path: str, scene_info: dict):
                     try:
                         shutil.move(current_path, new_path)
                     except Exception as err:
-                        log.LogError(f"Something still prevents renaming the file. {err}")
+                        log.LogError(
+                            f"Something still prevents renaming the file. {err}"
+                        )
                         return 1
                 else:
                     log.LogError("A process prevents renaming the file.")
@@ -983,11 +1160,15 @@ def file_rename(current_path: str, new_path: str, scene_info: dict):
         log.LogInfo(f"[OS] File Renamed! ({current_path} -> {new_path})")
         if LOGFILE:
             try:
-                with open(LOGFILE, 'a', encoding='utf-8') as f:
-                    f.write(f"{scene_info['scene_id']}|{current_path}|{new_path}|{scene_info['oshash']}\n")
+                with open(LOGFILE, "a", encoding="utf-8") as f:
+                    f.write(
+                        f"{scene_info['scene_id']}|{current_path}|{new_path}|{scene_info['oshash']}\n"
+                    )
             except Exception as err:
                 shutil.move(new_path, current_path)
-                log.LogError(f"Restoring the original path, error writing the logfile: {err}")
+                log.LogError(
+                    f"Restoring the original path, error writing the logfile: {err}"
+                )
                 return 1
         if REMOVE_EMPTY_FOLDER:
             with os.scandir(current_dir) as it:
@@ -996,43 +1177,54 @@ def file_rename(current_path: str, new_path: str, scene_info: dict):
                     try:
                         os.rmdir(current_dir)
                     except Exception as err:
-                        log.logWarning(f"Fail to delete empty folder {current_dir} - {err}")
+                        log.logWarning(
+                            f"Fail to delete empty folder {current_dir} - {err}"
+                        )
     else:
         # I don't think it's possible.
         log.LogError(f"[OS] Failed to rename the file ? {new_path}")
         return 1
 
+
 def associated_rename(scene_info: dict):
     if ASSOCIATED_EXT:
         for ext in ASSOCIATED_EXT:
-            p = os.path.splitext(scene_info['current_path'])[0] + "." + ext
-            p_new = os.path.splitext(scene_info['final_path'])[0] + "." + ext
+            p = os.path.splitext(scene_info["current_path"])[0] + "." + ext
+            p_new = os.path.splitext(scene_info["final_path"])[0] + "." + ext
             if os.path.isfile(p):
                 try:
                     shutil.move(p, p_new)
                 except Exception as err:
-                    log.LogError(f"Something prevents renaming this file '{p}' - err: {err}")
+                    log.LogError(
+                        f"Something prevents renaming this file '{p}' - err: {err}"
+                    )
                     continue
             if os.path.isfile(p_new):
                 log.LogInfo(f"[OS] Associate file renamed ({p_new})")
                 if LOGFILE:
                     try:
-                        with open(LOGFILE, 'a', encoding='utf-8') as f:
+                        with open(LOGFILE, "a", encoding="utf-8") as f:
                             f.write(f"{scene_info['scene_id']}|{p}|{p_new}\n")
                     except Exception as err:
                         shutil.move(p_new, p)
-                        log.LogError(f"Restoring the original name, error writing the logfile: {err}")
+                        log.LogError(
+                            f"Restoring the original name, error writing the logfile: {err}"
+                        )
 
 
 def renamer(scene_id, db_conn=None):
     option_dryrun = False
     if type(scene_id) is dict:
         stash_scene = scene_id
-        scene_id = stash_scene['id']
+        scene_id = stash_scene["id"]
     elif type(scene_id) is int:
         stash_scene = graphql_getScene(scene_id)
 
-    if config.only_organized and not stash_scene['organized'] and not PATH_NON_ORGANIZED:
+    if (
+        config.only_organized
+        and not stash_scene["organized"]
+        and not PATH_NON_ORGANIZED
+    ):
         log.LogDebug(f"[{scene_id}] Scene ignored (not organized)")
         return
 
@@ -1041,15 +1233,9 @@ def renamer(scene_id, db_conn=None):
     if stash_scene.get("path"):
         stash_scene["file"]["path"] = stash_scene["path"]
         if stash_scene.get("checksum"):
-            fingerprint.append({
-                "type": "md5",
-                "value": stash_scene["checksum"]
-            })
+            fingerprint.append({"type": "md5", "value": stash_scene["checksum"]})
         if stash_scene.get("oshash"):
-            fingerprint.append({
-                "type": "oshash",
-                "value": stash_scene["oshash"]
-            })
+            fingerprint.append({"type": "oshash", "value": stash_scene["oshash"]})
         stash_scene["file"]["fingerprints"] = fingerprint
         scene_files = [stash_scene["file"]]
         del stash_scene["path"]
@@ -1068,10 +1254,12 @@ def renamer(scene_id, db_conn=None):
                 stash_scene["oshash"] = f["oshash"]
             if f.get("md5"):
                 stash_scene["checksum"] = f["md5"]
+            if f.get("checksum"):
+                stash_scene["checksum"] = f["checksum"]
         stash_scene["path"] = scene_file["path"]
         stash_scene["file"] = scene_file
         if scene_file.get("bit_rate"):
-            stash_scene["file"]["bitrate"] = scene_file["bit_rate"]
+            stash_scene["file"]["bit_rate"] = scene_file["bit_rate"]
         if scene_file.get("frame_rate"):
             stash_scene["file"]["framerate"] = scene_file["frame_rate"]
 
@@ -1082,7 +1270,11 @@ def renamer(scene_id, db_conn=None):
         if not template["path"].get("destination"):
             if config.p_use_default_template:
                 log.LogDebug("[PATH] Using default template")
-                template["path"] = {"destination": config.p_default_template, "option": [], "opt_details": {}}
+                template["path"] = {
+                    "destination": config.p_default_template,
+                    "option": [],
+                    "opt_details": {},
+                }
             else:
                 template["path"] = None
         else:
@@ -1098,13 +1290,13 @@ def renamer(scene_id, db_conn=None):
             log.LogWarning(f"[{scene_id}] No template for this scene.")
             return
 
-        #log.LogDebug("Using this template: {}".format(filename_template))
+        # log.LogDebug("Using this template: {}".format(filename_template))
         scene_information = extract_info(stash_scene, template)
         log.LogDebug(f"[{scene_id}] Scene information: {scene_information}")
         log.LogDebug(f"[{scene_id}] Template: {template}")
 
-        scene_information['scene_id'] = scene_id
-        scene_information['file_index'] = i
+        scene_information["scene_id"] = scene_id
+        scene_information["file_index"] = i
 
         for removed_field in ORDER_SHORTFIELD:
             if removed_field:
@@ -1114,55 +1306,76 @@ def renamer(scene_id, db_conn=None):
                 else:
                     continue
             if template["filename"]:
-                scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
+                scene_information["new_filename"] = create_new_filename(
+                    scene_information, template["filename"]
+                )
             else:
-                scene_information['new_filename'] = scene_information['current_filename']
+                scene_information["new_filename"] = scene_information[
+                    "current_filename"
+                ]
             if template.get("path"):
-                scene_information['new_directory'] = create_new_path(scene_information, template)
+                scene_information["new_directory"] = create_new_path(
+                    scene_information, template
+                )
             else:
-                scene_information['new_directory'] = scene_information['current_directory']
-            scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
+                scene_information["new_directory"] = scene_information[
+                    "current_directory"
+                ]
+            scene_information["final_path"] = os.path.join(
+                scene_information["new_directory"], scene_information["new_filename"]
+            )
             # check length of path
-            if IGNORE_PATH_LENGTH or len(scene_information['final_path']) <= 240:
+            if IGNORE_PATH_LENGTH or len(scene_information["final_path"]) <= 240:
                 break
 
-        if check_longpath(scene_information['final_path']):
+        if check_longpath(scene_information["final_path"]):
             if (DRY_RUN or option_dryrun) and LOGFILE:
-                with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
-                    f.write(f"[LENGTH LIMIT] {scene_information['scene_id']}|{scene_information['final_path']}\n")
+                with open(DRY_RUN_FILE, "a", encoding="utf-8") as f:
+                    f.write(
+                        f"[LENGTH LIMIT] {scene_information['scene_id']}|{scene_information['final_path']}\n"
+                    )
             continue
 
-        #log.LogDebug(f"Filename: {scene_information['current_filename']} -> {scene_information['new_filename']}")
-        #log.LogDebug(f"Path: {scene_information['current_directory']} -> {scene_information['new_directory']}")
+        # log.LogDebug(f"Filename: {scene_information['current_filename']} -> {scene_information['new_filename']}")
+        # log.LogDebug(f"Path: {scene_information['current_directory']} -> {scene_information['new_directory']}")
 
-        if scene_information['final_path'] == scene_information['current_path']:
+        if scene_information["final_path"] == scene_information["current_path"]:
             log.LogInfo(f"Everything is ok. ({scene_information['current_filename']})")
             continue
 
-        if scene_information['current_directory'] != scene_information['new_directory']:
+        if scene_information["current_directory"] != scene_information["new_directory"]:
             log.LogInfo("File will be moved to another directory")
             log.LogDebug(f"[OLD path] {scene_information['current_path']}")
             log.LogDebug(f"[NEW path] {scene_information['final_path']}")
 
-        if scene_information['current_filename'] != scene_information['new_filename']:
+        if scene_information["current_filename"] != scene_information["new_filename"]:
             log.LogInfo("The filename will be changed")
             if ALT_DIFF_DISPLAY:
-                find_diff_text(scene_information['current_filename'], scene_information['new_filename'])
+                find_diff_text(
+                    scene_information["current_filename"],
+                    scene_information["new_filename"],
+                )
             else:
                 log.LogDebug(f"[OLD filename] {scene_information['current_filename']}")
                 log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
 
         if (DRY_RUN or option_dryrun) and LOGFILE:
-            with open(DRY_RUN_FILE, 'a', encoding='utf-8') as f:
-                f.write(f"{scene_information['scene_id']}|{scene_information['current_path']}|{scene_information['final_path']}\n")
+            with open(DRY_RUN_FILE, "a", encoding="utf-8") as f:
+                f.write(
+                    f"{scene_information['scene_id']}|{scene_information['current_path']}|{scene_information['final_path']}\n"
+                )
             continue
         # check if there is already a file where the new path is
         err = checking_duplicate_db(scene_information)
-        while err and scene_information['file_index']<=len(DUPLICATE_SUFFIX):
+        while err and scene_information["file_index"] <= len(DUPLICATE_SUFFIX):
             log.LogDebug("Duplicate filename detected, increasing file index")
-            scene_information['file_index'] = scene_information['file_index'] + 1
-            scene_information['new_filename'] = create_new_filename(scene_information, template["filename"])
-            scene_information['final_path'] = os.path.join(scene_information['new_directory'], scene_information['new_filename'])
+            scene_information["file_index"] = scene_information["file_index"] + 1
+            scene_information["new_filename"] = create_new_filename(
+                scene_information, template["filename"]
+            )
+            scene_information["final_path"] = os.path.join(
+                scene_information["new_directory"], scene_information["new_filename"]
+            )
             log.LogDebug(f"[NEW filename] {scene_information['new_filename']}")
             log.LogDebug(f"[NEW path] {scene_information['final_path']}")
             err = checking_duplicate_db(scene_information)
@@ -1178,7 +1391,11 @@ def renamer(scene_id, db_conn=None):
             stash_db = db_conn
         try:
             # rename file on your disk
-            err = file_rename(scene_information['current_path'], scene_information['final_path'], scene_information)
+            err = file_rename(
+                scene_information["current_path"],
+                scene_information["final_path"],
+                scene_information,
+            )
             if err:
                 raise Exception("rename")
             # rename file on your db
@@ -1188,8 +1405,14 @@ def renamer(scene_id, db_conn=None):
                 else:
                     db_rename(stash_db, scene_information)
             except Exception as err:
-                log.LogError(f"error when trying to update the database ({err}), revert the move...")
-                err = file_rename(scene_information['final_path'], scene_information['current_path'], scene_information)
+                log.LogError(
+                    f"error when trying to update the database ({err}), revert the move..."
+                )
+                err = file_rename(
+                    scene_information["final_path"],
+                    scene_information["current_path"],
+                    scene_information,
+                )
                 if err:
                     raise Exception("rename")
                 raise Exception("database update")
@@ -1197,7 +1420,10 @@ def renamer(scene_id, db_conn=None):
                 associated_rename(scene_information)
             if template.get("path"):
                 if "clean_tag" in template["path"]["option"]:
-                    graphql_removeScenesTag([scene_information['scene_id']], template["path"]["opt_details"]["clean_tag"])
+                    graphql_removeScenesTag(
+                        [scene_information["scene_id"]],
+                        template["path"]["opt_details"]["clean_tag"],
+                    )
         except Exception as err:
             log.LogError(f"Error during database operation ({err})")
             if not db_conn:
@@ -1246,12 +1472,12 @@ else:
 
 LOGFILE = config.log_file
 
-#Gallery.Update.Post
-#if FRAGMENT_HOOK_TYPE == "Scene.Update.Post":
+# Gallery.Update.Post
+# if FRAGMENT_HOOK_TYPE == "Scene.Update.Post":
 
 
 STASH_CONFIG = graphql_getConfiguration()
-STASH_DATABASE = STASH_CONFIG['general']['databasePath']
+STASH_DATABASE = STASH_CONFIG["general"]["databasePath"]
 
 # READING CONFIG
 
@@ -1318,6 +1544,9 @@ if DB_VERSION >= DB_VERSION_FILE_REFACTOR:
                 frame_rate
                 duration
                 bit_rate
+                phash: fingerprint(type: "phash")
+                oshash: fingerprint(type: "oshash")
+                checksum: fingerprint(type: "checksum")
                 fingerprints {
                     type
                     value
@@ -1345,11 +1574,11 @@ if PLUGIN_ARGS:
         scenes = graphql_findScene(config.batch_number_scene, "ASC")
         log.LogDebug(f"Count scenes: {len(scenes['scenes'])}")
         progress = 0
-        progress_step = 1 / len(scenes['scenes'])
+        progress_step = 1 / len(scenes["scenes"])
         stash_db = connect_db(STASH_DATABASE)
         if stash_db is None:
             exit_plugin()
-        for scene in scenes['scenes']:
+        for scene in scenes["scenes"]:
             log.LogDebug(f"** Checking scene: {scene['title']} - {scene['id']} **")
             try:
                 renamer(scene, stash_db)
@@ -1367,4 +1596,3 @@ else:
         traceback.print_exc()
 
 exit_plugin("Successful!")
-

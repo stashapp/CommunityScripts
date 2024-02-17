@@ -1,0 +1,31 @@
+name: Misc Tags
+description: Add extra tags for VR and other ues
+version: 0.2
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/miscTags.py"
+interface: raw
+settings:
+  addStashVRCompanionTags:
+    displayName: Add tags for stash-vr-companion
+    description: Add tags useful for stash-vr-companion, export_deovr, DOME, SBS, VR based on filename string
+    type: BOOLEAN
+  addVRTags:
+    displayName: Add VR related tags
+    description: Add projection based tags 180°, 200°, VR
+    type: BOOLEAN
+  flatStudio:
+    displayName: 2d Studio for stash-vr-companion
+    description: Comma seperated list of studio number in your instance to tag with export_devor,FLAT for use with stash-vr-companion
+    type: STRING
+hooks:
+  - name: Process Scene
+    description: Adds extra tags to scenes
+    triggeredBy:
+      - Scene.Update.Post
+tasks:
+  - name: Process all
+    description: Process all scenes and add extra tags if configured
+    defaultArgs:
+      mode: processScenes

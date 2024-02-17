@@ -1,0 +1,9 @@
+name: Extended Stats
+# requires: StashUserscriptLibrary
+description: Adds new stats to the stats page
+version: 1.0
+ui:
+  requires:
+    - StashUserscriptLibrary
+  javascript:
+    - stats.js
