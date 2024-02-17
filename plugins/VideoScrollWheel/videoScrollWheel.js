@@ -74,7 +74,7 @@
         scrollVelocity = scrollVelocity - friction + acceleration;
         scrollVelocity = Math.max(
           pluginSettings.minTimeScrollSpeed,
-          Math.min(scrollVelocity, pluginSettings.maxTimeScrollSpeed),
+          Math.min(scrollVelocity, pluginSettings.maxTimeScrollSpeed)
         );
       }
 
