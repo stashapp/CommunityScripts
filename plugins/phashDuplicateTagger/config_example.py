@@ -16,7 +16,7 @@ CODEC_PRIORITY = {
     "SVQ3": 7,
 }
 # Path priority is from highest to lowest and works off the root of the path, to enable add "path" to the PRIORITY list
-PATH_PRIORITY = ["/root/most/important/path","/root/least/important/path"]
+PATH_PRIORITY = ["/root/most/important/path", "/root/least/important/path"]
 
 KEEP_TAG_NAME = "[PDT: Keep]"
 REMOVE_TAG_NAME = "[PDT: Remove]"
@@ -155,7 +155,7 @@ def compare_path(self, other):
         return
     if not self.path or not other.path:
         return
-    
+
     self.path = Path(self.path)
     other.path = Path(other.path)
 
@@ -177,4 +177,7 @@ def compare_path(self, other):
     else:
         worse, better = self, other
     worse.remove_reason = "filepath"
-    return better, f"Prefer Filepath {PATH_PRIORITY[better.score]} | {better.id} better than {worse.id}"
+    return (
+        better,
+        f"Prefer Filepath {PATH_PRIORITY[better.score]} | {better.id} better than {worse.id}",
+    )

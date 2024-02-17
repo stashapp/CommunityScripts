@@ -3,4 +3,4 @@ description: Adds a button to the navigation bar which opens a small window for 
 version: 1.0
 ui:
   javascript:
-  - stashNotes.js
+    - stashNotes.js
