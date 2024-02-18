@@ -19,6 +19,12 @@ settings:
     displayName: Add extra urls if they exist on timestamp.trade
     description: Extra urls can be submitted to timestamp.trade, add them to the scene if they exist
     type: BOOLEAN
+  disableSceneMarkersHook:
+    displayName: Disable the Scene Markers hook
+    type: BOOLEAN
+  disableGalleryLookupHook:
+    displayName: Disable the Gallery Lookup hook
+    type: BOOLEAN
 
 hooks:
   - name: Add Marker to Scene

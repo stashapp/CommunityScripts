@@ -95,6 +95,14 @@ json_input = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
 
+config = stash.get_configuration()["plugins"]
+settings = {
+    "disableSceneMarkerHook": False,
+}
+if "tPdBmarkers" in config:
+    settings.update(config["tPdBmarkers"])
+log.debug("settings: %s " % (settings,))
+
 # Set up the auth token for tpdb
 if "https://metadataapi.net/graphql" in [
     x["endpoint"] for x in stash.get_configuration()["general"]["stashBoxes"]
@@ -108,10 +116,11 @@ if "https://metadataapi.net/graphql" in [
         if "processScene" in PLUGIN_ARGS:
             processAll()
     elif "hookContext" in json_input["args"]:
-        id = json_input["args"]["hookContext"]["id"]
-        if json_input["args"]["hookContext"]["type"] == "Scene.Update.Post":
-            scene = stash.find_scene(id)
-            processScene(scene)
+        _id = json_input["args"]["hookContext"]["id"]
+        _type = json_input["args"]["hookContext"]["type"]
+        if _type == "Scene.Update.Post" and not settings["disableSceneMarkerHook"]:
+                scene = stash.find_scene(_id)
+                processScene(scene)
 
 else:
     log.warning("The Porn DB endpoint not configured")
