@@ -207,8 +207,7 @@ def scenes_delete_record_paths():
                 paths.append("File: " + path)
             else:
                 log.error(f"ID:{file['id']} - Could not be Deleted: {path}")
-            log.info(f"Updating Scene ID:{
-                     scene_id}: URLs with path(s): {paths}")
+            log.info(f"Updating Scene ID:{scene_id}: URLs with path(s): {paths}")
             update = update_scene(scene_id, paths)
             if update is not None:
                 log.info(
