@@ -90,8 +90,7 @@ def find_tag(name, create=False):
     if find_tag_tag is None:
         log.error(f"Tag does not exist: {tag_exclude['name']}")
     else:
-        log.info(f"Found Tag: ID:{find_tag_tag['id']} Name: {
-                 find_tag_tag['name']}")
+        log.info(f"Found Tag: ID:{find_tag_tag['id']} Name: {find_tag_tag['name']}")
     return find_tag_tag
 
 
