@@ -100,8 +100,7 @@ def create_tag(obj):
     if create_tag_tag is None:
         log.error(f'Tag already exists: {tag_exclude["name"]}')
     else:
-        log.info(f"Created Tag: ID:{create_tag_tag['id']} Name: {
-                 create_tag_tag['name']}")
+        log.info(f"Created Tag: ID:{create_tag_tag['id']} Name: {create_tag_tag['name']}")
     return create_tag_tag
 
 
@@ -109,8 +108,7 @@ def remove_tag():
     remove_tag_tag = find_tag(tag_exclude["name"])
     if remove_tag_tag is not None:
         stash.destroy_tag(remove_tag_tag['id'])
-        log.info(
-            f"Deleted Tag - ID:{remove_tag_tag['id']}: Name: {remove_tag_tag['name']}")
+        log.info(f"Deleted Tag - ID:{remove_tag_tag['id']}: Name: {remove_tag_tag['name']}")
 
 
 def images_delete():
@@ -123,8 +121,7 @@ def images_delete():
     images = find_images(images_delete_tag["id"])
 
     for image in images:
-        log.info(
-            f"ID:{image['id']} - Deleting addtional files from Image Object")
+        log.info(f"ID:{image['id']} - Deleting addtional files from Image Object")
         for i, file in enumerate(image["visual_files"]):
             if i == 0:  # skip first ID
                 continue
@@ -132,13 +129,11 @@ def images_delete():
             if delete is True:
                 log.info(f"File ID:{file['id']} - Deleted: {file['path']}")
             else:
-                log.error(
-                    f"File ID:{file['id']} - Could not be Deleted: {file['path']}")
+                log.error(f"File ID:{file['id']} - Could not be Deleted: {file['path']}")
 
 
 def images_delete_record_paths():
-    log.info(
-        "Addtional Files Deleter: Initialised with Args: images_delete_record_paths")
+    log.info("Addtional Files Deleter: Initialised with Args: images_delete_record_paths")
     images_delete_record_tag = find_tag(tag_exclude)
 
     if images_delete_record_tag is None:
@@ -148,8 +143,7 @@ def images_delete_record_paths():
     for image in images:
         image_id = image["id"]
         paths = image["urls"]
-        log.info(f"ID:{image_id} - Image object: Deleting addtional files and recording path(s) "
-                 "in URLs Field")
+        log.info(f"ID:{image_id} - Image object: Deleting addtional files and recording path(s) in URLs Field")
         for i, file in enumerate(image["visual_files"]):
             if i == 0:  # skip first ID
                 continue
@@ -160,15 +154,12 @@ def images_delete_record_paths():
                 paths.append("File: " + path)
             else:
                 log.error(f"ID:{file['id']} - Could not be deleted: {path}")
-            log.info(f"Updating Image ID:{
-                     image_id}: URLs with path(s): {paths}")
+            log.info(f"Updating Image ID:{image_id}: URLs with path(s): {paths}")
             update = update_image(image_id, paths)
             if update is not None:
-                log.info(
-                    f"Image ID:{image_id}: Updated with path(s) as URLs: {path}")
+                log.info(f"Image ID:{image_id}: Updated with path(s) as URLs: {path}")
             else:
-                log.error(f"Image ID:{image_id}: Could not be updated with path(s) as URLs: "
-                          "{path}")
+                log.error(f"Image ID:{image_id}: Could not be updated with path(s) as URLs: {path}")
 
 
 def scenes_delete():
@@ -182,8 +173,7 @@ def scenes_delete():
     for scene in scenes:
         log.info(f"Scene: {scene}")
 
-        log.info(
-            f"ID:{scene['id']} - Deleting addtional files from Scene Object")
+        log.info(f"ID:{scene['id']} - Deleting addtional files from Scene Object")
         for i, file in enumerate(scene["files"]):
             if i == 0:  # skip first ID
                 continue
@@ -196,9 +186,7 @@ def scenes_delete():
 
 
 def scenes_delete_record_paths():
-    log.info(
-        "Addtional Files Deleter: Initialised with Args: scenes_delete_record_paths")
-    # ... rest of the function
+    log.info("Addtional Files Deleter: Initialised with Args: scenes_delete_record_paths")
     scenes_delete_record_tag = find_tag(tag_exclude)
 
     if scenes_delete_record_tag is None:
@@ -208,8 +196,7 @@ def scenes_delete_record_paths():
     for scene in scenes:
         scene_id = scene["id"]
         paths = scene["urls"]
-        log.info(f"ID:{id} - Scene object: Deleting addtional files and recording path(s) in URLs"
-                 "Field")
+        log.info(f"ID:{id} - Scene object: Deleting addtional files and recording path(s) in URLs Field")
         for i, file in enumerate(scene["files"]):
             if i == 0:  # skip first ID
                 continue
@@ -227,8 +214,7 @@ def scenes_delete_record_paths():
                 log.info(
                     f"Scene ID:{scene_id}: Updated with path(s) as URLs: {path}")
             else:
-                log.error(f"Scene ID:{scene_id}: Could not be updated with path(s) as URLs: "
-                          "{path}")
+                log.error(f"Scene ID:{scene_id}: Could not be updated with path(s) as URLs: {path}")
 
 
 if __name__ == "__main__":
