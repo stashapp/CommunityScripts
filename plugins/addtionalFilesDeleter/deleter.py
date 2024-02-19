@@ -1,5 +1,4 @@
-import sys
-import json
+import sys, json
 
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
@@ -48,42 +47,42 @@ def main():
     if mode_arg == "scenes_delete_record_paths":
         scenes_delete_record_paths()
 
-
 def update_image(image_id, paths):
     update = stash.update_image(
-        {'id': image_id, 'urls': paths})
+    {'id': image_id, 'urls': paths})
     return update
-
 
 def update_scene(scene_id, paths):
     update = stash.update_scene(
-        {'id': scene_id, 'urls': paths})
+    {'id': scene_id, 'urls': paths})
     return update
 
-
 def find_images(find_images_tag):
-    log.debug(f"Hello: {find_images_tag}")
-    images = stash.find_images(
-        f={
-            "file_count": {"modifier": "GREATER_THAN", "value": 1},
-            "tags": {"modifier": "EXCLUDES", "value": find_images_tag},
-        },
-        filter={
-            "per_page": "-1"
-        }
-    )
-    return images
+    image_count, images = stash.find_images(
+    f={
+        "file_count": {"modifier": "GREATER_THAN", "value": 1},
+        "tags": {"modifier": "EXCLUDES", "value": find_images_tag},
+    },
+    filter={
+        "per_page": "-1"
+    },
+    get_count=True,
 
+)
+    return image_count, images
 
 def find_scenes(find_scenes_tag):
-    scenes = stash.find_scenes(
-        f={
-            "file_count": {"modifier": "GREATER_THAN", "value": 1},
-            "tags": {"modifier": "EXCLUDES", "value": find_scenes_tag},
-        }
-    )
-    return scenes
-
+    scene_count, scenes = stash.find_scenes(
+    f={
+        "file_count": {"modifier": "GREATER_THAN", "value": 1},
+        "tags": {"modifier": "EXCLUDES", "value": find_scenes_tag},
+    },
+    filter={
+        "per_page": "-1"
+    },
+    get_count=True,
+)
+    return scene_count, scenes
 
 def find_tag(name, create=False):
     find_tag_tag = stash.find_tag(name, create)
@@ -92,7 +91,6 @@ def find_tag(name, create=False):
     else:
         log.info(f"Found Tag: ID:{find_tag_tag['id']} Name: {find_tag_tag['name']}")
     return find_tag_tag
-
 
 def create_tag(obj):
     create_tag_tag = stash.create_tag(obj)
@@ -103,118 +101,115 @@ def create_tag(obj):
         log.info(f"Created Tag: ID:{create_tag_tag['id']} Name: {create_tag_tag['name']}")
     return create_tag_tag
 
-
 def remove_tag():
     remove_tag_tag = find_tag(tag_exclude["name"])
     if remove_tag_tag is not None:
         stash.destroy_tag(remove_tag_tag['id'])
         log.info(f"Deleted Tag - ID:{remove_tag_tag['id']}: Name: {remove_tag_tag['name']}")
 
-
 def images_delete():
-    log.info("Addtional Files Deleter: Initialised with Args: images_delete")
     images_delete_tag = find_tag(tag_exclude)
 
     if images_delete_tag is None:
         images_delete_tag = create_tag(tag_exclude)
 
-    images = find_images(images_delete_tag["id"])
+    image_count, images = find_images(images_delete_tag["id"])
+    log.info(f"Deleting Addtional files of {image_count} image objects")
 
-    for image in images:
-        log.info(f"ID:{image['id']} - Deleting addtional files from Image Object")
+    for j, image in enumerate(images):
+        log.progress(j / image_count)
+
         for i, file in enumerate(image["visual_files"]):
             if i == 0:  # skip first ID
                 continue
             delete = stash.destroy_files(file["id"])
             if delete is True:
-                log.info(f"File ID:{file['id']} - Deleted: {file['path']}")
+                log.info(f"Image ID:{image['id']} - File ID:{file['id']} - Deleted: {file['path']}")
             else:
-                log.error(f"File ID:{file['id']} - Could not be Deleted: {file['path']}")
-
+                log.error(f"Image ID:{image['id']} - File ID:{file['id']} - Could not be Deleted: {file['path']}")
 
 def images_delete_record_paths():
-    log.info("Addtional Files Deleter: Initialised with Args: images_delete_record_paths")
     images_delete_record_tag = find_tag(tag_exclude)
 
     if images_delete_record_tag is None:
         images_delete_record_tag = create_tag(tag_exclude)
 
-    images = find_images(images_delete_record_tag["id"])
-    for image in images:
+    image_count, images = find_images(images_delete_record_tag["id"])
+    log.info(f"Deleting Addtional Images of {image_count} image objects and recording paths in URLs Field")
+
+    for j, image in enumerate(images):
         image_id = image["id"]
         paths = image["urls"]
-        log.info(f"ID:{image_id} - Image object: Deleting addtional files and recording path(s) in URLs Field")
+        log.progress(j / image_count)
+
         for i, file in enumerate(image["visual_files"]):
             if i == 0:  # skip first ID
                 continue
             path = file["path"]
             delete = stash.destroy_files(file["id"])
             if delete is True:
-                log.info(f"ID:{file['id']} - deleted: {path}")
+                log.info(f"Image ID:{image['id']} - File ID:{file['id']} - Deleted: {path}")
                 paths.append("File: " + path)
             else:
-                log.error(f"ID:{file['id']} - Could not be deleted: {path}")
-            log.info(f"Updating Image ID:{image_id}: URLs with path(s): {paths}")
+                log.error(f"Image ID:{image['id']} - File ID:{file['id']} - Could not be Deleted: {path}")
             update = update_image(image_id, paths)
             if update is not None:
                 log.info(f"Image ID:{image_id}: Updated with path(s) as URLs: {path}")
             else:
                 log.error(f"Image ID:{image_id}: Could not be updated with path(s) as URLs: {path}")
 
-
 def scenes_delete():
-    log.info("Addtional Files Deleter: Initialised with Args: scenes_delete")
     scenes_delete_tag = find_tag(tag_exclude)
 
     if scenes_delete_tag is None:
         scenes_delete_tag = create_tag(tag_exclude)
 
-    scenes = find_scenes(scenes_delete_tag["id"])
-    for scene in scenes:
-        log.info(f"Scene: {scene}")
+    scene_count, scenes = find_scenes(scenes_delete_tag["id"])
+    log.info(f"Deleting Addtional files of {scene_count} scene objects and recording paths in URLs Field")
 
-        log.info(f"ID:{scene['id']} - Deleting addtional files from Scene Object")
+    for j, scene in enumerate(scenes):
+        log.progress(j / scene_count)
+
         for i, file in enumerate(scene["files"]):
             if i == 0:  # skip first ID
                 continue
             delete = stash.destroy_files(file["id"])
             if delete is True:
-                log.info(f"File ID:{file['id']} - Deleted: {file['path']}")
+                log.info(f"Scene ID:{scene['id']} - File ID:{file['id']} - Deleted: {file['path']}")
             else:
-                log.error(
-                    f"File ID:{file['id']} - Ccould not be Deleted: {file['path']}")
-
+                log.error(f"Scene ID:{scene['id']} - File ID:{file['id']} - Could not be Deleted: {file['path']}")
 
 def scenes_delete_record_paths():
-    log.info("Addtional Files Deleter: Initialised with Args: scenes_delete_record_paths")
     scenes_delete_record_tag = find_tag(tag_exclude)
 
     if scenes_delete_record_tag is None:
         scenes_delete_record_tag = create_tag(tag_exclude)
 
-    scenes = find_scenes(scenes_delete_record_tag["id"])
-    for scene in scenes:
+    scene_count, scenes = find_scenes(scenes_delete_record_tag["id"])
+    log.info(f"Deleting Addtional files of {scene_count} scene objects and recording paths in URLs Field")
+
+    for j, scene in enumerate(scenes):
+        log.progress(j / scene_count)
+
         scene_id = scene["id"]
         paths = scene["urls"]
-        log.info(f"ID:{id} - Scene object: Deleting addtional files and recording path(s) in URLs Field")
+
         for i, file in enumerate(scene["files"]):
             if i == 0:  # skip first ID
                 continue
             path = file["path"]
             delete = stash.destroy_files(file["id"])
             if delete is True:
-                log.info(f"ID:{file['id']} - Deleted: {path}")
+                log.info(f"Scene ID:{scene['id']} - File ID:{file['id']} - Deleted: {path}")
                 paths.append("File: " + path)
             else:
-                log.error(f"ID:{file['id']} - Could not be Deleted: {path}")
-            log.info(f"Updating Scene ID:{scene_id}: URLs with path(s): {paths}")
+                log.error(f"Scene ID:{scene['id']} - File ID:{file['id']} - Could not be Deleted: {path}")
             update = update_scene(scene_id, paths)
             if update is not None:
-                log.info(
-                    f"Scene ID:{scene_id}: Updated with path(s) as URLs: {path}")
+                log.info(f"Scene ID:{scene_id}: Updated with path(s) as URLs: {path}")
             else:
-                log.error(f"Scene ID:{scene_id}: Could not be updated with path(s) as URLs: {path}")
-
+                log.error(f"Scene ID:{scene_id}: Could not be updated with path(s) as URLs: "
+                          "{path}")
 
 if __name__ == "__main__":
     main()
