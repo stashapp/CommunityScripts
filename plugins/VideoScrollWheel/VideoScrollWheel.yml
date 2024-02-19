@@ -1,0 +1,37 @@
+name: VideoScrollWheel
+description: Adds functionality to change volume/time in scene video player by hovering over left/right side of player and scrolling with mouse scrollwheel. Scroll while hovering on left side to adjust volume, scroll on right side to skip forward/back.
+version: 0.1
+settings:
+  volumeScrollSpeed:
+    displayName: Volume Scroll Speed
+    description: (Default=100.0) Scales the amount of change in volume per mouse wheel click. Negative value reverses scroll direction.
+    type: NUMBER
+  timeScrollSpeed:
+    displayName: Time Scroll Speed
+    description: (Default=100.0) Scales the amount of change in time per mouse wheel click. Negative value reverses scroll direction.
+    type: NUMBER
+  timeScrollAcceleration:
+    displayName: Time Scroll Acceleration
+    description: (Default=100.0) Scales how quickly time scrolling accelerates from min speed to max speed. Set to 0 to disable.
+    type: NUMBER
+  minTimeScrollSpeed:
+    displayName: Min Time Scroll Velocity
+    description: (Default=1.0) When acceleration is enabled, scroll speed will increase from min velocity to max velocity.
+    type: NUMBER
+  maxTimeScrollSpeed:
+    displayName: Max Time Scroll Velocity
+    description: (Default=5.0) When acceleration is enabled, scroll speed will increase from min velocity to max velocity.
+    type: NUMBER
+  timeScrollVelocityDecay:
+    displayName: Time Scroll Velocity Decay
+    description: (Default=100.0) When acceleration is enabled, this value sets how quickly velocity returns to min value while not scrolling.
+    type: NUMBER
+  timeScrollVelocityTimeout:
+    displayName: Time Scroll Velocity Timeout
+    description: (Default=2000.0) When acceleration is enabled, velocity will reset to minimum after this number of milliseconds.
+    type: NUMBER
+ui:
+  requires:
+    - StashUserscriptLibrary
+  javascript:
+    - videoScrollWheel.js

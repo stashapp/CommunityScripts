@@ -1,3 +1,4 @@
+from pathlib import Path
 import stashapi.log as log
 from stashapi.tools import human_bytes, human_bits
 
@@ -14,6 +15,8 @@ CODEC_PRIORITY = {
     "VC1": 6,
     "SVQ3": 7,
 }
+# Path priority is from highest to lowest and works off the root of the path, to enable add "path" to the PRIORITY list
+PATH_PRIORITY = ["/root/most/important/path", "/root/least/important/path"]
 
 KEEP_TAG_NAME = "[PDT: Keep]"
 REMOVE_TAG_NAME = "[PDT: Remove]"
@@ -113,18 +116,18 @@ def compare_size(self, other):
 
 
 def compare_age(self, other):
-    if not (self.mod_time and other.mod_time):
+    if not (self.created_at and other.created_at):
         return
-    if self.mod_time == other.mod_time:
+    if self.created_at == other.created_at:
         return
-    if self.mod_time < other.mod_time:
+    if self.created_at < other.created_at:
         better, worse = self, other
     else:
         worse, better = self, other
     worse.remove_reason = "age"
     return (
         better,
-        f"Choose Oldest: Δ:{worse.mod_time-better.mod_time} | {better.id} older than {worse.id}",
+        f"Choose Oldest: Δ:{worse.created_at-better.created_at} | {better.id} older than {worse.id}",
     )
 
 
@@ -144,4 +147,37 @@ def compare_encoding(self, other):
     return (
         self,
         f"Prefer Codec {better.codec}({better.id}) over {worse.codec}({worse.id})",
+    )
+
+
+def compare_path(self, other):
+    if PATH_PRIORITY[0] == "/root/most/important/path":
+        return
+    if not self.path or not other.path:
+        return
+
+    self.path = Path(self.path)
+    other.path = Path(other.path)
+
+    min_score = len(PATH_PRIORITY)
+    self.score = min_score
+    other.score = min_score
+    for score, path in enumerate(PATH_PRIORITY):
+        path = Path(path)
+        if path in self.path.parents:
+            self.score = score
+        if path in other.path.parents:
+            other.score = score
+
+    if self.score == other.score:
+        return
+
+    if self.score < other.score:
+        better, worse = self, other
+    else:
+        worse, better = self, other
+    worse.remove_reason = "filepath"
+    return (
+        better,
+        f"Prefer Filepath {PATH_PRIORITY[better.score]} | {better.id} better than {worse.id}",
     )
