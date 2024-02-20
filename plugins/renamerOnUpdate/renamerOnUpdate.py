@@ -126,6 +126,7 @@ def graphql_getScene(scene_id):
             endpoint
             stash_id
         }
+        interactive
         organized"""
         + FILE_QUERY
         + """
@@ -184,6 +185,7 @@ def graphql_findScene(perPage, direc="DESC") -> dict:
         title
         date
         rating100
+        interactive
         organized
         stash_ids {
             endpoint
@@ -411,9 +413,11 @@ def get_template_filename(scene: dict):
 
     # Change by Tag
     tags = [x["name"] for x in scene["tags"]]
+    if scene.get("interactive") and config.implicit_interactive_tag:
+        tags.append("Interactive")
     if scene.get("tags") and config.tag_templates:
-        for match, job in config.tag_templates.items():
-            if match in tags:
+        for matches, job in config.tag_templates:
+            if all(match in tags for match in matches):
                 template = job
                 break
     return template
@@ -441,9 +445,11 @@ def get_template_path(scene: dict):
 
     # Change by Tag
     tags = [x["name"] for x in scene["tags"]]
+    if scene.get("interactive") and config.implicit_interactive_tag:
+        tags.append("Interactive")
     if scene.get("tags") and config.p_tag_templates:
-        for match, job in config.p_tag_templates.items():
-            if match in tags:
+        for matches, job in config.p_tag_templates:
+            if all(match in tags for match in matches):
                 template["destination"] = job
                 break
 

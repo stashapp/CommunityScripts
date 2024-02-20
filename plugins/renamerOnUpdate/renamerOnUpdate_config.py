@@ -56,11 +56,12 @@
 # Templates to use for given tags
 # Add or remove as needed or leave it empty/comment out
 # you can specific group with {}. exemple: [$studio] {$date -} $title, the '-' will be removed if no date
-tag_templates = {
+tag_templates = [
+    (["Interactive"], "$title"),
     # "!1. Western": "$date $performer - $title [$studio]",
     # "!1. JAV": "$title",
     # "!1. Anime": "$title $date [$studio]"
-}
+]
 
 # Adjust the below if you want to use studio names instead of tags for the renaming templates
 studio_templates = {}
@@ -79,7 +80,10 @@ default_template = "$date $title"
 # trigger with a specific tag
 # "tagname": "path"
 # ex: "plugin_move": r"E:\Movies\R18\$studio_hierarchy"
-p_tag_templates = {}
+p_tag_templates = [
+    (["Interactive", "VR"], "/vrdata/Handy"),
+    (["Interactive"], "/data/Handy"),
+]
 
 
 p_studio_templates = {}
@@ -116,7 +120,7 @@ log_file = r""
 #               Settings             #
 
 # rename associated file (subtitle, funscript) if present
-associated_extension = ["srt", "vtt", "funscript"]
+associated_extension = ["srt", "vtt", "funscript", "csv"]
 
 # use filename as title if no title is set
 # it will cause problem if you update multiple time the same scene without title.
@@ -207,6 +211,9 @@ squeeze_studio_names = False
 # "RTG{}" with scene rating of 5    == RTG5
 # "{}-stars" with scene rating 3    == 3-stars
 rating_format = "{}"
+
+# Append "Interactive" to tag list if $interactive is True
+implicit_interactive_tag = True
 
 # Character to use as a tag separator.
 tags_splitchar = " "
