@@ -253,7 +253,7 @@
     document.getElementsByTagName("head")[0].appendChild(styleElement);
   }
 
-  function applyCSS(category, key, css, set) {
+  async function applyCSS(category, key, css, pluginId, pluginSrc) {
     if (category === "Themes") {
       // Turn Off old Theme
       let regex = /(themeSwitchPlugin-theme-.*)/;
@@ -268,8 +268,18 @@
         ) {
           setObject(storageKey, category, false);
           let element = document.getElementById(storageKey);
-          if (element) {
+          if (element && !pluginId) {
             element.remove();
+          } else {
+            const oldTheme = window.themeSwitchCSS.Themes.find(
+              (theme) => theme.key === storageKey
+            );
+            if (oldTheme?.pluginId) {
+              await enablePlugin(oldTheme.pluginId, false);
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            }
           }
         }
       }
@@ -285,8 +295,18 @@
       } else if (theme && key === "themeSwitchPlugin-theme-default") {
         setObject(key, category, true);
       } else if (theme && key !== "themeSwitchPlugin-theme-default") {
-        setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+        setObject(key, category, true).then(async () => {
+          if (pluginId) {
+            if (!(await isPluginInstalled(pluginId))) {
+              await installPlugin(pluginId, pluginSrc);
+            }
+            await enablePlugin(pluginId, true);
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          } else if (css) {
+            applyStyleToHead(key, css);
+          }
         });
       }
     } else {
@@ -328,6 +348,63 @@
         categoryCollapseClick.classList.remove("expanding");
         categorySpanClick.innerHTML = svgChevDN + category;
       }, 300);
+    }
+  }
+
+  async function getInstalledPlugins() {
+    try {
+      const res = await stash.callGQL({
+        operationName: "Plugins",
+        variables: {},
+        query: "query Plugins{plugins{id}}",
+      });
+      return res.data.plugins.map((plugin) => plugin.id);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function isPluginInstalled(plugin) {
+    const installedPlugins = await getInstalledPlugins();
+    return installedPlugins.includes(plugin);
+  }
+
+  async function enablePlugin(plugin, state) {
+    try {
+      const query = {
+        operationName: "SetPluginsEnabled",
+        variables: {
+          enabledMap: {},
+        },
+        query:
+          "mutation SetPluginsEnabled($enabledMap: BoolMap!) {\n  setPluginsEnabled(enabledMap: $enabledMap)\n}",
+      };
+
+      query.variables.enabledMap[plugin] = state;
+
+      await stash.callGQL(query);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function installPlugin(plugin, src) {
+    try {
+      await stash.callGQL({
+        operationName: "InstallPluginPackages",
+        variables: {
+          packages: [
+            {
+              id: plugin,
+              sourceURL: src,
+            },
+          ],
+        },
+        query:
+          "mutation InstallPluginPackages($packages: [PackageSpecInput!]!) {installPackages(type: Plugin, packages: $packages)}",
+      });
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -381,7 +458,7 @@
           header.className = "modal-header";
           accordion.append(header);
 
-          Object.entries(themeSwitchCSS).forEach(
+          Object.entries(window.themeSwitchCSS).forEach(
             ([category, themesInCategory], i) => {
               const categoryDiv = document.createElement("div");
               categoryDiv.className = "card";
@@ -440,7 +517,7 @@
               fieldset.className = "checkbox-switch";
 
               // Loop over themes in each category
-              Object.entries(themesInCategory).forEach(([themeId, theme]) => {
+              themesInCategory.forEach((theme) => {
                 if (category === "Navigation") {
                 } else {
                   const forRow = document.createElement("div");
@@ -463,17 +540,30 @@
                   const themeData = {
                     category: category,
                     key: theme.key,
-                    css: theme.styles,
+                    ...(theme.styles
+                      ? { css: theme.styles }
+                      : theme.pluginId
+                        ? {
+                            pluginId: theme.pluginId,
+                            pluginSrc: theme.pluginSrc,
+                          }
+                        : {}),
                   };
 
                   input.setAttribute("id", category + "-" + theme.key);
                   input.addEventListener(
                     "click",
-                    (function (category, key, css) {
-                      return function () {
-                        applyCSS(category, key, css);
+                    (function (themeData) {
+                      return async function () {
+                        applyCSS(
+                          themeData.category,
+                          themeData.key,
+                          themeData.css,
+                          themeData.pluginId,
+                          themeData.pluginSrc
+                        );
                       };
-                    })(themeData.category, themeData.key, themeData.css),
+                    })(themeData),
                     false
                   );
 
@@ -594,8 +684,8 @@
   }
 
   function returnCSS(key) {
-    for (const [, categoryThemes] of Object.entries(themeSwitchCSS)) {
-      for (const [, theme] of Object.entries(categoryThemes)) {
+    for (const [, categoryThemes] of Object.entries(window.themeSwitchCSS)) {
+      for (const theme of categoryThemes) {
         if (key === theme.key) {
           return theme.styles;
         }
@@ -625,7 +715,7 @@
         if (selectedTheme.active === true) {
           appliedThemeOtherThanDefault.push("True");
           const css = returnCSS(key);
-          applyCSS(selectedTheme.category, key, css, true);
+          applyCSS(selectedTheme.category, key, css);
         }
       }
     }
