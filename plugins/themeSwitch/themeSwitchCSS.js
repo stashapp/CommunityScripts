@@ -15374,6 +15374,576 @@ option {
 // Themes CSS End
 
 // Themes CSS Begin
+const plexBetterStyles = `
+/* Author: tetrax */
+
+.btn-secondary {
+    color: #eee;
+    background-color: #00000026 !important;
+    border: none;
+}
+.btn.disabled,
+.btn:disabled {
+    opacity: 0.5 !important;
+}
+.btn.active {
+    background-color: #2f3335;
+    color: #f5f8fa;
+}
+.btn-secondary:not(:disabled):not(.disabled):active:focus,
+.btn-secondary:not(:disabled):not(.disabled).active:focus,
+.show > .btn-secondary.dropdown-toggle:focus {
+    box-shadow: unset;
+}
+.btn-secondary:not(:disabled):not(.disabled):active,
+.btn-secondary:not(:disabled):not(.disabled).active,
+.show > .btn-secondary.dropdown-toggle {
+    background-color: #0000004d !important;
+    border: unset;
+}
+.btn-primary:not(:disabled):not(.disabled).active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.show > .btn-primary.dropdown-toggle {
+    color: #eee;
+    border-color: #eee;
+    background-color: #00000026;
+}
+.btn-primary:not(:disabled):not(.disabled):focus {
+    background-color: #2f3335;
+}
+.btn-primary.focus,
+.btn-primary:focus,
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.show > .btn-primary.dropdown-toggle:focus {
+    box-shadow: none;
+}
+.pagination .btn {
+    border-left: unset;
+    border-right: unset;
+}
+.btn-success.disabled,
+.btn-success:disabled,
+.btn-success:hover,
+.btn-success,
+.btn-primary.disabled,
+.btn-primary:disabled,
+.btn-primary:hover,
+.btn-primary {
+    color: #000;
+    background-color: #d49c21;
+    font-weight: 500;
+    border: none;
+}
+.image-card.card,
+.gallery-card.card {
+    width: unset !important;
+}
+@media (max-width: 576px) {
+    .scene-card-preview,
+    .image-card-preview {
+        height: auto !important;
+    }
+    .tag-card-image,
+    .gallery-card-image {
+        max-height: unset !important;
+    }
+    .slick-slider .image-card-preview {
+        height: 24rem !important;
+    }
+    .slick-slide .card {
+        height: auto;
+    }
+}
+@media (min-width: 576px) {
+    .scene-card-preview {
+        height: auto !important;
+    }
+    .zoom-0 .image-card-preview:not(.portrait) {
+        height: 180px;
+    }
+    body:not(:has(.slick-track)) .card.grid-card[class*="scene-"],
+    body:not(:has(.slick-track)) .card.grid-card[class*="image-"],
+    body:not(:has(.slick-track)) .card.grid-card[class*="gallery-"],
+    body:not(:has(.slick-track)) .card.grid-card[class*="performer-"],
+    body:not(:has(.slick-track)) .card.grid-card[class*="studio-"],
+    body:not(:has(.slick-track)) .card.grid-card[class*="tag-"],
+    body:not(:has(.slick-track)) .card.grid-card[class*="movie-"] {
+        transition: transform 0.1s ease;
+    }
+    body:not(:has(.slick-track)) .card.grid-card[class*="scene-"]:hover,
+    body:not(:has(.slick-track)) .card.grid-card[class*="image-"]:hover,
+    body:not(:has(.slick-track)) .card.grid-card[class*="gallery-"]:hover,
+    body:not(:has(.slick-track)) .card.grid-card[class*="performer-"]:hover,
+    body:not(:has(.slick-track)) .card.grid-card[class*="studio-"]:hover,
+    body:not(:has(.slick-track)) .card.grid-card[class*="tag-"]:hover,
+    body:not(:has(.slick-track)) .card.grid-card[class*="movie-"]:hover {
+        transform: scale(1.1);
+        z-index: 1;
+        background-color: #d49c21 !important;
+    }
+    body:not(:has(.slick-track)) .card.grid-card[class*="scene-"]:hover .card-section *,
+    body:not(:has(.slick-track)) .card.grid-card[class*="image-"]:hover .card-section *,
+    body:not(:has(.slick-track)) .card.grid-card[class*="gallery-"]:hover .card-section *,
+    body:not(:has(.slick-track)) .card.grid-card[class*="performer-"]:hover .card-section *,
+    body:not(:has(.slick-track)) .card.grid-card[class*="studio-"]:hover .card-section *,
+    body:not(:has(.slick-track)) .card.grid-card[class*="tag-"]:hover .card-section *,
+    body:not(:has(.slick-track)) .card.grid-card[class*="movie-"]:hover .card-section * {
+        color: #000 !important;
+    }
+    .card:hover .rating-banner {
+        opacity: 0;
+    }
+}
+.job-table.card,
+.card {
+    border-radius: 5px;
+    background-color: #0000004d !important;
+}
+.StudioTagger-studio,
+.search-item,
+.PerformerTagger-performer {
+    background-color: #00000026 !important;
+}
+.StudioTagger-studio .studio-card img {
+    background-color: unset !important;
+}
+.selected-result,
+.search-result,
+.search-result:hover {
+    background-color: #00000026 !important;
+}
+.search-result .performer-select-active .react-select__control,
+.search-result .studio-select-active .react-select__control {
+    background-color: #00000026;
+}
+.rating-banner {
+    background-color: #0006;
+    color: #eee;
+    top: -14px;
+    left: -58px;
+    padding-top: 40px;
+    transition: opacity 0.5s;
+}
+.card hr {
+    display: none;
+}
+.preview-button {
+    height: unset;
+    width: unset;
+    right: 0;
+    bottom: 0;
+}
+.preview-button .fa-icon {
+    color: #eee;
+    height: 2em;
+    transition: opacity 0.2s;
+    width: 2em;
+}
+.skeleton-card {
+    background-color: #0000004d;
+}
+.modifier-options .modifier-option.selected {
+    background-color: #d49c21 !important;
+    font-weight: 400;
+}
+.modifier-options .modifier-option {
+    background-color: #00000026;
+    color: #eee !important;
+    font-weight: 400;
+}
+.query-text-field {
+    background-color: #00000026 !important;
+}
+.mr-2.mb-2.btn-group:not(.dropdown) > .dropdown > button,
+.mx-2.mb-2:not(.dropdown) > .dropdown > button {
+    padding: 0.45rem 0.75rem;
+}
+.btn-group > .btn:not(:first-child):has(svg[data-icon="tags"]) {
+    border-top-left-radius: 0.25rem;
+    border-bottom-left-radius: 0.25rem;
+}
+.btn-group > .btn:not(:first-child),
+.btn-group > .btn-group:not(:first-child) {
+    margin-left: unset;
+}
+.input-group-prepend {
+    margin-right: unset;
+}
+.filter-container,
+.operation-container {
+    margin: 10px 0;
+}
+.popover {
+    background-color: #0000004d !important;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+.tooltip-inner {
+    background-color: #00000080;
+}
+.tooltip {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    padding: 0;
+    padding-top: 0.4rem;
+}
+@media (min-width: 576px) {
+    .top-nav .navbar-brand a:focus,
+    .top-nav .navbar-brand a:hover,
+    .top-nav .navbar-brand a:active,
+    .top-nav .navbar-brand button:focus,
+    .top-nav .navbar-brand button:hover,
+    .top-nav .navbar-brand button:active {
+        background-color: unset !important;
+    }
+}
+.top-nav .btn.active:not(.disabled),
+.top-nav .btn.active.minimal:not(.disabled),
+.top-nav a:active,
+.top-nav a.minimal:hover:not(:disabled),
+.top-nav button.minimal:hover:not(:disabled) {
+    background: #0003;
+    color: #eee;
+}
+@media (max-width: 576px) {
+    .top-nav .btn.active:not(.disabled),
+    .top-nav .btn.active.minimal:not(.disabled),
+    .top-nav a:active,
+    .top-nav a.minimal:hover:not(:disabled),
+    .top-nav button.minimal:hover:not(:disabled) {
+        border-radius: 10px;
+    }
+}
+.top-nav.bg-dark {
+    background-image: url(https://raw.githubusercontent.com/Tetrax-10/stash-stuffs/main/Themes/PlexBetterStyles/assets/plex-background.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}
+.navbar-collapse.bg-dark {
+    background-color: unset !important;
+}
+.top-nav .navbar-buttons button.minimal:hover:not(:disabled),
+.top-nav .navbar-buttons a.minimal:hover:not(:disabled) {
+    background: unset;
+}
+body {
+    background-image: url(https://raw.githubusercontent.com/Tetrax-10/stash-stuffs/main/Themes/PlexBetterStyles/assets/plex-background.png);
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: #3f4245;
+    background-attachment: fixed;
+    background-position: center;
+}
+#root {
+    background: #0000 url(https://raw.githubusercontent.com/Tetrax-10/stash-stuffs/main/Themes/PlexBetterStyles/assets/plex-noise.png) repeat scroll 0% 0%;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+.bg-dark {
+    background-color: #1f2326 !important;
+}
+.text-white {
+    color: #eee !important;
+}
+.border-secondary {
+    border-color: #2f3335 !important;
+}
+.input-control,
+.text-input {
+    box-shadow: none;
+}
+.text-input,
+.text-input:focus,
+.text-input[readonly],
+.text-input:disabled {
+    background-color: #00000026;
+}
+.input-control,
+.input-control:focus,
+.input-control:disabled {
+    background-color: #00000026;
+}
+div.react-select__control {
+    background-color: #00000026;
+    border: none;
+}
+option {
+    background-color: #1f2326;
+}
+div.react-select__menu,
+div.dropdown-menu {
+    background-color: unset !important;
+    background: url(https://raw.githubusercontent.com/Tetrax-10/stash-stuffs/main/Themes/PlexBetterStyles/assets/plex-background.png) !important;
+}
+div.dropdown-menu .bg-secondary {
+    background-color: unset !important;
+}
+div.dropdown-menu a:hover,
+div.dropdown-menu button:hover {
+    background-color: #00000026 !important;
+}
+.scene-divider.d-none.d-xl-block {
+    visibility: hidden;
+}
+div[class*="-divider"].d-none.d-xl-block:not(.scene-divider) {
+    display: none !important;
+}
+a:hover,
+a,
+.btn-link:hover,
+.btn-link {
+    color: #f7c600;
+    text-decoration: none;
+}
+input[type="range"].zoom-slider::-webkit-slider-runnable-track {
+    background: #fff3;
+    border-radius: 25px;
+}
+input[type="range"].zoom-slider::-webkit-slider-thumb {
+    background: #ddd;
+    border-radius: 50%;
+}
+input[type="range"].zoom-slider:focus::-webkit-slider-runnable-track {
+    background: #fff3;
+}
+input[type="range"].zoom-slider::-moz-range-track {
+    background: #fff3;
+    border-radius: 25px;
+}
+input[type="range"].zoom-slider::-moz-range-thumb {
+    background: #ddd;
+    border-radius: 25px;
+}
+input[type="range"].zoom-slider::-ms-fill-lower {
+    background: #fff3;
+    border-radius: 50px;
+}
+input[type="range"].zoom-slider::-ms-fill-upper {
+    background: #fff3;
+    border-radius: 50px;
+}
+input[type="range"].zoom-slider::-ms-thumb {
+    background: #ddd;
+    border-radius: 50%;
+}
+input[type="range"].zoom-slider:focus::-ms-fill-lower {
+    background: #fff3;
+}
+input[type="range"].zoom-slider:focus::-ms-fill-upper {
+    background: #fff3;
+}
+.badge-info {
+    color: #000;
+    background-color: #d49c21;
+}
+.tag-item {
+    background-color: #0003 !important;
+    color: #eee !important;
+}
+.tag-item > button {
+    color: #fff !important;
+}
+.tab-content,
+.scene-tabs {
+    scrollbar-width: none !important;
+}
+.tab-content::-webkit-scrollbar,
+.scene-tabs::-webkit-scrollbar {
+    display: none !important;
+}
+html ::-webkit-scrollbar {
+    width: 10px;
+    background-color: transparent;
+}
+html ::-webkit-scrollbar-thumb {
+    background-color: #2b2b2b;
+    border-radius: 6px;
+}
+.rating-stars .btn-secondary {
+    background-color: unset !important;
+}
+.badge-secondary {
+    color: #000;
+    background-color: #d49c21;
+}
+.modal-header,
+.modal-body,
+.modal-footer {
+    background-image: url(https://raw.githubusercontent.com/Tetrax-10/stash-stuffs/main/Themes/PlexBetterStyles/assets/plex-background.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: #3f4245;
+    background-attachment: fixed;
+    background-position: center;
+}
+.markdown blockquote,
+.markdown pre,
+.markdown table tr:nth-child(2n) {
+    background-color: #00000026 !important;
+}
+.markdown code {
+    background-color: unset !important;
+    color: #f7c600;
+}
+@media (max-width: 576px) {
+    .performer-card-image {
+        height: unset;
+    }
+}
+.card.performer-card {
+    padding: 0 0 0.5rem;
+}
+.detail-header:not(:has(.background-image)) {
+    background-color: unset;
+}
+.detail-body nav {
+    border-bottom: none;
+}
+a.minimal.link.btn[target="_blank"][rel="noopener noreferrer"].twitter,
+a.minimal.link.btn[target="_blank"][rel="noopener noreferrer"].twitter:hover {
+    color: #1da1f2 !important;
+}
+a.minimal.link.btn[target="_blank"][rel="noopener noreferrer"].instagram,
+a.minimal.link.btn[target="_blank"][rel="noopener noreferrer"].instagram:hover {
+    color: #ff498e !important;
+}
+.nav-tabs .nav-link.active:hover,
+.nav-tabs .nav-link.active {
+    background-color: #00000026;
+    border-bottom: 2px solid;
+    color: #eee;
+}
+.nav-tabs .nav-link:hover {
+    border-bottom: none;
+}
+#scene-edit-details .edit-buttons-container {
+    background-color: #00000026;
+    margin: unset;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.tab-content #scene-edit-details .edit-buttons-container {
+    background: linear-gradient(to right, #353e3f, #464f4d);
+}
+.stash-id-pill span {
+    background-color: #d49c21;
+    color: #000;
+}
+.stash-id-pill a {
+    background-color: #00000026;
+}
+#queue-viewer .queue-controls {
+    background-color: unset;
+}
+#queue-viewer .current {
+    background-color: #00000026;
+}
+.table-list table thead {
+    background-color: #0003;
+}
+.table-list tbody tr:hover {
+    background-color: #00000026;
+}
+.table-striped tr:nth-child(odd) td {
+    background-color: #0000000d !important;
+}
+#tasks-panel .tasks-panel-queue {
+    position: unset;
+}
+#tasks-panel .tasks-panel-queue {
+    background: #0000;
+}
+#settings-container .card {
+    background-color: #00000026 !important;
+}
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: #d49c21;
+}
+#settings-menu-container .nav-pills .nav-link.active,
+#settings-menu-container .nav-pills .show > .nav-link {
+    color: #000;
+    font-weight: 500;
+}
+code {
+    font-size: unset;
+    color: #f7c600;
+}
+.custom-control-input:checked ~ .custom-control-label:before {
+    color: #fff;
+    border-color: #d49c21;
+    background-color: #d49c21;
+}
+.custom-control-label:before {
+    background-color: #0000004d;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+.custom-control-input[disabled] ~ .custom-control-label:before,
+.custom-control-input:disabled ~ .custom-control-label:before {
+    background-color: #0000004d;
+}
+#settings-menu-container a:hover {
+    color: #f7c600;
+}
+#stash-table .bg-dark {
+    background-color: #00000026 !important;
+}
+.scraper-table tr:nth-child(2n) {
+    background-color: #00000026;
+}
+.setting-section .setting .value {
+    color: #f7c600;
+}
+.package-manager table thead {
+    background-color: #0000;
+}
+.clearable-text-field,
+.clearable-text-field:active,
+.clearable-text-field:focus {
+    background-color: #00000026 !important;
+    border-color: #00000026 !important;
+}
+#settings-container .btn-primary:not(:disabled):not(.disabled):not(.collapse-button).active,
+#settings-container .btn-primary:not(:disabled):not(.disabled):not(.collapse-button):active,
+#settings-container .btn-primary:not(:disabled):not(.disabled):not(.collapse-button):hover,
+#settings-container .btn-primary:not(:disabled):not(.disabled):not(.collapse-button):focus,
+#settings-container .btn-primary:not(:disabled):not(.disabled):not(.collapse-button) {
+    color: #000;
+    background-color: #d49c21;
+}
+#settings-container .btn-secondary {
+    color: #000;
+    background-color: #d49c21 !important;
+    font-weight: 500;
+    border: none;
+}
+.bg-secondary {
+    background-color: #00000026 !important;
+    border: none !important;
+}
+a.minimal.link.btn[target="_blank"][rel="noopener noreferrer"] {
+    color: #f7c600 !important;
+    background-color: unset !important;
+}
+.studio-card.card a:hover,
+.studio-card.card a {
+    color: #f7c600;
+}
+.input-group-text {
+    background-color: #00000026;
+    border: none;
+}
+`;
+// Themes CSS End
+
+// Themes CSS Begin
 const pornHub = `
 /* Author: ronilaukkarinen */
 /* stylelint-disable selector-max-specificity, declaration-no-important, selector-type-no-unknown, selector-max-class, a11y/no-outline-none, no-descending-specificity, selector-max-pseudo-class, property-disallowed-list, font-weight-notation, max-line-length, a11y/no-display-none, a11y/font-size-is-readable */
@@ -21058,23 +21628,29 @@ const themeSwitchCSS = {
       version: "1.0.3",
     },
     9: {
+      displayName: "Plex Better Styles",
+      styles: plexBetterStyles,
+      key: "themeSwitchPlugin-theme-plexBetterStyles",
+      version: "1.0-4ffb275",
+    },
+    10: {
       displayName: "Pornhub",
       styles: pornHub,
       key: "themeSwitchPlugin-theme-pornHub",
     },
-    10: {
+    11: {
       displayName: "Pulsar",
       styles: pulsar,
       key: "themeSwitchPlugin-theme-pulsar",
       version: "1.8.1",
     },
-    11: {
+    12: {
       displayName: "Pulsar Light",
       styles: pulsarLight,
       key: "themeSwitchPlugin-theme-pulsarLight",
       version: "0.3.1",
     },
-    12: {
+    13: {
       displayName: "Rounded Yellow",
       styles: roundedYellow,
       key: "themeSwitchPlugin-theme-roundedYellow",
