@@ -11,6 +11,10 @@ settings:
     displayName: Download parent folder
     description: Download location for files, note this should be in a different folder to stash and in a folder covered by stash. You may need to create a new library path to cover this directory.
     type: STRING
+  runPerformerScraper:
+    displayName: Run stash scrapers on profile urls
+    description: Run scrapers on profile urls
+    type: BOOLEAN
 
 hooks:
   - name: modify performer
