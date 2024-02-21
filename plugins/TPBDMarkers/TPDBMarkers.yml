@@ -12,6 +12,11 @@ hooks:
     triggeredBy:
       - Scene.Update.Post
 
+settings:
+  disableSceneMarkerHook:
+    displayName: Disable the Scene Markers hook
+    type: BOOLEAN
+
 tasks:
   - name: "Sync"
     description: Get markers for all scenes with a stashid from metadataapi.net and no markers
