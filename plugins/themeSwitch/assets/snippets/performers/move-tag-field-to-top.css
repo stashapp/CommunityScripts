@@ -1,0 +1,12 @@
+/* [Performers tab] Move the tags row in the Performer's edit panel to the second position (just after name).  */
+
+form#performer-edit {
+  display: flex;
+  flex-direction: column;
+}
+#performer-edit > .row:nth-child(24) {
+  order: -1;
+}
+#performer-edit > .row:first-child {
+  order: -2;
+}

@@ -1,0 +1,106 @@
+/* [Global changes] Blur NSFW images and unblur on mouse over */
+/* === MORE BLUR === */
+/* scene */
+.scene-card-preview,
+.vjs-poster,
+video,
+.scene-cover,
+.scrubber-item,
+
+/* image */
+.image-card-preview,
+.image-image,
+.gallery-image,
+
+/* movie */
+.movie-card-image,
+.movie-images,
+
+/* gallery */
+.gallery-card-image,
+table > tbody > tr > td > a > img.w-100,
+
+/* performer */
+.performer-card-image,
+img.performer,
+
+/* studio */
+.studio-card-image,
+
+/* tag */
+.tag-card-image {
+  filter: blur(30px);
+}
+
+/* === LESS BLUR === */
+/* common */
+.card-section-title,
+
+/* scene */
+.scene-studio-overlay,
+.scene-header > h3,
+h3.scene-header,
+.studio-logo,
+.image-thumbnail,
+
+/* image */
+h3.image-header,
+
+/* movie */
+.movie-details > div > h2,
+
+/* gallery */
+h3.gallery-header,
+
+/* studio */
+.studio-details .logo,
+.studio-details > div > h2,
+
+/* tag */
+.logo-container > .logo,
+.logo-container > h2 {
+  filter: blur(2px);
+}
+
+/* === UNBLUR ON HOVER === */
+/* common */
+.thumbnail-section:hover *,
+.card:hover .card-section-title,
+
+/* scene */
+.card:hover .scene-studio-overlay,
+.video-js:hover .vjs-poster,
+video:hover,
+.scene-header:hover > h3,
+div:hover > .scene-header,
+.studio-logo:hover,
+.scene-cover:hover,
+.image-thumbnail:hover,
+.scene-card-preview:hover,
+.scrubber-item:hover,
+
+/* image */
+.image-image:hover,
+div:hover > .image-header,
+.gallery-image:hover,
+
+/* movie */
+.movie-images:hover,
+.movie-details > div > h2:hover,
+
+/* gallery */
+div:hover > .gallery-header,
+table > tbody > tr > td:hover > a > img.w-100,
+
+/* performer */
+img.performer:hover,
+
+/* studio */ 
+.studio-details .logo:hover,
+.studio-details:hover > div > h2,
+
+/* tag */
+.logo-container > .logo:hover,
+.logo-container:hover > h2 {
+  filter: blur(0px);
+}
