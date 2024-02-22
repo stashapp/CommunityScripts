@@ -1,0 +1,6 @@
+/*This will hide the truncated text that appears under the tile and date. */
+/* [Scenes Tab] - Hide the truncated text on scene card */
+
+.TruncatedText.scene-card__description {
+  display: none;
+}

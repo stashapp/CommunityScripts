@@ -1,0 +1,14 @@
+/* [Scenes tab] Swap studio and resolution/duration positions */
+
+.scene-studio-overlay {
+  bottom: 1rem;
+  right: 0.7rem;
+  height: inherit;
+  top: inherit;
+}
+
+.scene-specs-overlay {
+  right: 0.7rem;
+  top: 0.7rem;
+  bottom: inherit;
+}

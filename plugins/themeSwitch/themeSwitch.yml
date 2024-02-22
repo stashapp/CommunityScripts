@@ -10,3 +10,5 @@ ui:
     - themeSwitchCSS.js
   css:
     - themeSwtichDefault.css
+  assets:
+    /: assets

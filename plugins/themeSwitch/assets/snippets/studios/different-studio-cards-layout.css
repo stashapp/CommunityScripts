@@ -1,0 +1,35 @@
+/* Author: Qx#1573 */
+/* [Studios tab] Changes the layout of studio cards */
+.studio-card.grid-card.card div.card-section div.rating-banner {
+  display: none;
+}
+.slick-slide .studio-card-image {
+  height: 300px;
+}
+
+.studio-card,
+.recommendation-row .studio-card {
+  padding: 0;
+  width: 500px;
+  height: 300px;
+}
+
+.studio-card-image,
+.recommendation-row .studio-card .studio-card-image {
+  max-height: 300px;
+  width: 500px;
+}
+
+.studio-card.grid-card.card div.card-section {
+  position: absolute;
+  bottom: 0em;
+  width: inherit;
+  background-color: rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  height: 2.5em;
+  transition: 0.5s ease-in-out;
+}
+
+.studio-card.grid-card.card div.card-section:hover {
+  height: 7em;
+}
