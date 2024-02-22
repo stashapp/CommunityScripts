@@ -1,0 +1,48 @@
+name: Build and Publish Plugins and Themes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/**
+      - plugins/**
+      - themes/**
+      - build-config.json
+      - build.js
+      - package.json
+      - yarn.lock
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_publish:
+    name: Build and Publish Plugins and Themes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
+      - name: Install node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install repository dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build plugins and themes
+        run: yarn run build-all-dist
+
+      - name: Publish to stable branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: stable
+          FOLDER: "dist" # build-config.json outDir
+          MESSAGE: "built for {sha}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

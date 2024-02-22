@@ -54,6 +54,10 @@ Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with 
 
 ## Contributing
 
+### For plugins made with [stash-plugin-builder](https://github.com/Tetrax-10/stash-plugin-builder)
+
+Please refer to its [docs](https://github.com/Tetrax-10/stash-plugin-builder#readme) for building.
+
 ### Formatting
 
 Formatting is enforced on all files. Follow this setup guide:
