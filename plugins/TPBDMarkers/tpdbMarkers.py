@@ -119,8 +119,8 @@ if "https://metadataapi.net/graphql" in [
         _id = json_input["args"]["hookContext"]["id"]
         _type = json_input["args"]["hookContext"]["type"]
         if _type == "Scene.Update.Post" and not settings["disableSceneMarkerHook"]:
-                scene = stash.find_scene(_id)
-                processScene(scene)
+            scene = stash.find_scene(_id)
+            processScene(scene)
 
 else:
     log.warning("The Porn DB endpoint not configured")

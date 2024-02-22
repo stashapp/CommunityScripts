@@ -1,0 +1,4 @@
+/* [Global changes] Hide 0 count badges */
+span.badge[data-value="0"] {
+  display: none;
+}
