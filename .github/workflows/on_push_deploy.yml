@@ -10,6 +10,8 @@ on:
       - themes/**
       - build-config.json
       - build.js
+      - package.json
+      - yarn.lock
 
 permissions:
   contents: write
