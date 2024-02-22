@@ -1,0 +1,320 @@
+- id: CropperJS
+  name: Cropper.JS
+  metadata:
+    description: Exports cropper.js functionality for JS/Userscripts
+  version: 1.6.1-862f16b
+  date: 2024-02-11 08:41:16
+  path: CropperJS.zip
+  sha256: b9a4f217e8722dcc6e57604e15d2356f55d58fc200512e6022c9ed3c9ea740e3
+- id: date_parser
+  name: Date Parser
+  metadata:
+    description: Find date in path or filename and add it
+  version: 0.2-228c294
+  date: 2024-02-06 23:25:44
+  path: date_parser.zip
+  sha256: 2000df4bff1ea828d443d87ab08e5b9307744d9ee14a6a25295e891d994587da
+- id: stashBatchResultToggle
+  name: Stash Batch Result Toggle.
+  metadata:
+    description: In Scene Tagger, adds button to toggle all stashdb scene match
+      result fields. Saves clicks when you only want to save a few metadata
+      fields. Instead of turning off every field, you batch toggle them off,
+      then toggle on the ones you want
+  version: 1.0-862f16b
+  date: 2024-02-11 08:41:16
+  path: stashBatchResultToggle.zip
+  sha256: 155f211aa07ae559468af3a50a07fd8ef915dcf67d6a4fccee4db1f7e39eaa91
+  requires:
+    - StashUserscriptLibrary
+- id: TPDBMarkers
+  name: The Porn DB Markers
+  metadata:
+    description: Sync Markers from The Porn DB aka metadataapi.net
+  version: 0.1-5f4e7d0
+  date: 2024-02-22 07:41:42
+  path: TPDBMarkers.zip
+  sha256: 114cd3c5bb4e7702889904efe24e4ff89b8269d00c9d82cb73a098e8aa0d47f1
+- id: VideoScrollWheel
+  name: VideoScrollWheel
+  metadata:
+    description: Adds functionality to change volume/time in scene video player by
+      hovering over left/right side of player and scrolling with mouse
+      scrollwheel. Scroll while hovering on left side to adjust volume, scroll
+      on right side to skip forward/back.
+  version: 0.1-3bf16a6
+  date: 2024-02-17 18:13:36
+  path: VideoScrollWheel.zip
+  sha256: 9be70f61559650272a9c892c3300bca7d60a47892b84cd2e973d45374ceafc6f
+  requires:
+    - StashUserscriptLibrary
+- id: comicInfoExtractor
+  name: Comic Info Extractor
+  metadata:
+    description: Extract the metadata from cbz with the Comicrack standard (ComicInfo.xml)
+  version: 0.1-228c294
+  date: 2024-02-06 23:25:44
+  path: comicInfoExtractor.zip
+  sha256: 18ae25dc9f94e7052ed918e2492ddb60d013829a29c14d5ee0593dff09824fc4
+- id: defaultDataForPath
+  name: Default Data For Path
+  metadata:
+    description: Adds configured Tags, Performers and/or Studio to all newly scanned
+      Scenes, Images and Galleries.
+  version: 1.1-862f16b
+  date: 2024-02-11 08:41:16
+  path: defaultDataForPath.zip
+  sha256: 5be12f617b7238d3d79a95afbf370a73f253446b4e81cbfd1d5c13096ec7bb1f
+- id: dupeMarker
+  name: Dupe Marker Detector
+  metadata:
+    description: Finds and marks duplicate markers
+  version: 0.1-228c294
+  date: 2024-02-06 23:25:44
+  path: dupeMarker.zip
+  sha256: 3adbe485d7523f4df9a8b83774628420d5a655ffb0b3aac89bc0a7290ae22390
+- id: filenameParser
+  name: Filename parser
+  metadata:
+    description: Parses filename into studio, date, performers and title
+  version: 0.1-862f16b
+  date: 2024-02-11 08:41:16
+  path: filenameParser.zip
+  sha256: 3be795b183ff7e0b23071e1116b35ee70f77aa336be40ddfa09087989dd57529
+- id: markerTagToScene
+  name: Scene Marker Tags to Scene
+  metadata:
+    description: Adds primary tag of Scene Marker to the Scene on marker create/update.
+  version: 1.0-228c294
+  date: 2024-02-06 23:25:44
+  path: markerTagToScene.zip
+  sha256: a183833207f46523877304fd6a3a1cba5d25203e9ef4b2f5071fb5f2737855f4
+- id: miscTags
+  name: Misc Tags
+  metadata:
+    description: Add extra tags for VR and other ues
+  version: 0.2-228c294
+  date: 2024-02-06 23:25:44
+  path: miscTags.zip
+  sha256: a5c392b41fc643203ff96111872bd444b1c7639f11480ee46e866208cc635e28
+- id: pathParser
+  name: Path Parser
+  metadata:
+    description: Updates scene info based on the file path.
+  version: 1.0-862f16b
+  date: 2024-02-11 08:41:16
+  path: pathParser.zip
+  sha256: 8847d9d1d59802995c0b0cd34136d0efaa60b4961b7bdecd76acb56691fbfb06
+- id: phashDuplicateTagger
+  name: PHash Duplicate Tagger
+  metadata:
+    description: Will tag scenes based on duplicate PHashes for easier/safer removal.
+  version: 0.1.3-983b28b
+  date: 2024-02-17 17:39:10
+  path: phashDuplicateTagger.zip
+  sha256: bf91e1c7301a7dacc40a3e4004a288f1cac9e0f9cfc299ce464697d36ff6e134
+- id: renamerOnUpdate
+  name: renamerOnUpdate
+  metadata:
+    description: Rename/move filename based on a template.
+  version: 2.5.0-228c294
+  date: 2024-02-06 23:25:44
+  path: renamerOnUpdate.zip
+  sha256: 29514d2c98ecab1206c559566ad0df6419fafc83b7d3ab7924ed301ac563931c
+- id: sceneCoverCropper
+  name: Scene Cover Cropper
+  metadata:
+    description: Crop Scene Cover Images
+  version: 1.0-862f16b
+  date: 2024-02-11 08:41:16
+  path: sceneCoverCropper.zip
+  sha256: 4c95ae35f3f7acde0d05eaff90946338b3605053720e520f07ea06dac63f8f75
+  requires:
+    - CropperJS
+- id: set_scene_cover
+  name: Set Scene Cover
+  metadata:
+    description: searches Stash for Scenes with a cover image in the same folder and
+      sets the cover image in stash to that image
+  version: 0.4-228c294
+  date: 2024-02-06 23:25:44
+  path: set_scene_cover.zip
+  sha256: 5d5e9c248b252107e88c7580ee611a962bf073467260bcf403593d4f7ab06dc6
+- id: stashai
+  name: Stash AI
+  metadata:
+    description: Add Tags or Markers to a video using AI
+  version: 1.0.2-862f16b
+  date: 2024-02-11 08:41:16
+  path: stashai.zip
+  sha256: 1dfa9ef270b7f0cb41b249e480092facf31c4f3a839051e39050bccb16c30e8e
+  requires:
+    - StashUserscriptLibrary
+- id: stashNotes
+  name: Stash Notes
+  metadata:
+    description: Adds a button to the navigation bar which opens a small window for
+      writing notes to your browser's local storage.
+  version: 1.0-983b28b
+  date: 2024-02-17 17:39:10
+  path: stashNotes.zip
+  sha256: 9b927dbf5e290528fc159473dfb3be9f700802560425baf1eaf7e52d00029c92
+- id: stash-realbooru
+  name: Stash Realbooru
+  metadata:
+    description: Add tags based on the realbooru model, This works on individual images.
+  version: 1.0.1-862f16b
+  date: 2024-02-11 08:41:16
+  path: stash-realbooru.zip
+  sha256: 1d59bf47d17852296f296d91bd49802d4d1eafb0194fe3b814bbae5a04df92a3
+  requires:
+    - StashUserscriptLibrary
+- id: StashUserscriptLibrary
+  name: Stash Userscript Library
+  metadata:
+    description: Exports utility functions and a Stash class that emits events
+      whenever a GQL response is received and whenenever a page navigation
+      change is detected
+  version: 1.0-862f16b
+  date: 2024-02-11 08:41:16
+  path: StashUserscriptLibrary.zip
+  sha256: a8e89abaefff9a3abc9626949fd45979ad7db96d8c7bb2ffd2035343eac4d12c
+- id: stashdb-performer-gallery
+  name: stashdb performer gallery
+  metadata:
+    description: Automatically download performer images from stashdb or other
+      stash-boxes. Add the [Stashbox Performer Gallery] tag to a performer and
+      it will create a gallery of images from that stash-box database. Apply the
+      tag [Set Profile Image] to an image to set it as the profile image of that
+      performer. Note you will need to configure the download path and add this
+      as a path under settings > library
+  version: 0.1-228c294
+  date: 2024-02-06 23:25:44
+  path: stashdb-performer-gallery.zip
+  sha256: 12aecd9f5c043ad49dcf4e3d8d7f3fae39630358cdfdb66bb0ab37aebcd4c8db
+- id: stats
+  name: Extended Stats
+  metadata:
+    description: Adds new stats to the stats page
+  version: 1.0-862f16b
+  date: 2024-02-11 08:41:16
+  path: stats.zip
+  sha256: bffbc542bcc5a416c1b927059f4cc7604607238be471b1bf9a3bedcf7c77b5f3
+  requires:
+    - StashUserscriptLibrary
+- id: tag_graph
+  name: Tag Graph
+  metadata:
+    description: Creates a visual of the Tag relations
+  version: 0.2-228c294
+  date: 2024-02-06 23:25:44
+  path: tag_graph.zip
+  sha256: e38517fd1858964ddadb2bb38f7828e4417665e5e7e437abebfbc9438549792f
+- id: themeSwitch
+  name: Theme Switch
+  metadata:
+    description: Theme and CSS script manager located in main menu bar top right.
+  version: 2.1-5f4e7d0
+  date: 2024-02-22 07:41:42
+  path: themeSwitch.zip
+  sha256: 4f84628c85ec3c677bfe896ac5e6f8efad5bd44af1a6f5ee941b6038c7bc423e
+  requires:
+    - stashUserscriptLibrary
+- id: timestampTrade
+  name: Timestamp Trade
+  metadata:
+    description: Sync Markers with timestamp.trade, a new database for sharing markers.
+  version: 0.4-02894d1
+  date: 2024-02-21 04:37:10
+  path: timestampTrade.zip
+  sha256: 1087ceefdd4113be7f11a44b3796249feccb4fa9e254e3d68dd1a114b82f3972
+- id: titleFromFilename
+  name: titleFromFilename
+  metadata:
+    description: Set a scene's title from it's filename
+  version: 1.2-228c294
+  date: 2024-02-06 23:25:44
+  path: titleFromFilename.zip
+  sha256: 0eac47aafa8f37a043b210aff70268e1a165d5394b9888651cde85622deea3bc
+- id: visage
+  name: Visage
+  metadata:
+    description: Use facial Recognition To Lookup Performers.
+  version: 1.0.2-862f16b
+  date: 2024-02-11 08:41:16
+  path: visage.zip
+  sha256: 35668131588286df89668a42e6fa8844c50ac9d847c19a727a0e1e1427fdd269
+  requires:
+    - StashUserscriptLibrary
+- id: Theme-BlackHole
+  name: Theme - BlackHole
+  metadata:
+    description: BlackHole Theme for Stash by BViking78
+  version: 2.0.0-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-BlackHole.zip
+  sha256: 15885a1fc1b419b65fa576b6b8b24ee28852f5b4b69df1b2cc22c647df9bae89
+- id: Theme-ModernDark
+  name: Theme - ModernDark
+  metadata:
+    description: ModernDark Theme for Stash by cj13
+  version: 1.2-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-ModernDark.zip
+  sha256: ab2f231e8d923b5d362e4ee38a171c5b791cc0e2dfbb513504488c4428a94a3d
+- id: Theme-NeonDark
+  name: Theme - NeonDark
+  metadata:
+    description: NeonDark Theme for Stash by Dankonite
+  version: 1.0-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-NeonDark.zip
+  sha256: 32bf6593076317a39f99d4e39dca21147c549f9e572ef34b9725a25f47607ebd
+- id: Theme-Night
+  name: Theme - Night
+  metadata:
+    description: Night Theme for Stash (unknown author)
+  version: 0.1-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-Night.zip
+  sha256: ed73b02811986c15ff164020a6934d291589d9290b85fce1493bcc9d033b8f5f
+- id: Theme-Plex
+  name: Theme - Plex
+  metadata:
+    description: Plex Theme for Stash by Fidelio 2020
+  version: 1.0.5-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-Plex.zip
+  sha256: 8ebdab1b8d933c20fe904b465f89e598455ab508845decc31c17f28ba6c390f8
+- id: Theme-PornHub
+  name: Theme - Pornhub
+  metadata:
+    description: PornHub Theme for Stash by ronilaukkarinen
+  version: 1.0-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-PornHub.zip
+  sha256: 7740a87b98147193fd16306340a4a3528b5d2ac19362211606ce64af0167e253
+- id: Theme-Pulsar
+  name: Theme - Pulsar
+  metadata:
+    description: Plex Theme for Stash by Fonzie 2020-21
+  version: 1.8.1-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-Pulsar.zip
+  sha256: 462230dfe3831090ab61e2eaa02f74002c11f675bbac76f3b236af680d656c8f
+- id: Theme-PulsarLight
+  name: Theme - PulsarLight
+  metadata:
+    description: Plex Theme for Stash by Fonzie 2021
+  version: 0.3.1-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-PulsarLight.zip
+  sha256: 015a9f3c1db44e71447b8deab9ee063a46c16d5ced317b565f794c2c8db77921
+- id: Theme-RoundedYellow
+  name: Theme - Rounded Yellow
+  metadata:
+    description: Theme with rounded corners and yellow accents
+  version: 1.0-228c294
+  date: 2024-02-06 23:25:44
+  path: Theme-RoundedYellow.zip
+  sha256: 67b9b89da7f566e4978e6fcd90b37363bfa6bd7858f410ca3fd45e06654ac2df
