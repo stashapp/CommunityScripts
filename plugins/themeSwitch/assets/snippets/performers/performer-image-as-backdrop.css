@@ -1,0 +1,35 @@
+/* [Performers tab] Place performer image in the background on performer page */
+
+.performer-image-container.col-md-4.text-center {
+  flex: 0 0 0%;
+  max-width: 0%;
+}
+
+#performer-page .performer-image-container .btn.btn-link {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  padding: 0;
+}
+
+#performer-page .performer-image-container .btn.btn-link:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to left,
+    rgba(0, 0, 0, 0) 0%,
+    rgb(0 0 0 / 75%) 100%
+  );
+  z-index: 1;
+}
+
+#performer-page .performer-image-container .performer {
+  max-height: none;
+  max-width: none;
+  width: 100%;
+}

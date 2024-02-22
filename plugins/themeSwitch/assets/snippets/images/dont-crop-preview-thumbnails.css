@@ -1,0 +1,7 @@
+/* [Images tab] Don't crop preview thumbnails */
+
+.flexbin > * > img {
+  object-fit: inherit;
+  max-width: none;
+  min-width: initial;
+}

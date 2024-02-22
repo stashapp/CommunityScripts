@@ -244,16 +244,20 @@
     }
   }
 
-  function applyStyleToHead(key, css) {
-    const styleElement = document.createElement("style");
-    styleElement.setAttribute("type", "text/css");
-    const cssTextNode = document.createTextNode(css);
-    styleElement.id = key;
-    styleElement.appendChild(cssTextNode);
-    document.getElementsByTagName("head")[0].appendChild(styleElement);
+  function addStyleSheet(key, path) {
+    console.log(key, path);
+    const styleSheet = document.createElement("link");
+    styleSheet.setAttribute(
+      "href",
+      `${stash.serverUrl}plugin/themeSwitch/assets${path}`
+    );
+    styleSheet.setAttribute("rel", "stylesheet");
+    styleSheet.setAttribute("type", "text/css");
+    styleSheet.id = key;
+    document.getElementsByTagName("head")[0].appendChild(styleSheet);
   }
 
-  async function applyCSS(category, key, css, pluginId, pluginSrc) {
+  async function applyCSS(category, key, path, pluginId, pluginSrc) {
     if (category === "Themes") {
       // Turn Off old Theme
       let regex = /(themeSwitchPlugin-theme-.*)/;
@@ -271,11 +275,9 @@
           if (element && !pluginId) {
             element.remove();
           } else {
-            const oldTheme = window.themeSwitchCSS.Themes.find(
-              (theme) => theme.key === storageKey
-            );
-            if (oldTheme?.pluginId) {
-              await enablePlugin(oldTheme.pluginId, false);
+            const oldThemePluginId = getDataFromKey(storageKey, "pluginId");
+            if (oldThemePluginId) {
+              await enablePlugin(oldThemePluginId, false);
               setTimeout(() => {
                 location.reload();
               }, 1000);
@@ -288,7 +290,7 @@
 
       if (!theme && key != "themeSwitchPlugin-theme-default") {
         setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+          addStyleSheet(key, path);
         });
       } else if (!theme && key === "themeSwitchPlugin-theme-default") {
         setObject(key, category, true);
@@ -304,8 +306,8 @@
             setTimeout(() => {
               location.reload();
             }, 1000);
-          } else if (css) {
-            applyStyleToHead(key, css);
+          } else if (path) {
+            addStyleSheet(key, path);
           }
         });
       }
@@ -314,10 +316,10 @@
       const storageObject = JSON.parse(localStorage.getItem(key));
       if (!storageObject || storageObject.active === false) {
         setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+          addStyleSheet(key, path);
         });
       } else if (storageObject.active && !document.getElementById(key)) {
-        applyStyleToHead(key, css);
+        addStyleSheet(key, path);
       } else {
         setObject(key, category, false).then(() => {
           document.getElementById(key).remove();
@@ -540,8 +542,8 @@
                   const themeData = {
                     category: category,
                     key: theme.key,
-                    ...(theme.styles
-                      ? { css: theme.styles }
+                    ...(theme.path
+                      ? { path: theme.path }
                       : theme.pluginId
                         ? {
                             pluginId: theme.pluginId,
@@ -558,7 +560,7 @@
                         applyCSS(
                           themeData.category,
                           themeData.key,
-                          themeData.css,
+                          themeData.path,
                           themeData.pluginId,
                           themeData.pluginSrc
                         );
@@ -683,11 +685,11 @@
     });
   }
 
-  function returnCSS(key) {
+  function getDataFromKey(key, field) {
     for (const [, categoryThemes] of Object.entries(window.themeSwitchCSS)) {
       for (const theme of categoryThemes) {
         if (key === theme.key) {
-          return theme.styles;
+          return theme[field];
         }
       }
     }
@@ -714,8 +716,7 @@
         selectedTheme = JSON.parse(localStorage.getItem(key));
         if (selectedTheme.active === true) {
           appliedThemeOtherThanDefault.push("True");
-          const css = returnCSS(key);
-          applyCSS(selectedTheme.category, key, css);
+          applyCSS(selectedTheme.category, key, getDataFromKey(key, "path"));
         }
       }
     }
@@ -765,10 +766,7 @@
     init();
   }
 
-  for (var i = 0; i < StashPages.length; i++) {
-    const page = StashPages[i];
-    stash.addEventListener(page, createMenuAndInit);
-  }
+  stash.addEventListeners(StashPages, createMenuAndInit);
 
   // Reset menuCreated flag on hard refresh
   window.addEventListener("beforeunload", function () {
