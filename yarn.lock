@@ -726,10 +726,10 @@ source-map@~0.6.0:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-stash-plugin-builder@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/stash-plugin-builder/-/stash-plugin-builder-1.0.2.tgz#68886a8890e113452c55d26b7d4b24e24d1af8d0"
-  integrity sha512-xSGzFtEA6/0rKzrSKq65LtUL/tcLBx3hmSuiJ0tKXXooAqwaUlC89GJdtF+wNtzroQj+SvcfSvLuoLGZA82MKg==
+stash-plugin-builder@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/stash-plugin-builder/-/stash-plugin-builder-1.0.3.tgz#bc893a3e5c12ef1d8fbf2da1a4f85bc01f57cc38"
+  integrity sha512-GtWLI5H4IhjumWo3iXmbP9mIoomJe8p3hiR1MbKuPtBU26dEMw0BbJIksx44PdhIisjLr7RLdK5DWFmnTKbW8Q==
   dependencies:
     "@baurine/esbuild-plugin-postcss3" "^0.3.3"
     "@fal-works/esbuild-plugin-global-externals" "^2.1.2"
