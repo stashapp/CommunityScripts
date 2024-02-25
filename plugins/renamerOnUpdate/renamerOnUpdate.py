@@ -27,9 +27,10 @@ except Exception:
 
 
 try:
-    import renamerOnUpdate_config as config
-except Exception:
     import config
+except Exception:
+    print("Could not import ROU config file did you rename the template file to 'config.py'?",file=sys.stderr)
+    
 import log
 
 
