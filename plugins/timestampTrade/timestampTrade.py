@@ -656,10 +656,12 @@ settings = {
     "createGalleryFromScene": False,
     "createMovieFromScene": False,
     "extraUrls": False,
+    "disableSceneMarkersHook": False,
+    "disableGalleryLookupHook": False,
 }
 if "timestampTrade" in config:
     settings.update(config["timestampTrade"])
-log.debug("config: %s " % (settings,))
+log.debug("settings: %s " % (settings,))
 
 
 if "mode" in json_input["args"]:
@@ -700,10 +702,11 @@ if "mode" in json_input["args"]:
         processAll()
 
 elif "hookContext" in json_input["args"]:
-    id = json_input["args"]["hookContext"]["id"]
-    if json_input["args"]["hookContext"]["type"] == "Scene.Update.Post":
-        scene = stash.find_scene(id)
+    _id = json_input["args"]["hookContext"]["id"]
+    _type = json_input["args"]["hookContext"]["type"]
+    if _type == "Scene.Update.Post" and not settings["disableSceneMarkersHook"]:
+        scene = stash.find_scene(_id)
         processScene(scene)
-    if json_input["args"]["hookContext"]["type"] == "Gallery.Update.Post":
-        gallery = stash.find_gallery(id)
+    if _type == "Gallery.Update.Post" and not settings["disableGalleryLookupHook"]:
+        gallery = stash.find_gallery(_id)
         processGallery(gallery)

@@ -244,16 +244,20 @@
     }
   }
 
-  function applyStyleToHead(key, css) {
-    const styleElement = document.createElement("style");
-    styleElement.setAttribute("type", "text/css");
-    const cssTextNode = document.createTextNode(css);
-    styleElement.id = key;
-    styleElement.appendChild(cssTextNode);
-    document.getElementsByTagName("head")[0].appendChild(styleElement);
+  function addStyleSheet(key, path) {
+    console.log(key, path);
+    const styleSheet = document.createElement("link");
+    styleSheet.setAttribute(
+      "href",
+      `${stash.serverUrl}plugin/themeSwitch/assets${path}`
+    );
+    styleSheet.setAttribute("rel", "stylesheet");
+    styleSheet.setAttribute("type", "text/css");
+    styleSheet.id = key;
+    document.getElementsByTagName("head")[0].appendChild(styleSheet);
   }
 
-  function applyCSS(category, key, css, set) {
+  async function applyCSS(category, key, path, pluginId, pluginSrc) {
     if (category === "Themes") {
       // Turn Off old Theme
       let regex = /(themeSwitchPlugin-theme-.*)/;
@@ -268,8 +272,16 @@
         ) {
           setObject(storageKey, category, false);
           let element = document.getElementById(storageKey);
-          if (element) {
+          if (element && !pluginId) {
             element.remove();
+          } else {
+            const oldThemePluginId = getDataFromKey(storageKey, "pluginId");
+            if (oldThemePluginId) {
+              await enablePlugin(oldThemePluginId, false);
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            }
           }
         }
       }
@@ -278,15 +290,25 @@
 
       if (!theme && key != "themeSwitchPlugin-theme-default") {
         setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+          addStyleSheet(key, path);
         });
       } else if (!theme && key === "themeSwitchPlugin-theme-default") {
         setObject(key, category, true);
       } else if (theme && key === "themeSwitchPlugin-theme-default") {
         setObject(key, category, true);
       } else if (theme && key !== "themeSwitchPlugin-theme-default") {
-        setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+        setObject(key, category, true).then(async () => {
+          if (pluginId) {
+            if (!(await isPluginInstalled(pluginId))) {
+              await installPlugin(pluginId, pluginSrc);
+            }
+            await enablePlugin(pluginId, true);
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          } else if (path) {
+            addStyleSheet(key, path);
+          }
         });
       }
     } else {
@@ -294,10 +316,10 @@
       const storageObject = JSON.parse(localStorage.getItem(key));
       if (!storageObject || storageObject.active === false) {
         setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+          addStyleSheet(key, path);
         });
       } else if (storageObject.active && !document.getElementById(key)) {
-        applyStyleToHead(key, css);
+        addStyleSheet(key, path);
       } else {
         setObject(key, category, false).then(() => {
           document.getElementById(key).remove();
@@ -328,6 +350,63 @@
         categoryCollapseClick.classList.remove("expanding");
         categorySpanClick.innerHTML = svgChevDN + category;
       }, 300);
+    }
+  }
+
+  async function getInstalledPlugins() {
+    try {
+      const res = await stash.callGQL({
+        operationName: "Plugins",
+        variables: {},
+        query: "query Plugins{plugins{id}}",
+      });
+      return res.data.plugins.map((plugin) => plugin.id);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function isPluginInstalled(plugin) {
+    const installedPlugins = await getInstalledPlugins();
+    return installedPlugins.includes(plugin);
+  }
+
+  async function enablePlugin(plugin, state) {
+    try {
+      const query = {
+        operationName: "SetPluginsEnabled",
+        variables: {
+          enabledMap: {},
+        },
+        query:
+          "mutation SetPluginsEnabled($enabledMap: BoolMap!) {\n  setPluginsEnabled(enabledMap: $enabledMap)\n}",
+      };
+
+      query.variables.enabledMap[plugin] = state;
+
+      await stash.callGQL(query);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function installPlugin(plugin, src) {
+    try {
+      await stash.callGQL({
+        operationName: "InstallPluginPackages",
+        variables: {
+          packages: [
+            {
+              id: plugin,
+              sourceURL: src,
+            },
+          ],
+        },
+        query:
+          "mutation InstallPluginPackages($packages: [PackageSpecInput!]!) {installPackages(type: Plugin, packages: $packages)}",
+      });
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -381,7 +460,7 @@
           header.className = "modal-header";
           accordion.append(header);
 
-          Object.entries(themeSwitchCSS).forEach(
+          Object.entries(window.themeSwitchCSS).forEach(
             ([category, themesInCategory], i) => {
               const categoryDiv = document.createElement("div");
               categoryDiv.className = "card";
@@ -440,7 +519,7 @@
               fieldset.className = "checkbox-switch";
 
               // Loop over themes in each category
-              Object.entries(themesInCategory).forEach(([themeId, theme]) => {
+              themesInCategory.forEach((theme) => {
                 if (category === "Navigation") {
                 } else {
                   const forRow = document.createElement("div");
@@ -463,17 +542,30 @@
                   const themeData = {
                     category: category,
                     key: theme.key,
-                    css: theme.styles,
+                    ...(theme.path
+                      ? { path: theme.path }
+                      : theme.pluginId
+                        ? {
+                            pluginId: theme.pluginId,
+                            pluginSrc: theme.pluginSrc,
+                          }
+                        : {}),
                   };
 
                   input.setAttribute("id", category + "-" + theme.key);
                   input.addEventListener(
                     "click",
-                    (function (category, key, css) {
-                      return function () {
-                        applyCSS(category, key, css);
+                    (function (themeData) {
+                      return async function () {
+                        applyCSS(
+                          themeData.category,
+                          themeData.key,
+                          themeData.path,
+                          themeData.pluginId,
+                          themeData.pluginSrc
+                        );
                       };
-                    })(themeData.category, themeData.key, themeData.css),
+                    })(themeData),
                     false
                   );
 
@@ -593,11 +685,11 @@
     });
   }
 
-  function returnCSS(key) {
-    for (const [, categoryThemes] of Object.entries(themeSwitchCSS)) {
-      for (const [, theme] of Object.entries(categoryThemes)) {
+  function getDataFromKey(key, field) {
+    for (const [, categoryThemes] of Object.entries(window.themeSwitchCSS)) {
+      for (const theme of categoryThemes) {
         if (key === theme.key) {
-          return theme.styles;
+          return theme[field];
         }
       }
     }
@@ -624,8 +716,7 @@
         selectedTheme = JSON.parse(localStorage.getItem(key));
         if (selectedTheme.active === true) {
           appliedThemeOtherThanDefault.push("True");
-          const css = returnCSS(key);
-          applyCSS(selectedTheme.category, key, css, true);
+          applyCSS(selectedTheme.category, key, getDataFromKey(key, "path"));
         }
       }
     }
@@ -675,10 +766,7 @@
     init();
   }
 
-  for (var i = 0; i < StashPages.length; i++) {
-    const page = StashPages[i];
-    stash.addEventListener(page, createMenuAndInit);
-  }
+  stash.addEventListeners(StashPages, createMenuAndInit);
 
   // Reset menuCreated flag on hard refresh
   window.addEventListener("beforeunload", function () {

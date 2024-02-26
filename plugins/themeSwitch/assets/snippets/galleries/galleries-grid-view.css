@@ -1,0 +1,13 @@
+/* [Galleries tab] Grid view for galleries */
+
+.col.col-sm-6.mx-auto.table .d-none.d-sm-block {
+  display: none !important;
+}
+.col.col-sm-6.mx-auto.table .w-100.w-sm-auto {
+  width: 175px !important;
+  background-color: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
+}
+.col.col-sm-6.mx-auto.table tr {
+  display: inline-table;
+}

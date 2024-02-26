@@ -1,0 +1,5 @@
+/* [Scenes tab] Hide scene specs (resolution, duration) from scene card */
+
+.scene-specs-overlay {
+  display: none;
+}
