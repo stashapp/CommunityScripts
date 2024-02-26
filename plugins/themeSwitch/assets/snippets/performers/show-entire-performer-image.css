@@ -1,0 +1,5 @@
+/* [Performers tab] Show entire performer image in performer card */
+
+.performer.image {
+  background-size: contain !important;
+}

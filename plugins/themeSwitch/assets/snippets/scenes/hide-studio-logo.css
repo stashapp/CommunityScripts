@@ -1,0 +1,5 @@
+/* [Scenes tab] Hide studio logo/text from scene card */
+
+.scene-studio-overlay {
+  display: none;
+}

@@ -1,0 +1,14 @@
+/* [Movies tab] Better Movie layout for desktops: Regular size poster */
+
+.movie-details.mb-3.col.col-xl-4.col-lg-6 {
+  flex-basis: 70%;
+}
+.col-xl-8.col-lg-6 {
+  flex-basis: 30%;
+}
+.movie-images {
+  flex-wrap: wrap;
+}
+.movie-image-container {
+  flex: 0 0 500px;
+}
