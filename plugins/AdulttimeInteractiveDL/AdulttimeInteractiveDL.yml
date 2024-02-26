@@ -7,12 +7,12 @@ exec:
   - "{pluginDir}/AdulttimeInteractiveDL.py"
 interface: raw
 tasks:
-  - name: 'Download'
-    description: 'Download Interactive Files from Adulttime Scenes'
+  - name: "Download"
+    description: "Download Interactive Files from Adulttime Scenes"
     defaultArgs:
       mode: download
-  - name: 'Clear Cache'
-    description: 'Clean cached JSON Answers and Interactive Cache'
+  - name: "Clear Cache"
+    description: "Clean cached JSON Answers and Interactive Cache"
     defaultArgs:
       mode: cacheclean
 hooks:
