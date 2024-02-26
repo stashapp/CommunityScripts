@@ -30,6 +30,7 @@ except ModuleNotFoundError:
         "You need to install the stashapi module. (pip install stashapp-tools)",
         file=sys.stderr,
     )
+    return
 
 FAKTORCONV = 6.25
 FRAGMENT = json.loads(sys.stdin.read())
