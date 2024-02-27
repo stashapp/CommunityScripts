@@ -30,7 +30,7 @@ import log
 try:
     import config
 except Exception:
-    log.LogWarning("Could not import ROU config file, did you rename the template file to 'config.py'? Defaulting to template config file",file=sys.stderr)
+    log.LogWarning("Could not import ROU config file, did you rename the template file to 'config.py'? Defaulting to template config file")
     import renamerOnUpdate_config as config
 
 
