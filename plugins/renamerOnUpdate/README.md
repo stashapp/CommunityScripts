@@ -17,23 +17,24 @@ All credit to Belley for all of his work over the years... and v3 is coming soon
 - [*renamerOnUpdate*](#renameronupdate)
 	- [Table of Contents](#table-of-contents)
 - [Requirement](#requirement)
-- [Installation](#installation)
-		- [:exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:](#exclamation-make-sure-to-configure-the-plugin-by-editing-configpy-before-running-it-exclamation)
+- [Installation (manually)](#installation-manually) - ❗ Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it ❗
+- [Installation (via manager)](#installation-via-manager) - ❗ Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it ❗
 - [Usage](#usage)
 - [Configuration](#configuration)
-- [Config.py explained](#configpy-explained)
+- [Custom configuration file](#custom-configuration-file)
+- [renamerOnUpdate_config.py explained](#renameronupdate_configpy-explained)
 	- [Template](#template)
-	- [- You can find the list of available variables in `config.py`](#--you-can-find-the-list-of-available-variables-in-configpy)
+	  - [You can find the list of available variables in `renamerOnUpdate_config.py`](#--you-can-find-the-list-of-available-variables-in-renameronppdate_configpy)
 	- [Filename](#filename)
-		- [- Based on a Tag](#--based-on-a-tag)
-		- [- Based on a Studio](#--based-on-a-studio)
-		- [- Change filename no matter what](#--change-filename-no-matter-what)
+		- [Based on a Tag](#--based-on-a-tag)
+		- [Based on a Studio](#--based-on-a-studio)
+		- [Change filename no matter what](#--change-filename-no-matter-what)
 	- [Path](#path)
-		- [- Based on a Tag](#--based-on-a-tag-1)
-		- [- Based on a Studio](#--based-on-a-studio-1)
-		- [- Based on a Path](#--based-on-a-path)
-		- [- Change path no matter what](#--change-path-no-matter-what)
-		- [- Special Variables](#--special-variables)
+		- [Based on a Tag](#--based-on-a-tag-1)
+		- [Based on a Studio](#--based-on-a-studio-1)
+		- [Based on a Path](#--based-on-a-path)
+		- [Change path no matter what](#--change-path-no-matter-what)
+		- [Special Variables](#--special-variables)
 	- [Advanced](#advanced)
 		- [Groups](#groups)
 	- [Option](#option)
@@ -48,14 +49,22 @@ All credit to Belley for all of his work over the years... and v3 is coming soon
 - Python 3.6+ (Tested LIGHTLY on Python v3.11 Linux)
 - Request Module (https://pypi.org/project/requests/)
 
-# Installation
+# Installation (manually)
 
-- Download the whole folder '**renamerOnUpdate**' (config.py, log.py, renamerOnUpdate.py/.yml)
+- Download the whole folder '**renamerOnUpdate**' (renamerOnUpdate_config.py, log.py, renamerOnUpdate.py/.yml)
 - Place it in your **plugins** folder (where the `config.yml` is)
 - Reload plugins (Settings > Plugins > Reload)
 - *renamerOnUpdate* appears
 
-### :exclamation: Make sure to configure the plugin by editing `config.py` before running it :exclamation:
+### :exclamation: Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it :exclamation:
+
+# Installation (via manager)
+
+- Go to Settings > Plugins
+- Find **Available Plugins** and expand the package called **Community (stable)**.
+- Select `renamerOnUpdate` and click **Install**
+
+### :exclamation: Make sure to configure the plugin by editing `renamerOnUpdate_config.py` before running it :exclamation:
 
 # Usage
 
@@ -66,11 +75,11 @@ All credit to Belley for all of his work over the years... and v3 is coming soon
 
 - By pressing the button in the Task menu.
     - It will go through each of your scenes. 
-    - `:warning:` It's recommended to understand correctly how this plugin works, and use **DryRun** first.
+    - :warning: It's recommended to understand correctly how this plugin works, and use **DryRun** first.
 
 # Configuration
 
-- Read/Edit `config.py`
+- Read/Edit `renamerOnUpdate_config.py`
 	- Change template filename/path
 	- Add `log_file` path
 
@@ -82,18 +91,28 @@ All credit to Belley for all of his work over the years... and v3 is coming soon
 - Dry-run mode:
 	- It prevents editing the file, only shows in your log.
 	- This mode can write into a file (`dryrun_renamerOnUpdate.txt`), the change that the plugin will do.
-		- You need to set a path for `log_file` in `config.py`
+		- You need to set a path for `log_file` in `renamerOnUpdate_config.py`
 		- The format will be: `scene_id|current path|new path`. (e.g. `100|C:\Temp\foo.mp4|C:\Temp\bar.mp4`)
 		- This file will be overwritten everytime the plugin is triggered.
 
-# Config.py explained
+# Custom configuration file
+
+Due to the nature of how plugin updates work, your `renamerOnUpdate_config.py` file will get replaced with the fresh copy resetting it to default values. To work around that you can create a custom config file and use it instead.
+
+- Create a copy of `renamerOnUpdate_config.py`
+- Rename your copy to `config.py`
+- Use the `config.py`(it will default to `renamerOnUpdate_config.py` if not found)
+
+> **Note**: Since `config.py` file is not tracked it won't get updated with new configuration options, so you will need to update it manually. 
+
+# renamerOnUpdate_config.py explained
 ## Template
 To modify your path/filename, you can use **variables**. These are elements that will change based on your **metadata**.
 
  - Variables are represented with a word preceded with a `$` symbol. (E.g. `$date`)
  - If the metadata exists, this term will be replaced by it:
 	 - Scene date = 2006-01-02, `$date` = 2006-01-02
- - You can find the list of available variables in `config.py`
+ - You can find the list of available variables in `renamerOnUpdate_config.py`
 -----
 In the example below, we will use:
 - Path: `C:\Temp\QmlnQnVja0J1bm55.mp4`
