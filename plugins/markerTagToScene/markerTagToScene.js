@@ -6,8 +6,7 @@ function ok() {
 
 function includes(haystack, needle) {
   for (var i = 0; i < haystack.length; ++i) {
-    if (haystack[i] == needle)
-      return true;
+    if (haystack[i] == needle) return true;
   }
   return false;
 }
@@ -22,7 +21,7 @@ function mapSceneTagsToIds(sceneTags) {
 
 function shouldHandleAllTags() {
   var query =
-"query Query {\
+    "query Query {\
   configuration {\
     plugins\
   }\
@@ -40,21 +39,18 @@ function shouldHandleAllTags() {
     //log.Info("all tags wasn't found. defaulting to false");
     return false;
   }
-
 }
 
 function processMarker(marker, shouldHandleAllTags) {
-  log.Debug("processMarker (allTags = " + shouldHandleAllTags + ") " + marker)
+  log.Debug("processMarker (allTags = " + shouldHandleAllTags + ") " + marker);
   var primaryTagID = marker.primary_tag_id;
   var sceneID = marker.scene_id;
 
   var tagIDsToCheck = [];
-  if (primaryTagID != null)
-    tagIDsToCheck.push(primaryTagID)
+  if (primaryTagID != null) tagIDsToCheck.push(primaryTagID);
 
   if (shouldHandleAllTags && marker.tag_ids != null)
-    tagIDsToCheck = tagIDsToCheck.concat(marker.tag_ids)
-
+    tagIDsToCheck = tagIDsToCheck.concat(marker.tag_ids);
 
   // we can't currently find scene markers. If it's not in the input
   // then just return
@@ -65,11 +61,10 @@ function processMarker(marker, shouldHandleAllTags) {
 
   // get the existing scene tags
   var sceneTags = mapSceneTagsToIds(getSceneTags(sceneID));
-  var newTags = []
+  var newTags = [];
   for (var i = 0; i < tagIDsToCheck.length; ++i) {
     var tag = tagIDsToCheck[i];
-    if (!includes(sceneTags, tag))
-      newTags.push(tag);
+    if (!includes(sceneTags, tag)) newTags.push(tag);
   }
 
   if (newTags.length == 0) {
@@ -90,18 +85,20 @@ function main() {
     allMarkers = getAllMarkers();
     //The markers come back as {primary_tag: { id: 600 } }
     //but processMarker (because of the hook) expects 'primary_tag_id', so transform it here
-    log.Info("markerTagToScene has " + allMarkers.length + " markers to process")
+    log.Info(
+      "markerTagToScene has " + allMarkers.length + " markers to process"
+    );
     for (var i = 0; i < allMarkers.length; ++i) {
       marker = allMarkers[i];
-      var sceneMarker = {}
+      var sceneMarker = {};
       sceneMarker.id = marker.id;
       sceneMarker.scene_id = marker.scene.id;
       sceneMarker.primary_tag_id = marker.primary_tag.id;
-      tag_ids = []
+      tag_ids = [];
       for (j = 0; j < marker.tags.length; ++j) {
         tag_ids.push(marker.tags[j].id);
       }
-      sceneMarker.tag_ids = tag_ids
+      sceneMarker.tag_ids = tag_ids;
       //log.Info(sceneMarker);
       processMarker(sceneMarker, allTags);
       log.Progress(i / allMarkers.length);
@@ -109,14 +106,15 @@ function main() {
     log.Progress("Finished processing markers");
   } else if (input.args.mode == "hook") {
     log.Info("Mode is hook");
-    processMarker(input.Args.hookContext.input, shouldHandleAllTags())
+    processMarker(input.Args.hookContext.input, shouldHandleAllTags());
   } else {
     log.Error("Unknown mode");
   }
 }
 
 function getAllMarkers() {
-  var query = "\
+  var query =
+    "\
 query Query($filter: FindFilterType) {\
   findSceneMarkers (filter: $filter) {\
     scene_markers {\
@@ -133,7 +131,7 @@ query Query($filter: FindFilterType) {\
     }\
   }\
 }";
-  var variables = { 'filter': { 'per_page': -1 } };
+  var variables = { filter: { per_page: -1 } };
   var result = gql.Do(query, variables);
   var findSceneMarkers = result.findSceneMarkers;
   if (findSceneMarkers) {
@@ -142,7 +140,8 @@ query Query($filter: FindFilterType) {\
 }
 
 function getSceneTags(sceneID) {
-  var query = "\
+  var query =
+    "\
 query findScene($id: ID) {\
   findScene(id: $id) {\
     tags {\
@@ -152,7 +151,7 @@ query findScene($id: ID) {\
 }";
 
   var variables = {
-    id: sceneID
+    id: sceneID,
   };
 
   var result = gql.Do(query, variables);
@@ -165,7 +164,8 @@ query findScene($id: ID) {\
 }
 
 function setSceneTags(sceneID, tagIDs) {
-  var mutation = "\
+  var mutation =
+    "\
 mutation sceneUpdate($input: SceneUpdateInput!) {\
   sceneUpdate(input: $input) {\
     id\
@@ -175,8 +175,8 @@ mutation sceneUpdate($input: SceneUpdateInput!) {\
   var variables = {
     input: {
       id: sceneID,
-      tag_ids: tagIDs
-    }
+      tag_ids: tagIDs,
+    },
   };
 
   gql.Do(mutation, variables);
