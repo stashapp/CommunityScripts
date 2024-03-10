@@ -29,15 +29,15 @@ title
 date
 tags { id }
 files {
-	size
-	path
-	width
-	height
-	bit_rate
-	created_at
-	duration
-	frame_rate
-	video_codec
+    size
+    path
+    width
+    height
+    bit_rate
+    created_at
+    duration
+    frame_rate
+    video_codec
 }
 """
 
@@ -59,7 +59,7 @@ def main():
     if MODE == "clean_scenes":
         clean_scenes()
     if MODE == "generate_phash":
-		stash.metadata_generate({"phashes": True})
+        stash.metadata_generate({"phashes": True})
 
     log.exit("Plugin exited normally.")
 
