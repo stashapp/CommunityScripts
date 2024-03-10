@@ -59,7 +59,7 @@ def main():
     if MODE == "clean_scenes":
         clean_scenes()
     if MODE == "generate_phash":
-        generate_phash()
+		stash.metadata_generate({"phashes": True})
 
     log.exit("Plugin exited normally.")
 
@@ -276,15 +276,6 @@ def get_managed_tags(fragment="id name"):
         if tag := stash.find_tag(tag_name):
             tags.append(tag)
     return tags
-
-
-def generate_phash():
-    query = """mutation MetadataGenerate($input: GenerateMetadataInput!) {
-		metadataGenerate(input: $input)
-	}"""
-    variables = {"phashes": True}
-    stash._callGraphQL(query, variables)
-
 
 if __name__ == "__main__":
     for name, func in getmembers(config, isfunction):
