@@ -85,38 +85,19 @@ class Stash extends EventTarget {
       }
     );
     stashListener.addEventListener("response", (evt) => {
-      if (evt.detail.data?.plugins) {
-        this.getPluginVersion(evt.detail);
-      }
       this.processRemoteScenes(evt.detail);
       this.processScene(evt.detail);
       this.processScenes(evt.detail);
       this.processStudios(evt.detail);
       this.processPerformers(evt.detail);
-      this.processApiKey(evt.detail);
       this.dispatchEvent(
         new CustomEvent("stash:response", {
           detail: evt.detail,
         })
       );
     });
-    stashListener.addEventListener("pluginVersion", (evt) => {
-      if (this.pluginVersion !== evt.detail) {
-        this.pluginVersion = evt.detail;
-        this.dispatchEvent(
-          new CustomEvent("stash:pluginVersion", {
-            detail: evt.detail,
-          })
-        );
-      }
-    });
     this.version = [0, 0, 0];
     this.getVersion();
-    this.pluginVersion = null;
-    this.getPlugins().then((plugins) => this.getPluginVersion(plugins));
-    this.visiblePluginTasks = ["Userscript Functions"];
-    this.settingsCallbacks = [];
-    this.settingsId = "userscript-settings";
     this.remoteScenes = {};
     this.scenes = {};
     this.studios = {};
@@ -145,20 +126,6 @@ class Stash extends EventTarget {
   compareVersion(minVersion) {
     let [currMajor, currMinor, currPatch = 0] = this.version;
     let [minMajor, minMinor, minPatch = 0] = minVersion
-      .split(".")
-      .map((i) => parseInt(i));
-    if (currMajor > minMajor) return 1;
-    if (currMajor < minMajor) return -1;
-    if (currMinor > minMinor) return 1;
-    if (currMinor < minMinor) return -1;
-    return 0;
-  }
-  comparePluginVersion(minPluginVersion) {
-    if (!this.pluginVersion) return -1;
-    let [currMajor, currMinor, currPatch = 0] = this.pluginVersion
-      .split(".")
-      .map((i) => parseInt(i));
-    let [minMajor, minMinor, minPatch = 0] = minPluginVersion
       .split(".")
       .map((i) => parseInt(i));
     if (currMajor > minMajor) return 1;
@@ -261,19 +228,6 @@ class Stash extends EventTarget {
     };
     return this.callGQL(reqData);
   }
-  async getPluginVersion(plugins) {
-    let version = null;
-    for (const plugin of plugins?.data?.plugins || []) {
-      if (plugin.id === "userscript_functions") {
-        version = plugin.version;
-      }
-    }
-    stashListener.dispatchEvent(
-      new CustomEvent("pluginVersion", {
-        detail: version,
-      })
-    );
-  }
   async getStashBoxes() {
     const reqData = {
       operationName: "Configuration",
@@ -312,158 +266,6 @@ class Stash extends EventTarget {
       fragment
     );
     return href.match(regexp) != null;
-  }
-  createSettings() {
-    waitForElementId(
-      "configuration-tabs-tabpane-system",
-      async (elementId, el) => {
-        let section;
-        if (!document.getElementById(this.settingsId)) {
-          section = document.createElement("div");
-          section.setAttribute("id", this.settingsId);
-          section.classList.add("setting-section");
-          section.innerHTML = `<h1>Userscript Settings</h1>`;
-          el.appendChild(section);
-
-          const expectedApiKey =
-            (await this.getApiKey())?.data?.configuration?.general?.apiKey ||
-            "";
-          const expectedUrl = window.location.origin;
-
-          const serverUrlInput = await this.createSystemSettingTextbox(
-            section,
-            "userscript-section-server-url",
-            "userscript-server-url",
-            "Stash Server URL",
-            "",
-            "Server URL…",
-            true
-          );
-          serverUrlInput.addEventListener("change", () => {
-            const value = serverUrlInput.value || "";
-            if (value) {
-              this.updateConfigValueTask("STASH", "url", value);
-              alert(`Userscripts plugin server URL set to ${value}`);
-            } else {
-              this.getConfigValueTask("STASH", "url").then((value) => {
-                serverUrlInput.value = value;
-              });
-            }
-          });
-          serverUrlInput.disabled = true;
-          serverUrlInput.value = expectedUrl;
-          this.getConfigValueTask("STASH", "url").then((value) => {
-            if (value !== expectedUrl) {
-              return this.updateConfigValueTask("STASH", "url", expectedUrl);
-            }
-          });
-
-          const apiKeyInput = await this.createSystemSettingTextbox(
-            section,
-            "userscript-section-server-apikey",
-            "userscript-server-apikey",
-            "Stash API Key",
-            "",
-            "API Key…",
-            true
-          );
-          apiKeyInput.addEventListener("change", () => {
-            const value = apiKeyInput.value || "";
-            this.updateConfigValueTask("STASH", "api_key", value);
-            if (value) {
-              alert(`Userscripts plugin server api key set to ${value}`);
-            } else {
-              alert(`Userscripts plugin server api key value cleared`);
-            }
-          });
-          apiKeyInput.disabled = true;
-          apiKeyInput.value = expectedApiKey;
-          this.getConfigValueTask("STASH", "api_key").then((value) => {
-            if (value !== expectedApiKey) {
-              return this.updateConfigValueTask(
-                "STASH",
-                "api_key",
-                expectedApiKey
-              );
-            }
-          });
-        } else {
-          section = document.getElementById(this.settingsId);
-        }
-
-        for (const callback of this.settingsCallbacks) {
-          callback(this.settingsId, section);
-        }
-
-        if (this.pluginVersion) {
-          this.dispatchEvent(
-            new CustomEvent("stash:pluginVersion", {
-              detail: this.pluginVersion,
-            })
-          );
-        }
-      }
-    );
-  }
-  addSystemSetting(callback) {
-    const section = document.getElementById(this.settingsId);
-    if (section) {
-      callback(this.settingsId, section);
-    }
-    this.settingsCallbacks.push(callback);
-  }
-  async createSystemSettingCheckbox(
-    containerEl,
-    settingsId,
-    inputId,
-    settingsHeader,
-    settingsSubheader
-  ) {
-    const section = document.createElement("div");
-    section.setAttribute("id", settingsId);
-    section.classList.add("card");
-    section.style.display = "none";
-    section.innerHTML = `<div class="setting">
-        <div>
-        <h3>${settingsHeader}</h3>
-        <div class="sub-heading">${settingsSubheader}</div>
-        </div>
-        <div>
-        <div class="custom-control custom-switch">
-        <input type="checkbox" id="${inputId}" class="custom-control-input">
-        <label title="" for="${inputId}" class="custom-control-label"></label>
-        </div>
-        </div>
-        </div>`;
-    containerEl.appendChild(section);
-    return document.getElementById(inputId);
-  }
-  async createSystemSettingTextbox(
-    containerEl,
-    settingsId,
-    inputId,
-    settingsHeader,
-    settingsSubheader,
-    placeholder,
-    visible
-  ) {
-    const section = document.createElement("div");
-    section.setAttribute("id", settingsId);
-    section.classList.add("card");
-    section.style.display = visible ? "flex" : "none";
-    section.innerHTML = `<div class="setting">
-        <div>
-        <h3>${settingsHeader}</h3>
-        <div class="sub-heading">${settingsSubheader}</div>
-        </div>
-        <div>
-        <div class="flex-grow-1 query-text-field-group">
-        <input id="${inputId}" class="bg-secondary text-white border-secondary form-control" placeholder="${placeholder}">
-        </div>
-        </div>
-        </div>`;
-    containerEl.appendChild(section);
-    return document.getElementById(inputId);
   }
   get serverUrl() {
     return window.location.origin + baseURL;
@@ -1086,7 +888,6 @@ class Stash extends EventTarget {
       },
       "stash:page:settings:tasks": {
         regex: /settings\?tab=tasks/,
-        callback: () => this.hidePluginTasks(),
       },
       "stash:page:settings:library": {
         regex: /settings\?tab=library/,
@@ -1105,7 +906,6 @@ class Stash extends EventTarget {
       },
       "stash:page:settings:system": {
         regex: /settings\?tab=system/,
-        callback: () => this.createSettings(),
       },
       "stash:page:settings:plugins": {
         regex: /settings\?tab=plugins/,
@@ -1243,73 +1043,6 @@ class Stash extends EventTarget {
     events.forEach((event) => {
       this.addEventListener(event, callback, ...options);
     });
-  }
-  hidePluginTasks() {
-    // hide userscript functions plugin tasks
-    waitForElementByXpath(
-      "//div[@id='tasks-panel']//h3[text()='Userscript Functions']/ancestor::div[contains(@class, 'setting-group')]",
-      (elementId, el) => {
-        const tasks = el.querySelectorAll(".setting");
-        for (const task of tasks) {
-          const taskName = task.querySelector("h3").innerText;
-          task.classList.add(
-            this.visiblePluginTasks.indexOf(taskName) === -1
-              ? "d-none"
-              : "d-flex"
-          );
-          this.dispatchEvent(
-            new CustomEvent("stash:plugin:task", {
-              detail: {
-                taskName,
-                task,
-              },
-            })
-          );
-        }
-      }
-    );
-  }
-  async updateConfigValueTask(sectionKey, propName, value) {
-    return this.runPluginTask("userscript_functions", "Update Config Value", [
-      {
-        key: "section_key",
-        value: {
-          str: sectionKey,
-        },
-      },
-      {
-        key: "prop_name",
-        value: {
-          str: propName,
-        },
-      },
-      {
-        key: "value",
-        value: {
-          str: value,
-        },
-      },
-    ]);
-  }
-  async getConfigValueTask(sectionKey, propName) {
-    await this.runPluginTask("userscript_functions", "Get Config Value", [
-      {
-        key: "section_key",
-        value: {
-          str: sectionKey,
-        },
-      },
-      {
-        key: "prop_name",
-        value: {
-          str: propName,
-        },
-      },
-    ]);
-
-    // poll logs until plugin task output appears
-    const prefix = `[Plugin / Userscript Functions] get_config_value: [${sectionKey}][${propName}] =`;
-    return this.pollLogsForMessage(prefix);
   }
   async pollLogsForMessage(prefix) {
     const reqTime = Date.now();
@@ -1547,11 +1280,6 @@ class Stash extends EventTarget {
       for (const performer of data.data.findPerformers.performers) {
         this.performers[performer.id] = performer;
       }
-    }
-  }
-  processApiKey(data) {
-    if (data.data.generateAPIKey != null && this.pluginVersion) {
-      this.updateConfigValueTask("STASH", "api_key", data.data.generateAPIKey);
     }
   }
   parseSearchItem(searchItem) {
