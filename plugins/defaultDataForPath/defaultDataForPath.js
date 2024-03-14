@@ -158,7 +158,9 @@ function getScenePath(ID) {
     "\
 query findScene($id: ID) {\
     findScene(id: $id) {\
-        path\
+        files {\
+            path\
+        }\
     }\
 }";
 
@@ -172,7 +174,7 @@ query findScene($id: ID) {\
     return null;
   }
 
-  var path = findScene.path;
+  var path = findScene.files[0].path;
   return path;
 }
 
