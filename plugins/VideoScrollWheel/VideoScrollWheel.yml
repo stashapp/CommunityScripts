@@ -1,7 +1,11 @@
 name: VideoScrollWheel
 description: Adds functionality to change volume/time in scene video player by hovering over left/right side of player and scrolling with mouse scrollwheel. Scroll while hovering on left side to adjust volume, scroll on right side to skip forward/back.
-version: 0.1
+version: 0.2
 settings:
+  allowVolumeChange:
+    displayName: Volume change via mouse wheel
+    description: Allow volume to be changed via mouse wheel. When disabled it always changes video position.
+    type: BOOLEAN
   volumeScrollSpeed:
     displayName: Volume Scroll Speed
     description: (Default=100.0) Scales the amount of change in volume per mouse wheel click. Negative value reverses scroll direction.
