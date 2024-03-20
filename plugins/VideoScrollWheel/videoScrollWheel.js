@@ -12,6 +12,7 @@
   let scrollVelocity = 1;
   let previousTime = Date.now();
   let pluginSettings = {
+    allowVolumeChange: false,
     volumeScrollSpeed: 100.0,
     timeScrollSpeed: 100.0,
     timeScrollAcceleration: 100.0,
@@ -46,7 +47,7 @@
 
     var scrollDelta = e.deltaY;
 
-    if (targetWidth / 2 > targetX) {
+    if (targetWidth / 2 > targetX && pluginSettings.allowVolumeChange) {
       // Scrolled on left side, change volume.
       var newVolume =
         vjsPlayer.volume() +
