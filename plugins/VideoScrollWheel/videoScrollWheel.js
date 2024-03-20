@@ -47,7 +47,7 @@
 
     var scrollDelta = e.deltaY;
 
-    if ((targetWidth / 2 > targetX) && pluginSettings.allowVolumeChange)  {
+    if (targetWidth / 2 > targetX && pluginSettings.allowVolumeChange) {
       // Scrolled on left side, change volume.
       var newVolume =
         vjsPlayer.volume() +
