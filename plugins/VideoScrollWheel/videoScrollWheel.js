@@ -12,7 +12,7 @@
   let scrollVelocity = 1;
   let previousTime = Date.now();
   let pluginSettings = {
-	allowVolumeChange: false,
+    allowVolumeChange: false,
     volumeScrollSpeed: 100.0,
     timeScrollSpeed: 100.0,
     timeScrollAcceleration: 100.0,
