@@ -19,6 +19,7 @@ scrapers={}
 
 def processImages(img):
     log.debug("image: %s" % (img,))
+    image_data=None
     for file in [x["path"] for x in img["visual_files"]]:
         if settings["path"] in file:
             index_file = Path(Path(file).parent) / (Path(file).stem + ".json")
@@ -27,10 +28,14 @@ def processImages(img):
                 log.debug("loading index file %s" % (index_file,))
                 with open(index_file) as f:
                     index = json.load(f)
-
                     index["id"] = img["id"]
-
-                    stash.update_image(index)
+                    if image_data:
+                        image_data["gallery_ids"].extend(index["gallery_ids"])
+                    else:
+                        image_data = index
+    if image_data:
+#        log.debug(image_data)
+        stash.update_image(image_data)
 
 
 def processPerformers():
@@ -59,8 +64,6 @@ def processPerformer(performer):
 
 
 def get_stashbox(endpoint):
-    #    if endpoint in stash_boxes:
-    #        return stash_boxes[endpoint]
     for sbx_config in stash.get_configuration()["general"]["stashBoxes"]:
         if sbx_config["endpoint"] == endpoint:
             stashbox = StashBoxInterface(
@@ -305,19 +308,27 @@ def processQueue():
                 ]["queue"].removeprefix(settings["queue"])
             },
         )
-        stash.run_plugin_task("stashdb-performer-gallery", "Process Performers")
+        stash.run_plugin_task("stashdb-performer-gallery", "Process Performers", args={"full": False})
 
 
-def relink_images():
-    query={
+def relink_images(performer_id=None):
+    query = {
             "path": {"modifier": "INCLUDES", "value": settings["path"]},
-                "is_missing": "galleries"
         }
-    total = stash.find_images(f=query,get_count=True)[0]
+    if performer_id==None:
+        query["is_missing"] = "galleries"
+        query['path']={"modifier": "INCLUDES", "value": settings["path"]}
+    else:
+        query['path']={"modifier": "INCLUDES", "value": str(Path(settings["path"]) / performer_id / )  }
+#    else:
+#        query["file_count"] = {"modifier": "NOT_EQUALS", "value": 1}
+
+
+    total = stash.find_images(f=query, get_count=True)[0]
     i = 0
-    images=[]
+    images = []
     while i < total:
-        images = stash.find_images(f=query,filter={"page": 0, "per_page": per_page})
+        images = stash.find_images(f=query, filter={"page": 0, "per_page": per_page})
         for img in images:
             log.debug('image: %s' %(img,))
             processImages(img)
@@ -354,10 +365,10 @@ if "mode" in json_input["args"]:
         p = stash.find_performer(json_input["args"]["performer"])
         if tag_stashbox_performer_gallery in [x["id"] for x in p["tags"]]:
             processPerformer(p)
-        stash.metadata_scan(paths=[settings["path"]])
-        stash.run_plugin_task(
-            "stashdb-performer-gallery", "relink missing images", args={}
-        )
+            stash.metadata_scan(paths=[settings["path"]])
+            stash.run_plugin_task(
+                "stashdb-performer-gallery", "relink missing images", args={'performer_id':p['id']}
+            )
     elif "processPerformers" in PLUGIN_ARGS:
         processPerformers()
         stash.metadata_scan([settings["path"]])
@@ -365,7 +376,10 @@ if "mode" in json_input["args"]:
             "stashdb-performer-gallery", "relink missing images", args={}
         )
     elif "processImages" in PLUGIN_ARGS:
-        relink_images()
+        if "performer_id" in json_input["args"]:
+            relink_images(performer_id=json_input["args"]["performer_id"])
+        else:
+            relink_images()
 
 
 elif "hookContext" in json_input["args"]:
