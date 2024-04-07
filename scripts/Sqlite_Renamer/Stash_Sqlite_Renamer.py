@@ -271,13 +271,6 @@ def edit_db(query_filename, optional_query=""):
                                 "{}|{}|{}\n".format(scene_ID, current_path, new_path),
                                 file=open("rename_log.txt", "a", encoding="utf-8"),
                             )
-
-                        # Database rename
-                        cursor.execute(
-                            "UPDATE scenes SET path=? WHERE id=?;", [new_path, scene_ID]
-                        )
-                        sqliteConnection.commit()
-                        logPrint("[SQLITE] Datebase Updated!")
                     else:
                         logPrint(
                             "[OS] File failed to rename ? ({})".format(current_filename)
