@@ -8,9 +8,6 @@
   "yaml.format.printWidth": 120,
   "yaml.format.proseWrap": "always",
   "yaml.schemas": {
-    "schema/plugin.schema.json": [
-      "/plugins/**",
-      "/themes/**"
-    ]
+    "schema/plugin.schema.json": ["/plugins/**", "/themes/**"]
   }
 }

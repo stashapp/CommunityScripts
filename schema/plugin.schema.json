@@ -5,9 +5,7 @@
   "description": "A stash plugin config",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "name"
-  ],
+  "required": ["name"],
   "properties": {
     "name": {
       "title": "Plugin name",
@@ -17,28 +15,18 @@
     "description": {
       "title": "Plugin description",
       "description": "Short description of the plugin.",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "version": {
       "title": "Plugin version",
       "description": "Format: x.y.z where x y and z are integers.",
-      "type": [
-        "string",
-        "integer",
-        "number"
-      ],
+      "type": ["string", "integer", "number"],
       "pattern": "^\\d+(\\.\\d+)?(\\.\\d+)?$"
     },
     "url": {
       "title": "Url",
       "description": "Optional url",
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "ui": {
       "title": "Plugin UI",
@@ -57,11 +45,7 @@
       "title": "Plugin interface",
       "description": "For external plugin tasks, the interface field must be set to one of the following values: rpc, raw\n\nFor embedded plugins, the interface field must be set to one of the following values: js\n\nThe interface field defaults to raw if not provided.",
       "type": "string",
-      "enum": [
-        "js",
-        "raw",
-        "rpc"
-      ],
+      "enum": ["js", "raw", "rpc"],
       "default": "raw"
     },
     "hooks": {
@@ -94,14 +78,10 @@
       "additionalProperties": false,
       "anyOf": [
         {
-          "required": [
-            "css"
-          ]
+          "required": ["css"]
         },
         {
-          "required": [
-            "javascript"
-          ]
+          "required": ["javascript"]
         }
       ],
       "properties": {
@@ -202,20 +182,14 @@
     },
     "HookConfig": {
       "type": "object",
-      "required": [
-        "name",
-        "triggeredBy"
-      ],
+      "required": ["name", "triggeredBy"],
       "properties": {
         "name": {
           "type": "string",
           "description": "Hook name"
         },
         "description": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Optional description for this hook"
         },
         "triggeredBy": {
@@ -284,9 +258,7 @@
     },
     "TaskConfig": {
       "type": "object",
-      "required": [
-        "name"
-      ],
+      "required": ["name"],
       "properties": {
         "name": {
           "type": "string",
@@ -318,50 +290,34 @@
         "": {
           "type": "object",
           "description": "Internal name",
-          "required": [
-            "displayName",
-            "type"
-          ],
+          "required": ["displayName", "type"],
           "properties": {
             "displayName": {
               "type": "string",
               "description": "Name to display in the UI"
             },
             "description": {
-              "type": [
-                "string",
-                "null"
-              ],
+              "type": ["string", "null"],
               "description": "Optional description for this setting"
             },
             "type": {
               "type": "string",
               "description": "Type of the attribute to show in the UI. It can be one of BOOLEAN, NUMBER, STRING",
-              "enum": [
-                "BOOLEAN",
-                "NUMBER",
-                "STRING"
-              ]
+              "enum": ["BOOLEAN", "NUMBER", "STRING"]
             }
           }
         }
       }
     },
     "StringList": {
-      "type": [
-        "array",
-        "null"
-      ],
+      "type": ["array", "null"],
       "items": {
         "type": "string"
       }
     },
     "CspDirective": {
       "description": "Policy directive",
-      "type": [
-        "array",
-        "null"
-      ],
+      "type": ["array", "null"],
       "items": {
         "type": "string",
         "description": "Allowed domain",
