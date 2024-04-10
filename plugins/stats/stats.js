@@ -136,6 +136,112 @@
     createStatElement(row, totalCount, "Markers");
   }
 
+  async function createSceneHDPct(row) {
+    const reqData = {
+        "variables": {
+            "scene_filter": {
+                "resolution": {
+                    "value": "WEB_HD",
+                    "modifier": "GREATER_THAN"
+                }
+            }
+        },
+        "query": "query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {\n  findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {\n    count\n  }\n}"
+    };
+    const sceneHDCount = (await stash.callGQL(reqData)).data.findScenes.count;
+
+    const reqData2 = {
+        "variables": {
+            "scene_filter": {}
+        },
+        "query": "query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {\n  findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {\n    count\n  }\n}"
+    };
+    const totalCount = (await stash.callGQL(reqData2)).data.findScenes.count;
+
+    createStatElement(row, (sceneHDCount / totalCount * 100).toFixed(2) + '%', 'Scene HD')
+}
+async function createPerformerImagePct(row) {
+  const reqData = {
+      "variables": {
+          "performer_filter": {
+              is_missing: "image"
+          }
+      },
+      "query": "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}"
+  };
+  const missingImageCount = (await stash.callGQL(reqData)).data.findPerformers.count;
+
+  const reqData2 = {
+      "variables": {
+          "performer_filter": {}
+      },
+      "query": "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}"
+  };
+  const totalCount = (await stash.callGQL(reqData2)).data.findPerformers.count;
+
+  createStatElement(row, ((totalCount - missingImageCount) / totalCount * 100).toFixed(2) + '%', 'Performer Images');
+}
+async function createStudiohImagePct(row) {
+  const reqData = {
+      "variables": {
+          "studio_filter": {
+              "is_missing": "image"
+          }
+      },
+      "query": "query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType) {\n  findStudios(filter: $filter, studio_filter: $studio_filter) {\n    count\n  }\n}"
+  };
+  const missingImageCount = (await stash.callGQL(reqData)).data.findStudios.count;
+
+  const reqData2 = {
+      "variables": {
+          "scene_filter": {}
+      },
+      "query": "query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType) {\n  findStudios(filter: $filter, studio_filter: $studio_filter) {\n    count\n  }\n}"
+  };
+  const totalCount = (await stash.callGQL(reqData2)).data.findStudios.count;
+
+  createStatElement(row, ((totalCount - missingImageCount) / totalCount * 100).toFixed(2) + '%', 'Studio Images');
+}
+async function createTagImagePct(row) {
+  const reqData = {
+      "variables": {
+          "tag_filter": {
+              "is_missing": "image"
+          }
+      },
+      "query": "query FindTags($filter: FindFilterType, $tag_filter: TagFilterType) {\n  findTags(filter: $filter, tag_filter: $tag_filter) {\n    count\n  }\n}"
+  };
+  const imageCount = (await stash.callGQL(reqData)).data.findTags.count;
+  const reqData2 = {
+      "variables": {
+          "tag_filter": {}
+      },
+      "query": "query FindTags($filter: FindFilterType, $tag_filter: TagFilterType) {\n  findTags(filter: $filter, tag_filter: $tag_filter) {\n    count\n  }\n}"
+  };
+  const totalCount = (await stash.callGQL(reqData2)).data.findTags.count;
+
+  createStatElement(row, ((totalCount - imageCount) / totalCount * 100).toFixed(2) + '%', 'Tag Images')
+}
+async function createMovieCoverPct(row) {
+  const reqData = {
+      "variables": {
+          "movie_filter": {
+              is_missing: "front_image"
+          }
+      },
+      "query": "query FindMovies($filter: FindFilterType, $movie_filter: MovieFilterType) {\n  findMovies(filter: $filter, movie_filter: $movie_filter) {\n    count\n  }\n}"
+  };
+  const imageCount = (await stash.callGQL(reqData)).data.findMovies.count;
+  const reqData2 = {
+      "variables": {
+          "movie_filter": {}
+      },
+      "query": "query FindMovies($filter: FindFilterType, $movie_filter: MovieFilterType) {\n  findMovies(filter: $filter, movie_filter: $movie_filter) {\n    count\n  }\n}"
+  };
+  const totalCount = (await stash.callGQL(reqData2)).data.findMovies.count;
+  createStatElement(row, ((totalCount - imageCount) / totalCount * 100).toFixed(2) + '%', 'Movie Covers')
+}
+
   stash.addEventListener("stash:page:stats", function () {
     waitForElementByXpath(
       "//div[contains(@class, 'container-fluid')]/div[@class='mt-5']",
@@ -152,6 +258,18 @@
           createPerformerStashIDPct(row);
           createPerformerFavorites(row);
           createMarkersStat(row);
+          
+          const row2 = document.createElement("div");
+          row2.setAttribute("id", "custom-stats-row2");
+          row2.classList.add("col", "col-sm-8", "m-sm-auto", "row", "stats");
+          el.insertBefore(row2, changelog);
+
+          
+          createSceneHDPct(row2);
+          createPerformerImagePct(row2);
+          createStudiohImagePct(row2);
+          createTagImagePct(row2);
+          createMovieCoverPct(row2);
         }
       }
     );
