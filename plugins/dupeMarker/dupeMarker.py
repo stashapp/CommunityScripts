@@ -41,7 +41,7 @@ def addMarkerTag(marker):
 def checkScene(scene):
     seen = set()
     dupes = []
-    markers = stash.find_scene_markers(scene["id"])
+    markers = stash.get_scene_markers(scene["id"])
     # find duplicate pairs
     for marker in markers:
         sortidx = ";".join(

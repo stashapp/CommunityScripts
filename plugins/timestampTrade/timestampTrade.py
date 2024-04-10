@@ -24,7 +24,7 @@ def processScene(s):
                 log.debug("scene has skip sync tag")
                 return
             log.debug("looking up markers for stash id: " + sid["stash_id"])
-            res = request_s.post(
+            res = request_s.get(
                 "https://timestamp.trade/get-markers/" + sid["stash_id"], json=s
             )
             md = res.json()
