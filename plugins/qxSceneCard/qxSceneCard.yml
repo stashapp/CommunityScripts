@@ -19,8 +19,8 @@ settings:
     type: BOOLEAN
 ui:
   javascript:
-  - qxSceneCard.js
+    - qxSceneCard.js
   css:
-  - qxSceneCard.css
+    - qxSceneCard.css
   assets:
     /: .

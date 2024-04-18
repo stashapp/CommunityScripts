@@ -17,7 +17,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Regular.woff2") format("woff2");
+  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Regular.woff2")
+    format("woff2");
 }
 @font-face {
   font-family: "Inter";
@@ -31,7 +32,10 @@
   font-weight: 400;
   font-size: 12px;
   border-radius: 6px;
-  box-shadow: 3px 3px 2px 0px rgba(16, 22, 26, 0.4), 0 0 rgba(16, 22, 26, 0), 0 0 rgba(16, 22, 26, 0);
+  box-shadow:
+    3px 3px 2px 0px rgba(16, 22, 26, 0.4),
+    0 0 rgba(16, 22, 26, 0),
+    0 0 rgba(16, 22, 26, 0);
 }
 .scene-card.watched {
   opacity: 0.3;
@@ -63,14 +67,17 @@
   font-weight: 700;
   margin-right: 1em;
 }
-.scene-card .card-section .performers .list a.MALE, .scene-card .card-section .performers .list a.TRANSGENDER_MALE {
+.scene-card .card-section .performers .list a.MALE,
+.scene-card .card-section .performers .list a.TRANSGENDER_MALE {
   color: lightblue;
 }
-.scene-card .card-section .performers .list a.FEMALE, .scene-card .card-section .performers .list a.TRANSGENDER_FEMALE {
+.scene-card .card-section .performers .list a.FEMALE,
+.scene-card .card-section .performers .list a.TRANSGENDER_FEMALE {
   color: pink;
 }
-.scene-card .card-section .performers .list a.INTERSEX, .scene-card .card-section .performers .list a.NONBINARY {
-  color: #DDA0DD;
+.scene-card .card-section .performers .list a.INTERSEX,
+.scene-card .card-section .performers .list a.NONBINARY {
+  color: #dda0dd;
 }
 .scene-card .card-section a {
   order: 2;
