@@ -145,7 +145,7 @@ def compare_encoding(self, other):
         worse, better = self, other
     worse.remove_reason = "video_codec"
     return (
-        self,
+        better,
         f"Prefer Codec {better.codec}({better.id}) over {worse.codec}({worse.id})",
     )
 
