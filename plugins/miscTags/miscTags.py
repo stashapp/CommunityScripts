@@ -19,7 +19,7 @@ VRCTags = {
     "LR_180": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
     "180_lr": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
     "180_3dh_lr": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
-    "360_tb": {"VRCTags": ["SPHERE", "SBS"], "projTags": ["360°"]},
+    "360_tb": {"VRCTags": ["SPHERE", "TB"], "projTags": ["360°"]},
     "mkx200": {"VRCTags": ["MKX200", "FISHEYE", "SBS"], "projTags": ["220°"]},
     "mkx220": {"VRCTags": ["MKX220", "FISHEYE", "SBS"], "projTags": ["220°"]},
     "vrca220": {"VRCTags": ["VRCA220", "FISHEYE", "SBS"], "projTags": ["220°"]},
