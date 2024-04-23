@@ -1,0 +1,117 @@
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Thin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Light.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Regular.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Bold.woff2") format("woff2");
+}
+.scene-card {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  border-radius: 6px;
+  box-shadow:
+    3px 3px 2px 0px rgba(16, 22, 26, 0.4),
+    0 0 rgba(16, 22, 26, 0),
+    0 0 rgba(16, 22, 26, 0);
+}
+.scene-card.watched {
+  opacity: 0.3;
+}
+.scene-card .hide {
+  display: none;
+}
+.scene-card .card-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.scene-card .card-section .performers {
+  order: 1;
+  display: flex;
+  line-height: 2em;
+  width: 100%;
+  justify-content: space-between;
+  overflow-y: hidden;
+}
+.scene-card .card-section .performers .list {
+  display: flex;
+  line-height: 2em;
+  max-height: 2em;
+  overflow-y: hidden;
+  flex-wrap: wrap;
+}
+.scene-card .card-section .performers .list a {
+  font-weight: 700;
+  margin-right: 1em;
+}
+.scene-card .card-section .performers .list a.MALE,
+.scene-card .card-section .performers .list a.TRANSGENDER_MALE {
+  color: lightblue;
+}
+.scene-card .card-section .performers .list a.FEMALE,
+.scene-card .card-section .performers .list a.TRANSGENDER_FEMALE {
+  color: pink;
+}
+.scene-card .card-section .performers .list a.INTERSEX,
+.scene-card .card-section .performers .list a.NONBINARY {
+  color: #dda0dd;
+}
+.scene-card .card-section a {
+  order: 2;
+}
+.scene-card .card-section a .card-section-title {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  height: 2em;
+  line-height: 1em;
+  align-items: unset;
+}
+.scene-card .card-section .footer {
+  display: block;
+  width: 100%;
+  order: 3;
+  margin-top: auto;
+}
+.scene-card .card-section .footer span {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 33%;
+}
+.scene-card .card-section .footer span.studio {
+  font-weight: 400;
+}
+.scene-card .card-section .footer span.studio > a {
+  color: lightgray;
+}
+.scene-card .card-section .footer span.views {
+  text-align: center;
+}
+.scene-card .card-section .footer span.date {
+  text-align: right;
+}
