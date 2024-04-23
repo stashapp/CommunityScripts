@@ -1,5 +1,6 @@
 name: Scene Cover Cropper
 # requires: CropperJS
+# requires: StashUserscriptLibrary
 description: Crop Scene Cover Images
 version: 1.0
 ui:
