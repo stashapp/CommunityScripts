@@ -5,6 +5,7 @@ import sys
 import requests
 import json
 import time
+import math
 
 
 per_page = 100
@@ -63,7 +64,7 @@ def processAll():
     )[0]
     log.info(str(count) + " scenes to submit.")
     i = 0
-    for r in range(1, int(count / per_page) + 1):
+    for r in range(1, math.ceil(count / per_page) + 1):
         log.info(
             "fetching data: %s - %s %0.1f%%"
             % (
