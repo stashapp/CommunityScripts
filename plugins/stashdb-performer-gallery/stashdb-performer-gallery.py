@@ -1,5 +1,5 @@
 import stashapi.log as log
-from stashapi.stashapp import StashInterface,StashItem
+from stashapi.stashapp import StashInterface, StashItem
 from stashapi.stashbox import StashBoxInterface
 import os
 import sys
@@ -15,11 +15,12 @@ import base64
 per_page = 100
 request_s = requests.Session()
 stash_boxes = {}
-scrapers={}
+scrapers = {}
+
 
 def processImages(img):
     log.debug("image: %s" % (img,))
-    image_data=None
+    image_data = None
     for file in [x["path"] for x in img["visual_files"]]:
         if settings["path"] in file:
             index_file = Path(Path(file).parent) / (Path(file).stem + ".json")
@@ -34,19 +35,19 @@ def processImages(img):
                     else:
                         image_data = index
     if image_data:
-#        log.debug(image_data)
+        #        log.debug(image_data)
         stash.update_image(image_data)
 
 
 def processPerformers():
-    query={
-            "tags": {
-                "depth": 0,
-                "excludes": [],
-                "modifier": "INCLUDES_ALL",
-                "value": [tag_stashbox_performer_gallery],
-            }
+    query = {
+        "tags": {
+            "depth": 0,
+            "excludes": [],
+            "modifier": "INCLUDES_ALL",
+            "value": [tag_stashbox_performer_gallery],
         }
+    }
     performers = stash.find_performers(f=query)
 
     for performer in performers:
@@ -189,11 +190,11 @@ def processPerformerStashid(endpoint, stashid, p):
                 log.debug("image already downloaded")
 
         # scrape urls on the performer using the url scrapers in stash
-        if settings['runPerformerScraper'] and len(perf['urls'])>0:
+        if settings["runPerformerScraper"] and len(perf["urls"]) > 0:
 
             # we need to determine what scrapers we have and what url patterns they accept, query what url patterns are supported, should only need to check once
             if len(scrapers) == 0:
-                scrapers_graphql="""query ListPerformerScrapers {
+                scrapers_graphql = """query ListPerformerScrapers {
                   listScrapers(types: [PERFORMER]) {
                   id
                   name
@@ -204,64 +205,132 @@ def processPerformerStashid(endpoint, stashid, p):
                   }
                 }"""
                 res = stash.callGQL(scrapers_graphql)
-                for r in res['listScrapers']:
-                    if r['performer']['urls']:
-                        for url in r['performer']['urls']:
-                            scrapers[url]=r
+                for r in res["listScrapers"]:
+                    if r["performer"]["urls"]:
+                        for url in r["performer"]["urls"]:
+                            scrapers[url] = r
 
-            for u in perf['urls']:
+            for u in perf["urls"]:
                 for url in scrapers.keys():
-                    if url in u['url']:
-                        log.info('Running stash scraper on performer url: %s' % (u['url'],))
-                        res=stash.scrape_performer_url(u['url'])
+                    if url in u["url"]:
+                        log.info(
+                            "Running stash scraper on performer url: %s" % (u["url"],)
+                        )
+                        res = stash.scrape_performer_url(u["url"])
                         # Check if the scraper returned a result
                         if res is not None:
                             log.debug(res)
                             # it's possible for multiple images to be returned by a scraper so incriment a number each image
                             image_id = 1
-                            if res['images']:
-                                for image in res['images']:
-                                    image_index = Path(settings["path"]) / p["id"] / ("%s-%s.json" % (scrapers[url]['id'],image_id ,))
+                            if res["images"]:
+                                for image in res["images"]:
+                                    image_index = (
+                                        Path(settings["path"])
+                                        / p["id"]
+                                        / (
+                                            "%s-%s.json"
+                                            % (
+                                                scrapers[url]["id"],
+                                                image_id,
+                                            )
+                                        )
+                                    )
                                     if not image_index.exists():
                                         with open(image_index, "w") as f:
                                             image_data = {
-                                                "title":  '%s - %s ' % (scrapers[url]['id'],image_id,),
-                                                "details": "name: %s\ngender: %s\nurl: %s\ntwitter: %s\ninstagram: %s\nbirthdate: %s\nethnicity: %s\ncountry: %s\neye_color: %s\nheight: %s\nmeasurements: %s\nfake tits: %s\npenis_length: %s\n career length: %s\ntattoos: %s\npiercings: %s\nhair_color: %s\nweight: %s\n description: %s\n" % (res['name'], res['gender'], res['url'], res['twitter'], res['instagram'], res['birthdate'], res['ethnicity'], res['country'], res['eye_color'], res['height'], res['measurements'], res['fake_tits'], res['penis_length'], res['career_length'], res['tattoos'], res['piercings'], res['hair_color'], res['weight'], res['details'],),
-                                                "urls": [u['url'],],
+                                                "title": "%s - %s "
+                                                % (
+                                                    scrapers[url]["id"],
+                                                    image_id,
+                                                ),
+                                                "details": "name: %s\ngender: %s\nurl: %s\ntwitter: %s\ninstagram: %s\nbirthdate: %s\nethnicity: %s\ncountry: %s\neye_color: %s\nheight: %s\nmeasurements: %s\nfake tits: %s\npenis_length: %s\n career length: %s\ntattoos: %s\npiercings: %s\nhair_color: %s\nweight: %s\n description: %s\n"
+                                                % (
+                                                    res["name"],
+                                                    res["gender"],
+                                                    res["url"],
+                                                    res["twitter"],
+                                                    res["instagram"],
+                                                    res["birthdate"],
+                                                    res["ethnicity"],
+                                                    res["country"],
+                                                    res["eye_color"],
+                                                    res["height"],
+                                                    res["measurements"],
+                                                    res["fake_tits"],
+                                                    res["penis_length"],
+                                                    res["career_length"],
+                                                    res["tattoos"],
+                                                    res["piercings"],
+                                                    res["hair_color"],
+                                                    res["weight"],
+                                                    res["details"],
+                                                ),
+                                                "urls": [
+                                                    u["url"],
+                                                ],
                                                 "performer_ids": [p["id"]],
-                                                "tag_ids": [tag_stashbox_performer_gallery],
-                                                "gallery_ids": [index["galleries"][endpoint]],
+                                                "tag_ids": [
+                                                    tag_stashbox_performer_gallery
+                                                ],
+                                                "gallery_ids": [
+                                                    index["galleries"][endpoint]
+                                                ],
                                             }
                                             json.dump(image_data, f)
-                                    filename = Path(settings["path"]) / p["id"] / ("%s-%s.jpg" % (scrapers[url]['id'],image_id ,))
+                                    filename = (
+                                        Path(settings["path"])
+                                        / p["id"]
+                                        / (
+                                            "%s-%s.jpg"
+                                            % (
+                                                scrapers[url]["id"],
+                                                image_id,
+                                            )
+                                        )
+                                    )
                                     if not filename.exists():
-                                        if image.startswith('data:'):
+                                        if image.startswith("data:"):
                                             with open(filename, "wb") as f:
-                                                f.write(base64.b64decode(image.split('base64,')[1]))
+                                                f.write(
+                                                    base64.b64decode(
+                                                        image.split("base64,")[1]
+                                                    )
+                                                )
                                                 f.close()
                                         else:
                                             with open(image_index, "w") as f:
                                                 image_data = {
-                                                    "title": '%s - %s ' % (scrapers[url]['id'],image_id,),
-                                                    "details": "%s"% (res,),
-                                                    "urls": [u['url'],image],
+                                                    "title": "%s - %s "
+                                                    % (
+                                                        scrapers[url]["id"],
+                                                        image_id,
+                                                    ),
+                                                    "details": "%s" % (res,),
+                                                    "urls": [u["url"], image],
                                                     "performer_ids": [p["id"]],
-                                                    "tag_ids": [tag_stashbox_performer_gallery],
-                                                    "gallery_ids": [index["galleries"][endpoint]],
+                                                    "tag_ids": [
+                                                        tag_stashbox_performer_gallery
+                                                    ],
+                                                    "gallery_ids": [
+                                                        index["galleries"][endpoint]
+                                                    ],
                                                 }
                                                 json.dump(image_data, f)
-                                            filename = Path(settings["path"]) / p["id"] / ("%s.jpg" % (image_id,))
+                                            filename = (
+                                                Path(settings["path"])
+                                                / p["id"]
+                                                / ("%s.jpg" % (image_id,))
+                                            )
                                             r = requests.get(img["url"])
-                                            if r.status_code==200:
+                                            if r.status_code == 200:
                                                 with open(filename, "wb") as f:
                                                     f.write(r.content)
                                                     f.close()
-                                    image_id=image_id+1
-
+                                    image_id = image_id + 1
 
     #                log.debug('%s %s' % (url['url'],url['type'],))
-#                    stash.scraper
-#                    scrape=stash.scrape_performer_url(ur)
+    #                    stash.scraper
+    #                    scrape=stash.scrape_performer_url(ur)
 
     else:
         log.error("endpoint %s not configured, skipping" % (endpoint,))
@@ -308,21 +377,25 @@ def processQueue():
                 ]["queue"].removeprefix(settings["queue"])
             },
         )
-        stash.run_plugin_task("stashdb-performer-gallery", "Process Performers", args={"full": False})
+        stash.run_plugin_task(
+            "stashdb-performer-gallery", "Process Performers", args={"full": False}
+        )
 
 
 def relink_images(performer_id=None):
     query = {
-            "path": {"modifier": "INCLUDES", "value": settings["path"]},
-        }
-    if performer_id==None:
+        "path": {"modifier": "INCLUDES", "value": settings["path"]},
+    }
+    if performer_id == None:
         query["is_missing"] = "galleries"
-        query['path']={"modifier": "INCLUDES", "value": settings["path"]}
+        query["path"] = {"modifier": "INCLUDES", "value": settings["path"]}
     else:
-        query['path']={"modifier": "INCLUDES", "value": str(Path(settings["path"]) / performer_id / )  }
-#    else:
-#        query["file_count"] = {"modifier": "NOT_EQUALS", "value": 1}
-
+        query["path"] = {
+            "modifier": "INCLUDES",
+            "value": str(Path(settings["path"]) / performer_id / ""),
+        }
+    #    else:
+    #        query["file_count"] = {"modifier": "NOT_EQUALS", "value": 1}
 
     total = stash.find_images(f=query, get_count=True)[0]
     i = 0
@@ -330,9 +403,9 @@ def relink_images(performer_id=None):
     while i < total:
         images = stash.find_images(f=query, filter={"page": 0, "per_page": per_page})
         for img in images:
-            log.debug('image: %s' %(img,))
+            log.debug("image: %s" % (img,))
             processImages(img)
-            i=i+1
+            i = i + 1
             log.progress((i / total))
 
 
@@ -344,7 +417,7 @@ stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()["plugins"]
 settings = {
     "path": "/download_dir",
-    "runPerformerScraper":False,
+    "runPerformerScraper": False,
 }
 if "stashdb-performer-gallery" in config:
     settings.update(config["stashdb-performer-gallery"])
@@ -367,7 +440,9 @@ if "mode" in json_input["args"]:
             processPerformer(p)
             stash.metadata_scan(paths=[settings["path"]])
             stash.run_plugin_task(
-                "stashdb-performer-gallery", "relink missing images", args={'performer_id':p['id']}
+                "stashdb-performer-gallery",
+                "relink missing images",
+                args={"performer_id": p["id"]},
             )
     elif "processPerformers" in PLUGIN_ARGS:
         processPerformers()
