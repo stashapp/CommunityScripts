@@ -11,49 +11,54 @@ import math
 
 per_page = 100
 request_s = requests.Session()
+scrapers = {}
 
 
 def processScene(s):
-    if 'https://timestamp.trade/scene/' in [u[:30] for u in s['urls']]:
-        for url in s['urls']:
+    if "https://timestamp.trade/scene/" in [u[:30] for u in s["urls"]]:
+        for url in s["urls"]:
             log.debug(url)
-            if url.startswith('https://timestamp.trade/scene/'):
-                json_url = 'https://timestamp.trade/json-scene/%s' % (url[30:],)
+            if url.startswith("https://timestamp.trade/scene/"):
+                json_url = "https://timestamp.trade/json-scene/%s" % (url[30:],)
                 res = request_s.get(json_url)
                 if res.status_code == 200:
                     data = res.json()
                     if len(data) == 0:
-                        log.debug('no scene metadata')
+                        log.debug("no scene metadata")
                         return
                     log.debug(data)
-                    log.debug(s['scene_markers'])
-                    log.debug(len(s['scene_markers'])>0)
-                    if settings['createMarkers'] and (len(s['scene_markers']) == 0) or settings['overwriteMarkers']:
-                        log.debug('creating markers')
+                    log.debug(s["scene_markers"])
+                    log.debug(len(s["scene_markers"]) > 0)
+                    if (
+                        settings["createMarkers"]
+                        and (len(s["scene_markers"]) == 0)
+                        or settings["overwriteMarkers"]
+                    ):
+                        log.debug("creating markers")
                         markers = []
-                        for m in data['markers']:
-                            marker={
+                        for m in data["markers"]:
+                            marker = {
                                 "seconds": m["start_time"] / 1000,
                                 "primary_tag": None,
                                 "tags": [],
-                                "title": m["name"]
+                                "title": m["name"],
                             }
                             if m["tag_name"]:
-                                marker['primary_tag'] = m["tag_name"]
+                                marker["primary_tag"] = m["tag_name"]
                             else:
-                                marker['primary_tag'] = m["name"]
+                                marker["primary_tag"] = m["name"]
                             markers.append(marker)
-#                        log.debug(marker)
+                        #                        log.debug(marker)
                         if len(markers) > 0:
-                            if settings['overwriteMarkers']:
-                                stash.destroy_scene_markers(s['id'])
+                            if settings["overwriteMarkers"]:
+                                stash.destroy_scene_markers(s["id"])
                             mp.import_scene_markers(stash, markers, s["id"], 15)
-                    new_scene={
+                    new_scene = {
                         "id": s["id"],
                     }
-                    needs_update=False
+                    needs_update = False
                     if settings["createGalleryFromScene"]:
-                        for g in data['galleries']:
+                        for g in data["galleries"]:
                             for f in g["files"]:
                                 res = stash.find_galleries(
                                     f={
@@ -88,7 +93,9 @@ def processScene(s):
                                     if "studio" in gal:
                                         gallery["studio_id"] = gal["studio"]["id"]
                                     if len(gal["urls"]) == 0:
-                                        log.debug("no urls on gallery, needs new metadata")
+                                        log.debug(
+                                            "no urls on gallery, needs new metadata"
+                                        )
                                         gallery["urls"].extend(
                                             [x["url"] for x in g["urls"]]
                                         )
@@ -111,7 +118,7 @@ def processScene(s):
                     if settings["extraUrls"]:
                         if "urls" in data and data["urls"]:
                             extra_urls = s["urls"]
-                            for u in data['urls']:
+                            for u in data["urls"]:
                                 if u not in extra_urls:
                                     extra_urls.append(u)
                                     needs_update = True
@@ -124,42 +131,113 @@ def processScene(s):
                                 log.debug("movie: %s" % (m,))
                                 log.debug("scene: %s" % (s,))
                                 movies = []
-                                for sc in  m['scenes']:
-                                    if sc['scene_id']==data['scene_id']:
-                                        scene_index=sc['scene_index']
+                                scene_index = None
+                                for sc in m["scenes"]:
+                                    if sc["scene_id"] == data["scene_id"]:
+                                        scene_index = sc["scene_index"]
                                 for u in m["urls"]:
                                     sm = stash.find_movies(
-                                        f={"url": {"modifier": "EQUALS", "value": u["url"]}}
+                                        f={
+                                            "url": {
+                                                "modifier": "EQUALS",
+                                                "value": u["url"],
+                                            }
+                                        }
                                     )
                                     log.debug("sm: %s" % (sm,))
                                     movies.extend(sm)
                                 if len(movies) == 0:
+                                    # we need to determine what scrapers we have and what url patterns they accept, query what url patterns are supported, should only need to check once
+                                    if len(scrapers) == 0:
+                                        scrapers_graphql = """query ListPerformerScrapers {
+                                              listScrapers(types: [MOVIE]) {
+                                                  id
+                                                  name
+                                                  movie {
+                                                      urls
+                                                      supported_scrapes
+                                                  }
+                                              }
+                                            }"""
+                                        res = stash.callGQL(scrapers_graphql)
+                                        for r in res["listScrapers"]:
+                                            if r["movie"]["urls"]:
+                                                for url in r["movie"]["urls"]:
+                                                    scrapers[url] = r
+                                    created = False
                                     for u in m["urls"]:
-                                        movie_scrape = stash.scrape_movie_url(u["url"])
-                                        log.debug("move scrape: %s" % (movie_scrape,))
+                                        # is there a scraper that can scrape this url
+                                        for su in scrapers.keys():
+                                            if su in u["url"]:
+                                                movie_scrape = stash.scrape_movie_url(
+                                                    u["url"]
+                                                )
+                                                if movie_scrape and not created:
+                                                    log.debug(
+                                                        "move scrape: %s"
+                                                        % (movie_scrape,)
+                                                    )
+                                                    new_movie = {
+                                                        "name": movie_scrape["name"],
+                                                        "aliases": movie_scrape[
+                                                            "aliases"
+                                                        ],
+                                                        "date": movie_scrape["date"],
+                                                        "rating100": movie_scrape[
+                                                            "rating"
+                                                        ],
+                                                        "director": movie_scrape[
+                                                            "director"
+                                                        ],
+                                                        "synopsis": movie_scrape[
+                                                            "synopsis"
+                                                        ],
+                                                        "url": movie_scrape["url"],
+                                                        "front_image": movie_scrape[
+                                                            "front_image"
+                                                        ],
+                                                        "back_image": movie_scrape[
+                                                            "back_image"
+                                                        ],
+                                                    }
+                                                    if not new_movie["name"]:
+                                                        new_movie["name"] = m["title"]
+                                                    if new_movie["date"] == "1-01-01":
+                                                        new_movie["date"] = None
+                                                    if not movie_scrape["url"]:
+                                                        new_movie["url"] = u["url"]
+                                                    if movie_scrape["studio"]:
+                                                        new_movie["studio_id"] = (
+                                                            movie_scrape["studio"][
+                                                                "stored_id"
+                                                            ]
+                                                        )
+                                                    log.debug(
+                                                        "new movie: %s" % (new_movie,)
+                                                    )
+                                                    nm = stash.create_movie(new_movie)
+                                                    if nm:
+                                                        movies.append(nm)
+                                                        created = True
+                                    # the above has not created a movie from either no scraper or a bad scrape, just create the movie manually
+                                    if not created:
                                         new_movie = {
-                                            "name": movie_scrape["name"],
-                                            "aliases": movie_scrape["aliases"],
-                                            "date": movie_scrape["date"],
-                                            "rating100": movie_scrape["rating"],
-                                            "director": movie_scrape["director"],
-                                            "synopsis": movie_scrape["synopsis"],
-                                            "url": movie_scrape["url"],
-                                            "front_image": movie_scrape["front_image"],
-                                            "back_image": movie_scrape["back_image"],
+                                            "name": m["title"],
+                                            "synopsis": m["description"],
+                                            "date": m["release_date"],
                                         }
-                                        if not movie_scrape["url"]:
-                                            new_movie["url"] = u["url"]
-                                        if movie_scrape["studio"]:
-                                            new_movie["studio_id"] = movie_scrape["studio"][
-                                                "stored_id"
-                                            ]
+                                        if len(m["urls"]) > 0:
+                                            new_movie["url"] = m["urls"][0]["url"]
                                         log.debug("new movie: %s" % (new_movie,))
                                         nm = stash.create_movie(new_movie)
-                                        movies.append(nm)
+                                        if nm:
+                                            movies.append(nm)
                                 movies_to_add.extend(
                                     [
-                                        {"movie_id": x["id"], "scene_index": scene_index}
+                                        {
+                                            "movie_id": x["id"],
+                                            "scene_index": scene_index,
+                                        }
                                         for x in movies
                                     ]
                                 )
@@ -179,6 +257,8 @@ def processScene(s):
 
     else:
         processSceneStashid(s)
+
+
 def processSceneStashid(s):
     if len(s["stash_ids"]) == 0:
         log.debug("no scenes to process")
@@ -192,13 +272,14 @@ def processSceneStashid(s):
                 return
             log.debug("looking up markers for stash id: " + sid["stash_id"])
             res = request_s.get(
-                "https://timestamp.trade/get-markers/" + sid["stash_id"])
+                "https://timestamp.trade/get-markers/" + sid["stash_id"]
+            )
             if res.status_code != 200:
-                log.debug('bad result from api, skipping')
+                log.debug("bad result from api, skipping")
                 return
             md = res.json()
             if not md:
-                log.debug('bad result from api, skipping')
+                log.debug("bad result from api, skipping")
                 return
             if md.get("marker"):
                 log.info(
@@ -348,13 +429,17 @@ def processSceneStashid(s):
                             needs_update = True
                     if needs_update:
                         new_scene["urls"] = extra_urls
-            if settings["addTimestampTradeUrl"] and 'https://timestamp.trade/scene/' not in [u[:30] for u in s['urls']]:
-                if 'urls' not in new_scene:
-                    new_scene['urls']=s ['urls']
+            if settings[
+                "addTimestampTradeUrl"
+            ] and "https://timestamp.trade/scene/" not in [u[:30] for u in s["urls"]]:
+                if "urls" not in new_scene:
+                    new_scene["urls"] = s["urls"]
                 log.debug(md)
-                if 'scene_id' in md:
-                    new_scene['urls'].append('https://timestamp.trade/scene/%s' % (md['scene_id'],))
-                    needs_update=True
+                if "scene_id" in md:
+                    new_scene["urls"].append(
+                        "https://timestamp.trade/scene/%s" % (md["scene_id"],)
+                    )
+                    needs_update = True
             if needs_update:
                 log.debug("new scene update: %s" % (new_scene,))
                 stash.update_scene(new_scene)
@@ -866,10 +951,7 @@ if "mode" in json_input["args"]:
                 "modifier": "INCLUDES_ALL",
                 "value": [],
             },
-             "url": {
-                "modifier": "INCLUDES",
-                "value": "sexlikereal.com"
-            }
+            "url": {"modifier": "INCLUDES", "value": "sexlikereal.com"},
         }
         submitScene(query)
     elif "submitEroscriptScene" == PLUGIN_ARGS:
@@ -883,10 +965,7 @@ if "mode" in json_input["args"]:
                 "modifier": "INCLUDES_ALL",
                 "value": [],
             },
-             "url": {
-                "modifier": "INCLUDES",
-                "value": "eroscripts.com"
-            }
+            "url": {"modifier": "INCLUDES", "value": "eroscripts.com"},
         }
         submitScene(query)
 
@@ -899,7 +978,9 @@ if "mode" in json_input["args"]:
         else:
             processGalleries()
     elif "processScene" == PLUGIN_ARGS:
-        skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get("id")
+        skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get(
+            "id"
+        )
         if "scene_id" in json_input["args"]:
             scene = stash.find_scene(json_input["args"]["scene_id"])
             processScene(scene)
@@ -920,12 +1001,11 @@ if "mode" in json_input["args"]:
             }
             processAll(query)
     elif "reprocessScene" == PLUGIN_ARGS:
-        skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get("id")
+        skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get(
+            "id"
+        )
         query = {
-            "url": {
-                "modifier": "INCLUDES",
-                "value": "https://timestamp.trade/scene/"
-            },
+            "url": {"modifier": "INCLUDES", "value": "https://timestamp.trade/scene/"},
             "tags": {
                 "depth": 0,
                 "excludes": [skip_sync_tag_id],
@@ -935,12 +1015,14 @@ if "mode" in json_input["args"]:
         }
         processAll(query)
     elif "processAll" == PLUGIN_ARGS:
-        skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get("id")
+        skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get(
+            "id"
+        )
         query = {
             "stash_id_endpoint": {
                 "endpoint": "",
                 "modifier": "NOT_NULL",
-                "stash_id": ""
+                "stash_id": "",
             },
             "tags": {
                 "depth": 0,
@@ -952,16 +1034,17 @@ if "mode" in json_input["args"]:
         processAll(query)
 
 
-
 elif "hookContext" in json_input["args"]:
     _id = json_input["args"]["hookContext"]["id"]
     _type = json_input["args"]["hookContext"]["type"]
     if _type == "Scene.Update.Post" and not settings["disableSceneMarkersHook"]:
-#        scene = stash.find_scene(_id)
-#        processScene(scene)
+        #        scene = stash.find_scene(_id)
+        #        processScene(scene)
         stash.run_plugin_task("timestampTrade", "Sync", args={"scene_id": _id})
 
     if _type == "Gallery.Update.Post" and not settings["disableGalleryLookupHook"]:
-#        gallery = stash.find_gallery(_id)
-#        processGallery(gallery)
-        stash.run_plugin_task("timestampTrade", "Sync Gallery", args={"gallery_id": _id})
+        #        gallery = stash.find_gallery(_id)
+        #        processGallery(gallery)
+        stash.run_plugin_task(
+            "timestampTrade", "Sync Gallery", args={"gallery_id": _id}
+        )
