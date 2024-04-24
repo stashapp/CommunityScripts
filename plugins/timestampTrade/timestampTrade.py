@@ -91,7 +91,11 @@ def processScene(s):
                                         "details": gal["details"],
                                     }
                                     if "studio" in gal:
-                                        gallery["studio_id"] = gal["studio"]["id"]
+                                        log.debug(s["studio"])
+                                        if gal["studio"]:
+                                            gallery["studio_id"] = gal["studio"]["id"]
+                                        elif s["studio"]["id"]:
+                                            gallery["studio_id"] = s["studio"]["id"]
                                     if len(gal["urls"]) == 0:
                                         log.debug(
                                             "no urls on gallery, needs new metadata"
@@ -341,7 +345,10 @@ def processSceneStashid(s):
                                     "details": gal["details"],
                                 }
                                 if "studio" in gal:
-                                    gallery["studio_id"] = gal["studio"]["id"]
+                                    if gal["studio"]:
+                                        gallery["studio_id"] = gal["studio"]["id"]
+                                    elif s["studio"]:
+                                        gallery["studio_id"] = s["studio"]["id"]
                                 if len(gal["urls"]) == 0:
                                     log.debug("no urls on gallery, needs new metadata")
                                     gallery["urls"].extend(
