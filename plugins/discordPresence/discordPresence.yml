@@ -9,6 +9,10 @@ settings:
   discordLargeImageKey:
     displayName: Custom presence image key
     description: If using a custom client ID, set a presence image key from https://discord.com/developers/applications/{clientId}/rich-presence/assets
+  discordShowImage:
+    displayName: Show presence image
+    description: Show the large presence image in your Discord profile (shows Stash logo when using default clientId/imageKey)
+    type: BOOLEAN
   discordShowUrlButton:
     displayName: Show scene URL button
     description: Show a presence button which links to first scene URL
