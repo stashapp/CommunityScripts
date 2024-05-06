@@ -3,6 +3,7 @@
    * @typedef {{
    *  discordClientId?: string;
    *  discordLargeImageKey?: string;
+   *  discordShowImage?: boolean;
    *  discordShowUrlButton?: boolean;
    *  discordUrlButtonText?: string;
    * }} PluginConfig
@@ -58,40 +59,43 @@
   }
 
   const PLUGIN_ID = "discordPresence";
+  // https://github.com/lolamtisch/Discord-RPC-Extension/blob/master/Examples/ActiveTab/main.js
+
+  let userConfig = await getPluginConfig();
+  console.debug("Discord Presence Plugin: user config", userConfig);
+
+  for (let [key, val] of Object.entries(userConfig)) {
+    if (val === "" || val === undefined || val === null) {
+      delete userConfig[key];
+    }
+  }
 
   /** @type {Required<PluginConfig>} */
   const CONFIG = {
     discordClientId: "1236860180407521341",
     discordLargeImageKey: "stashbox",
+    discordShowImage: true,
     discordShowUrlButton: false,
     discordUrlButtonText: "Watch",
-    ...(await getPluginConfig()),
+    ...userConfig,
   };
 
-  console.debug("Discord Presence Plugin: config", CONFIG);
+  console.debug("Discord Presence Plugin: loaded config", CONFIG);
 
   let SCENE_ID = null;
   let INTERVAL_ID = null;
 
   const doUpdatingPresence = (e) => {
     clearInterval(INTERVAL_ID);
-    SCENE_ID = null;
-    INTERVAL_ID = null;
 
     const pathname = e.detail.data.location.pathname;
 
-    if (!pathname.startsWith("/scenes")) {
+    if (!pathname.match(/\/scenes\/\d+/)) {
       clearDiscordActivity();
       return;
     }
 
     SCENE_ID = parseInt(pathname.split("/")[2], 10);
-
-    if (!!SCENE_ID === false) {
-      clearDiscordActivity();
-      console.warn("Discord Presence Plugin: sceneId is invalid", SCENE_ID);
-      return;
-    }
 
     setDiscordActivity();
     INTERVAL_ID = setInterval(setDiscordActivity, 10000);
@@ -109,8 +113,8 @@
   ws.addEventListener("error", () => {
     PluginApi.Event.removeEventListener("stash:location", doUpdatingPresence);
   });
-  window.addEventListener("beforeunload", async () => {
-    await clearDiscordActivity();
+  window.addEventListener("beforeunload", () => {
+    clearDiscordActivity();
   });
 
   /** @returns {Promise<PluginConfig>} */
@@ -143,10 +147,13 @@
     };
   }
 
-  async function clearDiscordActivity() {
-    if (ws.OPEN) {
-      ws.send(JSON.stringify({ action: "disconnect" }));
+  function clearDiscordActivity() {
+    if (!!SCENE_ID === false || ws.OPEN !== 1) {
+      return;
     }
+
+    SCENE_ID = null;
+    ws.send(JSON.stringify({ action: "disconnect" }));
   }
 
   async function setDiscordActivity() {
@@ -158,20 +165,23 @@
         : undefined;
     const studio = sceneData?.studio?.name;
 
-    const body = sceneData
-      ? {
-          details: sceneData.title,
-          state: studio ? `by ${studio}` : undefined,
-          largeImageKey: CONFIG.discordLargeImageKey,
-          startTimestamp: Date.now() + sceneData["resume_time"] * 1000,
-          endTimestamp:
-            Date.now() + (duration - sceneData["resume_time"]) * 1000,
-          buttons: url
-            ? [{ label: CONFIG.discordUrlButtonText, url }]
-            : undefined,
-          instance: true,
-        }
-      : undefined;
+    let body = {};
+
+    if (sceneData !== null) {
+      body = {
+        details: sceneData.title,
+        state: studio ? `by ${studio}` : undefined,
+        largeImageKey: CONFIG.discordShowImage
+          ? CONFIG.discordLargeImageKey
+          : undefined,
+        startTimestamp: Date.now() + sceneData["resume_time"] * 1000,
+        endTimestamp: Date.now() + (duration - sceneData["resume_time"]) * 1000,
+        buttons: url
+          ? [{ label: CONFIG.discordUrlButtonText, url }]
+          : undefined,
+        instance: true,
+      };
+    }
 
     if (!ws.OPEN) {
       return;
