@@ -1,0 +1,24 @@
+name: Discord Presence
+description: Sets currently playing scene data as your Discord status. You need to have the app running on your desktop (https://github.com/lolamtisch/Discord-RPC-Extension/releases). You DO NOT need any browser extensions. Requires Stash Userscript Library.
+version: 0.1
+settings:
+  discordClientId:
+    displayName: Custom Discord application ID
+    description: Set a custom client ID, found here https://discord.com/developers/applications
+    type: STRING
+  discordLargeImageKey:
+    displayName: Custom presence image key
+    description: If using a custom client ID, set a presence image key from https://discord.com/developers/applications/{clientId}/rich-presence/assets
+  discordShowUrlButton:
+    displayName: Show scene URL button
+    description: Show a presence button which links to first scene URL
+    type: BOOLEAN
+  discordUrlButtonText:
+    displayName: Custom button text
+    description: Set the displayed text for the presence button (default; "Watch")
+    type: STRING
+ui:
+  requires:
+    - StashUserscriptLibrary
+  javascript:
+    - discordPresence.js
