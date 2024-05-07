@@ -11,7 +11,7 @@
 
   /**
    * @typedef {{
-   * id, title, details?, urls?: string[], date, created_at, resume_time,
+   * id, title, urls?: string[], date,
    * files: {duration:number}[], studio?: {id, name}
    * }} SceneData
    */
@@ -31,11 +31,8 @@
     fragment SceneData on Scene {
       id
       title
-      details
       urls
       date
-      created_at
-      resume_time
       files {
         duration
         __typename
@@ -59,7 +56,6 @@
   }
 
   const PLUGIN_ID = "discordPresence";
-  // https://github.com/lolamtisch/Discord-RPC-Extension/blob/master/Examples/ActiveTab/main.js
 
   let userConfig = await getPluginConfig();
   console.debug("Discord Presence Plugin: user config", userConfig);
@@ -98,7 +94,7 @@
     SCENE_ID = parseInt(pathname.split("/")[2], 10);
 
     setDiscordActivity();
-    INTERVAL_ID = setInterval(setDiscordActivity, 10000);
+    INTERVAL_ID = setInterval(setDiscordActivity, 5000);
   };
 
   // https://github.com/lolamtisch/Discord-RPC-Extension/releases
@@ -165,6 +161,9 @@
         : undefined;
     const studio = sceneData?.studio?.name;
 
+    const currentTime = getCurrentVideoTime() ?? 0;
+    const endTimestamp = Date.now() + (duration - currentTime) * 1000;
+
     let body = {};
 
     if (sceneData !== null) {
@@ -174,8 +173,7 @@
         largeImageKey: CONFIG.discordShowImage
           ? CONFIG.discordLargeImageKey
           : undefined,
-        startTimestamp: Date.now() + sceneData["resume_time"] * 1000,
-        endTimestamp: Date.now() + (duration - sceneData["resume_time"]) * 1000,
+        endTimestamp,
         buttons: url
           ? [{ label: CONFIG.discordUrlButtonText, url }]
           : undefined,
@@ -194,5 +192,15 @@
         presence: body,
       })
     );
+  }
+
+  function getCurrentVideoTime() {
+    const videoElem = document.querySelector("#VideoJsPlayer video");
+
+    if (!videoElem) {
+      return null;
+    }
+
+    return videoElem.currentTime;
   }
 })();
