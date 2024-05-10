@@ -1,19 +1,32 @@
 name: Discord Presence
-description: Sets currently playing scene data as your Discord status. You need to have the app running on your desktop (https://github.com/lolamtisch/Discord-RPC-Extension/releases). You DO NOT need any browser extensions. Requires Stash Userscript Library.
-version: 0.1
+description: Sets currently playing scene data as your Discord status. See README for prerequisites and config options (blue link button next to enable/disable button)
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/discordPresence
+version: 0.2
 settings:
   discordClientId:
     displayName: Custom Discord application ID
     description: Set a custom client ID, found here https://discord.com/developers/applications
     type: STRING
-  discordLargeImageKey:
-    displayName: Custom presence image key
-    description: If using a custom client ID, set a presence image key from https://discord.com/developers/applications/{clientId}/rich-presence/assets
+  discordDetailsText:
+    displayName: Presence details text
+    description: Formats the first line of your presence.
+    type: STRING
+  discordStateText:
+    displayName: Presence state text
+    description: Formats the second line of your presence.
     type: STRING
   discordShowImage:
     displayName: Show presence image
     description: Show the large presence image in your Discord profile (shows Stash logo when using default clientId/imageKey)
     type: BOOLEAN
+  discordLargeImageKey:
+    displayName: Custom presence image key
+    description: If using a custom client ID, set a presence image key from https://discord.com/developers/applications/{clientId}/rich-presence/assets
+    type: STRING
+  discordLargeImageText:
+    displayName: Custom image text
+    description: The text which is shown if a user hover over the activity image (leave blank to disable)
+    type: STRING
   discordShowUrlButton:
     displayName: Show scene URL button
     description: Show a presence button which links to first scene URL
