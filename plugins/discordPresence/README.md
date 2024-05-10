@@ -7,10 +7,10 @@ A plugin which shows the metadata of the currently playing scene as your Discord
 - Download and run [Discord RPC Server](https://github.com/lolamtisch/Discord-RPC-Extension/releases). You **do not** need any browser extensions.
 - Install [`StashUserscriptLibrary`](https://github.com/stashapp/CommunityScripts/tree/main/plugins/stashUserscriptLibrary) from your Stash plugin menu (if you don't already have it)
 
-### Why the desktop app?
-<small>
+#### Why the desktop app?
+<sub>
 This plugin relies on a separate desktop app (Discord RPC Server) running in the background. This is required because only a local app can talk to your Discord client to set a custom presence. The ability to do so from a website/browser is whitelisted by Discord (otherwise any website you visit could change your Discord client presence). Discord RPC Server is an open source application which exposes a websocket connection, so that other browser scripts and extensions (i.e. this plugin) can send presence updates to it, which it then forwards to your Discord client.
-</small>
+</sub>
 
 ## Configuration
 You can customize almost any part of the activity presence with the plugin options.
