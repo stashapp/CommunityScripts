@@ -2,8 +2,11 @@
   /**
    * @typedef {{
    *  discordClientId?: string;
-   *  discordLargeImageKey?: string;
+   *  discordDetailsText?: string;
+   *  discordStateText?: string;
    *  discordShowImage?: boolean;
+   *  discordLargeImageKey?: string;
+   *  discordLargeImageText?: string;
    *  discordShowUrlButton?: boolean;
    *  discordUrlButtonText?: string;
    * }} PluginConfig
@@ -11,9 +14,16 @@
 
   /**
    * @typedef {{
-   * id, title, urls?: string[], date,
-   * files: {duration:number}[], studio?: {id, name}
+   * id, title, code, details, director, urls?: string[], date, rating100, o_counter,
+   * organized, interactive, interactive_speed, created_at, updated_at, resume_time,
+   * last_played_at, play_duration, play_count, files: {duration:number}[], studio?: {id, name}
    * }} SceneData
+   */
+
+  /**
+   * @typedef {{ studio_name: string, url: string, file_duration: string }
+   * & Omit<SceneData, ['urls', 'files', 'studio']>
+   * } FlattenedSceneData
    */
 
   /**
@@ -31,8 +41,22 @@
     fragment SceneData on Scene {
       id
       title
+      code
+      details
+      director
       urls
       date
+      rating100
+      o_counter
+      organized
+      interactive
+      interactive_speed
+      created_at
+      updated_at
+      resume_time
+      last_played_at
+      play_duration
+      play_count
       files {
         duration
         __typename
@@ -68,11 +92,16 @@
 
   /** @type {Required<PluginConfig>} */
   const CONFIG = {
+    // DEFAULTS
     discordClientId: "1236860180407521341",
+    discordDetailsText: "{title}",
+    discordStateText: "from {studio_name}",
+    discordShowImage: false,
     discordLargeImageKey: "stashbox",
-    discordShowImage: true,
+    discordLargeImageText: "Stashapp",
     discordShowUrlButton: false,
     discordUrlButtonText: "Watch",
+
     ...userConfig,
   };
 
@@ -124,6 +153,7 @@
     return data.data.configuration.plugins[PLUGIN_ID];
   }
 
+  /** @return {Promise<FlattenedSceneData | null>} */
   async function getSceneData(sceneId) {
     if (!sceneId) {
       return { sceneData: null, duration: 0 };
@@ -136,11 +166,23 @@
 
     /** @type {GQLSceneDataResponse} */
     const data = await stash.callGQL(reqData);
+    const sceneData = data.data.findScene;
 
-    return {
-      sceneData: data.data.findScene,
-      duration: data.data.findScene?.files[0]?.duration ?? 0,
+    if (sceneData === null) {
+      return null;
+    }
+
+    const newProps = {
+      studio_name: sceneData.studio?.name ?? "Unknown Studio",
+      url: sceneData.urls?.length ? sceneData.urls[0] : "",
+      file_duration: sceneData.files?.length ? sceneData.files[0].duration : 0,
     };
+
+    delete sceneData.urls;
+    delete sceneData.studio;
+    delete sceneData.files;
+
+    return { ...sceneData, ...newProps };
   }
 
   function clearDiscordActivity() {
@@ -153,29 +195,34 @@
   }
 
   async function setDiscordActivity() {
-    const { sceneData, duration } = await getSceneData(SCENE_ID);
+    const sceneData = await getSceneData(SCENE_ID);
 
-    const url =
-      CONFIG.discordShowUrlButton && sceneData?.urls.length > 0
-        ? sceneData?.urls[0]
-        : undefined;
-    const studio = sceneData?.studio?.name;
+    if (!sceneData) {
+      return;
+    }
 
     const currentTime = getCurrentVideoTime() ?? 0;
-    const endTimestamp = Date.now() + (duration - currentTime) * 1000;
+    const endTimestamp =
+      Date.now() + (sceneData.file_duration - currentTime) * 1000;
 
     let body = {};
 
     if (sceneData !== null) {
       body = {
-        details: sceneData.title,
-        state: studio ? `by ${studio}` : undefined,
+        details: replaceVars(CONFIG.discordDetailsText, sceneData),
+        state: replaceVars(CONFIG.discordStateText, sceneData),
         largeImageKey: CONFIG.discordShowImage
           ? CONFIG.discordLargeImageKey
           : undefined,
-        endTimestamp,
-        buttons: url
-          ? [{ label: CONFIG.discordUrlButtonText, url }]
+        largeImageText: replaceVars(CONFIG.discordLargeImageText, sceneData),
+        endTimestamp: sceneData.file_duration > 0 ? endTimestamp : undefined,
+        buttons: CONFIG.discordShowUrlButton
+          ? [
+              {
+                label: replaceVars(CONFIG.discordUrlButtonText, sceneData),
+                url: sceneData.url,
+              },
+            ]
           : undefined,
         instance: true,
       };
@@ -202,5 +249,15 @@
     }
 
     return videoElem.currentTime;
+  }
+
+  /**
+   * Performs string replacement on templated config vars with scene data
+   * @param {string} templateStr
+   * @param {FlattenedSceneData} sceneData
+   */
+  function replaceVars(templateStr, sceneData) {
+    const pattern = /{\s*(\w+?)\s*}/g;
+    return templateStr.replace(pattern, (_, token) => sceneData[token] ?? "");
   }
 })();
