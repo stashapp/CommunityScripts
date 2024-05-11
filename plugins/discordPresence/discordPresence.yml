@@ -1,39 +1,39 @@
 name: Discord Presence
-description: Sets currently playing scene data as your Discord status. See README for prerequisites and config options (blue link button next to enable/disable button)
+description: Sets currently playing scene data as your Discord status. See README for prerequisites and config options (blue hyperlink next to enable/disable button)
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/discordPresence
-version: 0.2
+version: 1.0
 settings:
   discordClientId:
     displayName: Custom Discord application ID
-    description: Set a custom client ID, found here https://discord.com/developers/applications
+    description: Set a custom client ID
     type: STRING
   discordDetailsText:
     displayName: Presence details text
-    description: Formats the first line of your presence.
+    description: Format the first line of your presence text
     type: STRING
   discordStateText:
     displayName: Presence state text
-    description: Formats the second line of your presence.
+    description: Format the second line of your presence text
     type: STRING
   discordShowImage:
     displayName: Show presence image
-    description: Show the large presence image in your Discord profile (shows Stash logo when using default clientId/imageKey)
+    description: Show the large presence activity image
     type: BOOLEAN
   discordLargeImageKey:
     displayName: Custom presence image key
-    description: If using a custom client ID, set a presence image key from https://discord.com/developers/applications/{clientId}/rich-presence/assets
+    description: Set a presence image key (requires custom application ID and art asset, see README)
     type: STRING
   discordLargeImageText:
     displayName: Custom image text
-    description: The text which is shown if a user hover over the activity image (leave blank to disable)
+    description: Format the hover text for the activity image
     type: STRING
   discordShowUrlButton:
     displayName: Show scene URL button
-    description: Show a presence button which links to first scene URL
+    description: Show a presence button which links to the first scene URL
     type: BOOLEAN
   discordUrlButtonText:
     displayName: Custom button text
-    description: Set the displayed text for the presence button (default; "Watch")
+    description: Format the text for the presence button
     type: STRING
 ui:
   requires:

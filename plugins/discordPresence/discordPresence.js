@@ -216,14 +216,15 @@
           : undefined,
         largeImageText: replaceVars(CONFIG.discordLargeImageText, sceneData),
         endTimestamp: sceneData.file_duration > 0 ? endTimestamp : undefined,
-        buttons: CONFIG.discordShowUrlButton
-          ? [
-              {
-                label: replaceVars(CONFIG.discordUrlButtonText, sceneData),
-                url: sceneData.url,
-              },
-            ]
-          : undefined,
+        buttons:
+          CONFIG.discordShowUrlButton && isValidUrl(sceneData.url)
+            ? [
+                {
+                  label: replaceVars(CONFIG.discordUrlButtonText, sceneData),
+                  url: sceneData.url,
+                },
+              ]
+            : undefined,
         instance: true,
       };
     }
@@ -259,5 +260,15 @@
   function replaceVars(templateStr, sceneData) {
     const pattern = /{\s*(\w+?)\s*}/g;
     return templateStr.replace(pattern, (_, token) => sceneData[token] ?? "");
+  }
+
+  function isValidUrl(str) {
+    try {
+      new URL(str);
+    } catch {
+      return false;
+    }
+
+    return true;
   }
 })();

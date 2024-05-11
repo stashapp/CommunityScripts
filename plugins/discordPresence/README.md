@@ -1,11 +1,11 @@
-# Presence
+# Discord Presence
 
-A plugin which shows the metadata of the currently playing scene as your Discord presence
+A plugin which shows the metadata of the currently playing Stash scene as your Discord presence
 
 ## Setup
 ### Prerequisites to get the plugin working
 - Download and run [Discord RPC Server](https://github.com/lolamtisch/Discord-RPC-Extension/releases). You **do not** need any browser extensions.
-- Install [`StashUserscriptLibrary`](https://github.com/stashapp/CommunityScripts/tree/main/plugins/stashUserscriptLibrary) from your Stash plugin menu (if you don't already have it)
+- Install [`StashUserscriptLibrary`](https://github.com/stashapp/CommunityScripts/tree/main/plugins/stashUserscriptLibrary) from your Stash plugin menu.
 
 #### Why the desktop app?
 <sub>
@@ -15,16 +15,16 @@ This plugin relies on a separate desktop app (Discord RPC Server) running in the
 ## Configuration
 You can customize almost any part of the activity presence with the plugin options.
 
-| Presence element      | Default value (if empty; reverts to: )  | Plugin setting name           | Configuration |
-| --------------------- | --------------------------------------- | ----------------------------- | ------------- |
-| Activity name         | `1236860180407521341` (displays "Stash") | Custom Discord application ID | Create a new application under your [Discord developer portal](https://discord.com/developers/applications). <sub>The name of the application will be the name of the activity being shown as "Playing". Copy the `APPLICATION ID` (20 digit number) from the Developer Portal, and set it in the plugin options.</sub> |
-| Details (first line)  | `{title}`                           | Presence details text         | Custom text and variables |
-| State (second line)   | `from {studio_name}`                     | Presence state text           | Custom text and variables |
-| Show activity image   | Off                                     | Show presence image           | Toggle switch |
-| Custom activity image | `stashbox`                              | Custom presence image key     | After creating a Discord app (see first config option), go to your application settings > Rich Presence > Art Assets. Upload your custom image, give it a key name, and put this in the plugin option (takes a short while for the asset to appear after uploading). |
-| Activity hover text   | Empty                                   | Custom image text             | Custom text and variables |
-| Show URL button       | Off                                     | Show scene URL button         | Toggle switch |
-| Custom button text    | `Watch`                                 | Custom button text            | Custom text and variables |
+| Presence element      | Plugin setting name           | Default value (if empty; reverts to: )   | Configuration                                                                                                                                                                                                                                                                                                          |
+|-----------------------|-------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Activity name         | Custom Discord application ID | `1236860180407521341` (displays "Stash") | Create a new application under your [Discord developer portal](https://discord.com/developers/applications). <sub>The name of the application will be the name of the activity being shown as "Playing". Copy the `APPLICATION ID` (20 digit number) from the Developer Portal and set it in the plugin options.</sub> |
+| Details (first line)  | Presence details text         | `{title}`                                | Custom text and variables                                                                                                                                                                                                                                                                                              |
+| State (second line)   | Presence state text           | `from {studio_name}`                     | Custom text and variables                                                                                                                                                                                                                                                                                              |
+| Show activity image   | Show presence image           | Off                                      | Toggle switch                                                                                                                                                                                                                                                                                                          |
+| Custom activity image | Custom presence image key     | `stashbox`                               | After creating a Discord app (see first config option) go to your application settings > Rich Presence > Art Assets. Upload your custom image, give it a key name, and put this in the plugin option (takes a short while for the asset to appear after uploading).                                                    |
+| Activity hover text   | Custom image text             | Empty                                    | Custom text and variables                                                                                                                                                                                                                                                                                              |
+| Show URL button       | Show scene URL button         | Off                                      | Toggle switch                                                                                                                                                                                                                                                                                                          |
+| Custom button text    | Custom button text            | `Watch`                                  | Custom text and variables                                                                                                                                                                                                                                                                                              |
 
 ## String variables
 You can insert metadata from the currently playing scene into configurable elements, by enclosing variables in curly braces.
