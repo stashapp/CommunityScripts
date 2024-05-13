@@ -7,11 +7,11 @@ exec:
   - "{pluginDir}/dupeMarker.py"
 interface: raw
 tasks:
-  - name: 'Mark'
+  - name: "Mark"
     description: Mark duplicate markers
     defaultArgs:
       mode: mark
-  - name: 'Delete'
+  - name: "Delete"
     description: "Delete duplicate markers"
     defaultArgs:
       mode: delete
