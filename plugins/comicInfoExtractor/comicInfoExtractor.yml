@@ -3,7 +3,7 @@ description: Extract the metadata from cbz with the Comicrack standard (ComicInf
 version: 0.1
 url: https://github.com/stashapp/CommunityScripts/
 exec:
-  - "/usr/bin/python3"
+  - python
   - "{pluginDir}/comicInfoExtractor.py"
 interface: raw
 hooks:
