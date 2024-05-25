@@ -401,7 +401,7 @@ def relink_images(performer_id=None):
     i = 0
     images = []
     while i < total:
-        images = stash.find_images(f=query, filter={"page": 0, "per_page": per_page})
+        images = stash.find_images(f=query, filter={"page": i, "per_page": per_page})
         for img in images:
             log.debug("image: %s" % (img,))
             processImages(img)

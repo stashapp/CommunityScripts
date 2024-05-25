@@ -9,14 +9,14 @@ per_page = 100
 skip_tag = "[MiscTags: Skip]"
 
 # Defaults if nothing has changed in the stash ui
-settings = {"addStashVrCompanionTags": False, "addVrTags": False, "flatStudio": ""}
+settings = {"addStashVrCompanionTags": False, "addVrTags": False,"addVSoloTags": True,"addVThreesomeTags":True, "flatStudio": ""}
 
 VRCTags = {
     "flat": {"VRCTags": ["FLAT"], "projTags": []},
     "180_mono": {"VRCTags": ["DOME", "MONO"], "projTags": ["180°"]},
     "360_mono": {"VRCTags": ["SPHERE", "MONO"], "projTags": ["360°"]},
     "180_sbs": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
-    "LR_180": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
+    "lr_180": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
     "180_lr": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
     "180_3dh_lr": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
     "360_tb": {"VRCTags": ["SPHERE", "TB"], "projTags": ["360°"]},
@@ -41,14 +41,18 @@ def processScene(scene):
         tags_cache[skip_tag] = stash.find_tag(skip_tag, create=True).get("id")
     if tags_cache[skip_tag] not in [x["id"] for x in scene["tags"]]:
         tags = []
+        update = False
         if settings["addStashVrCompanionTags"]:
             processStashVRCompanionTags(scene, tags)
             log.debug(tags)
         if settings["addVrTags"]:
             processVRTags(scene, tags)
+        if settings["addVSoloTags"]:
+            soloTag(scene,tags)
+        if settings["addVThreesomeTags"]:
+            threesomeTag(scene, tags)
         if len(settings["flatStudio"]) > 0:
             processFlatStudio(scene, tags)
-
         if len(tags) > 0:
             log.debug(
                 "processing scene %s, checking if tags need to be added: %s"
@@ -59,23 +63,28 @@ def processScene(scene):
             )
             # start with the existing tag id's, then look up the new tag id's and create if needed
             new_scene = {"id": scene["id"], "tag_ids": [x["id"] for x in scene["tags"]]}
-            update = False
             for t in tags:
                 if t not in tags_cache:
-                    tags_cache[t] = stash.find_tag(t, create=True).get("id")
+                    tt = stash.find_tag(t, create=True)
+                    tags_cache[t]=tt
+                    for x in tt["aliases"]:
+                        tags_cache[x] = tt
+                    log.debug(tt)
+                if tags_cache[t].get("id") not in new_scene["tag_ids"]:
+                    new_scene["tag_ids"].append(tags_cache[t].get("id"))
                     update = True
-                if tags_cache[t] not in new_scene["tag_ids"]:
-                    new_scene["tag_ids"].append(tags_cache[t])
-                    update = True
-            if update:
-                log.info(
-                    "Adding tags to scene: %s, tags: %s"
-                    % (
-                        scene["title"],
-                        tags,
-                    )
+                else:
+                    log.debug('already there %s' % (t,))
+        if update:
+            log.info(
+                "Adding tags to scene: %s, tags: %s"
+                % (
+                    scene["title"],
+                    tags,
                 )
-                stash.update_scene(new_scene)
+            )
+            log.debug(new_scene)
+            stash.update_scene(new_scene)
         else:
             log.debug("no update")
     else:
@@ -114,7 +123,6 @@ def processVRTags(scene, tags):
 
 
 def processFlatStudio(scene, tags):
-    log.debug(scene)
     if scene["studio"]:
         if scene["studio"]["id"] in [
             x.strip() for x in settings["flatStudio"].split(",")
@@ -124,6 +132,61 @@ def processFlatStudio(scene, tags):
 
                 tags.append("FLAT")
     log.debug(tags)
+
+def soloTag(scene,tags):
+    """Add Solo Female, Solo male, Solo Trans where there is a single performer and the solo tag"""
+    for name in ['solo', 'solo model','solo models']:
+        if name in [x["name"].lower() for x in scene['tags']]:
+            if len(scene['performers']) ==1:
+                p=stash.find_performer(scene['performers'][0])
+                if p['gender']=='FEMALE':
+                    tags.append('Solo Female')
+                elif p['gender'] == 'MALE':
+                    tags.append('Solo Male')
+                elif p['gender'] =='TRANSGENDER_MALE':
+                    tags.append('Solo Trans')
+                elif p['gender'] =='TRANSGENDER_FEMALE':
+                    tags.append('Solo Trans')
+
+def threesomeTag(scene, tags):
+    """Add Threesome (XXX) tags based on group makeup"""
+    for name in ['threesome']:
+        if name in [x["name"].lower() for x in scene['tags']]:
+            if len(scene['performers']) == 3:
+                makeup=[]
+                for p in scene['performers']:
+                    p2=stash.find_performer(p)
+                    makeup.append(p2['gender'])
+                makeup.sort()
+                log.debug(makeup)
+                if makeup[0]=='FEMALE' and makeup[1]=='FEMALE' and makeup[2]=='FEMALE':
+                    tags.append('Threesome (Lesbian)')
+                elif makeup[0]=='FEMALE' and makeup[1]=='FEMALE' and makeup[2]=='MALE':
+                    tags.append('Threesome (BGG)')
+                elif makeup[0]=='FEMALE' and makeup[1]=='MALE' and makeup[2]=='MALE':
+                    tags.append('Threesome (BBG)')
+                elif makeup[0]=='FEMALE' and makeup[1]=='FEMALE' and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
+                    tags.append('Threesome (GGT)')
+                elif makeup[0]=='FEMALE' and ( makeup[1]=='TRANSGENDER_FEMALE' or makeup[1]=='TRANSGENDER_MALE') and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
+                    tags.append('Threesome (GTT)')
+                elif makeup[0]=='FEMALE' and makeup[1]=='MALE' and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
+                    tags.append('Threesome (BGT)')
+                elif makeup[0]=='MALE' and makeup[1]=='MALE' and makeup[2]=='MALE':
+                    tags.append('Threesome (Gay)')
+                elif makeup[0]=='MALE' and makeup[1]=='MALE' and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
+                    tags.append('Threesome (BBT)')
+                elif makeup[0]=='MALE' and ( makeup[1]=='TRANSGENDER_FEMALE' or makeup[1]=='TRANSGENDER_MALE') and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
+                    tags.append('Threesome (BTT)')
+                elif ( makeup[0]=='TRANSGENDER_FEMALE' or makeup[0]=='TRANSGENDER_MALE') and ( makeup[1]=='TRANSGENDER_FEMALE' or makeup[1]=='TRANSGENDER_MALE') and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
+                    tags.append('Threesome (Trans)')
+
+
+
+
+
+
+
+
 
 
 def processScenes():
@@ -176,18 +239,23 @@ json_input = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()["plugins"]
-if "misc-tags" in config:
-    settings.update(config["misc-tags"])
+if "miscTags" in config:
+    settings.update(config["miscTags"])
 log.info("config: %s " % (settings,))
 
 if "mode" in json_input["args"]:
     PLUGIN_ARGS = json_input["args"]["mode"]
+    log.debug(json_input)
     if "processScenes" in PLUGIN_ARGS:
-        processScenes()
-
+        if "scene_id" in json_input["args"]:
+            scene = stash.find_scene(json_input["args"]["scene_id"])
+            processScene(scene)
+        else:
+            processScenes()
 
 elif "hookContext" in json_input["args"]:
     id = json_input["args"]["hookContext"]["id"]
     if json_input["args"]["hookContext"]["type"] == "Scene.Update.Post":
-        scene = stash.find_scene(id)
-        processScene(scene)
+        stash.run_plugin_task("miscTags", "Process all", args={"scene_id": id})
+#        scene = stash.find_scene(id)
+#        processScene(scene)

@@ -1,6 +1,6 @@
 name: Misc Tags
 description: Add extra tags for VR and other ues
-version: 0.2
+version: 0.3
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
@@ -15,6 +15,15 @@ settings:
     displayName: Add VR related tags
     description: Add projection based tags 180°, 200°, VR
     type: BOOLEAN
+  addVSoloTags:
+    displayName: Add solo tags
+    description: if there is the "solo" tag and 1 performer add the "Solo Female" tag
+    type: BOOLEAN
+  addVThreesomeTags:
+    displayName: Add threesome tags
+    description: if there is the "threesome" tag with 3 tagged performers add a group makeup tag eg Threesome (BGG)
+    type: BOOLEAN
+
   flatStudio:
     displayName: 2d Studio for stash-vr-companion
     description: Comma seperated list of studio number in your instance to tag with export_devor,FLAT for use with stash-vr-companion
