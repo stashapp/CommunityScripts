@@ -6,9 +6,9 @@ function ok() {
 
 function main() {
   var hookContext = input.Args.hookContext;
-  var opInput = hookContext.input;
-  var primaryTagID = opInput.primary_tag_id;
-  var sceneID = opInput.scene_id;
+  var opInput = hookContext.Input;
+  var primaryTagID = opInput.PrimaryTagID;
+  var sceneID = opInput.SceneID;
 
   // we can't currently find scene markers. If it's not in the input
   // then just return
@@ -19,22 +19,13 @@ function main() {
 
   // get the existing scene tags
   var sceneTags = getSceneTags(sceneID);
-  var tagIDs = [];
-  for (var i = 0; i < sceneTags.length; ++i) {
-    var tagID = sceneTags[i].id;
-    if (tagID == primaryTagID) {
-      log.Debug("primary tag already exists on scene");
-      return;
-    }
 
-    tagIDs.push(tagID);
-  }
+  // Combine all tags from scene and the new marker
+  var allTags = [...new Set([...sceneTags, primaryTagID, ...opInput.TagIds])];
+  var newTags = allTags.filter((t) => sceneTags.includes(t));
 
-  // set the tag on the scene if not present
-  tagIDs.push(primaryTagID);
-
-  setSceneTags(sceneID, tagIDs);
-  log.Info("added primary tag " + primaryTagID + " to scene " + sceneID);
+  setSceneTags(sceneID, allTags);
+  log.Debug("added new tags " + newTags.join(", ") + " to scene " + sceneID);
 }
 
 function getSceneTags(sceneID) {
@@ -55,7 +46,7 @@ query findScene($id: ID) {\
   var result = gql.Do(query, variables);
   var findScene = result.findScene;
   if (findScene) {
-    return findScene.tags;
+    return findScene.tags.map((t) => t.id);
   }
 
   return [];
