@@ -3,29 +3,28 @@
   font-style: normal;
   font-weight: 100;
   font-display: swap;
-  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Thin.woff2") format("woff2");
+  src: url("./assets/fonts/Inter-Thin.woff2") format("woff2");
 }
 @font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Light.woff2") format("woff2");
+  src: url("./assets/fonts/Inter-Light.woff2") format("woff2");
 }
 @font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Regular.woff2")
-    format("woff2");
+  src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
 }
 @font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/plugin/qxSceneCard/assets/fonts/Inter-Bold.woff2") format("woff2");
+  src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
 }
 .scene-card {
   font-family: "Inter", sans-serif;
