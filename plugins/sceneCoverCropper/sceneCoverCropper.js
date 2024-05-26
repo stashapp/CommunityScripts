@@ -6,14 +6,6 @@
   let cropper = null;
 
   try {
-    const img = document.createElement("img");
-    new Cropper(img);
-  } catch (e) {
-    console.error(
-      "Cropper not loaded - please install 4. CropperJS from CommunityScripts"
-    );
-  }
-  try {
     stash.getVersion();
   } catch (e) {
     console.error(
