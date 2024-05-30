@@ -14,8 +14,8 @@ def install(package):
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
     except Exception as e:
-        log.error(f"Failed to install {package}: {e}. If you're running in docker or a
-                   venv you may need to pip install dependencies manually using the provided requirements.txt")
+        log.error(f"Failed to install {package}: {e}. If you're running in docker or a" + 
+                   "venv you may need to pip install dependencies manually using the provided requirements.txt")
         raise Exception(f"Failed to install {package}")
 
 try:
