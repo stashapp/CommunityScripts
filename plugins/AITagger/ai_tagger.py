@@ -11,7 +11,12 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 # ----------------- Setup -----------------
 
 def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    except Exception as e:
+        log.error(f"Failed to install {package}: {e}. If you're running in docker or a
+                   venv you may need to pip install dependencies manually using the provided requirements.txt")
+        raise Exception(f"Failed to install {package}")
 
 try:
     toRaise = False
@@ -50,7 +55,7 @@ try:
         raise Exception("Please provide a config.py file with the required variables.")
 
 except:
-    log.error("Installed required packages, please retry the task.")
+    log.error("Attempted to install required packages, please retry the task.")
     sys.exit(1)
     raise
         
