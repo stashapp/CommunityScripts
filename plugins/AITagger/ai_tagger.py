@@ -6,7 +6,6 @@ import csv
 from typing import Any
 
 # ----------------- Setup -----------------
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 def install(package):
     try:
@@ -93,6 +92,7 @@ async def run(json_input, output):
     global updateme_tag_id
     try:
         log.debug(json_input["server_connection"])
+        os.chdir(json_input["server_connection"]["PluginDir"])
         stash = StashInterface(json_input["server_connection"])
         aierroed_tag_id = stash.find_tag(config.aierrored_tag_name, create=True)["id"]
         tagme_tag_id = stash.find_tag(config.tagme_tag_name, create=True)["id"]
@@ -231,6 +231,8 @@ def process_server_video_result(server_result, sceneId, scenePath):
         save_to_csv(csv_path, results)
 
         # Step 1: Group results by tag
+        timespan = results[1]['frame_index'] - results[0]['frame_index']
+        log.debug(f"Server returned results every {timespan}s")
         tag_timestamps = {}
         for result in results:
             for action in result['actions']:
@@ -244,10 +246,13 @@ def process_server_video_result(server_result, sceneId, scenePath):
             start = timestamps[0]
             total_duration = 0
             for i in range(1, len(timestamps)):
-                if timestamps[i] - timestamps[i - 1] > max_gaps.get(tag, 0):
+                if timestamps[i] - timestamps[i - 1] > timespan + max_gaps.get(tag, 0):
                     # End of current marker, start of new one
                     duration = timestamps[i - 1] - start
-                    if duration >= min_durations.get(tag, 0):
+
+                    min_duration_temp = min_durations.get(tag, 0)
+                    min_duration_temp = min_duration_temp if min_duration_temp > timespan else timespan
+                    if duration >= min_duration_temp:
                         # The marker is long enough, add its duration
                         total_duration += duration
 
@@ -269,6 +274,7 @@ def process_server_video_result(server_result, sceneId, scenePath):
                 # stash.create_scene_marker({"scene_id": sceneId, "primary_tag_id":tagid_mappings[tag], "tag_ids": [tagid_mappings[tag]], "seconds": start, "title":tagname_mappings[tag]})
             tag_durations[tag] = total_duration
         scene_duration = results[-1]['frame_index']
+
         # Step 3: Check if each tag meets the required duration
 
         tags_to_add = [ai_tagged_tag_id]
