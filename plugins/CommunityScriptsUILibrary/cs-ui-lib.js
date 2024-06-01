@@ -34,7 +34,6 @@
     if (window.location.pathname.startsWith(path))
       waitForElement(element, callback);
     PluginApi.Event.addEventListener("stash:location", (e) => {
-      console.log("location", e);
       if (e.detail.data.location.pathname.startsWith(path))
         waitForElement(element, callback);
     });

@@ -63,10 +63,7 @@
 
   const PLUGIN_ID = "discordPresence";
 
-  const userConfig = await CommunityScriptsUILib.getConfiguration(
-    PLUGIN_ID,
-    {}
-  );
+  const userConfig = await csLib.getConfiguration(PLUGIN_ID, {});
   console.debug("Discord Presence Plugin: user config", userConfig);
 
   /** @type {Required<PluginConfig>} */
@@ -87,6 +84,7 @@
 
   let SCENE_ID = null;
   let INTERVAL_ID = null;
+  let WS_ALIVE = false;
 
   const doUpdatingPresence = (e) => {
     clearInterval(INTERVAL_ID);
@@ -106,6 +104,7 @@
 
   // https://github.com/lolamtisch/Discord-RPC-Extension/releases
   const ws = new WebSocket("ws://localhost:6969");
+  ws.addEventListener("message", () => (WS_ALIVE = true));
   ws.addEventListener("open", () =>
     PluginApi.Event.addEventListener("stash:location", doUpdatingPresence)
   );
@@ -119,6 +118,17 @@
   window.addEventListener("beforeunload", () => {
     clearDiscordActivity();
   });
+  // set timeout for checking liveliness
+  const checkLiveliness = () => {
+    if (!WS_ALIVE) {
+      unbindVideoListener(document.querySelector("#VideoJsPlayer video"));
+      clearInterval(INTERVAL_ID);
+      throw new Error(`Discord Presence Plugin: Discord RPC Extension not running
+      Please consult the README on how to set up the Discord RPC Extension
+      (https://github.com/stashapp/CommunityScripts/tree/main/plugins/discordPresence)`);
+    }
+  };
+  setTimeout(checkLiveliness, 2000);
 
   /** @return {Promise<FlattenedSceneData | null>} */
   async function getSceneData(sceneId) {
@@ -135,9 +145,7 @@
       .callGQL(reqData)
       .then((data) => data.findScene);
 
-    if (sceneData === null) {
-      return null;
-    }
+    if (!sceneData) return null;
 
     const newProps = {
       studio_name: sceneData.studio?.name ?? "Unknown Studio",
@@ -203,7 +211,7 @@
   }
 
   const getCurrentVideoTime = () =>
-    document.querySelector("#VideoJsPlayer video")?.currentTime ?? null;
+    document.querySelector("#VideoJsPlayer video")?.currentTime;
 
   /**
    * Performs string replacement on templated config vars with scene data
@@ -214,4 +222,21 @@
     const pattern = /{\s*(\w+?)\s*}/g;
     return templateStr.replace(pattern, (_, token) => sceneData[token] ?? "");
   }
+
+  // add listener for video events
+  const videoListener = (video) => {
+    SCENE_ID = parseInt(location.pathname.split("/")[2]);
+    video.addEventListener("playing", setDiscordActivity);
+    video.addEventListener("play", setDiscordActivity);
+    video.addEventListener("seeked", setDiscordActivity);
+    // end on video end
+    video.addEventListener("ended", clearDiscordActivity);
+  };
+  const unbindVideoListener = (video) => {
+    video.removeEventListener("playing", setDiscordActivity);
+    video.removeEventListener("play", setDiscordActivity);
+    video.removeEventListener("seeked", setDiscordActivity);
+    video.removeEventListener("ended", clearDiscordActivity);
+  };
+  csLib.PathElementListener("/scenes/", "video", videoListener);
 })();
