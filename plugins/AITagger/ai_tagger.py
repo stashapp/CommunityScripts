@@ -6,8 +6,6 @@ import csv
 from typing import Any
 
 # ----------------- Setup -----------------
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
 def install(package):
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
@@ -93,6 +91,8 @@ async def run(json_input, output):
     global updateme_tag_id
     try:
         log.debug(json_input["server_connection"])
+        # Change to plugin directory as instructed by stash
+        os.chdir(json_input["server_connection"]["PluginDir"])
         stash = StashInterface(json_input["server_connection"])
         aierroed_tag_id = stash.find_tag(config.aierrored_tag_name, create=True)["id"]
         tagme_tag_id = stash.find_tag(config.tagme_tag_name, create=True)["id"]
@@ -240,48 +240,54 @@ def process_server_video_result(server_result, sceneId, scenePath):
 
         # Step 2: Process each tag
         tag_durations = {}
+        # blame feederbox826 for grouping algo
         for tag, timestamps in tag_timestamps.items():
-            start = timestamps[0]
-            total_duration = 0
-            for i in range(1, len(timestamps)):
-                if timestamps[i] - timestamps[i - 1] > max_gaps.get(tag, 0):
-                    # End of current marker, start of new one
-                    duration = timestamps[i - 1] - start
-                    if duration >= min_durations.get(tag, 0):
+            tag_index = 0
+            tag_duration = 0
+            # while instead of for, so we can iterate on our own terms
+            while tag_index < len(timestamps):
+                # set up the loop, starting with 0 duration
+                marker_duration = 0
+                start = timestamps[tag_index]
+                end = start
+                # while the next timestamp is within the max gap, extend the marker
+                while (tag_index + 1 < len(timestamps)) and timestamps[tag_index + 1] - end <= max_gaps.get(tag, 0):
+                    end = timestamps[tag_index + 1]
+                    tag_index += 1
+                # timestamp has exceeded the max gap or we have ended, close out and process the marker
+                else:
+                    # if we have ended, increment the index to avoid infinite loop
+                    tag_index += 1
+                    # calculate duration
+                    marker_duration = end - start
+                    if marker_duration >= min_durations.get(tag, 0):
                         # The marker is long enough, add its duration
-                        total_duration += duration
+                        tag_duration += marker_duration
 
                         # README: This code works for generating markers but stash markers don't have a way to be deleted in batch and are missing a lot of other 
                         # needed features so this code will remain disabled until stash adds the needed features.
 
                         # log.debug(f"Creating marker for {tagname_mappings[tag]} with range {start} - {timestamps[i - 1]}")
                         # stash.create_scene_marker({"scene_id": sceneId, "primary_tag_id":tagid_mappings[tag], "tag_ids": [tagid_mappings[tag]], "seconds": start, "title":tagname_mappings[tag]})
-                    start = timestamps[i]
-            # Check the last marker
-            duration = timestamps[-1] - start
-            if duration >= min_durations.get(tag, 0):
-                total_duration += duration
-
-                # README: This code works for generating markers but stash markers don't have a way to be deleted in batch and are missing a lot of other 
-                # needed features so this code will remain disabled until stash adds the needed features.
-
-                # log.debug(f"Creating marker for {tagname_mappings[tag]} with range {start} - {timestamps[-1]}")
-                # stash.create_scene_marker({"scene_id": sceneId, "primary_tag_id":tagid_mappings[tag], "tag_ids": [tagid_mappings[tag]], "seconds": start, "title":tagname_mappings[tag]})
-            tag_durations[tag] = total_duration
+            # done processing this tag
+            else:
+                log.debug("done with tag")
+                log.debug(tag)
+                tag_durations[tag] = tag_duration
         scene_duration = results[-1]['frame_index']
         # Step 3: Check if each tag meets the required duration
 
         tags_to_add = [ai_tagged_tag_id]
-        for tag, duration in tag_durations.items():
+        for tag, marker_duration in tag_durations.items():
             required_duration = required_durations.get(tag, "0s")
             if required_duration.endswith("s"):
                 required_duration = float(required_duration[:-1])
             elif required_duration.endswith("%"):
                 required_duration = float(required_duration[:-1]) / 100 * scene_duration
-            if duration < required_duration:
-                log.debug(f"Tag {tagname_mappings[tag]} does not meet the required duration of {required_duration}s. It only has a duration of {duration}s.")
+            if marker_duration < required_duration:
+                log.debug(f"Tag {tagname_mappings[tag]} does not meet the required duration of {required_duration}s. It only has a duration of {marker_duration}s.")
             else:
-                log.debug(f"Tag {tagname_mappings[tag]} meets the required duration of {required_duration}s. It has a duration of {duration}s.")
+                log.debug(f"Tag {tagname_mappings[tag]} meets the required duration of {required_duration}s. It has a duration of {marker_duration}s.")
                 tags_to_add.append(tagid_mappings[tag])
 
     log.info(f"Processed video with {len(results)} AI tagged frames")
