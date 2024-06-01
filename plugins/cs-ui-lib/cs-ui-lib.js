@@ -20,11 +20,14 @@ function CommunityScriptsUILib() {
   // wait for visible key elements
   function waitForElement(selector, callback) {
     var el = document.querySelector(selector);
-    if (el) return callback();
+    if (el) return callback(el);
     setTimeout(waitForElement, 100, selector, callback);
   }
 
   const PathElementListener = (path, element, callback) => {
+    // startup location
+    if (window.location.pathname.startsWith(path))
+      waitForElement(element, callback);
     PluginApi.Event.addEventListener("stash:location", (e) => {
       console.log("location", e);
       if (e.detail.data.location.pathname.startsWith(path))
