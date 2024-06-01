@@ -11,10 +11,12 @@
    * @returns {Promise<string[]>} - A promise that resolves with an array of tag IDs.
    */
   async function getTagsForImage(image_id) {
-    const query = `query ($id: ID) { findImage(id: $id) { tags { id }}}`
-    const variables = { id: image_id };I 
-    return csLib.callGQL({ query, variables })
-      .then(data => data.findImage.tags.map(p => p.id));
+    const query = `query ($id: ID) { findImage(id: $id) { tags { id }}}`;
+    const variables = { id: image_id };
+    I;
+    return csLib
+      .callGQL({ query, variables })
+      .then((data) => data.findImage.tags.map((p) => p.id));
   }
 
   /**
@@ -24,9 +26,9 @@
    * @returns {Promise<Object>} - A promise that resolves with the updated image object.
    */
   async function updateImage(image_id, tag_ids) {
-    const variables = { input: { id: image_id, tag_ids: tag_ids } }
+    const variables = { input: { id: image_id, tag_ids: tag_ids } };
     const query = `mutation ($input: ImageUpdateInput!){
-      imageUpdate(input: $input) { id }}`
+      imageUpdate(input: $input) { id }}`;
     return csLib.callGQL({ query, variables });
   }
 
@@ -47,10 +49,11 @@
    * @returns {Promise<string>} - A Promise that resolves with the ID of the newly created tag.
    */
   async function createTag(tag_name) {
-    const variables ={ input: { name: tag_name } }
-    const query = `mutation ($input: TagCreateInput!) { tagCreate(input: $input){ id }}`
-    return await csLib.callGQL({ query, variables })
-      .then(data => data.tagCreate.id);
+    const variables = { input: { name: tag_name } };
+    const query = `mutation ($input: TagCreateInput!) { tagCreate(input: $input){ id }}`;
+    return await csLib
+      .callGQL({ query, variables })
+      .then((data) => data.tagCreate.id);
   }
 
   /**
@@ -13250,7 +13253,7 @@
   }
 
   function createTagButton(target) {
-    if (document.querySelector("#stashrealbooru")) return
+    if (document.querySelector("#stashrealbooru")) return;
     new TagButton({ target });
   }
   csLib.PathElementListener("/images/", ".image-tabs", createTagButton);
