@@ -232,7 +232,7 @@ def process_server_video_result(server_result, sceneId, scenePath):
 
         # Step 1: Group results by tag
         timespan = results[1]['frame_index'] - results[0]['frame_index']
-        log.info(f"Timespan: {timespan}")
+        log.debug(f"Server returned results every {timespan}s")
         tag_timestamps = {}
         for result in results:
             for action in result['actions']:
