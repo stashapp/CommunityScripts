@@ -34,7 +34,6 @@
     query FindScene($id: ID!) {
       findScene(id: $id) {
         ...SceneData
-        __typename
       }
     }
     
@@ -57,38 +56,15 @@
       last_played_at
       play_duration
       play_count
-      files {
-        duration
-        __typename
-      }
-      studio {
-        ...SlimStudioData
-        __typename
-      }
-      __typename
-    }
-    
-    fragment SlimStudioData on Studio {
-      id
-      name
-      __typename
+      files { duration }
+      studio { name }
     }
   `;
 
-  while (!window.stash) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
   const PLUGIN_ID = "discordPresence";
 
-  let userConfig = await getPluginConfig();
+  const userConfig = await csLib.getConfiguration(PLUGIN_ID, {});
   console.debug("Discord Presence Plugin: user config", userConfig);
-
-  for (let [key, val] of Object.entries(userConfig)) {
-    if (val === "" || val === undefined || val === null) {
-      delete userConfig[key];
-    }
-  }
 
   /** @type {Required<PluginConfig>} */
   const CONFIG = {
@@ -101,7 +77,6 @@
     discordLargeImageText: "Stashapp",
     discordShowUrlButton: false,
     discordUrlButtonText: "Watch",
-
     ...userConfig,
   };
 
@@ -109,6 +84,7 @@
 
   let SCENE_ID = null;
   let INTERVAL_ID = null;
+  let WS_ALIVE = false;
 
   const doUpdatingPresence = (e) => {
     clearInterval(INTERVAL_ID);
@@ -128,6 +104,7 @@
 
   // https://github.com/lolamtisch/Discord-RPC-Extension/releases
   const ws = new WebSocket("ws://localhost:6969");
+  ws.addEventListener("message", () => (WS_ALIVE = true));
   ws.addEventListener("open", () =>
     PluginApi.Event.addEventListener("stash:location", doUpdatingPresence)
   );
@@ -141,17 +118,17 @@
   window.addEventListener("beforeunload", () => {
     clearDiscordActivity();
   });
-
-  /** @returns {Promise<PluginConfig>} */
-  async function getPluginConfig() {
-    const reqData = {
-      operationName: "Configuration",
-      variables: {},
-      query: `query Configuration { configuration { plugins } }`,
-    };
-    const data = await stash.callGQL(reqData);
-    return data.data.configuration.plugins[PLUGIN_ID];
-  }
+  // set timeout for checking liveliness
+  const checkLiveliness = () => {
+    if (!WS_ALIVE) {
+      unbindVideoListener(document.querySelector("#VideoJsPlayer video"));
+      clearInterval(INTERVAL_ID);
+      throw new Error(`Discord Presence Plugin: Discord RPC Extension not running
+      Please consult the README on how to set up the Discord RPC Extension
+      (https://github.com/stashapp/CommunityScripts/tree/main/plugins/discordPresence)`);
+    }
+  };
+  setTimeout(checkLiveliness, 2000);
 
   /** @return {Promise<FlattenedSceneData | null>} */
   async function getSceneData(sceneId) {
@@ -159,18 +136,16 @@
       return { sceneData: null, duration: 0 };
     }
     const reqData = {
-      operationName: "FindScene",
       variables: { id: sceneId },
       query: SCENE_GQL_QUERY,
     };
 
     /** @type {GQLSceneDataResponse} */
-    const data = await stash.callGQL(reqData);
-    const sceneData = data.data.findScene;
+    const sceneData = await csLib
+      .callGQL(reqData)
+      .then((data) => data.findScene);
 
-    if (sceneData === null) {
-      return null;
-    }
+    if (!sceneData) return null;
 
     const newProps = {
       studio_name: sceneData.studio?.name ?? "Unknown Studio",
@@ -196,38 +171,31 @@
 
   async function setDiscordActivity() {
     const sceneData = await getSceneData(SCENE_ID);
-
-    if (!sceneData) {
-      return;
-    }
+    if (!sceneData) return;
 
     const currentTime = getCurrentVideoTime() ?? 0;
     const endTimestamp =
       Date.now() + (sceneData.file_duration - currentTime) * 1000;
 
-    let body = {};
-
-    if (sceneData !== null) {
-      body = {
-        details: replaceVars(CONFIG.discordDetailsText, sceneData),
-        state: replaceVars(CONFIG.discordStateText, sceneData),
-        largeImageKey: CONFIG.discordShowImage
-          ? CONFIG.discordLargeImageKey
+    let body = {
+      details: replaceVars(CONFIG.discordDetailsText, sceneData),
+      state: replaceVars(CONFIG.discordStateText, sceneData),
+      largeImageKey: CONFIG.discordShowImage
+        ? CONFIG.discordLargeImageKey
+        : undefined,
+      largeImageText: replaceVars(CONFIG.discordLargeImageText, sceneData),
+      endTimestamp: sceneData.file_duration > 0 ? endTimestamp : undefined,
+      buttons:
+        CONFIG.discordShowUrlButton && URL.canParse(sceneData.url)
+          ? [
+              {
+                label: replaceVars(CONFIG.discordUrlButtonText, sceneData),
+                url: sceneData.url,
+              },
+            ]
           : undefined,
-        largeImageText: replaceVars(CONFIG.discordLargeImageText, sceneData),
-        endTimestamp: sceneData.file_duration > 0 ? endTimestamp : undefined,
-        buttons:
-          CONFIG.discordShowUrlButton && isValidUrl(sceneData.url)
-            ? [
-                {
-                  label: replaceVars(CONFIG.discordUrlButtonText, sceneData),
-                  url: sceneData.url,
-                },
-              ]
-            : undefined,
-        instance: true,
-      };
-    }
+      instance: true,
+    };
 
     if (!ws.OPEN) {
       return;
@@ -242,15 +210,8 @@
     );
   }
 
-  function getCurrentVideoTime() {
-    const videoElem = document.querySelector("#VideoJsPlayer video");
-
-    if (!videoElem) {
-      return null;
-    }
-
-    return videoElem.currentTime;
-  }
+  const getCurrentVideoTime = () =>
+    document.querySelector("#VideoJsPlayer video")?.currentTime;
 
   /**
    * Performs string replacement on templated config vars with scene data
@@ -262,13 +223,20 @@
     return templateStr.replace(pattern, (_, token) => sceneData[token] ?? "");
   }
 
-  function isValidUrl(str) {
-    try {
-      new URL(str);
-    } catch {
-      return false;
-    }
-
-    return true;
-  }
+  // add listener for video events
+  const videoListener = (video) => {
+    SCENE_ID = parseInt(location.pathname.split("/")[2]);
+    video.addEventListener("playing", setDiscordActivity);
+    video.addEventListener("play", setDiscordActivity);
+    video.addEventListener("seeked", setDiscordActivity);
+    // end on video end
+    video.addEventListener("ended", clearDiscordActivity);
+  };
+  const unbindVideoListener = (video) => {
+    video.removeEventListener("playing", setDiscordActivity);
+    video.removeEventListener("play", setDiscordActivity);
+    video.removeEventListener("seeked", setDiscordActivity);
+    video.removeEventListener("ended", clearDiscordActivity);
+  };
+  csLib.PathElementListener("/scenes/", "video", videoListener);
 })();

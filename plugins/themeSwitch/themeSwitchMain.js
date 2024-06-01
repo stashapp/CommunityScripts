@@ -247,9 +247,12 @@
   function addStyleSheet(key, path) {
     console.log(key, path);
     const styleSheet = document.createElement("link");
+    const serverURL =
+      window.Location.origin +
+        document.querySelector("base")?.getAttribute("href") ?? "/";
     styleSheet.setAttribute(
       "href",
-      `${stash.serverUrl}plugin/themeSwitch/assets${path}`
+      `${serverURL}plugin/themeSwitch/assets${path}`
     );
     styleSheet.setAttribute("rel", "stylesheet");
     styleSheet.setAttribute("type", "text/css");
@@ -353,61 +356,39 @@
     }
   }
 
-  async function getInstalledPlugins() {
-    try {
-      const res = await stash.callGQL({
-        operationName: "Plugins",
-        variables: {},
-        query: "query Plugins{plugins{id}}",
-      });
-      return res.data.plugins.map((plugin) => plugin.id);
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  const getInstalledPlugins = async () =>
+    csLib
+      .callGQL({ query: `query Plugins{plugins{id}}` })
+      .then((data) => data.plugins.map((plugin) => plugin.id))
+      .catch((err) => console.error(err));
 
-  async function isPluginInstalled(plugin) {
-    const installedPlugins = await getInstalledPlugins();
-    return installedPlugins.includes(plugin);
-  }
+  const isPluginInstalled = async (plugin) =>
+    getInstalledPlugins().then((plugins) => plugins.includes(plugin));
 
   async function enablePlugin(plugin, state) {
-    try {
-      const query = {
-        operationName: "SetPluginsEnabled",
-        variables: {
-          enabledMap: {},
-        },
-        query:
-          "mutation SetPluginsEnabled($enabledMap: BoolMap!) {\n  setPluginsEnabled(enabledMap: $enabledMap)\n}",
-      };
-
-      query.variables.enabledMap[plugin] = state;
-
-      await stash.callGQL(query);
-    } catch (err) {
-      console.error(err);
-    }
+    const query =
+      "mutation SetPluginsEnabled($enabledMap: BoolMap!) { setPluginsEnabled(enabledMap: $enabledMap) }";
+    const variables = { enabledMap: {} };
+    variables.enabledMap[plugin] = state;
+    await csLib
+      .callGQL({ query, variables })
+      .catch((err) => console.error(err));
   }
 
   async function installPlugin(plugin, src) {
-    try {
-      await stash.callGQL({
-        operationName: "InstallPluginPackages",
-        variables: {
-          packages: [
-            {
-              id: plugin,
-              sourceURL: src,
-            },
-          ],
+    const query =
+      "mutation InstallPluginPackages($packages: [PackageSpecInput!]!) {installPackages(type: Plugin, packages: $packages)}";
+    const variables = {
+      packages: [
+        {
+          id: plugin,
+          sourceURL: src,
         },
-        query:
-          "mutation InstallPluginPackages($packages: [PackageSpecInput!]!) {installPackages(type: Plugin, packages: $packages)}",
-      });
-    } catch (err) {
-      console.error(err);
-    }
+      ],
+    };
+    await csLib
+      .callGQL({ query, variables })
+      .catch((err) => console.error(err));
   }
 
   function createBTNMenu() {
@@ -766,7 +747,10 @@
     init();
   }
 
-  stash.addEventListeners(StashPages, createMenuAndInit);
+  PluginApi.Event.addEventListener("stash:location", (e) =>
+    createMenuAndInit()
+  );
+  createMenuAndInit();
 
   // Reset menuCreated flag on hard refresh
   window.addEventListener("beforeunload", function () {
