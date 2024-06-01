@@ -61,16 +61,14 @@
    * @returns {Promise<Object>} An object with tag names as keys and tag IDs as values.
    */
   async function getAllTags() {
-    const reqData = {
-      query: `{
+    const query = `{
       allTags{
         id
         name
         aliases
       }
-    }`,
-    };
-    var result = await csLib.callGQL(reqData);
+    }`;
+    var result = await csLib.callGQL({ query });
     return result.allTags.reduce((map, obj) => {
       map[obj.name.toLowerCase()] = obj.id;
       obj.aliases.forEach((alias) => {
@@ -13256,5 +13254,10 @@
     if (document.querySelector("#stashrealbooru")) return;
     new TagButton({ target });
   }
-  csLib.PathElementListener("/images/", ".image-tabs", createTagButton);
+  // v25 and v24 compatibility
+  csLib.PathElementListener(
+    "/images/",
+    ".image-toolbar-group .btn-group, .ml-auto .btn-group",
+    createTagButton
+  );
 })();
