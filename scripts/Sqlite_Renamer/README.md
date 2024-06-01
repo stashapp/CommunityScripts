@@ -16,13 +16,14 @@ Using metadata from your database (SQLITE) to rename your file.
 
 - I recommend make a copy of your database. (Use "backup" in Stash Settings)
 - You need to set your Database path ([Line 9](Stash_Sqlite_Renamer.py#L9))
-- Replace things between [Line 270 - 301](Stash_Sqlite_Renamer.py#L270)
+- Replace things between [Line 309 - 333](Stash_Sqlite_Renamer.py#L309)
+- Run a library scan to detect the new file names to the db
 
 ## First Run
 Set `USE_DRY` to True ([Line 13](Stash_Sqlite_Renamer.py#L13)), by doing this nothing will be changed.
 - This will create a file `renamer_dryrun.txt` that show how the path/file will be changed.
 
-You can uncomment the break ([Line 254](Stash_Sqlite_Renamer.py#L254)), so it will stop after the first file.
+You can uncomment the break ([Line 293](Stash_Sqlite_Renamer.py#L293)), so it will stop after the first file.
 
 ## Filename template
 Available: `$date` `$performer` `$title` `$studio` `$height`
