@@ -34,7 +34,6 @@
     query FindScene($id: ID!) {
       findScene(id: $id) {
         ...SceneData
-        __typename
       }
     }
     
@@ -57,38 +56,18 @@
       last_played_at
       play_duration
       play_count
-      files {
-        duration
-        __typename
-      }
-      studio {
-        ...SlimStudioData
-        __typename
-      }
-      __typename
-    }
-    
-    fragment SlimStudioData on Studio {
-      id
-      name
-      __typename
+      files { duration }
+      studio { name }
     }
   `;
 
-  while (!window.stash) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
   const PLUGIN_ID = "discordPresence";
 
-  let userConfig = await getPluginConfig();
+  const userConfig = await CommunityScriptsUILib.getConfiguration(
+    PLUGIN_ID,
+    {}
+  );
   console.debug("Discord Presence Plugin: user config", userConfig);
-
-  for (let [key, val] of Object.entries(userConfig)) {
-    if (val === "" || val === undefined || val === null) {
-      delete userConfig[key];
-    }
-  }
 
   /** @type {Required<PluginConfig>} */
   const CONFIG = {
@@ -101,7 +80,6 @@
     discordLargeImageText: "Stashapp",
     discordShowUrlButton: false,
     discordUrlButtonText: "Watch",
-
     ...userConfig,
   };
 
@@ -142,31 +120,20 @@
     clearDiscordActivity();
   });
 
-  /** @returns {Promise<PluginConfig>} */
-  async function getPluginConfig() {
-    const reqData = {
-      operationName: "Configuration",
-      variables: {},
-      query: `query Configuration { configuration { plugins } }`,
-    };
-    const data = await stash.callGQL(reqData);
-    return data.data.configuration.plugins[PLUGIN_ID];
-  }
-
   /** @return {Promise<FlattenedSceneData | null>} */
   async function getSceneData(sceneId) {
     if (!sceneId) {
       return { sceneData: null, duration: 0 };
     }
     const reqData = {
-      operationName: "FindScene",
       variables: { id: sceneId },
       query: SCENE_GQL_QUERY,
     };
 
     /** @type {GQLSceneDataResponse} */
-    const data = await stash.callGQL(reqData);
-    const sceneData = data.data.findScene;
+    const sceneData = await csLib
+      .callGQL(reqData)
+      .then((data) => data.findScene);
 
     if (sceneData === null) {
       return null;
@@ -196,38 +163,31 @@
 
   async function setDiscordActivity() {
     const sceneData = await getSceneData(SCENE_ID);
-
-    if (!sceneData) {
-      return;
-    }
+    if (!sceneData) return;
 
     const currentTime = getCurrentVideoTime() ?? 0;
     const endTimestamp =
       Date.now() + (sceneData.file_duration - currentTime) * 1000;
 
-    let body = {};
-
-    if (sceneData !== null) {
-      body = {
-        details: replaceVars(CONFIG.discordDetailsText, sceneData),
-        state: replaceVars(CONFIG.discordStateText, sceneData),
-        largeImageKey: CONFIG.discordShowImage
-          ? CONFIG.discordLargeImageKey
+    let body = {
+      details: replaceVars(CONFIG.discordDetailsText, sceneData),
+      state: replaceVars(CONFIG.discordStateText, sceneData),
+      largeImageKey: CONFIG.discordShowImage
+        ? CONFIG.discordLargeImageKey
+        : undefined,
+      largeImageText: replaceVars(CONFIG.discordLargeImageText, sceneData),
+      endTimestamp: sceneData.file_duration > 0 ? endTimestamp : undefined,
+      buttons:
+        CONFIG.discordShowUrlButton && URL.canParse(sceneData.url)
+          ? [
+              {
+                label: replaceVars(CONFIG.discordUrlButtonText, sceneData),
+                url: sceneData.url,
+              },
+            ]
           : undefined,
-        largeImageText: replaceVars(CONFIG.discordLargeImageText, sceneData),
-        endTimestamp: sceneData.file_duration > 0 ? endTimestamp : undefined,
-        buttons:
-          CONFIG.discordShowUrlButton && isValidUrl(sceneData.url)
-            ? [
-                {
-                  label: replaceVars(CONFIG.discordUrlButtonText, sceneData),
-                  url: sceneData.url,
-                },
-              ]
-            : undefined,
-        instance: true,
-      };
-    }
+      instance: true,
+    };
 
     if (!ws.OPEN) {
       return;
@@ -242,15 +202,8 @@
     );
   }
 
-  function getCurrentVideoTime() {
-    const videoElem = document.querySelector("#VideoJsPlayer video");
-
-    if (!videoElem) {
-      return null;
-    }
-
-    return videoElem.currentTime;
-  }
+  const getCurrentVideoTime = () =>
+    document.querySelector("#VideoJsPlayer video")?.currentTime ?? null;
 
   /**
    * Performs string replacement on templated config vars with scene data
@@ -260,15 +213,5 @@
   function replaceVars(templateStr, sceneData) {
     const pattern = /{\s*(\w+?)\s*}/g;
     return templateStr.replace(pattern, (_, token) => sceneData[token] ?? "");
-  }
-
-  function isValidUrl(str) {
-    try {
-      new URL(str);
-    } catch {
-      return false;
-    }
-
-    return true;
   }
 })();

@@ -1,6 +1,10 @@
-function CommunityScriptsUILib() {
+// CommunityScripts UI Library
+// cs-ui-lib.js
+(function () {
+  // get base URL for graphQL queries
   const baseURL = document.querySelector("base")?.getAttribute("href") ?? "/";
 
+  // call GQL query, returns data without `data` wrapper
   const callGQL = (reqData) =>
     fetch(`${baseURL}graphql`, {
       method: "POST",
@@ -17,13 +21,14 @@ function CommunityScriptsUILib() {
     return response.configuration.plugins?.[pluginId] ?? fallback;
   };
 
-  // wait for visible key elements
+  // wait for key elements
   function waitForElement(selector, callback) {
     var el = document.querySelector(selector);
     if (el) return callback(el);
     setTimeout(waitForElement, 100, selector, callback);
   }
 
+  // wait for a path match, then for key elements
   const PathElementListener = (path, element, callback) => {
     // startup location
     if (window.location.pathname.startsWith(path))
@@ -42,5 +47,4 @@ function CommunityScriptsUILib() {
     waitForElement,
     PathElementListener,
   };
-}
-CommunityScriptsUILib();
+})();
