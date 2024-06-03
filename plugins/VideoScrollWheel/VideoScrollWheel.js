@@ -21,10 +21,13 @@
 
   async function setupVideoScrollWheel() {
     // Get settings
-    const settings = await csLib.getConfiguration("VideoScrollWheel", {}); // getConfiguration is from cs-ui-lib.js
+    // weird issue in inconsistent plugin name (https://github.com/stashapp/CommunityScripts/issues/320)
+    const v25Settings = await csLib.getConfiguration("videoScrollWheel", {}); // getConfiguration is from cs-ui-lib.js
+    const v26Settings = await csLib.getConfiguration("VideoScrollWheel", {}); // getConfiguration is from cs-ui-lib.js
     pluginSettings = {
       ...defaultPluginSettings,
-      ...settings,
+      ...v25Settings,
+      ...v26Settings,
     };
 
     // Get video player and register wheel event listener.
