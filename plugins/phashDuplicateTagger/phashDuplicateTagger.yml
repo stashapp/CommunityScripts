@@ -1,6 +1,6 @@
 name: "PHash Duplicate Tagger"
 description: Will tag scenes based on duplicate PHashes for easier/safer removal.
-version: 0.1.3
+version: 0.1.4
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/phashDuplicateTagger
 exec:
   - python

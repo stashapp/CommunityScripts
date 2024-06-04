@@ -1,8 +1,4 @@
 (async () => {
-  while (!window.stash) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
   const volumeScrollScale = -0.00065;
   const timeScrollScale = 0.01;
   const timeScrollFriction = 0.00015;
@@ -11,7 +7,8 @@
   let vjsPlayer = null;
   let scrollVelocity = 1;
   let previousTime = Date.now();
-  let pluginSettings = {
+  let pluginSettings = {};
+  const defaultPluginSettings = {
     allowVolumeChange: false,
     volumeScrollSpeed: 100.0,
     timeScrollSpeed: 100.0,
@@ -24,14 +21,14 @@
 
   async function setupVideoScrollWheel() {
     // Get settings
-    var settings = await getPluginConfig("videoScrollWheel");
-    if (settings) {
-      for (var key in settings) {
-        if (pluginSettings.hasOwnProperty(key)) {
-          pluginSettings[key] = settings[key];
-        }
-      }
-    }
+    // weird issue in inconsistent plugin name (https://github.com/stashapp/CommunityScripts/issues/320)
+    const v25Settings = await csLib.getConfiguration("videoScrollWheel", {}); // getConfiguration is from cs-ui-lib.js
+    const v26Settings = await csLib.getConfiguration("VideoScrollWheel", {}); // getConfiguration is from cs-ui-lib.js
+    pluginSettings = {
+      ...defaultPluginSettings,
+      ...v25Settings,
+      ...v26Settings,
+    };
 
     // Get video player and register wheel event listener.
     vjsPlayer = document.getElementById("VideoJsPlayer").player;
@@ -95,26 +92,10 @@
     }
   }
 
-  // Util functions for getting plugin settings.
-  async function getPluginConfigs() {
-    const reqData = {
-      operationName: "Configuration",
-      variables: {},
-      query: `query Configuration {
-                configuration {
-                  plugins
-                }
-              }`,
-    };
-    return stash.callGQL(reqData);
-  }
-  async function getPluginConfig(pluginId) {
-    const data = await getPluginConfigs();
-    return data.data.configuration.plugins[pluginId];
-  }
-
   // Wait for video player to load on scene page.
-  stash.addEventListener("stash:page:scene", function () {
-    waitForElementId("VideoJsPlayer", setupVideoScrollWheel);
-  });
+  csLib.PathElementListener(
+    "/scenes/",
+    "#VideoJsPlayer",
+    setupVideoScrollWheel
+  ); // PathElementListener is from cs-ui-lib.js
 })();
