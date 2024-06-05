@@ -3,6 +3,8 @@ import sys
 import json
 import subprocess
 import csv
+import zipfile
+import shutil
 from typing import Any
 
 # ----------------- Setup -----------------
@@ -156,7 +158,19 @@ async def __tag_images(images):
     async with semaphore:
         imagePaths = [image['files'][0]['path'] for image in images]
         imageIds = [image['id'] for image in images]
-        #TODO
+        
+        temp_files = []
+        for i, path in enumerate(imagePaths):
+            if '.zip' in path:
+                zip_index = path.index('.zip') + 4
+                zip_path, img_path = path[:zip_index], path[zip_index+1:].replace('\\', '/')
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    temp_path = os.path.join(config.temp_image_dir, img_path)
+                    os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+                    zip_ref.extract(img_path, config.temp_image_dir)
+                    imagePaths[i] = os.path.abspath(os.path.normpath(temp_path))
+                    temp_files.append(imagePaths[i])
+
         try:
             server_results = ImageResult(**await process_images_async(imagePaths))
             process_server_image_results(server_results, imageIds)
@@ -166,6 +180,11 @@ async def __tag_images(images):
             stash.update_images({"ids": imageIds, "tag_ids": {"ids": [tagme_tag_id], "mode": "REMOVE"}})
         finally:
             increment_progress()
+            for temp_file in temp_files:
+                if os.path.isdir(temp_file):
+                    shutil.rmtree(temp_file)
+                else:
+                    os.remove(temp_file)
         
 
 
