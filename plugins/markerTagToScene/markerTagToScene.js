@@ -80,22 +80,22 @@ function processMarker(marker, shouldHandleAllTags) {
 function main() {
   log.Info(JSON.stringify(input));
   if (input.Args.mode == "processMarkers") {
-    allTags = shouldHandleAllTags();
+    var allTags = shouldHandleAllTags();
     log.Trace("Mode is processMarkers, allTags is " + allTags);
-    allMarkers = getAllMarkers();
+    var allMarkers = getAllMarkers();
     //The markers come back as {primary_tag: { id: 600 } }
     //but processMarker (because of the hook) expects 'primary_tag_id', so transform it here
     log.Info(
       "markerTagToScene has " + allMarkers.length + " markers to process"
     );
     for (var i = 0; i < allMarkers.length; ++i) {
-      marker = allMarkers[i];
+      var marker = allMarkers[i];
       var sceneMarker = {};
       sceneMarker.id = marker.id;
       sceneMarker.scene_id = marker.scene.id;
       sceneMarker.primary_tag_id = marker.primary_tag.id;
-      tag_ids = [];
-      for (j = 0; j < marker.tags.length; ++j) {
+      var tag_ids = [];
+      for (var j = 0; j < marker.tags.length; ++j) {
         tag_ids.push(marker.tags[j].id);
       }
       sceneMarker.tag_ids = tag_ids;
@@ -157,7 +157,7 @@ query findScene($id: ID) {\
   var result = gql.Do(query, variables);
   var findScene = result.findScene;
   if (findScene) {
-    return findScene.tags.map((t) => t.id);
+    return findScene.tags;
   }
 
   return [];
