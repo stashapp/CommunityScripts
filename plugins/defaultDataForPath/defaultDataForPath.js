@@ -19,9 +19,9 @@ function ok() {
 function main() {
   var hookContext = input.Args.hookContext;
   var type = hookContext.type;
-  var ID = hookContext.ID;
+  var id = hookContext.id;
 
-  if (!type || !ID) {
+  if (!type || !id) {
     // just return
     return ok();
   }
@@ -29,13 +29,13 @@ function main() {
   var itemPath;
   var name = "";
   if (type === "Scene.Create.Post") {
-    itemPath = getScenePath(ID);
+    itemPath = getScenePath(id);
     name = "scene";
   } else if (type === "Gallery.Create.Post") {
-    itemPath = getGalleryPath(ID);
+    itemPath = getGalleryPath(id);
     name = "gallery";
   } else if (type === "Image.Create.Post") {
-    itemPath = getImagePath(ID);
+    itemPath = getImagePath(id);
     name = "image";
   }
 
@@ -114,11 +114,11 @@ function main() {
   var performers = addPerformers ? defaultPerformerIds : null;
 
   if (type === "Scene.Create.Post") {
-    setSceneData(ID, tags, studio, performers);
+    setSceneData(id, tags, studio, performers);
   } else if (type === "Gallery.Create.Post") {
-    setGalleryData(ID, tags, studio, performers);
+    setGalleryData(id, tags, studio, performers);
   } else if (type === "Image.Create.Post") {
-    setImageData(ID, tags, studio, performers);
+    setImageData(id, tags, studio, performers);
   }
 
   for (var o = 0; o < defaultTags.length; o++) {
@@ -128,7 +128,7 @@ function main() {
         " to " +
         name +
         " " +
-        ID
+        id
     );
   }
   for (var o = 0; o < defaultPerformers.length; o++) {
@@ -138,7 +138,7 @@ function main() {
         " to " +
         name +
         " " +
-        ID
+        id
     );
   }
   addStudio
@@ -148,15 +148,15 @@ function main() {
           " to " +
           name +
           " " +
-          ID
+          id
       )
     : "";
 }
 
-function getScenePath(ID) {
+function getScenePath(id) {
   var query =
     "\
-query findScene($id: ID) {\
+query findScene($id: id) {\
     findScene(id: $id) {\
         files {\
             path\
@@ -165,7 +165,7 @@ query findScene($id: ID) {\
 }";
 
   var variables = {
-    id: ID,
+    id: id,
   };
 
   var result = gql.Do(query, variables);
@@ -178,17 +178,17 @@ query findScene($id: ID) {\
   return path;
 }
 
-function getImagePath(ID) {
+function getImagePath(id) {
   var query =
     "\
-query findImage($id: ID) {\
+query findImage($id: id) {\
     findImage(id: $id) {\
         path\
     }\
 }";
 
   var variables = {
-    id: ID,
+    id: id,
   };
 
   var result = gql.Do(query, variables);
@@ -201,17 +201,17 @@ query findImage($id: ID) {\
   return path;
 }
 
-function getGalleryPath(ID) {
+function getGalleryPath(id) {
   var query =
     "\
-query findGallery($id: ID) {\
+query findGallery($id: id) {\
     findGallery(id: $id) {\
         path\
     }\
 }";
 
   var variables = {
-    id: ID,
+    id: id,
   };
 
   var result = gql.Do(query, variables);
