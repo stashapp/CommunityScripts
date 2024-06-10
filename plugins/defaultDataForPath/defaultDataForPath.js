@@ -19,7 +19,7 @@ function ok() {
 function main() {
   var hookContext = input.Args.hookContext;
   var type = hookContext.type;
-  var ID = hookContext.ID;
+  var ID = hookContext.id;
 
   if (!type || !ID) {
     // just return
