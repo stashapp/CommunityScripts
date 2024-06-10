@@ -241,7 +241,7 @@ function getTagId(tagName) {
     },
   };
 
-  result = gql.Do(query, variables);
+  var result = gql.Do(query, variables);
   if (result.findTags.tags[0]) {
     return result.findTags.tags[0].id;
   } else {
@@ -267,7 +267,7 @@ function getPerformerId(performerName) {
     },
   };
 
-  result = gql.Do(query, variables);
+  var result = gql.Do(query, variables);
   if (result.findPerformers.performers[0]) {
     return result.findPerformers.performers[0].id;
   } else {
@@ -293,7 +293,7 @@ function getStudioId(studioName) {
     },
   };
 
-  result = gql.Do(query, variables);
+  var result = gql.Do(query, variables);
   if (result.findStudios.studios[0]) {
     return result.findStudios.studios[0].id;
   } else {
