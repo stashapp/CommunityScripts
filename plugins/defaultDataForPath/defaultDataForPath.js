@@ -183,7 +183,11 @@ function getImagePath(ID) {
     "\
 query findImage($id: ID) {\
     findImage(id: $id) {\
-        path\
+        visual_files {\
+            ... on ImageFile {\
+                path\
+            }\
+        }\
     }\
 }";
 
@@ -197,7 +201,7 @@ query findImage($id: ID) {\
     return null;
   }
 
-  var path = findImage.path;
+  var path = findImage["visual_files"][0].path;
   return path;
 }
 
