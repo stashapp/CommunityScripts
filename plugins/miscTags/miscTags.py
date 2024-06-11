@@ -9,7 +9,16 @@ per_page = 100
 skip_tag = "[MiscTags: Skip]"
 
 # Defaults if nothing has changed in the stash ui
-settings = {"addStashVrCompanionTags": False, "addVrTags": False,"addVSoloTags": True,"addVThreesomeTags":True, "flatStudio": ""}
+settings = {"addStashVrCompanionTags": False,
+            "addVRTags": False,
+            "addSoloTags": True,
+            "addThreesomeTags": True,
+            "addFoursomeTags": True,
+            "addFivesomeTags": True,
+            "addSixsomeTags": True,
+            "addSevensomeTags": True,
+            "assumeMissingMale": True,
+            "flatStudio": ""}
 
 VRCTags = {
     "flat": {"VRCTags": ["FLAT"], "projTags": []},
@@ -32,6 +41,7 @@ VRCTags = {
     "5k": {"VRCTags": [], "projTags": ["5K"]},
 }
 tags_cache = {}
+performer_cache = {}
 
 
 def processScene(scene):
@@ -45,12 +55,21 @@ def processScene(scene):
         if settings["addStashVrCompanionTags"]:
             processStashVRCompanionTags(scene, tags)
             log.debug(tags)
-        if settings["addVrTags"]:
+        if settings["addVRTags"]:
             processVRTags(scene, tags)
-        if settings["addVSoloTags"]:
+        if settings["addSoloTags"]:
             soloTag(scene,tags)
-        if settings["addVThreesomeTags"]:
-            threesomeTag(scene, tags)
+        if settings["addThreesomeTags"]:
+            processGroupMakeup(['threesome'], 'Threesome', 3, scene, tags)
+        if settings["addFoursomeTags"]:
+            processGroupMakeup(['foursome', '4some'], 'Foursome', 4, scene, tags)
+        if settings["addFivesomeTags"]:
+            processGroupMakeup(['fivesome', 'fiveway'], 'Fivesome', 5, scene, tags)
+        if settings["addSixsomeTags"]:
+            processGroupMakeup(['sixsome'], 'Sixsome', 6, scene, tags)
+        if settings["addSevensomeTags"]:
+            processGroupMakeup(['sevensome'], 'Sevensome', 7, scene, tags)
+
         if len(settings["flatStudio"]) > 0:
             processFlatStudio(scene, tags)
         if len(tags) > 0:
@@ -135,58 +154,69 @@ def processFlatStudio(scene, tags):
 
 def soloTag(scene,tags):
     """Add Solo Female, Solo male, Solo Trans where there is a single performer and the solo tag"""
-    for name in ['solo', 'solo model','solo models']:
+    for name in ['solo', 'solo model', 'solo models']:
         if name in [x["name"].lower() for x in scene['tags']]:
-            if len(scene['performers']) ==1:
-                p=stash.find_performer(scene['performers'][0])
-                if p['gender']=='FEMALE':
+            if len(scene['performers']) == 1:
+                p=getPerformer(scene['performers'][0])
+                if p['gender'] == 'FEMALE':
                     tags.append('Solo Female')
                 elif p['gender'] == 'MALE':
                     tags.append('Solo Male')
-                elif p['gender'] =='TRANSGENDER_MALE':
+                elif p['gender'] == 'TRANSGENDER_MALE':
                     tags.append('Solo Trans')
-                elif p['gender'] =='TRANSGENDER_FEMALE':
+                elif p['gender'] == 'TRANSGENDER_FEMALE':
                     tags.append('Solo Trans')
 
-def threesomeTag(scene, tags):
-    """Add Threesome (XXX) tags based on group makeup"""
-    for name in ['threesome']:
+
+def getPerformer(p):
+    if p['id'] not in performer_cache:
+        p2 = stash.find_performer(p)
+        performer_cache[p['id']] = p2
+        log.debug(performer_cache)
+        return p2
+    return performer_cache[p]
+
+
+def processGroupMakeup(tag_strings, makeup_label, count, scene, tags):
+    for name in tag_strings:
         if name in [x["name"].lower() for x in scene['tags']]:
-            if len(scene['performers']) == 3:
-                makeup=[]
-                for p in scene['performers']:
-                    p2=stash.find_performer(p)
-                    makeup.append(p2['gender'])
+            makeup = []
+            for p in scene['performers']:
+                p2 = getPerformer(p)
+                if p2['gender'] == 'FEMALE':
+                    makeup.append('G')
+                elif p2['gender'] == 'MALE':
+                    makeup.append('B')
+                elif p2['gender'] == 'TRANSGENDER_FEMALE':
+                    makeup.append('T')
+                elif p2['gender'] == 'TRANSGENDER_MALE':
+                    makeup.append('T')
+                elif p2['gender'] == 'INTERSEX':
+                    makeup.append('I')
+                elif p2['gender'] == 'NON_BINARY':
+                    makeup.append('I')
+                else:
+                    makeup.append('U')
+                    # unknown or not set yet
+                #
+            if settings["assumeMissingMale"]:
+                # If there is a mising performer
+                for x in range(len(makeup), count):
+                    makeup.append('B')
+
+            if len(makeup) == count:
                 makeup.sort()
-                log.debug(makeup)
-                if makeup[0]=='FEMALE' and makeup[1]=='FEMALE' and makeup[2]=='FEMALE':
-                    tags.append('Threesome (Lesbian)')
-                elif makeup[0]=='FEMALE' and makeup[1]=='FEMALE' and makeup[2]=='MALE':
-                    tags.append('Threesome (BGG)')
-                elif makeup[0]=='FEMALE' and makeup[1]=='MALE' and makeup[2]=='MALE':
-                    tags.append('Threesome (BBG)')
-                elif makeup[0]=='FEMALE' and makeup[1]=='FEMALE' and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
-                    tags.append('Threesome (GGT)')
-                elif makeup[0]=='FEMALE' and ( makeup[1]=='TRANSGENDER_FEMALE' or makeup[1]=='TRANSGENDER_MALE') and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
-                    tags.append('Threesome (GTT)')
-                elif makeup[0]=='FEMALE' and makeup[1]=='MALE' and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
-                    tags.append('Threesome (BGT)')
-                elif makeup[0]=='MALE' and makeup[1]=='MALE' and makeup[2]=='MALE':
-                    tags.append('Threesome (Gay)')
-                elif makeup[0]=='MALE' and makeup[1]=='MALE' and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
-                    tags.append('Threesome (BBT)')
-                elif makeup[0]=='MALE' and ( makeup[1]=='TRANSGENDER_FEMALE' or makeup[1]=='TRANSGENDER_MALE') and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
-                    tags.append('Threesome (BTT)')
-                elif ( makeup[0]=='TRANSGENDER_FEMALE' or makeup[0]=='TRANSGENDER_MALE') and ( makeup[1]=='TRANSGENDER_FEMALE' or makeup[1]=='TRANSGENDER_MALE') and ( makeup[2]=='TRANSGENDER_FEMALE' or makeup[2]=='TRANSGENDER_MALE'):
-                    tags.append('Threesome (Trans)')
-
-
-
-
-
-
-
-
+                makeup_str = ''.join(makeup)
+                if makeup_str == ('G' * count):
+                    tags.append('%s (Lesbian)' % (makeup_label, ))
+                elif makeup_str == ('B' * count):
+                    tags.append('%s (Gay)' % (makeup_label, ))
+                elif makeup_str == ('G' * count):
+                    tags.append('%s (Lesbian)' % (makeup_label, ))
+                else:
+                    tags.append('%s (%s)' % (makeup_label, makeup_str, ) )
+            else:
+                log.debug('missing performers for group makeup %s, have %s performers instead' % (makeup_label, len(makeup), ))
 
 
 def processScenes():
