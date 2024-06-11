@@ -29,7 +29,7 @@ VRCTags = {
     "180_lr": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
     "180_3dh_lr": {"VRCTags": ["DOME", "SBS"], "projTags": ["180°"]},
     "360_tb": {"VRCTags": ["SPHERE", "TB"], "projTags": ["360°"]},
-    "mkx200": {"VRCTags": ["MKX200", "FISHEYE", "SBS"], "projTags": ["220°"]},
+    "mkx200": {"VRCTags": ["MKX200", "FISHEYE", "SBS"], "projTags": ["200°"]},
     "mkx220": {"VRCTags": ["MKX220", "FISHEYE", "SBS"], "projTags": ["220°"]},
     "vrca220": {"VRCTags": ["VRCA220", "FISHEYE", "SBS"], "projTags": ["220°"]},
     "rf52": {"VRCTags": ["RF52", "FISHEYE", "SBS"], "projTags": ["190°"]},
@@ -58,7 +58,7 @@ def processScene(scene):
         if settings["addVRTags"]:
             processVRTags(scene, tags)
         if settings["addSoloTags"]:
-            soloTag(scene,tags)
+            soloTag(scene, tags)
         if settings["addThreesomeTags"]:
             processGroupMakeup(['threesome'], 'Threesome', 3, scene, tags)
         if settings["addFoursomeTags"]:
