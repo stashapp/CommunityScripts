@@ -1,7 +1,7 @@
 name: Discord Presence
 description: Sets currently playing scene data as your Discord status. See README for prerequisites and config options (blue hyperlink next to enable/disable button)
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/discordPresence
-#requires: CommunityScriptsUILibrary
+# requires: CommunityScriptsUILibrary
 version: 1.0
 settings:
   discordClientId:

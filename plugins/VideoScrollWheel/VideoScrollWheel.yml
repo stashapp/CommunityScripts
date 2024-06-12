@@ -1,6 +1,6 @@
 name: VideoScrollWheel
+# requires: CommunityScriptsUILibrary
 description: Adds functionality to change volume/time in scene video player by hovering over left/right side of player and scrolling with mouse scrollwheel. Scroll while hovering on left side to adjust volume, scroll on right side to skip forward/back.
-#requires: CommunityScriptsUILibrary
 version: 0.2
 settings:
   allowVolumeChange:
