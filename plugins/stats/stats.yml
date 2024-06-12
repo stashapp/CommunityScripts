@@ -1,5 +1,5 @@
 name: Extended Stats
-#requires: CommunityScriptsUILibrary
+# requires: CommunityScriptsUILibrary
 description: Adds new stats to the stats page
 version: 1.1
 ui:
