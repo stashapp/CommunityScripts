@@ -142,8 +142,8 @@ async def tag_images():
 async def tag_scenes():
     global increment
     scenes = stash.find_scenes(f={"tags": {"value":tagme_tag_id, "modifier":"INCLUDES"}}, fragment="id files {path}")
-    increment = 1.0 / len(scenes)
     if scenes:
+        increment = 1.0 / len(scenes)
         tasks = [__tag_scene(scene) for scene in scenes]
         await asyncio.gather(*tasks)
     else:
