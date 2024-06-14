@@ -120,7 +120,7 @@ class AIVideoResult(BaseModel):
         toReturn = (correspondingModelInfo is not None and correspondingModelInfo.version == model_config.pipeline_version and
                             correspondingModelInfo.ai_model_config.frame_interval == model_config.frame_interval and
                             correspondingModelInfo.ai_model_config.threshold == model_config.threshold)
-        log.info(f"Already contains model: {toReturn}, {correspondingModelInfo is not None}, {correspondingModelInfo.version == model_config.pipeline_version}, {correspondingModelInfo.ai_model_config.frame_interval == model_config.frame_interval}, {correspondingModelInfo.ai_model_config.threshold == model_config.threshold}")
+        log.debug(f"Already contains model: {toReturn}, {correspondingModelInfo is not None}, {correspondingModelInfo.version == model_config.pipeline_version}, {correspondingModelInfo.ai_model_config.frame_interval == model_config.frame_interval}, {correspondingModelInfo.ai_model_config.threshold == model_config.threshold}")
         return toReturn
 
     def __str__(self):
@@ -180,7 +180,7 @@ class AIVideoResult(BaseModel):
             for row in reader:
                 frame_index = float(row[0])
                 if last_frame_index is not None and frame_interval is None:
-                    log.info(f"Calculating frame interval: {frame_index} - {last_frame_index}")
+                    log.debug(f"Calculating frame interval: {frame_index} - {last_frame_index}")
                     frame_interval = frame_index - last_frame_index
                 for tag_name in row[1:]:  # Skip the first column (frame_indexes)
                     if tag_name:  # If the cell is not empty
