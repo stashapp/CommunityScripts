@@ -2,11 +2,8 @@ import os
 import sys
 import json
 import subprocess
-import csv
-import zipfile
 import shutil
-from typing import Any
-
+import traceback
 # ----------------- Setup -----------------
 
 def install(package):
@@ -52,7 +49,9 @@ try:
     except ModuleNotFoundError:
         log.error("Please provide a config.py file with the required variables.")
         raise Exception("Please provide a config.py file with the required variables.")
-
+    from ai_video_result import AIVideoResult
+    import media_handler
+    import ai_server
 except:
     log.error("Attempted to install required packages, please retry the task.")
     sys.exit(1)
@@ -60,14 +59,10 @@ except:
         
 # ----------------- Variable Definitions -----------------
 
-tagid_mappings = {}
-tagname_mappings = {}
-max_gaps = {}
-min_durations = {}
-required_durations = {}
 semaphore = asyncio.Semaphore(config.CONCURRENT_TASK_LIMIT)
 progress = 0
 increment = 0.0
+current_videopipeline = None
 
 # ----------------- Main Execution -----------------
 
@@ -84,30 +79,12 @@ def read_json_input():
 
 async def run(json_input, output):
     PLUGIN_ARGS = False
-    HOOKCONTEXT = False
-
-    global stash
-    global aierroed_tag_id
-    global tagme_tag_id
-    global ai_base_tag_id
-    global ai_tagged_tag_id
-    global updateme_tag_id
     try:
         log.debug(json_input["server_connection"])
         os.chdir(json_input["server_connection"]["PluginDir"])
-        stash = StashInterface(json_input["server_connection"])
-        aierroed_tag_id = stash.find_tag(config.aierrored_tag_name, create=True)["id"]
-        tagme_tag_id = stash.find_tag(config.tagme_tag_name, create=True)["id"]
-        ai_base_tag_id = stash.find_tag(config.ai_base_tag_name, create=True)["id"]
-        ai_tagged_tag_id = stash.find_tag(config.aitagged_tag_name, create=True)["id"]
-        updateme_tag_id = stash.find_tag(config.updateme_tag_name, create=True)["id"]
+        media_handler.initialize(json_input["server_connection"])
     except Exception:
         raise
-
-    try:
-        parse_csv("tag_mappings.csv")
-    except Exception as e:
-        log.error("Failed to parse tag_mappings.csv: {e}")
 
     try:
         PLUGIN_ARGS = json_input['args']["mode"]
@@ -124,12 +101,11 @@ async def run(json_input, output):
     output["output"] = "ok"
     return
 
-
 # ----------------- High Level Calls -----------------
 
 async def tag_images():
     global increment
-    images = stash.find_images(f={"tags": {"value":tagme_tag_id, "modifier":"INCLUDES"}}, fragment="id files {path}")
+    images = media_handler.get_tagme_images()
     if images:
         image_batches = [images[i:i + config.IMAGE_REQUEST_BATCH_SIZE] for i in range(0, len(images), config.IMAGE_REQUEST_BATCH_SIZE)]
         increment = 1.0 / len(image_batches)
@@ -141,7 +117,7 @@ async def tag_images():
 
 async def tag_scenes():
     global increment
-    scenes = stash.find_scenes(f={"tags": {"value":tagme_tag_id, "modifier":"INCLUDES"}}, fragment="id files {path}")
+    scenes = media_handler.get_tagme_scenes()
     if scenes:
         increment = 1.0 / len(scenes)
         tasks = [__tag_scene(scene) for scene in scenes]
@@ -151,33 +127,42 @@ async def tag_scenes():
 
 # ----------------- Image Processing -----------------
 
-def add_error_images(image_ids):
-    stash.update_images({"ids": image_ids, "tag_ids": {"ids": [aierroed_tag_id], "mode": "ADD"}})
-
 async def __tag_images(images):
     async with semaphore:
-        imagePaths = [image['files'][0]['path'] for image in images]
-        imageIds = [image['id'] for image in images]
-        
-        temp_files = []
-        for i, path in enumerate(imagePaths):
-            if '.zip' in path:
-                zip_index = path.index('.zip') + 4
-                zip_path, img_path = path[:zip_index], path[zip_index+1:].replace('\\', '/')
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    temp_path = os.path.join(config.temp_image_dir, img_path)
-                    os.makedirs(os.path.dirname(temp_path), exist_ok=True)
-                    zip_ref.extract(img_path, config.temp_image_dir)
-                    imagePaths[i] = os.path.abspath(os.path.normpath(temp_path))
-                    temp_files.append(imagePaths[i])
-
+        imagePaths, imageIds, temp_files = media_handler.get_image_paths_and_ids(images)
         try:
-            server_results = ImageResult(**await process_images_async(imagePaths))
-            process_server_image_results(server_results, imageIds)
+            server_result = await ai_server.process_images_async(imagePaths)
+            if server_result is None:
+                log.error("Server returned no results")
+                media_handler.add_error_images(imageIds)
+                media_handler.remove_tagme_tags_from_images(imageIds)
+                return
+            server_results = ai_server.ImageResult(**server_result)
+            results = server_results.result
+            if len(results) != len(imageIds):
+                log.error("Server returned incorrect number of results")
+                media_handler.add_error_images(imageIds)
+            else:
+                for id, result in zip(imageIds, results):
+                    if 'error' in result:
+                        log.error(f"Error processing image: {result['error']}")
+                        media_handler.add_error_images([id])
+                    else:
+                        actions = result['actions']
+                        action_stashtag_ids = media_handler.get_tag_ids(actions)
+                        action_stashtag_ids.append(media_handler.ai_tagged_tag_id)
+                        media_handler.add_tags_to_image(id, action_stashtag_ids)
+
+            log.info(f"Tagged {len(imageIds)} images")
+            media_handler.remove_tagme_tags_from_images(imageIds)
+        except aiohttp.ClientConnectionError as e:
+            log.error(f"Failed to connect to AI server. Is the AI server running at {config.API_BASE_URL}?   {e}")
+        except asyncio.TimeoutError as a:
+            log.error(f"Timeout processing images: {a}")
         except Exception as e:
             log.error(f"Failed to process images: {e}")
-            add_error_images(imageIds)
-            stash.update_images({"ids": imageIds, "tag_ids": {"ids": [tagme_tag_id], "mode": "REMOVE"}})
+            media_handler.add_error_images(imageIds)
+            media_handler.remove_tagme_tags_from_images(imageIds)
         finally:
             increment_progress()
             for temp_file in temp_files:
@@ -185,202 +170,78 @@ async def __tag_images(images):
                     shutil.rmtree(temp_file)
                 else:
                     os.remove(temp_file)
-        
-
-
-def process_server_image_results(server_results, imageIds):
-    results = server_results.result
-    if results is None:
-        add_error_images(imageIds)
-    elif len(results) == 0:
-        log.error("Server returned no results")
-        add_error_images(imageIds)
-    elif len(results) != len(imageIds):
-        log.error("Server returned incorrect number of results")
-        add_error_images(imageIds)
-    else:
-        for id, result in zip(imageIds, results):
-            if 'error' in result:
-                log.error(f"Error processing image: {result['error']}")
-                stash.update_images({"ids": [id], "tag_ids": {"ids": [aierroed_tag_id], "mode": "ADD"}})
-            else:
-                actions = result['actions']
-                action_stashtag_ids = [tagid_mappings[action] for action in actions if action in tagid_mappings]
-                action_stashtag_ids.append(ai_tagged_tag_id)
-                stash.update_images({"ids": [id], "tag_ids": {"ids": action_stashtag_ids, "mode": "ADD"}})
-
-    log.info(f"Tagged {len(imageIds)} images")
-    stash.update_images({"ids": imageIds, "tag_ids": {"ids": [tagme_tag_id], "mode": "REMOVE"}})
 
 # ----------------- Scene Processing -----------------
-
-def add_error_scene(scene_id):
-    stash.update_scenes({"ids": [scene_id], "tag_ids": {"ids": [aierroed_tag_id], "mode": "ADD"}})
 
 async def __tag_scene(scene):
     async with semaphore:
         scenePath = scene['files'][0]['path']
         sceneId = scene['id']
+        log.info("files result:" + str(scene['files'][0]))
+        phash = scene['files'][0].get('fingerprint', None)
+        duration = scene['files'][0].get('duration', None)
+        if duration is None:
+            log.error(f"Scene {sceneId} has no duration")
+            return
         try:
-            server_result = VideoResult(**await process_video_async(scenePath))
-            process_server_video_result(server_result, sceneId, scenePath)
+            already_ai_tagged = media_handler.is_scene_tagged(scene.get('tags'))
+            ai_file_path = scenePath + ".AI.json"
+            ai_video_result = None
+            if already_ai_tagged:
+                if os.path.exists(ai_file_path):
+                    try:
+                        ai_video_result = AIVideoResult.from_json_file(ai_file_path)
+                        current_pipeline_video = await ai_server.get_current_video_pipeline()
+                        if ai_video_result.already_contains_model(current_pipeline_video):
+                            log.info(f"Skipping running AI for scene {scenePath} as it has already been processed with the same pipeline version and configuration. Updating tags and markers instead.")
+                            ai_video_result.update_stash_tags()
+                            ai_video_result.update_stash_markers()
+                            return
+                    except Exception as e:
+                        log.error(f"Failed to load AI results from file: {e}")
+                elif os.path.exists(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__vid_giddy__1.0.csv")):
+                    ai_video_result = AIVideoResult.from_csv_file(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__vid_giddy__1.0.csv"), scene_id=sceneId, phash=phash, duration=duration)
+                    log.info(f"Loading AI results from CSV file for scene {scenePath}: {ai_video_result}")
+                    current_pipeline_video = await ai_server.get_current_video_pipeline()
+                    if ai_video_result.already_contains_model(current_pipeline_video):
+                            log.info(f"Skipping running AI for scene {scenePath} as it has already been processed with the same pipeline version and configuration. Updating tags and markers instead.")
+                            ai_video_result.to_json_file(ai_file_path)
+                            ai_video_result.update_stash_tags()
+                            ai_video_result.update_stash_markers()
+                            return
+                else:
+                    log.warning(f"Scene {scenePath} is already tagged but has no AI results file. Running AI again.")
+            vr_video = media_handler.is_vr_scene(scene.get('tags'))
+            if vr_video:
+                log.info(f"Processing VR video {scenePath}")
+            server_result = await ai_server.process_video_async(scenePath, vr_video)
+            if server_result is None:
+                log.error("Server returned no results")
+                media_handler.add_error_scene(sceneId)
+                media_handler.remove_tagme_tag_from_scene(sceneId)
+                return
+            server_result = ai_server.VideoResult(**server_result)
+            if ai_video_result:
+                ai_video_result.add_server_response(server_result)
+            else:
+                ai_video_result = AIVideoResult.from_server_response(server_result, sceneId, phash, duration)
+            ai_video_result.to_json_file(ai_file_path)
+            ai_video_result.update_stash_tags()
+            ai_video_result.update_stash_markers()
+            log.info(f"Processed video with {len(server_result.result)} AI tagged frames")
+        except aiohttp.ClientConnectionError as e:
+            log.error(f"Failed to connect to AI server. Is the AI server running at {config.API_BASE_URL}?   {e}")
+        except asyncio.TimeoutError as a:
+            log.error(f"Timeout processing scene: {a}")
         except Exception as e:
-            log.error(f"Failed to process video: {e}")
-            add_error_scene(sceneId)
-            stash.update_scenes({"ids": [sceneId], "tag_ids": {"ids": [tagme_tag_id], "mode": "REMOVE"}})
+            log.error(f"Failed to process video: {e}\n{traceback.format_exc()}")
+            media_handler.add_error_scene(sceneId)
+            media_handler.remove_tagme_tag_from_scene(sceneId)
             return
         finally:
             increment_progress()
-        
-
-def process_server_video_result(server_result, sceneId, scenePath):
-    results = server_result.result
-    if results is None:
-        add_error_scene(sceneId)    
-    elif len(results) == 0:
-        log.error("Server returned no results")
-        add_error_scene(sceneId)
-    else:
-        # Get the directory of the scene file
-        directory = os.path.dirname(scenePath)
-        # Get the base name of the scene file (without the extension)
-        base_name = os.path.splitext(os.path.basename(scenePath))[0]
-        # Create the CSV file path
-        csv_path = os.path.join(directory, base_name + f"__{server_result.pipeline_short_name}__{server_result.pipeline_version}.csv")
-        save_to_csv(csv_path, results)
-
-        # Step 1: Group results by tag
-        timespan = results[1]['frame_index'] - results[0]['frame_index']
-        log.debug(f"Server returned results every {timespan}s")
-        tag_timestamps = {}
-        for result in results:
-            for action in result['actions']:
-                if action not in tag_timestamps:
-                    tag_timestamps[action] = []
-                tag_timestamps[action].append(result['frame_index'])
-
-        # Step 2: Process each tag
-        tag_durations = {}
-        for tag, timestamps in tag_timestamps.items():
-            start = timestamps[0]
-            total_duration = 0
-            for i in range(1, len(timestamps)):
-                if timestamps[i] - timestamps[i - 1] > timespan + max_gaps.get(tag, 0):
-                    # End of current marker, start of new one
-                    duration = timestamps[i - 1] - start
-
-                    min_duration_temp = min_durations.get(tag, 0)
-                    min_duration_temp = min_duration_temp if min_duration_temp > timespan else timespan
-                    if duration >= min_duration_temp:
-                        # The marker is long enough, add its duration
-                        total_duration += duration
-
-                        # README: This code works for generating markers but stash markers don't have a way to be deleted in batch and are missing a lot of other 
-                        # needed features so this code will remain disabled until stash adds the needed features.
-
-                        # log.debug(f"Creating marker for {tagname_mappings[tag]} with range {start} - {timestamps[i - 1]}")
-                        # stash.create_scene_marker({"scene_id": sceneId, "primary_tag_id":tagid_mappings[tag], "tag_ids": [tagid_mappings[tag]], "seconds": start, "title":tagname_mappings[tag]})
-                    start = timestamps[i]
-            # Check the last marker
-            duration = timestamps[-1] - start
-            if duration >= min_durations.get(tag, 0):
-                total_duration += duration
-
-                # README: This code works for generating markers but stash markers don't have a way to be deleted in batch and are missing a lot of other 
-                # needed features so this code will remain disabled until stash adds the needed features.
-
-                # log.debug(f"Creating marker for {tagname_mappings[tag]} with range {start} - {timestamps[-1]}")
-                # stash.create_scene_marker({"scene_id": sceneId, "primary_tag_id":tagid_mappings[tag], "tag_ids": [tagid_mappings[tag]], "seconds": start, "title":tagname_mappings[tag]})
-            tag_durations[tag] = total_duration
-        scene_duration = results[-1]['frame_index']
-
-        # Step 3: Check if each tag meets the required duration
-
-        tags_to_add = [ai_tagged_tag_id]
-        for tag, duration in tag_durations.items():
-            required_duration = required_durations.get(tag, "0s")
-            if required_duration.endswith("s"):
-                required_duration = float(required_duration[:-1])
-            elif required_duration.endswith("%"):
-                required_duration = float(required_duration[:-1]) / 100 * scene_duration
-            if duration < required_duration:
-                log.debug(f"Tag {tagname_mappings[tag]} does not meet the required duration of {required_duration}s. It only has a duration of {duration}s.")
-            else:
-                log.debug(f"Tag {tagname_mappings[tag]} meets the required duration of {required_duration}s. It has a duration of {duration}s.")
-                tags_to_add.append(tagid_mappings[tag])
-
-    log.info(f"Processed video with {len(results)} AI tagged frames")
-    stash.update_scenes({"ids": [sceneId], "tag_ids": {"ids": [tagme_tag_id], "mode": "REMOVE"}})
-    stash.update_scenes({"ids": [sceneId], "tag_ids": {"ids": tags_to_add, "mode": "ADD"}})
-
-# ----------------- AI Server Calling Functions -----------------
-
-async def call_api_async(session, endpoint, payload):
-    url = f'{config.API_BASE_URL}/{endpoint}'
-    try:
-        async with session.post(url, json=payload) as response:
-            if response.status == 200:
-                return await response.json()
-            else:
-                log.error(f"Failed to process {endpoint} status_code: {response.status}")
-                return None
-    except aiohttp.ClientConnectionError as e:
-        log.error(f"Failed to connect to AI server. Is the AI server running at {config.API_BASE_URL}?   {e}")
-        raise Exception(f"Failed to connect to AI server. Is the AI server running at {config.API_BASE_URL}?")
-
-async def process_images_async(image_paths):
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=1800)) as session:
-        return await call_api_async(session, 'process_images/', {"paths": image_paths})
-    
-async def process_video_async(video_path):
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=1800)) as session:
-        return await call_api_async(session, 'process_video/', {"path": video_path})
-    
-class VideoResult(pydantic.BaseModel):
-    result: Any
-    pipeline_short_name: str
-    pipeline_version: float
-
-class ImageResult(pydantic.BaseModel):
-    result: Any
-    pipeline_short_name: str
-    pipeline_version: float
     
 # ----------------- Utility Functions -----------------
-
-def save_to_csv(file_path, server_result):
-    with open(file_path, mode='w', newline='') as outfile:
-        writer = csv.writer(outfile)
-        for result in server_result:
-            timestamp = result["frame_index"]
-            row = [timestamp] + result['actions']
-            writer.writerow(row)
-                
-def parse_csv(file_path):
-    global tagid_mappings
-    global tagname_mappings
-    global max_gaps
-    global min_durations
-    global required_durations
-
-    with open(file_path, mode='r') as infile:
-        reader = csv.DictReader(infile)
-        for row in reader:
-            server_tag = row['ServerTag']
-            stash_tag = row['StashTag']
-            min_duration = float(row['MinDuration'])
-            max_gap = float(row['MaxGap'])
-            required_duration = row['RequiredDuration']
-
-            tag = stash.find_tag(stash_tag)
-            if not tag:
-                tag = stash.create_tag({"name":stash_tag, "ignore_auto_tag": True, "parent_ids":[ai_base_tag_id]})
-            
-            tagid_mappings[server_tag] = tag["id"]
-            tagname_mappings[server_tag] = stash_tag
-            min_durations[server_tag] = min_duration
-            max_gaps[server_tag] = max_gap
-            required_durations[server_tag] = required_duration
 
 def increment_progress():
     global progress
