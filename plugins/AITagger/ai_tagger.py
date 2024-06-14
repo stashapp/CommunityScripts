@@ -62,6 +62,7 @@ except:
 semaphore = asyncio.Semaphore(config.CONCURRENT_TASK_LIMIT)
 progress = 0
 increment = 0.0
+current_videopipeline = None
 
 # ----------------- Main Execution -----------------
 
