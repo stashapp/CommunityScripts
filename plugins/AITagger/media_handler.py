@@ -28,7 +28,12 @@ def initialize(connection):
     tagme_tag_id = stash.find_tag(config.tagme_tag_name, create=True)["id"]
     ai_base_tag_id = stash.find_tag(config.ai_base_tag_name, create=True)["id"]
     ai_tagged_tag_id = stash.find_tag(config.aitagged_tag_name, create=True)["id"]
-    vr_tag_id = stash.find_tag(stash.get_configuration()["ui"]["vrTag"])["id"]
+    vr_tag_name = stash.get_configuration()["ui"].get("vrTag", None)
+    if not vr_tag_name:
+        log.warning("No VR tag found in configuration")
+        vr_tag_id = None
+    else:
+        vr_tag_id = stash.find_tag(vr_tag_name)["id"]
 
     try:
         parse_csv("tag_mappings.csv")
