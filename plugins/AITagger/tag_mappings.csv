@@ -1,37 +1,37 @@
-ServerTag,StashTag,MinDuration,MaxGap,RequiredDuration
-69,69_AI,5,2,20s
-Anal Fucking,Anal Fucking_AI,5,2,20s
-Ass Licking,Ass Licking_AI,5,2,20s
-Ass Penetration,Ass Penetration_AI,5,2,20s
-Ball Licking/Sucking,Ball Licking/Sucking_AI,2,2,20s
-Blowjob,Blowjob_AI,5,2,20s
-Cum on Person,Cum on Person_AI,3,2,15s
-Cum Swapping,Cum Swapping_AI,2,2,15s
-Cumshot,Cumshot_AI,1,2,10s
-Deepthroat,Deepthroat_AI,1,2,20s
-Double Penetration,Double Penetration_AI,5,2,20s
-Fingering,Fingering_AI,5,2,20s
-Fisting,Fisting_AI,3,2,20s
-Footjob,Footjob_AI,3,2,20s
-Gangbang,Gangbang_AI,5,2,20s
-Gloryhole,Gloryhole_AI,5,2,20s
-Grabbing Ass,Grabbing Ass_AI,5,2,20s
-Grabbing Boobs,Grabbing Boobs_AI,5,2,20s
-Grabbing Hair/Head,Grabbing Hair/Head_AI,5,2,20s
-Handjob,Handjob_AI,5,2,20s
-Kissing,Kissing_AI,5,2,20s
-Licking Penis,Licking Penis_AI,2,2,20s
-Masturbation,Masturbation_AI,5,2,20s
-Pissing,Pissing_AI,2,2,20s
-Pussy Licking (Clearly Visible),Pussy Licking (Clearly Visible)_AI,5,2,20s
-Pussy Licking,Pussy Licking_AI,3,2,20s
-Pussy Rubbing,Pussy Rubbing_AI,5,2,20s
-Sucking Fingers,Sucking Fingers_AI,1,2,20s
-Sucking Toy/Dildo,Sucking Toy/Dildo_AI,1,2,20s
-Wet (Genitals),Wet (Genitals)_AI,3,2,20s
-Titjob,Titjob_AI,5,2,20s
-Tribbing/Scissoring,Tribbing/Scissoring_AI,3,2,20s
-Undressing,Undressing_AI,3,2,20s
-Vaginal Penetration,Vaginal Penetration_AI,5,2,20s
-Vaginal Fucking,Vaginal Fucking_AI,5,2,20s
-Vibrating,Vibrating_AI,5,2,20s
+ServerTag,StashTag,MinMarkerDuration,MaxGap,RequiredDuration,TagThreshold
+69,69_AI,5,2,20s,0.5
+Anal Fucking,Anal Fucking_AI,5,2,20s,0.5
+Ass Licking,Ass Licking_AI,5,2,20s,0.5
+Ass Penetration,Ass Penetration_AI,5,2,20s,0.5
+Ball Licking/Sucking,Ball Licking/Sucking_AI,2,2,20s,0.5
+Blowjob,Blowjob_AI,5,2,20s,0.5
+Cum on Person,Cum on Person_AI,3,2,15s,0.5
+Cum Swapping,Cum Swapping_AI,2,2,15s,0.5
+Cumshot,Cumshot_AI,1,2,10s,0.5
+Deepthroat,Deepthroat_AI,1,2,20s,0.5
+Double Penetration,Double Penetration_AI,5,2,20s,0.5
+Fingering,Fingering_AI,5,2,20s,0.5
+Fisting,Fisting_AI,3,2,20s,0.5
+Footjob,Footjob_AI,3,2,20s,0.5
+Gangbang,Gangbang_AI,5,2,20s,0.5
+Gloryhole,Gloryhole_AI,5,2,20s,0.5
+Grabbing Ass,Grabbing Ass_AI,5,2,20s,0.5
+Grabbing Boobs,Grabbing Boobs_AI,5,2,20s,0.5
+Grabbing Hair/Head,Grabbing Hair/Head_AI,5,2,20s,0.5
+Handjob,Handjob_AI,5,2,20s,0.5
+Kissing,Kissing_AI,5,2,20s,0.5
+Licking Penis,Licking Penis_AI,2,2,20s,0.5
+Masturbation,Masturbation_AI,5,2,20s,0.5
+Pissing,Pissing_AI,2,2,20s,0.5
+Pussy Licking (Clearly Visible),Pussy Licking (Clearly Visible)_AI,5,2,20s,0.5
+Pussy Licking,Pussy Licking_AI,3,2,20s,0.5
+Pussy Rubbing,Pussy Rubbing_AI,5,2,20s,0.5
+Sucking Fingers,Sucking Fingers_AI,1,2,20s,0.5
+Sucking Toy/Dildo,Sucking Toy/Dildo_AI,1,2,20s,0.5
+Wet (Genitals),Wet (Genitals)_AI,3,2,20s,0.5
+Titjob,Titjob_AI,5,2,20s,0.5
+Tribbing/Scissoring,Tribbing/Scissoring_AI,3,2,20s,0.5
+Undressing,Undressing_AI,3,2,20s,0.5
+Vaginal Penetration,Vaginal Penetration_AI,5,2,20s,0.5
+Vaginal Fucking,Vaginal Fucking_AI,5,2,20s,0.5
+Vibrating,Vibrating_AI,5,2,20s,0.5
