@@ -4,6 +4,8 @@ import pydantic
 import config
 import stashapi.log as log
 
+current_videopipeline = None
+
 # ----------------- AI Server Calling Functions -----------------
 
 async def post_api_async(session, endpoint, payload):
