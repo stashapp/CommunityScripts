@@ -62,7 +62,6 @@ except:
 semaphore = asyncio.Semaphore(config.CONCURRENT_TASK_LIMIT)
 progress = 0
 increment = 0.0
-current_videopipeline = None
 
 # ----------------- Main Execution -----------------
 
@@ -177,7 +176,7 @@ async def __tag_scene(scene):
     async with semaphore:
         scenePath = scene['files'][0]['path']
         sceneId = scene['id']
-        log.info("files result:" + str(scene['files'][0]))
+        log.debug("files result:" + str(scene['files'][0]))
         phash = scene['files'][0].get('fingerprint', None)
         duration = scene['files'][0].get('duration', None)
         if duration is None:
