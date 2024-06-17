@@ -341,7 +341,8 @@ option:focus {
 }
 
 .folder-list .btn-link {
-  color: #2c2e30;
+  /*color: #2c2e30;*/
+  color: #ffffff;
 }
 
 #performer-scraper-popover {
