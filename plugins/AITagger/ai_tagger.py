@@ -210,7 +210,7 @@ async def __tag_scene(scene):
                         return
                 elif os.path.exists(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__actiondetection__1.0.csv")):
                     ai_video_result = AIVideoResult.from_csv_file(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__actiondetection__1.0.csv"), scene_id=sceneId, phash=phash, duration=duration, version=1.0)
-                    log.info(f"Loading AI results from CSV file for scene {scenePath")
+                    log.info(f"Loading AI results from CSV file for scene {scenePath}")
                     current_pipeline_video = await ai_server.get_current_video_pipeline()
                     if ai_video_result.already_contains_model(current_pipeline_video):
                         log.info(f"Skipping running AI for scene {scenePath} as it has already been processed with the same pipeline version and configuration. Updating tags and markers instead.")
