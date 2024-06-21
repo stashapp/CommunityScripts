@@ -200,14 +200,34 @@ async def __tag_scene(scene):
                         log.error(f"Failed to load AI results from file: {e}")
                 elif os.path.exists(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__vid_giddy__1.0.csv")):
                     ai_video_result = AIVideoResult.from_csv_file(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__vid_giddy__1.0.csv"), scene_id=sceneId, phash=phash, duration=duration)
-                    log.info(f"Loading AI results from CSV file for scene {scenePath}: {ai_video_result}")
+                    log.info(f"Loading AI results from CSV file for scene {scenePath}")
                     current_pipeline_video = await ai_server.get_current_video_pipeline()
                     if ai_video_result.already_contains_model(current_pipeline_video):
-                            log.info(f"Skipping running AI for scene {scenePath} as it has already been processed with the same pipeline version and configuration. Updating tags and markers instead.")
-                            ai_video_result.to_json_file(ai_file_path)
-                            ai_video_result.update_stash_tags()
-                            ai_video_result.update_stash_markers()
-                            return
+                        log.info(f"Skipping running AI for scene {scenePath} as it has already been processed with the same pipeline version and configuration. Updating tags and markers instead.")
+                        ai_video_result.to_json_file(ai_file_path)
+                        ai_video_result.update_stash_tags()
+                        ai_video_result.update_stash_markers()
+                        return
+                elif os.path.exists(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__actiondetection__1.0.csv")):
+                    ai_video_result = AIVideoResult.from_csv_file(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__actiondetection__1.0.csv"), scene_id=sceneId, phash=phash, duration=duration, version=1.0)
+                    log.info(f"Loading AI results from CSV file for scene {scenePath}")
+                    current_pipeline_video = await ai_server.get_current_video_pipeline()
+                    if ai_video_result.already_contains_model(current_pipeline_video):
+                        log.info(f"Skipping running AI for scene {scenePath} as it has already been processed with the same pipeline version and configuration. Updating tags and markers instead.")
+                        ai_video_result.to_json_file(ai_file_path)
+                        ai_video_result.update_stash_tags()
+                        ai_video_result.update_stash_markers()
+                        return
+                elif os.path.exists(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__actiondetection__2.0.csv")):
+                    ai_video_result = AIVideoResult.from_csv_file(os.path.join(os.path.dirname(scenePath), os.path.splitext(os.path.basename(scenePath))[0] + f"__actiondetection__2.0.csv"), scene_id=sceneId, phash=phash, duration=duration, version=2.0)
+                    log.info(f"Loading AI results from CSV file for scene {scenePath}")
+                    current_pipeline_video = await ai_server.get_current_video_pipeline()
+                    if ai_video_result.already_contains_model(current_pipeline_video):
+                        log.info(f"Skipping running AI for scene {scenePath} as it has already been processed with the same pipeline version and configuration. Updating tags and markers instead.")
+                        ai_video_result.to_json_file(ai_file_path)
+                        ai_video_result.update_stash_tags()
+                        ai_video_result.update_stash_markers()
+                        return
                 else:
                     log.warning(f"Scene {scenePath} is already tagged but has no AI results file. Running AI again.")
             vr_video = media_handler.is_vr_scene(scene.get('tags'))

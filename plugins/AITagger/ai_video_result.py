@@ -112,7 +112,7 @@ class AIVideoResult(BaseModel):
                                 last_time_frame.end = time_frame.end or time_frame.start
                             else:
                                 merged_time_frames.append(deepcopy(time_frame))
-                merged_time_frames = [tf for tf in merged_time_frames if (tf.end or tf.start) - tf.start + frame_interval >= min_duration]
+                merged_time_frames = [tf for tf in merged_time_frames if (tf.end - tf.start + frame_interval if tf.end else frame_interval) >= min_duration]
                 media_handler.add_markers_to_video(self.video_metadata.video_id, tag_id, tag_name, merged_time_frames)
 
     def already_contains_model(self, model_config):
@@ -171,7 +171,7 @@ class AIVideoResult(BaseModel):
             return cls.model_validate_json(f.read())
         
     @classmethod
-    def from_csv_file(cls, csv_file, scene_id, phash, duration):
+    def from_csv_file(cls, csv_file, scene_id, phash, duration, version=1.0):
         server_results = []
         frame_interval = None
         last_frame_index = None
@@ -187,6 +187,6 @@ class AIVideoResult(BaseModel):
                         server_results.append({"frame_index": frame_index, "actions": [(tag_name, 1.0)]})
                 last_frame_index = frame_index
         tags = cls.__mutate_server_result_tags(server_results, "actiondetection", frame_interval)
-        model_info = ModelInfo(version=1.0, ai_model_config=ModelConfig(frame_interval=frame_interval, threshold=0.3))
+        model_info = ModelInfo(version=version, ai_model_config=ModelConfig(frame_interval=frame_interval, threshold=0.3))
         video_metadata = VideoMetadata(video_id=scene_id, phash=phash, models={"actiondetection" : model_info}, duration=duration)
         return cls(video_metadata=video_metadata, tags=tags)
