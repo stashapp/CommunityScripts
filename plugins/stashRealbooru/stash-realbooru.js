@@ -13,7 +13,6 @@
   async function getTagsForImage(image_id) {
     const query = `query ($id: ID) { findImage(id: $id) { tags { id }}}`;
     const variables = { id: image_id };
-    I;
     return csLib
       .callGQL({ query, variables })
       .then((data) => data.findImage.tags.map((p) => p.id));
