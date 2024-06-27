@@ -1,7 +1,7 @@
 /* stylelint-disable selector-max-specificity, declaration-no-important, selector-type-no-unknown, selector-max-class, a11y/no-outline-none, no-descending-specificity, selector-max-pseudo-class, property-disallowed-list, font-weight-notation, max-line-length, a11y/no-display-none, a11y/font-size-is-readable */
 /* Pornhub inspired stash theme */
 /* Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 /* Variables */
 :root {
@@ -27,7 +27,17 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   color: var(--color-text);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Helvetica Neue, sans-serif;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Oxygen-Sans,
+    Ubuntu,
+    Cantarell,
+    Helvetica Neue,
+    sans-serif;
   height: 100%;
   padding: 6rem 0 0;
   /* background-image: url("https://user-images.githubusercontent.com/63812189/79506691-4af78900-7feb-11ea-883e-87b8e05ceb1c.png"); */
@@ -66,7 +76,17 @@ body .tag-item {
 body div,
 body p,
 body a {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Helvetica Neue, sans-serif;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Oxygen-Sans,
+    Ubuntu,
+    Cantarell,
+    Helvetica Neue,
+    sans-serif;
 }
 
 .show-carat.dropdown .btn,
@@ -109,7 +129,7 @@ body a {
 }
 
 * {
-  scrollbar-color: hsl(0deg 0% 100% / .2) transparent;
+  scrollbar-color: hsl(0deg 0% 100% / 0.2) transparent;
 }
 
 .bg-dark {
@@ -118,9 +138,12 @@ body a {
 
 .card {
   background-color: var(--color-black);
-  background-color: rgb(0 0 0 / .3);
+  background-color: rgb(0 0 0 / 0.3);
   border-radius: 3px;
-  box-shadow: 0 0 0 1px rgb(16 22 26 / .4), 0 0 0 rgb(16 22 26 / 0), 0 0 0 rgb(16 22 26 / 0);
+  box-shadow:
+    0 0 0 1px rgb(16 22 26 / 0.4),
+    0 0 0 rgb(16 22 26 / 0),
+    0 0 0 rgb(16 22 26 / 0);
   padding: 20px;
 }
 
@@ -175,7 +198,7 @@ body p {
 }
 
 .btn-secondary.filter-item.col-1.d-none.d-sm-inline.form-control {
-  background-color: rgb(0 0 0 / .15);
+  background-color: rgb(0 0 0 / 0.15);
 }
 
 .btn.active,
@@ -222,7 +245,7 @@ minimal.w-100.active.btn.btn-primary,
 }
 
 input[type="range"]::-moz-range-track {
-  background: hsl(0deg 0% 100% / .25);
+  background: hsl(0deg 0% 100% / 0.25);
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -230,7 +253,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 div.react-select__control {
-  background-color: hsl(0deg 0% 39.2% / .4);
+  background-color: hsl(0deg 0% 39.2% / 0.4);
   border-color: #394b59;
   color: #182026;
   cursor: pointer;
@@ -252,7 +275,11 @@ div.react-select__control {
 }
 
 .scene-wall-item-text-container {
-  background: radial-gradient(farthest-corner at 50% 50%, rgb(50 50 50 / .5) 50%, #323232 100%);
+  background: radial-gradient(
+    farthest-corner at 50% 50%,
+    rgb(50 50 50 / 0.5) 50%,
+    #323232 100%
+  );
   color: #eee;
 }
 
@@ -295,7 +322,7 @@ button.minimal.brand-link.d-none.d-md-inline-block.btn.btn-primary {
 
 a:hover,
 a:focus {
-  color: hsl(0deg 0% 100% / .7);
+  color: hsl(0deg 0% 100% / 0.7);
 }
 
 option {
@@ -396,7 +423,7 @@ body .top-nav .navbar-brand button::after {
   background: var(--color-hubs);
   border-radius: 3px;
   color: var(--color-black);
-  content: 'hub';
+  content: "hub";
   display: inline-block;
   font-weight: 700 !important;
   margin: 0 0 0 3px;
@@ -548,7 +575,7 @@ body .rating-banner {
   background-size: contain;
   color: #fff;
   display: block;
-  font-size: .86rem;
+  font-size: 0.86rem;
   font-weight: 400;
   height: 0;
   left: 0;
@@ -587,15 +614,15 @@ body .rating-banner::after {
 }
 
 body .rating-banner.rating-3::after {
-  content: '3';
+  content: "3";
 }
 
 body .rating-banner.rating-4::after {
-  content: '4';
+  content: "4";
 }
 
 body .rating-banner.rating-5::after {
-  content: '5';
+  content: "5";
 }
 
 .wall-item-text {
@@ -808,7 +835,10 @@ div[role="toolbar"] + .d-flex > .tag-item.badge.badge-secondary {
   gap: 10px;
 }
 
-div[role="toolbar"] + .d-flex > .tag-item.badge.badge-secondary button[type="button"] {
+div[role="toolbar"]
+  + .d-flex
+  > .tag-item.badge.badge-secondary
+  button[type="button"] {
   align-items: center;
   background: none !important;
   bottom: 0 !important;
@@ -927,7 +957,8 @@ h2 {
   }
 }
 
-[data-rb-event-key="https://opencollective.com/stashapp"] {
+[data-rb-event-key="https://opencollective.com/stashapp"]
+{
   display: none !important;
 }
 
