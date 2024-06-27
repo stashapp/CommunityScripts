@@ -1,43 +1,44 @@
 (async () => {
-  'use strict';
-  
-  const userSettings = await csLib.getConfiguration('hotCards', {});
+  "use strict";
+
+  const userSettings = await csLib.getConfiguration("hotCards", {});
   const TAG_ID = userSettings.tagId;
   const RATING_THRESHOLD = userSettings.threshold;
   const CARDS = {
     gallery: {
-      class: 'gallery-card',
+      class: "gallery-card",
       data: stash.galleries,
-      enabled: userSettings.galleries
+      enabled: userSettings.galleries,
     },
     image: {
-      class: 'image-card',
+      class: "image-card",
       data: stash.images,
-      enabled: userSettings.images
+      enabled: userSettings.images,
     },
     movie: {
-      class: 'movie-card',
+      class: "movie-card",
       data: stash.movies,
-      enabled: userSettings.movies
+      enabled: userSettings.movies,
     },
     performer: {
-      class: 'performer-card',
+      class: "performer-card",
       data: stash.performers,
-      enabled: userSettings.performers
+      enabled: userSettings.performers,
     },
     scene: {
-      class: 'scene-card',
+      class: "scene-card",
       data: stash.scenes,
-      enabled: userSettings.scenes
+      enabled: userSettings.scenes,
     },
     studio: {
-      class: 'studio-card',
+      class: "studio-card",
       data: stash.studios,
-      enabled: userSettings.studios
+      enabled: userSettings.studios,
     },
   };
   const isTagBased = TAG_ID?.length !== 0;
-  const isRatingBased = RATING_THRESHOLD && !['0', 0].includes(RATING_THRESHOLD);
+  const isRatingBased =
+    RATING_THRESHOLD && !["0", 0].includes(RATING_THRESHOLD);
   let backupCards = [];
   let hotCards = [];
 
@@ -49,7 +50,7 @@
     movies: handleMoviesHotCards,
     performers: handlePerformersHotCards,
     scenes: handleScenesHotCards,
-    studios: handleStudiosHotCards
+    studios: handleStudiosHotCards,
   };
 
   // Iterate over the corresponding config to call the appropriate functions
@@ -65,8 +66,8 @@
 
   /**
    * Add hot cards to the home page.
-   * 
-   * Sets up a path listener for the home page, and after a delay, 
+   *
+   * Sets up a path listener for the home page, and after a delay,
    * processes each enabled card type to add hot elements.
    */
   function handleHomeHotCards() {
@@ -78,10 +79,10 @@
       }, 3000);
     });
   }
-  
+
   /**
    * Adds gallery hot cards to specific paths in the application.
-   * 
+   *
    * The supported paths are:
    * - /galleries
    * - /performers/{id}/galleries
@@ -90,13 +91,14 @@
    * - /scenes/{id}
    */
   function handleGalleriesHotCards() {
-    const pattern = /^\/(galleries$|performers\/\d+\/galleries$|studios\/\d+\/galleries$|tags\/\d+\/galleries$|scenes\/\d+$)/;
+    const pattern =
+      /^\/(galleries$|performers\/\d+\/galleries$|studios\/\d+\/galleries$|tags\/\d+\/galleries$|scenes\/\d+$)/;
     addHotCards(pattern, CARDS.gallery);
   }
 
   /**
    * Adds image hot cards to specific paths in the application.
-   * 
+   *
    * The supported paths are:
    * - /images
    * - /performers/{id}/images
@@ -105,13 +107,14 @@
    * - /galleries/{id}
    */
   function handleImagesHotCards() {
-    const pattern = /^\/(images$|performers\/\d+\/images$|studios\/\d+\/images$|tags\/\d+\/images$|galleries\/\d+$)/;
+    const pattern =
+      /^\/(images$|performers\/\d+\/images$|studios\/\d+\/images$|tags\/\d+\/images$|galleries\/\d+$)/;
     addHotCards(pattern, CARDS.image);
   }
 
   /**
    * Adds movie hot cards to specific paths in the application.
-   * 
+   *
    * The supported paths are:
    * - /movies
    * - /performers/{id}/movies
@@ -120,13 +123,14 @@
    * - /scenes/{id}
    */
   function handleMoviesHotCards() {
-    const pattern = /^\/(movies$|performers\/\d+\/movies$|studios\/\d+\/movies$|tags\/\d+\/movies$|scenes\/\d+$)/;
+    const pattern =
+      /^\/(movies$|performers\/\d+\/movies$|studios\/\d+\/movies$|tags\/\d+\/movies$|scenes\/\d+$)/;
     addHotCards(pattern, CARDS.movie);
   }
 
   /**
    * Adds performer hot cards to specific paths in the application.
-   * 
+   *
    * The supported paths are:
    * - /performers
    * - /performers/{id}/appearswith
@@ -137,13 +141,14 @@
    * - /images/{id}
    */
   function handlePerformersHotCards() {
-    const pattern = /^\/(performers(\/\d+\/appearswith)?|studios\/\d+\/performers|tags\/\d+\/performers|scenes\/\d+|galleries\/\d+|images\/\d+)$/;
+    const pattern =
+      /^\/(performers(\/\d+\/appearswith)?|studios\/\d+\/performers|tags\/\d+\/performers|scenes\/\d+|galleries\/\d+|images\/\d+)$/;
     addHotCards(pattern, CARDS.performer);
   }
 
   /**
    * Adds scene hot cards to specific paths in the application.
-   * 
+   *
    * The supported paths are:
    * - /scenes
    * - /performers/{id}/scenes
@@ -153,13 +158,14 @@
    * - /galleries/{id}
    */
   function handleScenesHotCards() {
-    const pattern = /^\/(scenes$|performers\/\d+\/scenes$|studios\/\d+\/scenes$|tags\/\d+\/scenes$|movies\/\d+$|galleries\/\d+$)/;
+    const pattern =
+      /^\/(scenes$|performers\/\d+\/scenes$|studios\/\d+\/scenes$|tags\/\d+\/scenes$|movies\/\d+$|galleries\/\d+$)/;
     addHotCards(pattern, CARDS.scene);
   }
 
   /**
    * Adds studio hot cards to specific paths in the application.
-   * 
+   *
    * The supported paths are:
    * - /studios
    * - /studios/{id}/childstudios
@@ -184,16 +190,16 @@
 
   /**
    * Wraps cards in "hot" elements based on specific conditions (tag or rating).
-   * 
-   * On the home page, this function may be triggered by multiple intercepted GraphQL requests, 
+   *
+   * On the home page, this function may be triggered by multiple intercepted GraphQL requests,
    * each corresponding to a user-customized carousel.
-   * 
-   * The user is able to customize the home page as desired and add 
+   *
+   * The user is able to customize the home page as desired and add
    * several carousels of the same type of resource with different filters saved.
-   * As a result, several graphql request are intercepted and this function runs 
+   * As a result, several graphql request are intercepted and this function runs
    * as many times as the user configured carousels.
-   * 
-   * The first time it runs, the hotCards array is populated, 
+   *
+   * The first time it runs, the hotCards array is populated,
    * so we need an additional flag to differentiate that we are on the home page.
    *
    * @param {Object} stashData - Data fetched from the GraphQL interceptor. e.g. stash.performers.
@@ -204,18 +210,17 @@
     // To avoid DOM exceptions, it only runs when `hotCards` is empty and we are not in the home page.
     if (hotCards.length === 0 || isHome) {
       const cards = document.querySelectorAll(`.${cardClass}`);
-      
-      cards.forEach(card => {
+
+      cards.forEach((card) => {
         const link = card.querySelector(".thumbnail-section > a");
         const url = link.href;
-        const id = url.split('/').pop().split('?').shift();
+        const id = url.split("/").pop().split("?").shift();
         const data = stashData[id];
-        
+
         if (isTagBased) {
           if (data?.tags?.length) {
-            data.tags.forEach(tag => {
-              if (tag.id === TAG_ID)
-                createHotElementAndAttachToDOM(card);
+            data.tags.forEach((tag) => {
+              if (tag.id === TAG_ID) createHotElementAndAttachToDOM(card);
             });
           }
         } else if (isRatingBased && data?.rating100 !== null) {
@@ -237,7 +242,7 @@
   }
 
   function createElementFromHTML(htmlString) {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.innerHTML = htmlString.trim();
     return div.firstChild;
   }
@@ -250,10 +255,10 @@
    * "DOMException: Node.removeChild: The node to be removed is not a child of this node".
    *
    * Because of how the internal content of some divs are updated when navigating.
-   * 
+   *
    * This restores the card back to the original DOM structure to prevent that.
    * -
-  */
+   */
   function restoreCards() {
     backupCards.forEach((backupCard, i) => {
       if (hotCards[i] && hotCards[i].parentNode) {
@@ -265,12 +270,11 @@
     hotCards.length = 0;
   }
 
-  ['pushState', 'replaceState'].forEach(method => {
+  ["pushState", "replaceState"].forEach((method) => {
     const original = history[method];
     history[method] = function () {
       restoreCards();
       return original.apply(this, arguments);
     };
   });
-
 })();
