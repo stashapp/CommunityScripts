@@ -1,0 +1,50 @@
+name: Hot Cards
+description: Adds custom css to card elements that match a tag id or a rating threshold.
+version: 1.0.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
+ui:
+  javascript:
+    - hotCards.js
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/fetchInterceptor.js
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/stashHandler.js
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/registerPathChangeListener.js
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/waitForClass.js
+  css:
+    - hotCards.css
+settings:
+  tagId:
+    displayName: Tag ID
+    description: The tag ID to match against. Leave blank to disable tag-based hot cards.
+    type: STRING
+  threshold:
+    displayName: Rating Threshold
+    description: The rating threshold to match against. Set to 0 to disable rating-based hot cards.
+    type: NUMBER
+  home:
+    displayName: Enable on home
+    description: Enable hot cards on the home page.
+    type: BOOLEAN
+  scenes:
+    displayName: Enable on scenes
+    description: Enable hot cards on scene cards.
+    type: BOOLEAN
+  images:
+    displayName: Enable on images
+    description: Enable hot cards on image cards.
+    type: BOOLEAN
+  movies:
+    displayName: Enable on movies
+    description: Enable hot cards on movie cards.
+    type: BOOLEAN
+  galleries:
+    displayName: Enable on galleries
+    description: Enable hot cards on gallery cards.
+    type: BOOLEAN
+  performers:
+    displayName: Enable on performers
+    description: Enable hot cards on performer cards.
+    type: BOOLEAN
+  studios:
+    displayName: Enable on studios
+    description: Enable hot cards on studio cards.
+    type: BOOLEAN
