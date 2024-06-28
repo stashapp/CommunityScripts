@@ -7,11 +7,11 @@ ui:
   requires:
     - CommunityScriptsUILibrary
   javascript:
-    - hotCards.js
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/fetchInterceptor.js
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/stashHandler.js
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/registerPathChangeListener.js
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/waitForClass.js
+    - hotCards.js
   css:
     - hotCards.css
 settings:
