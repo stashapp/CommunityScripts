@@ -171,7 +171,8 @@
    * - /tags/{id}/studios
    */
   function handleStudiosHotCards() {
-    const pattern = /^\/(studios|(studios\/\d+\/childstudios)|(tags\/\d+\/studios))$/;
+    const pattern =
+      /^\/(studios|(studios\/\d+\/childstudios)|(tags\/\d+\/studios))$/;
     addHotCards(pattern, CARDS.studio);
   }
 
