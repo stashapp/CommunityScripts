@@ -21,7 +21,7 @@ settings:
     type: STRING
   threshold:
     displayName: Rating Threshold
-    description: The rating threshold to match against. Set to 0 to disable rating-based hot cards.
+    description: The rating threshold (0-100) to match against. Set to 0 to disable rating-based hot cards.
     type: NUMBER
   home:
     displayName: Enable on home
