@@ -158,7 +158,7 @@
    */
   function handleScenesHotCards() {
     const pattern =
-      /^\/(scenes|(performers|studios|tags|movies)\/\d+\/scenes|(movies|galleries)\/\d+)$)/;
+      /^\/(scenes|(performers|studios|tags|movies)\/\d+\/scenes|(movies|galleries)\/\d+)$/;
     addHotCards(pattern, CARDS.scene);
   }
 
