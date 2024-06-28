@@ -2,7 +2,10 @@ name: Hot Cards
 description: Adds custom css to card elements that match a tag id or a rating threshold.
 version: 1.0.0
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
+# requires: CommunityScriptsUILibrary
 ui:
+  requires:
+    - CommunityScriptsUILibrary
   javascript:
     - hotCards.js
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/fetchInterceptor.js
