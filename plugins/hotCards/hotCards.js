@@ -2,43 +2,42 @@
   "use strict";
 
   const userSettings = await csLib.getConfiguration("hotCards", {});
-  const TAG_ID = userSettings.tagId;
-  const RATING_THRESHOLD = userSettings.threshold;
+  const TAG_ID = userSettings?.tagId;
+  const RATING_THRESHOLD = parseInt(userSettings?.threshold ?? 0);
   const CARDS = {
     gallery: {
       class: "gallery-card",
       data: stash.galleries,
-      enabled: userSettings.galleries,
+      enabled: userSettings?.galleries,
     },
     image: {
       class: "image-card",
       data: stash.images,
-      enabled: userSettings.images,
+      enabled: userSettings?.images,
     },
     movie: {
       class: "movie-card",
       data: stash.movies,
-      enabled: userSettings.movies,
+      enabled: userSettings?.movies,
     },
     performer: {
       class: "performer-card",
       data: stash.performers,
-      enabled: userSettings.performers,
+      enabled: userSettings?.performers,
     },
     scene: {
       class: "scene-card",
       data: stash.scenes,
-      enabled: userSettings.scenes,
+      enabled: userSettings?.scenes,
     },
     studio: {
       class: "studio-card",
       data: stash.studios,
-      enabled: userSettings.studios,
+      enabled: userSettings?.studios,
     },
   };
-  const isTagBased = TAG_ID?.length !== 0;
-  const isRatingBased =
-    RATING_THRESHOLD && !["0", 0].includes(RATING_THRESHOLD);
+  const isTagBased = TAG_ID?.length;
+  const isRatingBased = RATING_THRESHOLD !== 0;
   let backupCards = [];
   let hotCards = [];
 
@@ -74,7 +73,7 @@
     const pattern = /^\/$/;
     registerPathChangeListener(pattern, () => {
       setTimeout(() => {
-        for (const [_, card] of Object.entries(CARDS))
+        for (const card of Object.values(CARDS))
           if (card.enabled) handleHotCards(card, true);
       }, 3000);
     });
@@ -92,7 +91,7 @@
    */
   function handleGalleriesHotCards() {
     const pattern =
-      /^\/(galleries$|performers\/\d+\/galleries$|studios\/\d+\/galleries$|tags\/\d+\/galleries$|scenes\/\d+$)/;
+      /^\/(galleries|(performers|studios|tags)\/\d+\/galleries|scenes\/\d+)$/;
     addHotCards(pattern, CARDS.gallery);
   }
 
@@ -108,7 +107,7 @@
    */
   function handleImagesHotCards() {
     const pattern =
-      /^\/(images$|performers\/\d+\/images$|studios\/\d+\/images$|tags\/\d+\/images$|galleries\/\d+$)/;
+      /^\/(images|(performers|studios|tags)\/\d+\/images|galleries\/\d+)$/;
     addHotCards(pattern, CARDS.image);
   }
 
@@ -124,7 +123,7 @@
    */
   function handleMoviesHotCards() {
     const pattern =
-      /^\/(movies$|performers\/\d+\/movies$|studios\/\d+\/movies$|tags\/\d+\/movies$|scenes\/\d+$)/;
+      /^\/(movies|(performers|studios|tags)\/\d+\/movies|scenes\/\d+)$/;
     addHotCards(pattern, CARDS.movie);
   }
 
@@ -142,7 +141,7 @@
    */
   function handlePerformersHotCards() {
     const pattern =
-      /^\/(performers(\/\d+\/appearswith)?|studios\/\d+\/performers|tags\/\d+\/performers|scenes\/\d+|galleries\/\d+|images\/\d+)$/;
+      /^\/(performers(?:\/\d+\/appearswith)?|(performers|studios|tags)\/\d+\/performers|(scenes|galleries|images)\/\d+)$/;
     addHotCards(pattern, CARDS.performer);
   }
 
@@ -159,7 +158,7 @@
    */
   function handleScenesHotCards() {
     const pattern =
-      /^\/(scenes$|performers\/\d+\/scenes$|studios\/\d+\/scenes$|tags\/\d+\/scenes$|movies\/\d+$|galleries\/\d+$)/;
+      /^\/(scenes|(performers|studios|tags|movies)\/\d+\/scenes|(movies|galleries)\/\d+)$)/;
     addHotCards(pattern, CARDS.scene);
   }
 
@@ -172,7 +171,7 @@
    * - /tags/{id}/studios
    */
   function handleStudiosHotCards() {
-    const pattern = /^\/studios(\/\d+\/childstudios)?$|^\/tags\/\d+\/studios$/;
+    const pattern = /^\/(studios|(studios\/\d+\/childstudios)|(tags\/\d+\/studios))$/;
     addHotCards(pattern, CARDS.studio);
   }
 
@@ -213,8 +212,7 @@
 
       cards.forEach((card) => {
         const link = card.querySelector(".thumbnail-section > a");
-        const url = link.href;
-        const id = url.split("/").pop().split("?").shift();
+        const id = new URL(link.href).pathname.split("/").pop();
         const data = stashData[id];
 
         if (isTagBased) {
