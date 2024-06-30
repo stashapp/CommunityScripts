@@ -226,7 +226,7 @@
           }
         } else if (isRatingBased && data?.rating100 !== null) {
           const rating = isStarsRatingSystem
-            ? data.rating100 / 20
+            ? data?.rating100 / 20
             : data.rating100;
           if (rating >= RATING_THRESHOLD)
             createHotElementAndAttachToDOM(card, isHome);
