@@ -219,7 +219,8 @@
         if (isTagBased) {
           if (data?.tags?.length) {
             data.tags.forEach((tag) => {
-              if (tag.id === TAG_ID) createHotElementAndAttachToDOM(card, isHome);
+              if (tag.id === TAG_ID)
+                createHotElementAndAttachToDOM(card, isHome);
             });
           }
         } else if (isRatingBased && data?.rating100 !== null) {
@@ -231,11 +232,11 @@
   }
 
   function createHotElementAndAttachToDOM(cardElement, isHome) {
-    const hotElement = createElementFromHTML(`<div class="hot-border">`);
+    const hotElement = createElementFromHTML(`<div class="hot-card">`);
     if (isHome) hotElement.style.height = "100%";
 
     backupCards.push(cardElement);
-    cardElement.classList.add("hot-card");
+    cardElement.classList.add("hot-border");
     cardElement.before(hotElement);
     hotElement.append(cardElement);
     hotCards.push(hotElement);
