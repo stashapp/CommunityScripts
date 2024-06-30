@@ -219,19 +219,20 @@
         if (isTagBased) {
           if (data?.tags?.length) {
             data.tags.forEach((tag) => {
-              if (tag.id === TAG_ID) createHotElementAndAttachToDOM(card);
+              if (tag.id === TAG_ID) createHotElementAndAttachToDOM(card, isHome);
             });
           }
         } else if (isRatingBased && data?.rating100 !== null) {
           if (data.rating100 >= RATING_THRESHOLD)
-            createHotElementAndAttachToDOM(card);
+            createHotElementAndAttachToDOM(card, isHome);
         }
       });
     }
   }
 
-  function createHotElementAndAttachToDOM(cardElement) {
+  function createHotElementAndAttachToDOM(cardElement, isHome) {
     const hotElement = createElementFromHTML(`<div class="hot-border">`);
+    if (isHome) hotElement.style.height = "100%";
 
     backupCards.push(cardElement);
     cardElement.classList.add("hot-card");
