@@ -1,5 +1,5 @@
 name: Hot Cards
-description: Adds custom css to card elements that match a tag id or a rating threshold.
+description: Adds custom styling to card elements that match a tag ID or a rating threshold.
 version: 1.0.2
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
 # requires: CommunityScriptsUILibrary
@@ -17,37 +17,37 @@ ui:
 settings:
   tagId:
     displayName: Tag ID
-    description: The tag ID to match against. Leave blank to disable tag-based hot cards.
+    description: Tag ID to match against. Leave blank to disable tag-based hot cards.
     type: STRING
   threshold:
     displayName: Rating Threshold
     description: Rating threshold (0-5). Use 6-100 for tenths. Set to 0 to disable rating-based hot cards.
     type: NUMBER
   home:
-    displayName: Enable on home
-    description: Enable hot cards on the home page.
+    displayName: Enable for the homepage
+    description: Enable Hot Cards on the home page.
     type: BOOLEAN
   scenes:
-    displayName: Enable on scenes
-    description: Enable hot cards on scene cards.
+    displayName: Enable for scenes
+    description: Enable Hot Cards for scene cards.
     type: BOOLEAN
   images:
-    displayName: Enable on images
-    description: Enable hot cards on image cards.
+    displayName: Enable for images
+    description: Enable Hot Cards for image cards.
     type: BOOLEAN
   movies:
-    displayName: Enable on movies
-    description: Enable hot cards on movie cards.
+    displayName: Enable for movies
+    description: Enable Hot Cards for movie cards.
     type: BOOLEAN
   galleries:
-    displayName: Enable on galleries
-    description: Enable hot cards on gallery cards.
+    displayName: Enable for galleries
+    description: Enable Hot Cards for gallery cards.
     type: BOOLEAN
   performers:
-    displayName: Enable on performers
-    description: Enable hot cards on performer cards.
+    displayName: Enable for performers
+    description: Enable Hot Cards for performer cards.
     type: BOOLEAN
   studios:
-    displayName: Enable on studios
-    description: Enable hot cards on studio cards.
+    displayName: Enable for studios
+    description: Enable Hot Cards for studio cards.
     type: BOOLEAN
