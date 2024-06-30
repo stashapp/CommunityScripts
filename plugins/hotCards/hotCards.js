@@ -38,6 +38,7 @@
   };
   const isTagBased = TAG_ID?.length;
   const isRatingBased = RATING_THRESHOLD !== 0;
+  const isStarsRatingSystem = RATING_THRESHOLD <= 5;
   let backupCards = [];
   let hotCards = [];
 
@@ -224,7 +225,10 @@
             });
           }
         } else if (isRatingBased && data?.rating100 !== null) {
-          if (data.rating100 >= RATING_THRESHOLD)
+          const rating = isStarsRatingSystem
+            ? data.rating100 / 20
+            : data.rating100;
+          if (rating >= RATING_THRESHOLD)
             createHotElementAndAttachToDOM(card, isHome);
         }
       });

@@ -1,6 +1,6 @@
 name: Hot Cards
 description: Adds custom css to card elements that match a tag id or a rating threshold.
-version: 1.0.0
+version: 1.0.2
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
 # requires: CommunityScriptsUILibrary
 ui:
@@ -21,7 +21,7 @@ settings:
     type: STRING
   threshold:
     displayName: Rating Threshold
-    description: The rating threshold (0-100) to match against. Set to 0 to disable rating-based hot cards.
+    description: Rating threshold (0-5). Use 6-100 for tenths. Set to 0 to disable rating-based hot cards.
     type: NUMBER
   home:
     displayName: Enable on home
