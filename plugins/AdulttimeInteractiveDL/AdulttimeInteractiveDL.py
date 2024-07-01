@@ -17,7 +17,7 @@ try:
 
 except Exception as e:
     # Ignore
-    print("Hey there...")
+    print("Caught exception")
 
 try:
     import stashapi.log as log
@@ -30,7 +30,7 @@ except ModuleNotFoundError:
         "You need to install the stashapi module. (pip install stashapp-tools)",
         file=sys.stderr,
     )
-    return
+    exit
 
 FAKTORCONV = 6.25
 FRAGMENT = json.loads(sys.stdin.read())
@@ -83,7 +83,7 @@ def main():
         if MODE == "download":
             get_download()
         if MODE == "disable":
-            return true
+            return True
     else:
         FRAGMENT_HOOK_TYPE = FRAGMENT["args"]["hookContext"]["type"]
         FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
@@ -157,43 +157,36 @@ def get_download():
                     dlapires = json.loads(r.content)
                     open(fpw, "w+").write(r.content.decode("utf-8"))
                 else:
-
                     with open(fpw, "r") as f:
                         dlapires = json.load(f)
-
-                        try:
-
-                            if dlapires["code"] == 0:
-                                log.info(f"Try Interactive for this ID")
-
-                                if os.path.isfile(fppatw) == False:
-                                    dlpaturl = dlapires["data"]["pattern"]
-                                    rpat = requests.get(dlpaturl, allow_redirects=True)
-                                    open(fppatw, "w+").write(
-                                        rpat.content.decode("utf-8")
-                                    )
-
-                                    if os.path.isfile(fpfunw) == False:
-                                        convert_lovense_to_funscript(
-                                            scene, fppatw, fpfunw
-                                        )
-
-                                map_file_with_funscript(scene, fpfunw)
-
-                            else:
-                                log.debug(f"No Interactive for this ID")
-
-                        except KeyError as error:
-                            log.error(
-                                "File '%s' can not be read, invailed format" % fpw
+                try:
+                    if dlapires["code"] == 0:
+                        log.info(f"Try Interactive for this ID")
+                        if os.path.isfile(fppatw) == False:
+                            dlpaturl = dlapires["data"]["pattern"]
+                            rpat = requests.get(dlpaturl, allow_redirects=True)
+                            open(fppatw, "w+").write(
+                                rpat.content.decode("utf-8")
                             )
-                            fullfile = json.dumps(dlapires)
-                            if re.search("Too many requests", fullfile) or re.search(
-                                "security", fullfile
-                            ):
-                                os.remove(fpw)
-                                log.error("Too many requests. Wait a moment...")
-                                time.sleep(60)
+                            if os.path.isfile(fpfunw) == False:
+                                convert_lovense_to_funscript(
+                                    scene, fppatw, fpfunw
+                                )
+                        map_file_with_funscript(scene, fpfunw)
+                    else:
+                        log.debug(f"No Interactive for this ID")
+
+                except KeyError as error:
+                    log.error(
+                        "File '%s' can not be read, invailed format" % fpw
+                    )
+                    fullfile = json.dumps(dlapires)
+                    if re.search("Too many requests", fullfile) or re.search(
+                        "security", fullfile
+                    ):
+                        os.remove(fpw)
+                        log.error("Too many requests. Wait a moment...")
+                        time.sleep(60)
 
         log.progress(i / scene_count)
         i = i + 1
