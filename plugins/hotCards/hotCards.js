@@ -288,9 +288,9 @@
                 createHotElementAndAttachToDOM(card, cardClass, isHome);
             });
           }
-        } else if (isCriterionRatingOrEmpty && data?.rating100 !== null) {
+        } else if (isCriterionRatingOrEmpty && data?.rating100) {
           const rating = isStarsRatingSystem
-            ? data?.rating100 / 20
+            ? data.rating100 / 20
             : data.rating100;
           // If the rating threshold for this card type is not set, use the default threshold.
           const ratingThreshold = valueNotSet ? RATING_THRESHOLD : config.value;
