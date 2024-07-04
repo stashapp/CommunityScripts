@@ -1,69 +1,57 @@
-.hot-border > .card {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
 .hot-card {
-  animation: pulse 3s ease-in-out infinite;
-}
-
-@-webkit-keyframes pulse {
-  0% {
-    -webkit-box-shadow: 0 0 0 0 rgba(255, 36, 9, 0);
-  }
-  70% {
-    -webkit-box-shadow:
-      0px 0px 1em #ff2409,
-      0px 0px 2em #ff2409;
-  }
-  100% {
-    -webkit-box-shadow: 0 0 0 0 rgba(255, 36, 9, 0);
-  }
-}
-
-.hot-card:hover {
-  box-shadow:
-    0px 0px 1em #ff2409,
-    0px 0px 2em #ff2409;
-  animation: none;
-  animate: glow;
-}
-
-.hot-border {
   --border-width: 0.2rem;
-
   display: flex;
   position: relative;
   border-radius: var(--border-width);
+}
 
-  &::after {
-    position: absolute;
-    content: "";
-    top: calc(0.8 * var(--border-width));
-    left: calc(0.8 * var(--border-width));
-    z-index: -1;
-    width: calc(100% + var(--border-width) * -1.5);
-    height: calc(100% + var(--border-width) * -1.5);
-    background: linear-gradient(
-      60deg,
-      hsl(224, 85%, 66%),
-      hsl(269, 85%, 66%),
-      hsl(314, 85%, 66%),
-      hsl(359, 85%, 66%),
-      hsl(44, 85%, 66%),
-      hsl(357.2, 87.7%, 52.4%),
-      hsl(301, 70.2%, 50%),
-      hsl(179, 85%, 66%)
-    );
+.hot-card > .card {
+  background-color: rgba(0, 0, 0, 0.2);
+  height: auto;
+}
 
-    background-size: 300% 300%;
-    background-position: 0 50%;
-    border-radius: calc(2 * var(--border-width));
-    animation: moveGradient 4s alternate infinite;
+.hot-card::after {
+  z-index: -1;
+}
+
+.hot-border:hover {
+  box-shadow:
+    0px 0px 1em var(--border-color),
+    0px 0px 2em var(--border-color);
+  animation: none !important;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 36, 9, 0);
+  }
+  70% {
+    box-shadow:
+      0px 0px 1em var(--border-color),
+      0px 0px 2em var(--border-color);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 36, 9, 0);
   }
 }
 
-@keyframes moveGradient {
+@keyframes move {
+  0% {
+    background-position: 0% 50%;
+  }
   50% {
     background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hot-card {
+    animation: none;
+  }
+  .hot-card:hover {
+    animation: none;
   }
 }

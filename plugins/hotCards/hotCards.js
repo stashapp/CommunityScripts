@@ -2,63 +2,115 @@
   "use strict";
 
   const userSettings = await csLib.getConfiguration("hotCards", {});
-  const TAG_ID = userSettings?.tagId;
-  const RATING_THRESHOLD = parseInt(userSettings?.threshold ?? 0);
-  const CARDS = {
-    gallery: {
-      class: "gallery-card",
-      data: stash.galleries,
-      enabled: userSettings?.galleries,
+  const SEPARATOR = "_";
+  const INNER_SEPARATOR = ",";
+  const DEFAULTS = {
+    criterion: "",
+    value: "",
+    style: "default",
+    gradient_opts: {
+      type: "linear",
+      angle: "0deg",
+      animation: "",
     },
-    image: {
-      class: "image-card",
-      data: stash.images,
-      enabled: userSettings?.images,
-    },
-    movie: {
-      class: "movie-card",
-      data: stash.movies,
-      enabled: userSettings?.movies,
-    },
-    performer: {
-      class: "performer-card",
-      data: stash.performers,
-      enabled: userSettings?.performers,
-    },
-    scene: {
-      class: "scene-card",
-      data: stash.scenes,
-      enabled: userSettings?.scenes,
-    },
-    studio: {
-      class: "studio-card",
-      data: stash.studios,
-      enabled: userSettings?.studios,
+    border_opts: {
+      color: "transparent",
+      animation: "",
     },
   };
+  const CRITERIA = { tag: "t", rating: "r", disabled: "d" };
+  const SETTINGS = parseSettings(userSettings ?? "");
+  const TAG_ID = SETTINGS.tagId;
+  const RATING_THRESHOLD = parseInt(SETTINGS.threshold ?? 0);
+  const CARD_KEYS = {
+    galleries: "gallery",
+    images: "image",
+    movies: "movie",
+    performers: "performer",
+    scenes: "scene",
+    studios: "studio",
+  };
+
+  const CARDS = Object.entries(CARD_KEYS).reduce((acc, [plural, singular]) => {
+    acc[singular] = {
+      class: `${singular}-card`,
+      config: SETTINGS[plural] || "",
+      data: stash[plural],
+      enabled: SETTINGS[plural]?.criterion !== CRITERIA.disabled,
+    };
+    return acc;
+  }, {});
+
+  /**
+   * Custom CSS style presets for hot cards.
+   */
+  const STYLES = {
+    default: getDefaultStylePreset(),
+    hot: getHotStylePreset(),
+    gold: getGoldStylePreset(),
+  };
+
   const isTagBased = TAG_ID?.length;
   const isRatingBased = RATING_THRESHOLD !== 0;
+  const isTagOrRatingBased = isTagBased || isRatingBased;
+  const isStarsRatingSystem = RATING_THRESHOLD <= 5;
+
   let backupCards = [];
   let hotCards = [];
 
+  function parseSettings(settings) {
+    return Object.keys(settings).reduce((acc, key) => {
+      if (key === "threshold" || key === "tagId" || key === "home") {
+        acc[key] = settings[key];
+      } else {
+        acc[key] = parseCustomFormat(settings[key]);
+      }
+      return acc;
+    }, {});
+  }
+
+  function parseCustomFormat(custom) {
+    const segments = custom.toString().split(SEPARATOR);
+
+    return {
+      criterion: segments[0] || DEFAULTS.criterion,
+      value: segments[1] || DEFAULTS.value,
+      style: segments[2] || DEFAULTS.style,
+      gradient_opts: parseSegment(segments[3], DEFAULTS.gradient_opts, [
+        "type",
+        "angle",
+        "animation",
+      ]),
+      border_opts: parseSegment(segments[4], DEFAULTS.border_opts, [
+        "color",
+        "animation",
+      ]),
+    };
+  }
+
+  function parseSegment(segment, defaults, keys) {
+    const values = segment ? segment.split(INNER_SEPARATOR) : [];
+    return keys.reduce((acc, key, index) => {
+      acc[key] = values[index] || defaults[key];
+      return acc;
+    }, {});
+  }
+
   // Mapping of configuration keys to functions
   const hotCardsHandlers = {
-    home: handleHomeHotCards,
-    galleries: handleGalleriesHotCards,
-    images: handleImagesHotCards,
-    movies: handleMoviesHotCards,
-    performers: handlePerformersHotCards,
-    scenes: handleScenesHotCards,
-    studios: handleStudiosHotCards,
+    gallery: handleGalleriesHotCards,
+    image: handleImagesHotCards,
+    movie: handleMoviesHotCards,
+    performer: handlePerformersHotCards,
+    scene: handleScenesHotCards,
+    studio: handleStudiosHotCards,
   };
 
-  // Iterate over the corresponding config to call the appropriate functions
-  for (const [key, value] of Object.entries(userSettings)) {
-    if (
-      value === true &&
-      hotCardsHandlers[key] &&
-      (isTagBased || isRatingBased)
-    ) {
+  // Handle home hot cards separately
+  if (SETTINGS.home && isTagOrRatingBased) handleHomeHotCards();
+
+  for (const [key, card] of Object.entries(CARDS)) {
+    if (card.enabled && hotCardsHandlers[key] && isTagOrRatingBased) {
       hotCardsHandlers[key]();
     }
   }
@@ -184,30 +236,41 @@
 
   function handleHotCards(card, isHome = false) {
     waitForClass(card.class, () => {
-      createAndInsertHotCards(card.data, card.class, isHome);
+      createAndInsertHotCards(card.data, card.class, card.config, isHome);
+      setHotCardStyling(card);
     });
   }
 
   /**
    * Wraps cards in "hot" elements based on specific conditions (tag or rating).
    *
-   * On the home page, this function may be triggered by multiple intercepted GraphQL requests,
-   * each corresponding to a user-customized carousel.
+   * On the home page, multiple GraphQL requests are intercepted,
+   * each corresponding to a premade filter / user saved filter.
    *
-   * The user is able to customize the home page as desired and add
-   * several carousels of the same type of resource with different filters saved.
-   * As a result, several graphql request are intercepted and this function runs
-   * as many times as the user configured carousels.
+   * This function is called for each card type enabled to add hot elements.
    *
    * The first time it runs, the hotCards array is populated,
    * so we need an additional flag to differentiate that we are on the home page.
    *
    * @param {Object} stashData - Data fetched from the GraphQL interceptor. e.g. stash.performers.
    * @param {string} cardClass - CSS class used to identify cards in the DOM. e.g. 'performer-card'.
+   * @param {Object} config - User settings for the current card type.
    * @param {boolean} isHome - Flag indicating if the current page is the homepage.
    */
-  function createAndInsertHotCards(stashData, cardClass, isHome) {
-    // To avoid DOM exceptions, it only runs when `hotCards` is empty and we are not in the home page.
+  function createAndInsertHotCards(stashData, cardClass, config, isHome) {
+    const isCriterionTag = config.criterion === CRITERIA.tag;
+    const isCriterionRating = config.criterion === CRITERIA.rating;
+    const isCriterionEmpty = config.criterion.length === 0;
+    const valueNotSet = config.value.length === 0;
+    const isCriterionTagOrEmpty =
+      isTagBased && (isCriterionTag || isCriterionEmpty);
+    const isCriterionRatingOrEmpty =
+      isRatingBased && (isCriterionRating || isCriterionEmpty);
+
+    /**
+     * To avoid DOM exceptions, it runs if `hotCards` is empty and we are not in the home page
+     * or if we are in the home page.
+     */
     if (hotCards.length === 0 || isHome) {
       const cards = document.querySelectorAll(`.${cardClass}`);
 
@@ -216,25 +279,36 @@
         const id = new URL(link.href).pathname.split("/").pop();
         const data = stashData[id];
 
-        if (isTagBased) {
+        if (isCriterionTagOrEmpty) {
           if (data?.tags?.length) {
+            // If the tag ID for this card type is not set, use the default tag ID.
+            const tagId = valueNotSet ? TAG_ID : config.value;
             data.tags.forEach((tag) => {
-              if (tag.id === TAG_ID) createHotElementAndAttachToDOM(card);
+              if (tag.id === tagId)
+                createHotElementAndAttachToDOM(card, cardClass, isHome);
             });
           }
-        } else if (isRatingBased && data?.rating100 !== null) {
-          if (data.rating100 >= RATING_THRESHOLD)
-            createHotElementAndAttachToDOM(card);
+        } else if (isCriterionRatingOrEmpty && data?.rating100 !== null) {
+          const rating = isStarsRatingSystem
+            ? data?.rating100 / 20
+            : data.rating100;
+          // If the rating threshold for this card type is not set, use the default threshold.
+          const ratingThreshold = valueNotSet ? RATING_THRESHOLD : config.value;
+          if (rating >= ratingThreshold)
+            createHotElementAndAttachToDOM(card, cardClass, isHome);
         }
       });
     }
   }
 
-  function createHotElementAndAttachToDOM(cardElement) {
-    const hotElement = createElementFromHTML(`<div class="hot-border">`);
+  function createHotElementAndAttachToDOM(cardElement, cardClass, isHome) {
+    const hotElement = createElementFromHTML(
+      `<div class="hot-card hot-${cardClass}">`
+    );
+    if (isHome) hotElement.style.height = "100%";
 
     backupCards.push(cardElement);
-    cardElement.classList.add("hot-card");
+    cardElement.classList.add("hot-border");
     cardElement.before(hotElement);
     hotElement.append(cardElement);
     hotCards.push(hotElement);
@@ -244,6 +318,188 @@
     const div = document.createElement("div");
     div.innerHTML = htmlString.trim();
     return div.firstChild;
+  }
+
+  /**
+   * Sets the style of the hot card based on the user's configuration.
+   */
+  function setHotCardStyling(card) {
+    const { style, gradient_opts, border_opts } = card.config;
+    const colors = style.split(INNER_SEPARATOR).map((color) => color.trim());
+    const styleElement = document.createElement("style");
+
+    const pseudoElementStyle =
+      colors.length === 1
+        ? applySingleColorStyle(card, colors[0], border_opts)
+        : applyCustomGradientStyle(card, colors, gradient_opts, border_opts);
+
+    styleElement.innerHTML = pseudoElementStyle;
+    document.head.appendChild(styleElement);
+  }
+
+  /**
+   * If there's only one color, it can be a style preset or a fixed color.
+   */
+  function applySingleColorStyle(card, color, border_opts) {
+    if (STYLES[color]) {
+      const { border, gradient, filter } = STYLES[color];
+      setBorder(card, border.color, border.animation);
+      return getHotCardPseudoElementString(
+        card,
+        gradient.generated,
+        gradient.animation,
+        filter
+      );
+    } else {
+      setBorder(card, border_opts.color, border_opts.animation);
+      return getHotCardPseudoElementString(card, color);
+    }
+  }
+
+  /**
+   * If there are more than one color, it's a custom gradient.
+   */
+  function applyCustomGradientStyle(card, colors, gradient_opts, border_opts) {
+    const { type, angle, animation } = gradient_opts;
+    const gradient = getGradient(type, angle, colors);
+    setBorder(card, border_opts.color, border_opts.animation);
+    return getHotCardPseudoElementString(card, gradient, animation);
+  }
+
+  function setBorder(card, color, animation = "") {
+    animation = animation ? `pulse ${animation}` : "";
+    document
+      .querySelectorAll(`.hot-${card.class} > .hot-border`)
+      .forEach((card) => {
+        card.style.setProperty("--border-color", color);
+        card.style.animation = animation;
+      });
+  }
+
+  function getGradient(type, positionAngle = "", colors) {
+    const positionAngleStr = positionAngle ? `${positionAngle},` : "";
+    return `${type}-gradient(${positionAngleStr} ${colors.join(", ")})`;
+  }
+
+  function getHotCardPseudoElementString(
+    card,
+    background,
+    gradientAnimation = "",
+    filter = ""
+  ) {
+    const gradientAnimationStr = gradientAnimation
+      ? `animation: move ${gradientAnimation};`
+      : "";
+    const filterStr = filter ? `filter: ${filter};` : "";
+    const hotCardClass = `.hot-${card.class}`;
+
+    return `${hotCardClass}::before,
+      ${hotCardClass}::after {
+        content: "";
+        position: absolute;
+        top: calc(0.8 * var(--border-width));
+        left: calc(0.8 * var(--border-width));
+        width: calc(100% + var(--border-width) * -1.5);
+        height: calc(100% + var(--border-width) * -1.5);
+        border-radius: calc(2 * var(--border-width));
+        background: ${background};
+        background-size: 300% 300%;
+        background-position: 0 50%;
+        ${gradientAnimationStr}
+      }
+      ${hotCardClass}::after {
+        ${filterStr}
+      }`;
+  }
+
+  function createCardStyle(
+    borderColor,
+    borderAnimation,
+    gradientType,
+    gradientAngle,
+    gradientColors,
+    gradientAnimation,
+    filter
+  ) {
+    return {
+      border: {
+        color: borderColor,
+        animation: borderAnimation,
+      },
+      gradient: {
+        type: gradientType,
+        angle: gradientAngle,
+        colors: gradientColors,
+        animation: gradientAnimation,
+        generated: getGradient(gradientType, gradientAngle, gradientColors),
+      },
+      filter,
+    };
+  }
+
+  function getDefaultStylePreset() {
+    return createCardStyle(
+      "#ff2409",
+      "3s ease-in-out infinite",
+      "linear",
+      "60deg",
+      [
+        "hsl(224, 85%, 66%)",
+        "hsl(269, 85%, 66%)",
+        "hsl(314, 85%, 66%)",
+        "hsl(359, 85%, 66%)",
+        "hsl(44, 85%, 66%)",
+        "hsl(357.2, 87.7%, 52.4%)",
+        "hsl(301, 70.2%, 50%)",
+        "hsl(179, 85%, 66%)",
+      ],
+      "4s alternate infinite"
+    );
+  }
+
+  function getHotStylePreset() {
+    return createCardStyle(
+      "#a41111",
+      "4s ease-in-out infinite",
+      "radial",
+      "",
+      [
+        "hsl(351.7, 86.5%, 62.4%)",
+        "hsl(351.7, 86.4%, 46.1%)",
+        "hsl(357, 86.6%, 49.6%)",
+        "hsl(343.3, 73.1%, 39.4%)",
+        "hsl(0, 84.9%, 36.5%)",
+        "hsl(354.4, 72.9%, 40.6%)",
+        "hsl(348.8, 92.9%, 44.1%)",
+        "hsl(345, 80%, 49%)",
+        "hsl(354.5, 83.1%, 46.5%)",
+        "hsl(357, 86.6%, 49.6%)",
+        "hsl(328.2, 73.9%, 22.5%)",
+        "hsl(345, 81%, 49.4%)",
+        "hsl(0, 70%, 31.4%)",
+      ],
+      "20s linear infinite"
+    ); // 'blur(2.0rem)'
+  }
+
+  function getGoldStylePreset() {
+    return createCardStyle(
+      "#d4af37",
+      "6s ease-in-out infinite",
+      "linear",
+      "45deg",
+      [
+        "hsl(19.9, 62.7%, 52.7%)",
+        "hsl(45, 90.4%, 40.8%)",
+        "hsl(40.2, 56.5%, 37.8%)",
+        "hsl(42.1, 96.5%, 55.1%)",
+        "hsl(30.4, 100%, 27.1%)",
+        "hsl(30.8, 49.4%, 45.7%)",
+        "hsl(20, 85%, 60%)",
+        "hsl(14.9, 75.8%, 32.4%)",
+      ],
+      "8s ease-in-out infinite"
+    );
   }
 
   /**
