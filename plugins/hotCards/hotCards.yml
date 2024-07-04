@@ -1,6 +1,6 @@
 name: Hot Cards
 description: Adds custom styling to card elements that match a tag ID or a rating threshold.
-version: 1.0.2
+version: 1.1.0
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
 # requires: CommunityScriptsUILibrary
 ui:
@@ -29,25 +29,25 @@ settings:
     type: BOOLEAN
   scenes:
     displayName: Enable for scenes
-    description: Enable Hot Cards for scene cards.
-    type: BOOLEAN
+    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    type: STRING
   images:
     displayName: Enable for images
-    description: Enable Hot Cards for image cards.
-    type: BOOLEAN
+    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    type: STRING
   movies:
     displayName: Enable for movies
-    description: Enable Hot Cards for movie cards.
-    type: BOOLEAN
+    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    type: STRING
   galleries:
     displayName: Enable for galleries
-    description: Enable Hot Cards for gallery cards.
-    type: BOOLEAN
+    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    type: STRING
   performers:
     displayName: Enable for performers
-    description: Enable Hot Cards for performer cards.
-    type: BOOLEAN
+    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    type: STRING
   studios:
     displayName: Enable for studios
-    description: Enable Hot Cards for studio cards.
-    type: BOOLEAN
+    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    type: STRING
