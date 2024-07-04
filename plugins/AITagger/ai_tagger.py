@@ -129,6 +129,13 @@ async def tag_scenes():
 async def __tag_images(images):
     async with semaphore:
         imagePaths, imageIds, temp_files = media_handler.get_image_paths_and_ids(images)
+        mutated_image_paths = []
+        for path in imagePaths:
+            mutated_path = path
+            for key, value in config.path_mutation.items():
+                mutated_path = mutated_path.replace(key, value)
+            mutated_image_paths.append(mutated_path)
+        imagePaths = mutated_image_paths
         try:
             server_result = await ai_server.process_images_async(imagePaths)
             if server_result is None:
@@ -175,6 +182,10 @@ async def __tag_images(images):
 async def __tag_scene(scene):
     async with semaphore:
         scenePath = scene['files'][0]['path']
+        mutated_path = scenePath
+        for key, value in config.path_mutation.items():
+            mutated_path = mutated_path.replace(key, value)
+        scenePath = mutated_path
         sceneId = scene['id']
         log.debug("files result:" + str(scene['files'][0]))
         phash = scene['files'][0].get('fingerprint', None)

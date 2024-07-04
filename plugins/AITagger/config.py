@@ -14,3 +14,7 @@ tagme_tag_name = "AI_TagMe"
 updateme_tag_name = "AI_UpdateMe"
 aitagged_tag_name = "AI_Tagged"
 aierrored_tag_name = "AI_Errored"
+
+# Example for mutating paths
+# path_mutation = {"E:": "F:", "G:": "D:"}
+path_mutation = {}
