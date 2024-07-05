@@ -288,9 +288,9 @@
                 createHotElementAndAttachToDOM(card, cardClass, isHome);
             });
           }
-        } else if (isCriterionRatingOrEmpty && data?.rating100 !== null) {
+        } else if (isCriterionRatingOrEmpty && data?.rating100) {
           const rating = isStarsRatingSystem
-            ? data?.rating100 / 20
+            ? data.rating100 / 20
             : data.rating100;
           // If the rating threshold for this card type is not set, use the default threshold.
           const ratingThreshold = valueNotSet ? RATING_THRESHOLD : config.value;
@@ -330,7 +330,7 @@
 
     const pseudoElementStyle =
       colors.length === 1
-        ? applySingleColorStyle(card, colors[0], border_opts)
+        ? applySingleColorStyle(card, colors[0], gradient_opts, border_opts)
         : applyCustomGradientStyle(card, colors, gradient_opts, border_opts);
 
     styleElement.innerHTML = pseudoElementStyle;
@@ -338,22 +338,50 @@
   }
 
   /**
-   * If there's only one color, it can be a style preset or a fixed color.
+   * Apply a single color style, which can be a style preset or a fixed color.
    */
-  function applySingleColorStyle(card, color, border_opts) {
-    if (STYLES[color]) {
-      const { border, gradient, filter } = STYLES[color];
-      setBorder(card, border.color, border.animation);
-      return getHotCardPseudoElementString(
-        card,
-        gradient.generated,
-        gradient.animation,
-        filter
-      );
-    } else {
-      setBorder(card, border_opts.color, border_opts.animation);
-      return getHotCardPseudoElementString(card, color);
-    }
+  function applySingleColorStyle(card, color, gradient_opts, border_opts) {
+    if (STYLES[color])
+      return applyPresetStyle(card, STYLES[color], gradient_opts, border_opts);
+    else return applyFixedColorStyle(card, color, border_opts);
+  }
+
+  /**
+   * Apply a style preset.
+   */
+  function applyPresetStyle(card, preset, gradient_opts, border_opts) {
+    const { gradient, border } = preset;
+    const { angle, animation } = gradient_opts;
+    const { color: borderColor, animation: borderAnimation } = border_opts;
+
+    // Update gradient options with preset defaults if not provided
+    const updatedGradientOpts = {
+      type: gradient.type,
+      angle: angle !== DEFAULTS.gradient_opts.angle ? angle : gradient.angle,
+      animation: animation || gradient.animation,
+    };
+
+    // Update border options with preset defaults if not provided
+    const updatedBorderOpts = {
+      color:
+        borderColor !== DEFAULTS.border_opts.color ? borderColor : border.color,
+      animation: borderAnimation || border.animation,
+    };
+
+    return applyCustomGradientStyle(
+      card,
+      gradient.colors,
+      updatedGradientOpts,
+      updatedBorderOpts
+    );
+  }
+
+  /**
+   * Apply a fixed color style.
+   */
+  function applyFixedColorStyle(card, color, border_opts) {
+    setBorder(card, border_opts.color, border_opts.animation);
+    return getHotCardPseudoElementString(card, color);
   }
 
   /**
