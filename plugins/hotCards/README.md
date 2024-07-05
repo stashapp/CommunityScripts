@@ -46,11 +46,11 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[border-opts]_
 
 | Segment       | Value | Meaning           |
 | ------------- | ----- | ----------------- |
-| criterion     | t     | tag-based         |
-| value         | 123   | use 123 as tag ID |
-| style         | gold  | use gold preset   |
-| gradient-opts |       | no gradient       |
-| border-opts   |       | no border         |
+| criterion     | t     | Tag-based         |
+| value         | 123   | Use 123 as Tag ID |
+| style         | gold  | Use Gold preset   |
+| gradient-opts |       | No gradient       |
+| border-opts   |       | No border         |
 
 ---
 
@@ -60,11 +60,11 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[border-opts]_
 
 | Segment       | Value     | Meaning                               |
 | ------------- | --------- | ------------------------------------- |
-| criterion     |           | use tag or rating as configured       |
-| value         |           | use tag or rating global value        |
-| style         | hot       | use hot preset                        |
-| gradient-opts | ,,none    | no gradient animation                 |
-| border-opts   | pink,none | set border color, no border animation |
+| criterion     |           | Use tag or rating as configured       |
+| value         |           | Use tag or rating global value        |
+| style         | hot       | Use Hot preset                        |
+| gradient-opts | ,,none    | No gradient animation                 |
+| border-opts   | pink,none | Set border color, no border animation |
 
 ---
 
@@ -74,11 +74,11 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[border-opts]_
 
 | Segment       | Value   | Meaning                 |
 | ------------- | ------- | ----------------------- |
-| criterion     | r       | rating-based            |
-| value         |         | use rating global value |
-| style         | #2673b8 | set fixed color         |
-| gradient-opts |         | no gradient             |
-| border-opts   |         | no border               |
+| criterion     | r       | Rating-based            |
+| value         |         | Use rating global value |
+| style         | #2673b8 | Set fixed color         |
+| gradient-opts |         | No gradient             |
+| border-opts   |         | No border               |
 
 ---
 
@@ -88,11 +88,11 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[border-opts]_
 
 | Segment       | Value   | Meaning                              |
 | ------------- | ------- | ------------------------------------ |
-| criterion     |         | use tag or rating as configured      |
-| value         |         | use tag or rating global value       |
-| style         | #5ff2a2 | set fixed color                      |
-| gradient-opts |         | no gradient                          |
-| border-opts   | #5ff1a1 | set border color when hovering cards |
+| criterion     |         | Use tag or rating as configured      |
+| value         |         | Use tag or rating global value       |
+| style         | #5ff2a2 | Set fixed color                      |
+| gradient-opts |         | No gradient                          |
+| border-opts   | #5ff1a1 | Set border color when hovering cards |
 
 ---
 
@@ -102,11 +102,11 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[border-opts]_
 
 | Segment       | Value                          | Meaning                              |
 | ------------- | ------------------------------ | ------------------------------------ |
-| criterion     |                                | use tag or rating as configured      |
-| value         | 67                             | use 67 as tag ID or rating threshold |
-| style         | pink,red,yellow,green,red,blue | make gradient                        |
-| gradient-opts | ,30deg,5s ease infinite        | specify angle and animate gradient   |
-| border-opts   | red,1s ease-in-out infinite    | set border color and animate border  |
+| criterion     |                                | Use tag or rating as configured      |
+| value         | 67                             | Use 67 as Tag ID or Rating Threshold |
+| style         | pink,red,yellow,green,red,blue | Make gradient                        |
+| gradient-opts | ,30deg,5s ease infinite        | Specify angle and animate gradient   |
+| border-opts   | red,1s ease-in-out infinite    | Set border color and animate border  |
 
 **Note**: _You can also skip inner values, notice the first comma in **gradient-opts**. The type is not provided, so linear gradient will be used by default._
 
