@@ -1,6 +1,6 @@
 name: Hot Cards
 description: Adds custom styling to card elements that match a tag ID or a rating threshold.
-version: 1.1.1
+version: 1.1.2
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
 # requires: CommunityScriptsUILibrary
 ui:
@@ -29,25 +29,25 @@ settings:
     type: BOOLEAN
   scenes:
     displayName: Enable for scenes
-    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
   images:
     displayName: Enable for images
-    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
   movies:
     displayName: Enable for movies
-    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
   galleries:
     displayName: Enable for galleries
-    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
   performers:
     displayName: Enable for performers
-    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
   studios:
     displayName: Enable for studios
-    description: "Empty to enable, type 'd' to disable. Customize: [criterion]_[value]_[style]_[gradient-opts]_[border-opts]. See docs."
+    description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
