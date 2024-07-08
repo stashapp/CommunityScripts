@@ -4,8 +4,8 @@ A plugin which shows the metadata of the currently playing Stash scene as your D
 
 ## Setup
 ### Prerequisites to get the plugin working
-- Download and run [Discord RPC Server](https://github.com/lolamtisch/Discord-RPC-Extension/releases). You **do not** need any browser extensions.
-- Install [`StashUserscriptLibrary`](https://github.com/stashapp/CommunityScripts/tree/main/plugins/stashUserscriptLibrary) from your Stash plugin menu.
+- Download and run [Discord Presence Server](https://github.com/NotForMyCV/discord-presence-server/releases). You **do not** need any browser extensions.
+- Ensure you have CommunityScriptsUILibrary installed in your Stash plugins, if it isn't automatically installed
 
 #### Why the desktop app?
 <sub>
