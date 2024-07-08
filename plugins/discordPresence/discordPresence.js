@@ -141,6 +141,11 @@
         unbindVideoListener(player());
       }
 
+      console.error(
+        `Discord Presence Plugin: Could not connect to Discord Rich Presence Server.
+        Consult the README on how to setup the Rich Presence Server:
+        https://github.com/stashapp/CommunityScripts/tree/main/plugins/discordPresence`
+      );
       await sleep(10000);
       start();
     });
