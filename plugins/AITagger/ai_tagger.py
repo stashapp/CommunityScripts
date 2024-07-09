@@ -185,7 +185,6 @@ async def __tag_scene(scene):
         mutated_path = scenePath
         for key, value in config.path_mutation.items():
             mutated_path = mutated_path.replace(key, value)
-        scenePath = mutated_path
         sceneId = scene['id']
         log.debug("files result:" + str(scene['files'][0]))
         phash = scene['files'][0].get('fingerprint', None)
@@ -244,7 +243,7 @@ async def __tag_scene(scene):
             vr_video = media_handler.is_vr_scene(scene.get('tags'))
             if vr_video:
                 log.info(f"Processing VR video {scenePath}")
-            server_result = await ai_server.process_video_async(scenePath, vr_video)
+            server_result = await ai_server.process_video_async(mutated_path, vr_video)
             if server_result is None:
                 log.error("Server returned no results")
                 media_handler.add_error_scene(sceneId)
