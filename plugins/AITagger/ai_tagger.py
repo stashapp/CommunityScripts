@@ -111,7 +111,7 @@ async def tag_images():
         tasks = [__tag_images(batch) for batch in image_batches]
         await asyncio.gather(*tasks)
     else:
-        log.info("No images to tag")
+        log.info("No images to tag. Have you tagged any images with the AI_TagMe tag to get processed?")
 
 
 async def tag_scenes():
@@ -122,7 +122,7 @@ async def tag_scenes():
         tasks = [__tag_scene(scene) for scene in scenes]
         await asyncio.gather(*tasks)
     else:
-        log.info("No scenes to tag")
+        log.info("No scenes to tag. Have you tagged any scenes with the AI_TagMe tag to get processed?")
 
 # ----------------- Image Processing -----------------
 
