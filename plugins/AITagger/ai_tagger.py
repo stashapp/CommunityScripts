@@ -182,9 +182,6 @@ async def __tag_images(images):
 async def __tag_scene(scene):
     async with semaphore:
         scenePath = scene['files'][0]['path']
-        mutated_path = scenePath
-        for key, value in config.path_mutation.items():
-            mutated_path = mutated_path.replace(key, value)
         sceneId = scene['id']
         log.debug("files result:" + str(scene['files'][0]))
         phash = scene['files'][0].get('fingerprint', None)
