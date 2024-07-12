@@ -88,7 +88,21 @@
         scrollVelocity *
         (pluginSettings.timeScrollSpeed / 100.0);
       var newTime = vjsPlayer.currentTime() + timeDelta;
-      vjsPlayer.currentTime(newTime);
+
+      // Make sure that the time delta is big enough that the change is not ignored.
+      var extraDelta = 0;
+
+      if (timeDelta > 0) {
+        while (vjsPlayer.currentTime() < newTime) {
+          vjsPlayer.currentTime(newTime + extraDelta);
+          ++extraDelta;
+        }
+      } else {
+        while (vjsPlayer.currentTime() > newTime) {
+          vjsPlayer.currentTime(newTime - extraDelta);
+          ++extraDelta;
+        }
+      }
     }
   }
 
