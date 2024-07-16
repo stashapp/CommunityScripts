@@ -57,7 +57,7 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[hover-opts]\_[card-opts]_
 
 **Modify an existing Style Preset**:
 
-`__hot_,,none_pink,none`
+`__hot_,,none_pink,none_,40`
 
 | Segment       | Value     | Meaning                                    |
 | ------------- | --------- | ------------------------------------------ |
