@@ -4,10 +4,11 @@
   const userSettings = await csLib.getConfiguration("hotCards", {});
   const SEPARATOR = "_";
   const INNER_SEPARATOR = ",";
+  const INNER_SEGMENT_SEPARATOR = "/";
   const DEFAULTS = {
     criterion: "",
-    value: "",
-    style: "default",
+    value: [""],
+    style: ["default"],
     gradient_opts: {
       type: "linear",
       angle: "0deg",
@@ -84,30 +85,53 @@
 
     return {
       criterion: segments[0] || DEFAULTS.criterion,
-      value: segments[1] || DEFAULTS.value,
-      style: segments[2] || DEFAULTS.style,
-      gradient_opts: parseSegment(segments[3], DEFAULTS.gradient_opts, [
+      value: parseValues(segments[1]) || DEFAULTS.value,
+      style: parseValues(segments[2]) || DEFAULTS.style,
+      gradient_opts: parseArraySegment(segments[3], DEFAULTS.gradient_opts, [
         "type",
         "angle",
         "animation",
       ]),
-      hover_opts: parseSegment(segments[4], DEFAULTS.hover_opts, [
+      hover_opts: parseArraySegment(segments[4], DEFAULTS.hover_opts, [
         "color",
         "animation",
       ]),
-      card_opts: parseSegment(segments[5], DEFAULTS.card_opts, [
+      card_opts: parseArraySegment(segments[5], DEFAULTS.card_opts, [
         "fill",
         "opacity",
       ]),
     };
   }
 
-  function parseSegment(segment, defaults, keys) {
-    const values = segment ? segment.split(INNER_SEPARATOR) : [];
-    return keys.reduce((acc, key, index) => {
-      acc[key] = values[index] || defaults[key];
-      return acc;
-    }, {});
+  function parseArraySegment(segment, defaults, keys) {
+    if (!segment) return [defaults];
+
+    const parsedValues = parseValues(segment);
+
+    // If parsedValues is a single array, convert it to an array of arrays
+    const segmentsArray = Array.isArray(parsedValues[0])
+      ? parsedValues
+      : [parsedValues];
+
+    return segmentsArray.map((valuesArray) =>
+      keys.reduce((acc, key, index) => {
+        acc[key] = valuesArray[index] || defaults[key];
+        return acc;
+      }, {})
+    );
+  }
+
+  function parseValues(values) {
+    if (typeof values !== "string") return values;
+
+    const parts = values.split(INNER_SEGMENT_SEPARATOR);
+
+    if (parts.length === 1)
+      return parts[0].split(INNER_SEPARATOR).map((item) => item.trim());
+
+    return parts.map((part) =>
+      part.split(INNER_SEPARATOR).map((item) => item.trim())
+    );
   }
 
   // Mapping of configuration keys to functions
@@ -272,52 +296,87 @@
    * @param {boolean} isHome - Flag indicating if the current page is the homepage.
    */
   function createAndInsertHotCards(stashData, cardClass, config, isHome) {
-    const isCriterionTag = config.criterion === CRITERIA.tag;
-    const isCriterionRating = config.criterion === CRITERIA.rating;
-    const isCriterionEmpty = config.criterion.length === 0;
-    const valueNotSet = config.value.length === 0;
+    const { criterion, value } = config;
+    const cards = document.querySelectorAll(`.${cardClass}`);
     const isCriterionTagOrEmpty =
-      isTagBased && (isCriterionTag || isCriterionEmpty);
+      isTagBased && (criterion === CRITERIA.tag || criterion.length === 0);
     const isCriterionRatingOrEmpty =
-      isRatingBased && (isCriterionRating || isCriterionEmpty);
+      isRatingBased &&
+      (criterion === CRITERIA.rating || criterion.length === 0);
 
-    /**
-     * To avoid DOM exceptions, it runs if `hotCards` is empty and we are not in the home page
-     * or if we are in the home page.
-     */
-    if (hotCards.length === 0 || isHome) {
-      const cards = document.querySelectorAll(`.${cardClass}`);
+    // Skip processing if hotCards are already present and we're not on the home page.
+    if (hotCards.length !== 0 && !isHome) return;
 
-      cards.forEach((card) => {
-        const link = card.querySelector(".thumbnail-section > a");
-        const id = new URL(link.href).pathname.split("/").pop();
-        const data = stashData[id];
+    cards.forEach((card) => {
+      const link = card.querySelector(".thumbnail-section > a");
+      const id = new URL(link.href).pathname.split("/").pop();
+      const data = stashData[id];
 
-        if (isCriterionTagOrEmpty) {
-          if (data?.tags?.length) {
-            // If the tag ID for this card type is not set, use the default tag ID.
-            const tagId = valueNotSet ? TAG_ID : config.value;
-            data.tags.forEach((tag) => {
-              if (tag.id === tagId)
-                createHotElementAndAttachToDOM(card, cardClass, isHome);
-            });
-          }
-        } else if (isCriterionRatingOrEmpty && data?.rating100) {
-          const rating = isStarsRatingSystem
-            ? data.rating100 / 20
-            : data.rating100;
-          // If the rating threshold for this card type is not set, use the default threshold.
-          const ratingThreshold = valueNotSet ? RATING_THRESHOLD : config.value;
-          if (rating >= ratingThreshold)
-            createHotElementAndAttachToDOM(card, cardClass, isHome);
-        }
-      });
-    }
+      if (!data) return;
+
+      const valueSegment = findMatchingValueSegment(
+        value,
+        data.tags,
+        data.rating100,
+        isCriterionTagOrEmpty,
+        isCriterionRatingOrEmpty
+      );
+
+      if (valueSegment) {
+        const classId = valueSegment.join("-");
+        createHotElementAndAttachToDOM(card, cardClass, classId, isHome);
+      }
+    });
   }
 
-  function createHotElementAndAttachToDOM(cardElement, cardClass, isHome) {
+  function findMatchingValueSegment(
+    value,
+    tags,
+    rating,
+    isCriterionTagOrEmpty,
+    isCriterionRatingOrEmpty
+  ) {
+    for (let segment of value) {
+      const valueNotSet = segment.length === 0;
+      segment = Array.isArray(segment) ? segment : [segment];
+
+      if (
+        (isCriterionTagOrEmpty &&
+          matchesTagCriterion(tags, segment, valueNotSet)) ||
+        (isCriterionRatingOrEmpty &&
+          matchesRatingCriterion(rating, segment, valueNotSet))
+      )
+        return segment || [""];
+    }
+    return null;
+  }
+
+  function matchesTagCriterion(tags, valueSegment, valueNotSet) {
+    if (!tags) return false;
+
+    const tagIds = valueNotSet ? [TAG_ID] : valueSegment;
+    return tagIds.every((tag) => tags.some((t) => t.id === tag));
+  }
+
+  function matchesRatingCriterion(rating, valueSegment, valueNotSet) {
+    if (!rating) return false;
+
+    const parsedRating = isStarsRatingSystem ? rating / 20 : rating;
+    const ratingThresholds = valueNotSet ? [RATING_THRESHOLD] : valueSegment;
+    return ratingThresholds.length > 1
+      ? ratingThresholds.includes(parsedRating.toString())
+      : parsedRating >= ratingThresholds[0];
+  }
+
+  function createHotElementAndAttachToDOM(
+    cardElement,
+    className,
+    classId,
+    isHome
+  ) {
+    const hotCardClassName = `hot-${className}-${classId}`;
     const hotElement = createElementFromHTML(
-      `<div class="hot-card hot-${cardClass}">`
+      `<div class="hot-card ${hotCardClassName}">`
     );
     if (isHome) hotElement.style.height = "100%";
 
@@ -338,34 +397,41 @@
    * Sets the style of the hot card based on the user's configuration.
    */
   function setHotCardStyling(card) {
-    const { style, gradient_opts, hover_opts, card_opts } = card.config;
-    const colors = style.split(INNER_SEPARATOR).map((color) => color.trim());
+    const { value, style, gradient_opts, hover_opts, card_opts } = card.config;
 
-    const pseudoElementStyle =
-      colors.length === 1
+    const pseudoElementStyles = value.map((valueSegment, index) => {
+      valueSegment = Array.isArray(valueSegment)
+        ? valueSegment
+        : [valueSegment];
+      const classId = valueSegment.join("-");
+      return !Array.isArray(style[index]) || style[index].length === 1
         ? applySingleColorStyle(
-            card,
-            colors[0],
-            gradient_opts,
-            hover_opts,
-            card_opts
+            card.class,
+            classId,
+            style[index] || style[0],
+            gradient_opts[index] || gradient_opts[0],
+            hover_opts[index] || hover_opts[0],
+            card_opts[index] || card_opts[0]
           )
         : applyCustomGradientStyle(
-            card,
-            colors,
-            gradient_opts,
-            hover_opts,
-            card_opts
+            card.class,
+            classId,
+            style[index] || style[0],
+            gradient_opts[index] || gradient_opts[0],
+            hover_opts[index] || hover_opts[0],
+            card_opts[index] || card_opts[0]
           );
+    });
 
-    styleElement.innerHTML += pseudoElementStyle;
+    styleElement.innerHTML += pseudoElementStyles.join("");
   }
 
   /**
    * Apply a single color style, which can be a style preset or a fixed color.
    */
   function applySingleColorStyle(
-    card,
+    className,
+    classId,
     color,
     gradient_opts,
     hover_opts,
@@ -373,20 +439,22 @@
   ) {
     return STYLES[color]
       ? applyPresetStyle(
-          card,
+          className,
+          classId,
           STYLES[color],
           gradient_opts,
           hover_opts,
           card_opts
         )
-      : applyFixedColorStyle(card, color, hover_opts, card_opts);
+      : applyFixedColorStyle(className, classId, color, hover_opts, card_opts);
   }
 
   /**
    * Apply a style preset.
    */
   function applyPresetStyle(
-    card,
+    className,
+    classId,
     preset,
     gradient_opts,
     hover_opts,
@@ -411,7 +479,8 @@
     };
 
     return applyCustomGradientStyle(
-      card,
+      className,
+      classId,
       gradient.colors,
       updatedGradientOpts,
       updatedHoverOpts,
@@ -422,16 +491,28 @@
   /**
    * Apply a fixed color style.
    */
-  function applyFixedColorStyle(card, color, hover_opts, card_opts) {
-    setHoverStyleProperties(card, hover_opts.color, hover_opts.animation);
-    return getHotCardPseudoElementString(card, card_opts, color);
+  function applyFixedColorStyle(
+    className,
+    classId,
+    color,
+    hover_opts,
+    card_opts
+  ) {
+    setHoverStyleProperties(
+      className,
+      classId,
+      hover_opts.color,
+      hover_opts.animation
+    );
+    return getHotCardPseudoElementString(className, classId, card_opts, color);
   }
 
   /**
    * If there are more than one color, it's a custom gradient.
    */
   function applyCustomGradientStyle(
-    card,
+    className,
+    classId,
     colors,
     gradient_opts,
     hover_opts,
@@ -439,14 +520,25 @@
   ) {
     const { type, angle, animation } = gradient_opts;
     const gradient = getGradient(type, angle, colors);
-    setHoverStyleProperties(card, hover_opts.color, hover_opts.animation);
-    return getHotCardPseudoElementString(card, card_opts, gradient, animation);
+    setHoverStyleProperties(
+      className,
+      classId,
+      hover_opts.color,
+      hover_opts.animation
+    );
+    return getHotCardPseudoElementString(
+      className,
+      classId,
+      card_opts,
+      gradient,
+      animation
+    );
   }
 
-  function setHoverStyleProperties(card, color, animation) {
+  function setHoverStyleProperties(className, classId, color, animation) {
     const animationStr = animation ? `pulse ${animation}` : "";
     document
-      .querySelectorAll(`.hot-${card.class} > .hot-border`)
+      .querySelectorAll(`.hot-${className}-${classId} > .hot-border`)
       .forEach((hotBorderCard) => {
         hotBorderCard.style.setProperty("--hover-color", color);
         hotBorderCard.style.animation = animationStr;
@@ -459,7 +551,8 @@
   }
 
   function getHotCardPseudoElementString(
-    card,
+    className,
+    classId,
     card_opts,
     background,
     gradientAnimation = "",
@@ -472,7 +565,7 @@
       : "";
     const fillStr = fill ? `background-color: rgba(0, 0, 0, ${opacity});` : "";
     const filterStr = filter ? `filter: ${filter};` : "";
-    const hotCardClass = `.hot-${card.class}`;
+    const hotCardClass = `.hot-${className}-${classId}`;
 
     return `${hotCardClass}::before,
       ${hotCardClass}::after {
