@@ -1,17 +1,6 @@
 # *renamerOnUpdate*
 Using metadata from your Stash to rename/move your file.
 
-# WARNING - This is a stopgap release
-It is labeled 2.5.0, to fill the gap until v3.0 is released
-It is NOT heavily tested, with the bare minimum needed to work with Stash v24
-Version 3 is a major rewrite, but since it's not quite ready, pushing 2.5.0 seems necessary
-It worked for me, using my old config, and I got no errors during my limited tests.
-YOU HAVE BEEN WARNED - any potential data loss is on you.
-BEFORE YOU USE IT TO MOVE/RENAME ANYTHING CRITICAL, test it yourself.
-I still suggest you wait for v3, but... if you can't, this is now out.
-
-All credit to Belley for all of his work over the years... and v3 is coming soon
-
 ## Table of Contents  
 
 - [*renamerOnUpdate*](#renameronupdate)
