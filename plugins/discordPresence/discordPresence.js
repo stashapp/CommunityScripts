@@ -85,6 +85,7 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const player = () => document.querySelector("#VideoJsPlayer video");
 
+  let WAITING_FOR_REFRESH = true;
   let SCENE_ID = null;
   /** @type {FlattenedSceneData?} */ let cachedSceneData;
 
@@ -201,7 +202,16 @@
     );
   }
 
-  async function setDiscordActivity() {
+  async function setDiscordActivity(event) {
+    if (event?.type === "timeupdate") {
+      if (!WAITING_FOR_REFRESH) {
+        return;
+      }
+
+      WAITING_FOR_REFRESH = false;
+      setTimeout(() => (WAITING_FOR_REFRESH = true), 5000);
+    }
+
     const sceneData = await getSceneData(SCENE_ID);
     if (!sceneData) return;
 
