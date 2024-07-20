@@ -68,6 +68,7 @@
 
   let backupCards = [];
   let hotCards = [];
+  let hotCardClasses = [];
 
   function parseSettings(settings) {
     return Object.keys(settings).reduce((acc, key) => {
@@ -338,15 +339,17 @@
   ) {
     for (let segment of value) {
       const valueNotSet = segment.length === 0;
-      segment = Array.isArray(segment) ? segment : [segment];
+      const segmentOrValue = Array.isArray(segment) ? segment : value;
 
       if (
         (isCriterionTagOrEmpty &&
-          matchesTagCriterion(tags, segment, valueNotSet)) ||
+          matchesTagCriterion(tags, segmentOrValue, valueNotSet)) ||
         (isCriterionRatingOrEmpty &&
-          matchesRatingCriterion(rating, segment, valueNotSet))
+          matchesRatingCriterion(rating, segmentOrValue, valueNotSet))
       )
-        return segment || [""];
+        return segmentOrValue || [""];
+
+      if (segmentOrValue === value) break;
     }
     return null;
   }
@@ -398,71 +401,94 @@
    */
   function setHotCardStyling(card) {
     const { value, style, gradient_opts, hover_opts, card_opts } = card.config;
+    const hotElement = document.querySelector(".hot-card");
+    // Check if the hot card already contains all the necessary classes
+    const hotCardContainsAllClasses = hotCardClasses.every((hotCardClass) =>
+      hotElement?.classList.contains(hotCardClass)
+    );
 
-    const pseudoElementStyles = value.map((valueSegment, index) => {
-      valueSegment = Array.isArray(valueSegment)
-        ? valueSegment
-        : [valueSegment];
-      const classId = valueSegment.join("-");
-      return !Array.isArray(style[index]) || style[index].length === 1
-        ? applySingleColorStyle(
-            card.class,
-            classId,
+    if (hotCardClasses.length === 0 || !hotCardContainsAllClasses) {
+      const pseudoElementStyles = value.map((segment, index) => {
+        const segmentOrValue = Array.isArray(segment) ? segment : value;
+        const classId = segmentOrValue.join("-");
+        const hotCardClass = `.hot-${card.class}-${classId}`;
+
+        // Skip if the hot card class is already present
+        if (hotCardClasses.includes(hotCardClass)) return;
+
+        hotCardClasses.push(hotCardClass);
+        const currentStyle = Array.isArray(style[index]) ? style[index] : style;
+        const gradientOptions = gradient_opts[index] || gradient_opts[0];
+        const hoverOptions = hover_opts[index] || hover_opts[0];
+        const cardOptions = card_opts[index] || card_opts[0];
+
+        // If there is only a single style, get the single color style
+        if (style.length === 1 || style[index].length === 1) {
+          return getSingleColorStyle(
+            hotCardClass,
             style[index] || style[0],
-            gradient_opts[index] || gradient_opts[0],
-            hover_opts[index] || hover_opts[0],
-            card_opts[index] || card_opts[0]
-          )
-        : applyCustomGradientStyle(
-            card.class,
-            classId,
-            style[index] || style[0],
-            gradient_opts[index] || gradient_opts[0],
-            hover_opts[index] || hover_opts[0],
-            card_opts[index] || card_opts[0]
+            gradientOptions,
+            hoverOptions,
+            cardOptions
           );
-    });
+        }
 
-    styleElement.innerHTML += pseudoElementStyles.join("");
+        return getCustomGradientStyle(
+          hotCardClass,
+          currentStyle,
+          gradientOptions,
+          hoverOptions,
+          cardOptions
+        );
+      });
+
+      // Join pseudo styles to the style element
+      styleElement.innerHTML += pseudoElementStyles.join("");
+    }
   }
 
   /**
    * Apply a single color style, which can be a style preset or a fixed color.
    */
-  function applySingleColorStyle(
-    className,
-    classId,
+  function getSingleColorStyle(
+    hotCardClass,
     color,
-    gradient_opts,
-    hover_opts,
-    card_opts
+    gradientOptions,
+    hoverOptions,
+    cardOptions
   ) {
     return STYLES[color]
-      ? applyPresetStyle(
-          className,
-          classId,
+      ? getPresetStyle(
+          hotCardClass,
           STYLES[color],
-          gradient_opts,
-          hover_opts,
-          card_opts
+          gradientOptions,
+          hoverOptions,
+          cardOptions
         )
-      : applyFixedColorStyle(className, classId, color, hover_opts, card_opts);
+      : /**
+         * Get a fixed color style.
+         */
+        getHotCardPseudoElementString(
+          hotCardClass,
+          color,
+          hoverOptions,
+          cardOptions
+        );
   }
 
   /**
    * Apply a style preset.
    */
-  function applyPresetStyle(
-    className,
-    classId,
+  function getPresetStyle(
+    hotCardClass,
     preset,
-    gradient_opts,
-    hover_opts,
-    card_opts
+    gradientOptions,
+    hoverOptions,
+    cardOptions
   ) {
     const { gradient, hover } = preset;
-    const { angle, animation } = gradient_opts;
-    const { color: hoverColor, animation: hoverAnimation } = hover_opts;
+    const { angle, animation } = gradientOptions;
+    const { color: hoverColor, animation: hoverAnimation } = hoverOptions;
 
     // Update gradient options with preset defaults if not provided
     const updatedGradientOpts = {
@@ -478,71 +504,34 @@
       animation: hoverAnimation || hover.animation,
     };
 
-    return applyCustomGradientStyle(
-      className,
-      classId,
+    return getCustomGradientStyle(
+      hotCardClass,
       gradient.colors,
       updatedGradientOpts,
       updatedHoverOpts,
-      card_opts
+      cardOptions
     );
-  }
-
-  /**
-   * Apply a fixed color style.
-   */
-  function applyFixedColorStyle(
-    className,
-    classId,
-    color,
-    hover_opts,
-    card_opts
-  ) {
-    setHoverStyleProperties(
-      className,
-      classId,
-      hover_opts.color,
-      hover_opts.animation
-    );
-    return getHotCardPseudoElementString(className, classId, card_opts, color);
   }
 
   /**
    * If there are more than one color, it's a custom gradient.
    */
-  function applyCustomGradientStyle(
-    className,
-    classId,
+  function getCustomGradientStyle(
+    hotCardClass,
     colors,
-    gradient_opts,
-    hover_opts,
-    card_opts
+    gradientOptions,
+    hoverOptions,
+    cardOptions
   ) {
-    const { type, angle, animation } = gradient_opts;
+    const { type, angle, animation } = gradientOptions;
     const gradient = getGradient(type, angle, colors);
-    setHoverStyleProperties(
-      className,
-      classId,
-      hover_opts.color,
-      hover_opts.animation
-    );
     return getHotCardPseudoElementString(
-      className,
-      classId,
-      card_opts,
+      hotCardClass,
       gradient,
+      hoverOptions,
+      cardOptions,
       animation
     );
-  }
-
-  function setHoverStyleProperties(className, classId, color, animation) {
-    const animationStr = animation ? `pulse ${animation}` : "";
-    document
-      .querySelectorAll(`.hot-${className}-${classId} > .hot-border`)
-      .forEach((hotBorderCard) => {
-        hotBorderCard.style.setProperty("--hover-color", color);
-        hotBorderCard.style.animation = animationStr;
-      });
   }
 
   function getGradient(type, positionAngle = "", colors) {
@@ -551,21 +540,23 @@
   }
 
   function getHotCardPseudoElementString(
-    className,
-    classId,
-    card_opts,
+    hotCardClass,
     background,
+    hoverOptions,
+    cardOptions,
     gradientAnimation = "",
     filter = ""
   ) {
-    const opacity = getBackgroundOpacity(card_opts.opacity);
-    const fill = /true/i.test(card_opts.fill);
+    const opacity = getBackgroundOpacity(cardOptions.opacity);
+    const fill = /true/i.test(cardOptions.fill);
     const gradientAnimationStr = gradientAnimation
       ? `animation: move ${gradientAnimation};`
       : "";
+    const hoverAnimationStr = hoverOptions.animation
+      ? `animation: pulse ${hoverOptions.animation};`
+      : "";
     const fillStr = fill ? `background-color: rgba(0, 0, 0, ${opacity});` : "";
     const filterStr = filter ? `filter: ${filter};` : "";
-    const hotCardClass = `.hot-${className}-${classId}`;
 
     return `${hotCardClass}::before,
       ${hotCardClass}::after {
@@ -582,6 +573,8 @@
         ${gradientAnimationStr}
       }
       ${hotCardClass} > .hot-border {
+        --hover-color: ${hoverOptions.color};
+        ${hoverAnimationStr}
         ${fillStr}
       }
       ${hotCardClass}::after {
