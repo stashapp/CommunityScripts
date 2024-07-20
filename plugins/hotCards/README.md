@@ -28,7 +28,7 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[hover-opts]\_[card-opts]_
 | Parameter         | Description                                                                                                                                                                                                                                                                                                                                                                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<criterion>`     | Defines the basis for applying styles. Use `t` for tag-based criteria, `r` for rating-based criteria, or `d` to disable.                                                                                                                                                                                                                                                          | If left empty, it will default to the global _Tag ID_ or _Rating Threshold_ as configured. If both options are enabled and unspecified, ~~the Tag ID will be used by default~~ both criteria will be used.                                                                                                                                                                                                                                                                                                 |
-| `<value>`         | Specifies the exact value for the Tag ID or Rating Threshold to be used.<br><br>_Multiple values can be specified using a comma-separated list and slashes to delimit each set of criteria:_ `<tag_id>,.../<tag_id>,.../...` or `<rating>/<rating>/...`                                                                                                                           | **Important**: When dealing with tenths precision (e.g. 4.8, 3.25), map these to the 6-100 range and set the _Rating Threshold_ in that range. Thus, 4.8 would be 96, 3.25 would be 65, and so on.<br><br>See [this additional information](#regarding-multiple-values) on multiple values.                                                                                                                                                                                                                |
+| `<value>`         | Specifies the exact value for the Tag ID or Rating Threshold to be used.<br><br>_Multiple values can be specified using a comma-separated list and slashes to delimit each set of criteria:_ `<tag_id>,.../<tag_id>,.../...` or `<rating>/<rating>/...`                                                                                                                           | Defaults to the global _Tag ID_ or _Rating Threshold_ value.<br><br>**Important**: When dealing with tenths precision (e.g. 4.8, 3.25), map these to the 6-100 range and set the _Rating Threshold_ in that range. Thus, 4.8 would be 96, 3.25 would be 65, and so on.<br><br>See [this additional information](#regarding-multiple-values) on multiple values.                                                                                                                                            |
 | `<style>`         | Defines the styling options as a comma-separated list of colors or a style preset.</br></br>Options include: a fixed color (e.g., #5ff2a2), a style preset (e.g., hot), or a gradient (e.g., #ef1313,#3bd612,... hex color codes or color names).<br><br>_A style can be specified for each set of values using a slash-separated list:_ `<style>/<style>/...`                    | Defaults to **default** (basic style preset)<br><br>Style Presets available: **default**, **hot**, **gold**.                                                                                                                                                                                                                                                                                                                                                                                               |
 | `<gradient_opts>` | Specifies gradient options as a comma-separated list: `<type>,<angle>,<animation>`.</br></br> Example: **linear,35deg,4s alternate infinite** for a linear gradient with a 35-degree angle and a 4-second alternating infinite animation.</br></br>_Gradient options can be specified for each set of values using a slash-separated list:_ `<gradient_opts>/<gradient_opts>/...` | `<type>` Defaults to **linear**</br></br>Refer to [Using CSS gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Using_CSS_gradients) to see all types you can use.</br></br>`<angle>` Defaults to **0deg**</br></br>`<animation>` Defaults to **none**</br></br>Note that you can only configure the animation properties of the element. See [Using CSS animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations) for additional information. |
 | `<hover_opts>`    | Specifies hover options as a comma-separated list: `<color>,<animation>`.</br></br>Example: **#ff0000,2s ease infinite** for a hover effect with a color of #ff0000 and a 2-second ease infinite animation.</br></br>_Hover options can be specified for each set of values using a slash-separated list:_ `<hover_opts>/<hover_opts>/...`                                        | `<color>` Defaults to **transparent**</br></br>`<animation>` Defaults to **none**</br></br>Similar to the gradient animation, you can only configure the animation properties of the element.                                                                                                                                                                                                                                                                                                              |
@@ -38,11 +38,11 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[hover-opts]\_[card-opts]_
 
 **Note**: _It is recommended to refresh the page once you are done configuring for the changes to take effect and the previous style to be overwritten._
 
-#### Regarding multiple values
+### Regarding multiple values
 
-The first matching condition found is applied, and subsequent matches are ignored. This ensures the highest priority condition takes precedence based on the left-to-right order of your declarations.
+In scenarios where multiple values are specified, the rules for how these values are processed can get complex. Below is a detailed explanation of how to handle multiple values.
 
-1. **Tag IDs**
+#### 1. **Tag IDs**
 
 Corresponding styles _(style, gradient_opts, hover_opts, card_opts)_ are applied only if **ALL** tags in a set match.
 
@@ -59,9 +59,7 @@ Conversely, `t_202/201,202_blue/red`
 
 - A card with tag 202 will be painted blue, regardless of the presence of tag 201. Therefore, there will be no cards painted red.
 
-<br>
-
-2. **Ratings**
+#### 2. **Ratings**
 
 The same left-to-right prioritization applies.
 
@@ -69,15 +67,16 @@ Consider the declaration:
 
 `r_4/2_red/blue`
 
-- In this case, red applies for ratings >= 4, and blue for ratings >= 2 but less than 4.
+- A card with a rating >= 4 will be painted red.
+- A card with a rating >= 2 but < 4 will be painted blue.
 
 <br>
 
-Multiple ratings are also supported, although it may not be very useful:
+You can also specify multiple ratings in a single value if you wish to target multiple specific ratings, though such scenarios are rare and generally not as useful. For instance:
 
 `r_2,4_blue`
 
-- Targets cards with exact ratings of 4 or 2. Here the order does not matter.
+- Targets cards with exact ratings of 4 or 2. Here, the order does not matter.
 
 ## Examples
 
