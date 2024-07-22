@@ -1,3 +1,0 @@
-stashapp-tools
-pyYAML
-requests
