@@ -27,6 +27,9 @@ logger = logging.getLogger('renamefile')
 DEFAULT_ENDPOINT = "http://localhost:9999/graphql" # Default GraphQL endpoint
 DEFAULT_FIELD_KEY_LIST = "title, performers, tags" # Default Field Key List with the desired order
 DEFAULT_SEPERATOR = "-"
+PLUGIN_ARGS = False
+
+
 
 # ------------------------------------------
 # ------------------------------------------
@@ -58,7 +61,11 @@ debugTracing = settings["zzdebugTracing"]
 # Extract dry_run setting from settings
 dry_run = settings["dryRun"]
 dry_run_prefix = ''
-logger.info(f"\nStarting (debugTracing={debugTracing}) (dry_run={dry_run})************************************************")
+try:
+    PLUGIN_ARGS = json_input['args']["mode"]
+except:
+    pass
+logger.info(f"\nStarting (debugTracing={debugTracing}) (dry_run={dry_run}) (PLUGIN_ARGS={PLUGIN_ARGS})************************************************")
 if debugTracing: logger.info("settings: %s " % (settings,))
 if dry_run:
     logger.info("Dry run mode is enabled.")
@@ -94,6 +101,7 @@ separator = settings["zseparators"]
 # ------------------------------------------
 # ------------------------------------------
 double_separator = separator + separator
+
 
 
 # GraphQL query to fetch all scenes
@@ -152,7 +160,7 @@ def form_filename(original_file_stem, scene_details, wrapper_styles):
             title = default_title
     # ...................
 
-    if debugTracing: logger.info("Debug Tracing................")
+    if debugTracing: logger.info(f"Debug Tracing (title=\"{title}\")................")
     
     # Function to add tag to filename
     def add_tag(tag_name):
@@ -195,7 +203,9 @@ def form_filename(original_file_stem, scene_details, wrapper_styles):
             if settings["performerAppend"]:
                 performers = '-'.join([performer.get('name', '') for performer in scene_details.get('performers', [])])
                 if performers:
-                    if not include_performer_if_in_name or performers.lower() not in title.lower():
+                    if debugTracing: logger.info(f"Debug Tracing (include_performer_if_in_name={include_performer_if_in_name})................")
+                    if include_performer_if_in_name or performers.lower() not in title.lower():
+                        if debugTracing: logger.info(f"Debug Tracing (performers={performers})................")
                         if wrapper_styles.get('performers'):
                             filename_parts.append(f"{wrapper_styles['performers'][0]}{performers}{wrapper_styles['performers'][1]}")
                         else:
@@ -237,7 +247,7 @@ def form_filename(original_file_stem, scene_details, wrapper_styles):
                     if debugTracing: logger.info(f"Debug Tracing (include_tag_if_in_name={include_tag_if_in_name})................")
                     if include_tag_if_in_name or tag_name.lower() not in title.lower():
                         add_tag(tag_name)
-                        if debugTracing: logger.info("Debug Tracing................")
+                        if debugTracing: logger.info(f"Debug Tracing (tag_name={tag_name})................")
     
     new_filename = separator.join(filename_parts).replace(double_separator, separator)
 
@@ -408,49 +418,66 @@ def rename_scene(scene_id, wrapper_styles, stash_directory):
 
     return new_filename, original_path_info, new_path_info 
     
-if debugTracing: logger.info("Debug Tracing................")
-# Execute the GraphQL query to fetch all scenes
-scene_result = graphql_request(query_all_scenes)
-if debugTracing: logger.info("Debug Tracing................")
-all_scenes = scene_result.get('data', {}).get('allScenes', [])
-if debugTracing: logger.info("Debug Tracing................")
-if not all_scenes:
+# Main default function for rename scene
+def rename_files_task():
     if debugTracing: logger.info("Debug Tracing................")
-    log.error("No scenes found.")
-    logger.error("No scenes found.")
-    exit()
-if debugTracing: logger.info("Debug Tracing................")
+    # Execute the GraphQL query to fetch all scenes
+    scene_result = graphql_request(query_all_scenes)
+    if debugTracing: logger.info("Debug Tracing................")
+    all_scenes = scene_result.get('data', {}).get('allScenes', [])
+    if debugTracing: logger.info("Debug Tracing................")
+    if not all_scenes:
+        if debugTracing: logger.info("Debug Tracing................")
+        log.error("No scenes found.")
+        logger.error("No scenes found.")
+        exit()
+    if debugTracing: logger.info("Debug Tracing................")
 
-# Find the scene with the latest updated_at timestamp
-latest_scene = max(all_scenes, key=lambda scene: scene['updated_at'])
+    # Find the scene with the latest updated_at timestamp
+    latest_scene = max(all_scenes, key=lambda scene: scene['updated_at'])
 
-# Extract the ID of the latest scene
-latest_scene_id = latest_scene.get('id')
+    # Extract the ID of the latest scene
+    latest_scene_id = latest_scene.get('id')
 
 
-# Extract wrapper styles
-wrapper_styles = config["wrapper_styles"]
+    # Extract wrapper styles
+    wrapper_styles = config["wrapper_styles"]
 
-# Read stash directory from renamefile_settings.py
-stash_directory = config.get('stash_directory', '')
-if debugTracing: logger.info("Debug Tracing................")
+    # Read stash directory from renamefile_settings.py
+    stash_directory = config.get('stash_directory', '')
+    if debugTracing: logger.info("Debug Tracing................")
 
-if debugTracing: logger.info("Debug Tracing................")
+    if debugTracing: logger.info("Debug Tracing................")
 
-# Rename the latest scene and trigger metadata scan
-new_filename = rename_scene(latest_scene_id, wrapper_styles, stash_directory)
-if debugTracing: logger.info("Debug Tracing................")
+    # Rename the latest scene and trigger metadata scan
+    new_filename = rename_scene(latest_scene_id, wrapper_styles, stash_directory)
+    if debugTracing: logger.info("Debug Tracing................")
 
-# Log dry run state and indicate if no changes were made
-if dry_run:  
-    log.info("Dry run: Script executed in dry run mode. No changes were made.")
-    logger.info("Dry run: Script executed in dry run mode. No changes were made.")
-elif not new_filename:  
-    logger.info("No changes were made.")
+    # Log dry run state and indicate if no changes were made
+    if dry_run:  
+        log.info("Dry run: Script executed in dry run mode. No changes were made.")
+        logger.info("Dry run: Script executed in dry run mode. No changes were made.")
+    elif not new_filename:  
+        logger.info("No changes were made.")
+    else:
+        logger.info("Change success!")
+    return
+
+def fetch_dup_filename_tags(): # Place holder for new implementation
+    return
+
+if PLUGIN_ARGS == "fetch_dup_filename_tags":
+    fetch_dup_filename_tags()
+elif PLUGIN_ARGS == "rename_files_task":
+    rename_files_task()
 else:
-    logger.info("Change success!")
+    rename_files_task()
+
 if debugTracing: logger.info("\n*********************************\nEXITING   ***********************\n*********************************")
+
+
 # ToDo List
     # Add logic to max_filename_length code so it checks base file length and checks folder length, instead of lumping them altogether.
     # Add logic to update Sqlite DB on file name change, instead of perform_metadata_scan.
     # Get variables from the Plugins Settings UI instead of from renamefile_settings.py
+    # Add code to get tags from duplicate filenames
