@@ -46,6 +46,18 @@
   }
 }
 
+@media (max-width: 576px) {
+  .hot-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) and (orientation: portrait) {
+  div[class*=" hot-performer-card"] {
+    width: 14rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hot-card {
     animation: none;
