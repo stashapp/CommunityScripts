@@ -32,7 +32,7 @@ _[criterion]\_[value]\_[style]\_[gradient-opts]\_[hover-opts]\_[card-opts]_
 | `<style>`         | Defines the styling options as a comma-separated list of colors or a style preset.</br></br>Options include: a fixed color (e.g., #5ff2a2), a style preset (e.g., hot), or a gradient (e.g., #ef1313,#3bd612,... hex color codes or color names).<br><br>_A style can be specified for each set of values using a slash-separated list:_ `<style>/<style>/...`                    | Defaults to **default** (basic style preset)<br><br>Style Presets available: [**default**](#default), [**hot**](#hot), [**gold**](#gold), and [**holo**](#holo).                                                                                                                                                                                                                                                                                                                                           |
 | `<gradient_opts>` | Specifies gradient options as a comma-separated list: `<type>,<angle>,<animation>`.</br></br> Example: **linear,35deg,4s alternate infinite** for a linear gradient with a 35-degree angle and a 4-second alternating infinite animation.</br></br>_Gradient options can be specified for each set of values using a slash-separated list:_ `<gradient_opts>/<gradient_opts>/...` | `<type>` Defaults to **linear**</br></br>Refer to [Using CSS gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_images/Using_CSS_gradients) to see all types you can use.</br></br>`<angle>` Defaults to **0deg**</br></br>`<animation>` Defaults to **none**</br></br>Note that you can only configure the animation properties of the element. See [Using CSS animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations) for additional information. |
 | `<hover_opts>`    | Specifies hover options as a comma-separated list: `<color>,<animation>`.</br></br>Example: **#ff0000,2s ease infinite** for a hover effect with a color of #ff0000 and a 2-second ease infinite animation.</br></br>_Hover options can be specified for each set of values using a slash-separated list:_ `<hover_opts>/<hover_opts>/...`                                        | `<color>` Defaults to **transparent**</br></br>`<animation>` Defaults to **none**</br></br>Similar to the gradient animation, you can only configure the animation properties of the element.                                                                                                                                                                                                                                                                                                              |
-| `<card_opts>`     | Specifies the general options for the card as a comma-separated list: `<fill>,<opacity>,<animation>`.</br></br>_Card options can be specified for each set of values using a slash-separated list:_ `<card_opts>/<card_opts>/...`                                                                                                                                                 | `fill` Defaults to **true**<br>_Indicates whether the card should be filled._</br></br>Tip: You can set this to **false** to color only the border of the card.</br></br>`opacity` Defaults to **80**<br>_Represents the opacity for the card background. Range from 0 to 100._</br></br>`animation` Defaults to **false**<br>_Only used for [**holo**](#holo) style preset._                                                                                                                              |
+| `<card_opts>`     | Specifies the general options for the card as a comma-separated list: `<fill>,<opacity>,<animate>`.</br></br>_Card options can be specified for each set of values using a slash-separated list:_ `<card_opts>/<card_opts>/...`                                                                                                                                                   | `fill` Defaults to **true**<br>_Indicates whether the card should be filled._</br></br>Tip: You can set this to **false** to color only the border of the card.</br></br>`opacity` Defaults to **80**<br>_Represents the opacity for the card background. Range from 0 to 100._</br></br>`animate` Defaults to **false**<br>_Only used for [**holo**](#holo) style preset._                                                                                                                                |
 
 **Note**: _It is recommended to refresh the page once you are done configuring for the changes to take effect and the previous style to be overwritten._
 
@@ -82,14 +82,14 @@ In scenarios where multiple values are specified, the rules for how these values
 
 `t_123_gold`
 
-| Segment       | Value | Meaning                |
-| ------------- | ----- | ---------------------- |
-| criterion     | t     | Tag-based              |
-| value         | 123   | Use 123 as Tag ID      |
-| style         | gold  | Use Gold preset        |
-| gradient-opts |       | Use Gold gradient opts |
-| hover-opts    |       | Use Gold hover opts    |
-| card-opts     |       | Use default values     |
+| Segment       | Value | Meaning                   |
+| ------------- | ----- | ------------------------- |
+| criterion     | t     | Tag-based                 |
+| value         | 123   | Use 123 as Tag ID         |
+| style         | gold  | Use Gold style            |
+| gradient-opts |       | Use Gold gradient options |
+| hover-opts    |       | Use Gold hover options    |
+| card-opts     |       | Use default values        |
 
 ---
 
@@ -101,7 +101,7 @@ In scenarios where multiple values are specified, the rules for how these values
 | ------------- | --------- | ------------------------------------------ |
 | criterion     |           | Use tag or rating as configured            |
 | value         |           | Use global tag or rating value             |
-| style         | hot       | Use Hot preset                             |
+| style         | hot       | Use Hot style                              |
 | gradient-opts | ,,none    | No gradient animation                      |
 | hover-opts    | pink,none | Set hover effect color, no hover animation |
 | card-opts     | ,40       | Set opacity to 40                          |
@@ -133,7 +133,7 @@ In scenarios where multiple values are specified, the rules for how these values
 | value         | 4       | Use 4 as Rating Threshold |
 | style         | white   | Set fixed color           |
 | gradient-opts |         | No gradient               |
-| hover-opts    | #5ff1a1 | Set hover color           |
+| hover-opts    | #5ff1a1 | Set hover effect color    |
 | card-opts     | false   | No fill                   |
 
 ---
@@ -142,14 +142,14 @@ In scenarios where multiple values are specified, the rules for how these values
 
 `_67_pink,red,yellow,green,red,blue_,30deg,5s ease infinite_red,1s ease-in-out infinite_,100`
 
-| Segment       | Value                          | Meaning                                   |
-| ------------- | ------------------------------ | ----------------------------------------- |
-| criterion     |                                | Use tag or rating as configured           |
-| value         | 67                             | Use 67 as Tag ID or Rating Threshold      |
-| style         | pink,red,yellow,green,red,blue | Apply gradient                            |
-| gradient-opts | ,30deg,5s ease infinite        | Specify angle, and animate gradient       |
-| hover-opts    | red,1s ease-in-out infinite    | Set hover effect color, and animate hover |
-| card-opts     | ,100                           | Use max opacity                           |
+| Segment       | Value                          | Meaning                                  |
+| ------------- | ------------------------------ | ---------------------------------------- |
+| criterion     |                                | Use tag or rating as configured          |
+| value         | 67                             | Use 67 as Tag ID or Rating Threshold     |
+| style         | pink,red,yellow,green,red,blue | Apply gradient                           |
+| gradient-opts | ,30deg,5s ease infinite        | Specify angle and animate gradient       |
+| hover-opts    | red,1s ease-in-out infinite    | Set hover effect color and animate hover |
+| card-opts     | ,100                           | Use max opacity                          |
 
 **Note**: _You can also skip inner values, notice the first comma in **gradient-opts**. The type is not provided, so linear gradient will be used by default._
 
@@ -174,14 +174,14 @@ In scenarios where multiple values are specified, the rules for how these values
 
 `t_111,116,78,87/105_pink,red,white/orange,white_/,70deg,4s alternate infinite__,30/`
 
-| Segment       | Value                         | Meaning                                                                          |
-| ------------- | ----------------------------- | -------------------------------------------------------------------------------- |
-| criterion     | t                             | Tag-based                                                                        |
-| value         | 111,116,78,87/105             | Use tags 111, 116, 78, 87 or 105                                                 |
-| style         | pink,red,white/orange,white   | Apply pink, red, white gradient for first set of tags; orange, white for tag 105 |
-| gradient-opts | /,70deg,4s alternate infinite | No animation for first set of tags; 70deg, 4s alternate infinite for tag 105     |
-| hover-opts    |                               | No hover effect                                                                  |
-| card-opts     | ,30/                          | Set opacity to 30 for first set of tags; default opacity for tag 105             |
+| Segment       | Value                         | Meaning                                                                                            |
+| ------------- | ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| criterion     | t                             | Tag-based                                                                                          |
+| value         | 111,116,78,87/105             | Use tags 111, 116, 78, 87 or 105                                                                   |
+| style         | pink,red,white/orange,white   | Apply pink, red, white gradient for first set of tags; orange, white gradient for tag 105          |
+| gradient-opts | /,70deg,4s alternate infinite | Use default gradient options for first set of tags; specify angle and animate gradient for tag 105 |
+| hover-opts    |                               | No hover effect                                                                                    |
+| card-opts     | ,30/                          | Set opacity to 30 for first set of tags; default opacity for tag 105                               |
 
 ---
 
@@ -193,7 +193,7 @@ In scenarios where multiple values are specified, the rules for how these values
 | ------------- | ---------------- | ------------------------------------------------------------------------------------- |
 | criterion     | r                | Rating-based                                                                          |
 | value         | 5/4/3            | Use ratings 5, 4, and 3                                                               |
-| style         | gold/hot/default | Apply gold style to ratings 5, hot style to ratings 4, and default style to ratings 3 |
+| style         | gold/hot/default | Apply Gold style to ratings 5, Hot style to ratings 4, and Default style to ratings 3 |
 | gradient-opts |                  | Use corresponding gradient options                                                    |
 | hover-opts    |                  | Use corresponding hover options                                                       |
 | card-opts     | //,50            | Set opacity to 50 for ratings 3; default opacity to other ratings                     |
@@ -243,4 +243,4 @@ You can specify `__gold` for the card type you want the **gold** preset to be ap
 
 You can specify `__holo` for the card type you want the **holo** preset to be applied and it will use the configured Tag ID or Rating Threshold.
 
-**Note**: _By default, the animation of the holographic effect is disabled, you can activate it by running: `__holo___,,true`._
+**Note**: _By default, the animation of the holographic effect is disabled, you can enable it by running: `__holo___,,true`._

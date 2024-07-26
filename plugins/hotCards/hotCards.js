@@ -21,7 +21,7 @@
     card_opts: {
       fill: true,
       opacity: 80,
-      animation: false,
+      animate: false,
     },
   };
   const CRITERIA = { tag: "t", rating: "r", disabled: "d" };
@@ -102,7 +102,7 @@
       card_opts: parseArraySegment(segments[5], DEFAULTS.card_opts, [
         "fill",
         "opacity",
-        "animation",
+        "animate",
       ]),
     };
   }
@@ -627,7 +627,7 @@
     style,
     cardOptions
   ) {
-    const cardAnimation = /true/i.test(cardOptions.animation);
+    const cardAnimation = /true/i.test(cardOptions.animate);
     const hotCardClass = `.hot-${cardClass}-${classId}`;
     const cards = document.querySelectorAll(`${hotCardClass}`);
 
