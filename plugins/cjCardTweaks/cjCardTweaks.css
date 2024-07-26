@@ -1,0 +1,16 @@
+span.file-count.badge.badge-pill.badge-info {
+    position: absolute;
+    top: .3rem;
+    right: .5rem;
+    border-radius: 50%;
+    width: 1.7rem;
+    height: 1.7rem;
+    padding: 5px 8px;
+    font-size: 100%;
+    box-shadow: 1px 3px 4px rgba(0, 0, 0, .5);
+}
+
+.grid-card:hover .file-count.badge {
+    opacity: 0;
+    transition: opacity .5s;
+}
