@@ -579,7 +579,7 @@
     gradientAnimation = "",
     filter = ""
   ) {
-    const opacity = getBackgroundOpacity(cardOptions.opacity);
+    const opacity = getFixedBackgroundOpacity(cardOptions.opacity);
     const fill = /true/i.test(cardOptions.fill);
     const gradientAnimationStr = gradientAnimation
       ? `animation: move ${gradientAnimation};`
@@ -673,14 +673,6 @@
       requestAnimationFrame(animate);
     }
     animate();
-  }
-
-  function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
-  }
-
-  function getBackgroundOpacity(opacity) {
-    return parseFloat((1 - opacity / 100).toFixed(1));
   }
 
   function createCardStyle(

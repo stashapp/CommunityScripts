@@ -1,16 +1,16 @@
 name: Hot Cards
 description: Adds custom styling to card elements that match a Tag ID or a Rating Threshold.
-version: 1.1.6
+version: 1.1.7
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
 # requires: CommunityScriptsUILibrary
 ui:
   requires:
     - CommunityScriptsUILibrary
   javascript:
-    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/fetchInterceptor.js
-    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/stashHandler.js
-    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/registerPathChangeListener.js
-    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/waitForClass.js
+    - https://cdn.jsdelivr.net/gh/stashapp/CommunityScripts@main/plugins/hotCards/utils/fetchInterceptor.js
+    - https://cdn.jsdelivr.net/gh/stashapp/CommunityScripts@main/plugins/hotCards/utils/stashHandler.js
+    - https://cdn.jsdelivr.net/gh/stashapp/CommunityScripts@main/plugins/hotCards/utils/registerPathChangeListener.js
+    - https://cdn.jsdelivr.net/gh/stashapp/CommunityScripts@main/plugins/hotCards/utils/helpers.js
     - hotCards.js
   css:
     - hotCards.css
