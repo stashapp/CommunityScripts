@@ -1,6 +1,5 @@
 name: RenameFile
 description:   Renames video (scene) file names when the user edits the [Title] field located in the scene [Edit] tab.
-# By David Maisonave (aka Axter) 2024
 version: 0.4.0
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/RenameFile
 settings:
@@ -66,10 +65,6 @@ hooks:
     triggeredBy:
       - Scene.Update.Post
 tasks:
-  # - name: Fetch Tags
-    # description: Get tags from duplicate file names.
-    # defaultArgs:
-      # mode: fetch_dup_filename_tags
   - name: Rename Last Scene
     description: Renames file of last updated scene.
     defaultArgs:
