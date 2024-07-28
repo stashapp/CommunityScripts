@@ -1,0 +1,4 @@
+stashapp-tools
+pyYAML
+watchdog
+requests

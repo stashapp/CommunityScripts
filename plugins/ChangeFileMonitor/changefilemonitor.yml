@@ -1,0 +1,35 @@
+# By David Maisonave (aka Axter) 2024
+name: ChangeFileMonitor
+description:   Monitors the Stash library folders, and updates Stash if any changes occurs in the Stash library paths.
+version: 0.1.0
+url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/ChangeFileMonitor
+settings:
+  scanModified:
+    displayName: Scan Modifications
+    description: Enable to monitor changes in file system for modification flag. Flags for CREATE, DELETE, and MOVE will still get triggered if this is disabled.
+    type: BOOLEAN    
+  recursiveDisabled:
+    displayName: No Recursive
+    description: Enable stop monitoring paths recursively.
+    type: BOOLEAN    
+  zgraphqlEndpoint:
+    displayName: GraphQL Endpoint
+    description: (Default=http://localhost:9999/graphql). Update with your endpoint, or leave blank to use default.
+    type: STRING
+  zzdebugTracing:
+    displayName: Debug Tracing
+    description: (Default=false) [***For Advanced Users***] Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\ChangeFileMonitor\changefilemonitor.log
+    type: BOOLEAN    
+  zzdryRun:
+    displayName: Dry Run
+    description: Enable to run script in [Dry Run] mode. In this mode, Stash does NOT call meta_scan, and only logs the action it would have taken.
+    type: BOOLEAN    
+exec:
+  - python
+  - "{pluginDir}/changefilemonitor.py"
+interface: raw
+tasks:
+  - name: Start Library Monitor
+    description: Monitors paths in Stash library for media file changes, and updates Stash.
+    defaultArgs:
+      mode: start_library_monitor
