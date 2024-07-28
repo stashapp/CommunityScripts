@@ -1,4 +1,3 @@
-# By David Maisonave (aka Axter) 2024
 name: ChangeFileMonitor
 description:   Monitors the Stash library folders, and updates Stash if any changes occurs in the Stash library paths.
 version: 0.1.0
