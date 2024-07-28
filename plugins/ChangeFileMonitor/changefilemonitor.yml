@@ -4,13 +4,17 @@ description:   Monitors the Stash library folders, and updates Stash if any chan
 version: 0.1.0
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/ChangeFileMonitor
 settings:
-  scanModified:
-    displayName: Scan Modifications
-    description: Enable to monitor changes in file system for modification flag. Flags for CREATE, DELETE, and MOVE will still get triggered if this is disabled.
-    type: BOOLEAN    
   recursiveDisabled:
     displayName: No Recursive
     description: Enable stop monitoring paths recursively.
+    type: BOOLEAN
+  runCleanAfterDelete:
+    displayName: Run Clean
+    description: Enable to run metadata clean task after file deletion.
+    type: BOOLEAN
+  scanModified:
+    displayName: Scan Modifications
+    description: Enable to monitor changes in file system for modification flag. Flags for CREATE, DELETE, and MOVE will still get triggered if this is disabled.
     type: BOOLEAN    
   zgraphqlEndpoint:
     displayName: GraphQL Endpoint

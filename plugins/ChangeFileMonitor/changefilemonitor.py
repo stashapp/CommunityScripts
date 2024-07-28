@@ -67,8 +67,9 @@ STASHCONFIGURATION = stash.get_configuration()["general"]
 STASHPATHSCONFIG = STASHCONFIGURATION['stashes']
 stashPaths = []
 settings = {
-    "scanModified": False,
     "recursiveDisabled": False,
+    "runCleanAfterDelete": False,
+    "scanModified": False,
     "zgraphqlEndpoint": DEFAULT_ENDPOINT,
     "zzdebugTracing": False,
     "zzdryRun": False,
@@ -80,25 +81,26 @@ if PLUGIN_ID in PLUGINCONFIGURATION:
 debugTracing = settings["zzdebugTracing"]
 RECURSIVE = settings["recursiveDisabled"] == False
 SCAN_MODIFIED = settings["scanModified"]
+RUN_CLEAN_AFTER_DELETE = settings["runCleanAfterDelete"]
 
 for item in STASHPATHSCONFIG: 
     stashPaths.append(item["path"])
 
 # Extract dry_run setting from settings
-dry_run = settings["zzdryRun"]
+DRY_RUN = settings["zzdryRun"]
 dry_run_prefix = ''
 try:
     PLUGIN_ARGS         = json_input['args']
     PLUGIN_ARGS_MODE    = json_input['args']["mode"]
 except:
     pass
-logger.info(f"\nStarting (debugTracing={debugTracing}) (dry_run={dry_run}) (PLUGIN_ARGS_MODE={PLUGIN_ARGS_MODE}) (PLUGIN_ARGS={PLUGIN_ARGS})************************************************")
+logger.info(f"\nStarting (debugTracing={debugTracing}) (DRY_RUN={DRY_RUN}) (PLUGIN_ARGS_MODE={PLUGIN_ARGS_MODE}) (PLUGIN_ARGS={PLUGIN_ARGS})************************************************")
 if debugTracing: logger.info(f"Debug Tracing (stash.get_configuration()={stash.get_configuration()})................")
 if debugTracing: logger.info("settings: %s " % (settings,))
 if debugTracing: logger.info(f"Debug Tracing (STASHCONFIGURATION={STASHCONFIGURATION})................")
 if debugTracing: logger.info(f"Debug Tracing (stashPaths={stashPaths})................")
 
-if dry_run:
+if DRY_RUN:
     logger.info("Dry run mode is enabled.")
     dry_run_prefix = "Would've "
 if debugTracing: logger.info("Debug Tracing................")
@@ -126,6 +128,7 @@ def start_library_monitor():
     len(shm_buffer)
     shm_buffer[0] = CONTINUE_RUNNING_SIG
     if debugTracing: logger.info(f"Shared memory map opended, and flag set to {shm_buffer[0]}")
+    RunCleanMetadata = False
 
     event_handler = watchdog.events.FileSystemEventHandler()
     def on_created(event):
@@ -140,10 +143,12 @@ def start_library_monitor():
     def on_deleted(event):
         global shouldUpdate
         global TargetPaths
+        nonlocal RunCleanMetadata
         TargetPaths.append(event.src_path)
         logger.info(f"DELETE ***  '{event.src_path}'")
         with mutex:
             shouldUpdate = True
+            RunCleanMetadata = True
             signal.notify()
 
     def on_modified(event):
@@ -168,12 +173,14 @@ def start_library_monitor():
             shouldUpdate = True
             signal.notify()
 
+    if debugTracing: logger.info("Debug Trace........")
     event_handler.on_created = on_created
     event_handler.on_deleted = on_deleted
     event_handler.on_modified = on_modified
     event_handler.on_moved = on_moved
     
     observer = Observer()
+    
     # Iterate through stashPaths
     for path in stashPaths:
         observer.schedule(event_handler, path, recursive=RECURSIVE)
@@ -196,8 +203,10 @@ def start_library_monitor():
                 TmpTargetPaths = list(set(TmpTargetPaths))
             if TmpTargetPaths != []:
                 logger.info(f"Triggering stash scan for path(s) {TmpTargetPaths}")
-                if not dry_run:
+                if not DRY_RUN:
                     stash.metadata_scan(paths=TmpTargetPaths)
+                if RUN_CLEAN_AFTER_DELETE and RunCleanMetadata:
+                    stash.metadata_clean(paths=TmpTargetPaths, dry_run=DRY_RUN)
                 stash.run_plugin_task(plugin_id=PLUGIN_ID, task_name="Start Library Monitor")
                 if debugTracing: logger.info("Exiting plugin so that metadata_scan task can run.")
                 return
