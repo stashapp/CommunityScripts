@@ -1,0 +1,14 @@
+## Please check .eslintignore and .gitignore when changing this file
+
+## file extensions
+*.*
+!*.css
+!*.js
+!*.json
+!*.jsx
+!*.less
+!*.md
+!*.mdx
+!*.ts
+!*.tsx
+!*.yml
