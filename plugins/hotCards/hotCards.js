@@ -21,6 +21,7 @@
     card_opts: {
       fill: true,
       opacity: 80,
+      animation: false,
     },
   };
   const CRITERIA = { tag: "t", rating: "r", disabled: "d" };
@@ -53,6 +54,7 @@
     default: getDefaultStylePreset(),
     hot: getHotStylePreset(),
     gold: getGoldStylePreset(),
+    holo: getHoloStylePreset(),
   };
 
   /**
@@ -100,6 +102,7 @@
       card_opts: parseArraySegment(segments[5], DEFAULTS.card_opts, [
         "fill",
         "opacity",
+        "animation",
       ]),
     };
   }
@@ -297,7 +300,7 @@
    * @param {boolean} isHome - Flag indicating if the current page is the homepage.
    */
   function createAndInsertHotCards(stashData, cardClass, config, isHome) {
-    const { criterion, value } = config;
+    const { criterion, value, style, card_opts } = config;
     const cards = document.querySelectorAll(`.${cardClass}`);
     const isCriterionTagOrEmpty =
       isTagBased && (criterion === CRITERIA.tag || criterion.length === 0);
@@ -315,17 +318,25 @@
 
       if (!data) return;
 
-      const valueSegment = findMatchingValueSegment(
+      const segmentParams = findMatchingValueSegment(
         value,
         data.tags,
         data.rating100,
         isCriterionTagOrEmpty,
-        isCriterionRatingOrEmpty
+        isCriterionRatingOrEmpty,
+        style,
+        card_opts
       );
 
-      if (valueSegment) {
-        const classId = valueSegment.join("-");
+      if (segmentParams) {
+        const classId = segmentParams.value.join("-");
         createHotElementAndAttachToDOM(card, cardClass, classId, isHome);
+        checkHoloCardsAndAttachToDOM(
+          cardClass,
+          classId,
+          segmentParams.style,
+          segmentParams.cardOptions
+        );
       }
     });
   }
@@ -335,9 +346,12 @@
     tags,
     rating,
     isCriterionTagOrEmpty,
-    isCriterionRatingOrEmpty
+    isCriterionRatingOrEmpty,
+    style,
+    cardOptions
   ) {
-    for (let segment of value) {
+    for (let i = 0; i < value.length; i++) {
+      const segment = value[i];
       const valueNotSet = segment.length === 0;
       const segmentOrValue = Array.isArray(segment) ? segment : value;
 
@@ -346,8 +360,12 @@
           matchesTagCriterion(tags, segmentOrValue, valueNotSet)) ||
         (isCriterionRatingOrEmpty &&
           matchesRatingCriterion(rating, segmentOrValue, valueNotSet))
-      )
-        return segmentOrValue || [""];
+      ) {
+        const v = segmentOrValue || [""];
+        const s = style[i] || style[0];
+        const co = cardOptions[i] || cardOptions[0];
+        return { value: v, style: s, cardOptions: co };
+      }
 
       if (segmentOrValue === value) break;
     }
@@ -486,7 +504,7 @@
     hoverOptions,
     cardOptions
   ) {
-    const { gradient, hover } = preset;
+    const { gradient, hover, card } = preset;
     const { angle, animation } = gradientOptions;
     const { color: hoverColor, animation: hoverAnimation } = hoverOptions;
 
@@ -504,12 +522,25 @@
       animation: hoverAnimation || hover.animation,
     };
 
+    // Update card options with preset defaults if not provided
+    const updatedCardOpts = {
+      fill:
+        cardOptions.fill !== DEFAULTS.card_opts.fill
+          ? cardOptions.fill
+          : card.fill,
+      opacity:
+        cardOptions.opacity !== DEFAULTS.card_opts.opacity
+          ? cardOptions.opacity
+          : card.opacity,
+      additional: card.additional,
+    };
+
     return getCustomGradientStyle(
       hotCardClass,
       gradient.colors,
       updatedGradientOpts,
       updatedHoverOpts,
-      cardOptions
+      updatedCardOpts
     );
   }
 
@@ -536,6 +567,7 @@
 
   function getGradient(type, positionAngle = "", colors) {
     const positionAngleStr = positionAngle ? `${positionAngle},` : "";
+    if (type === "stacked") return colors.join(", ");
     return `${type}-gradient(${positionAngleStr} ${colors.join(", ")})`;
   }
 
@@ -547,13 +579,16 @@
     gradientAnimation = "",
     filter = ""
   ) {
-    const opacity = getBackgroundOpacity(cardOptions.opacity);
+    const opacity = getFixedBackgroundOpacity(cardOptions.opacity);
     const fill = /true/i.test(cardOptions.fill);
     const gradientAnimationStr = gradientAnimation
       ? `animation: move ${gradientAnimation};`
       : "";
     const hoverAnimationStr = hoverOptions.animation
       ? `animation: pulse ${hoverOptions.animation};`
+      : "";
+    const additionalAttrStr = cardOptions.additional
+      ? cardOptions.additional
       : "";
     const fillStr = fill ? `background-color: rgba(0, 0, 0, ${opacity});` : "";
     const filterStr = filter ? `filter: ${filter};` : "";
@@ -571,6 +606,7 @@
         background-size: 300% 300%;
         background-position: 0 50%;
         ${gradientAnimationStr}
+        ${additionalAttrStr}
       }
       ${hotCardClass} > .hot-border {
         --hover-color: ${hoverOptions.color};
@@ -582,8 +618,61 @@
       }`;
   }
 
-  function getBackgroundOpacity(opacity) {
-    return parseFloat((1 - opacity / 100).toFixed(1));
+  /**
+   * Currently, it only works for performer cards
+   */
+  function checkHoloCardsAndAttachToDOM(
+    cardClass,
+    classId,
+    style,
+    cardOptions
+  ) {
+    const cardAnimation = /true/i.test(cardOptions.animation);
+    const hotCardClass = `.hot-${cardClass}-${classId}`;
+    const cards = document.querySelectorAll(`${hotCardClass}`);
+
+    if (STYLES[style] !== STYLES.holo) return;
+
+    cards.forEach((card) => {
+      const imgElement = card.querySelector(".thumbnail-section > a > img");
+      const holoEl = createElementFromHTML(`<div class="holo">`);
+      const shineEl = createElementFromHTML(`<div class="shine"></div>`);
+      const posX = getRandomInt(100);
+      const posY = getRandomInt(100);
+
+      imgElement?.classList.add("holo-img");
+      imgElement?.before(holoEl);
+      holoEl.append(imgElement);
+      holoEl.append(shineEl);
+
+      holoEl.style.setProperty("--posx", `${posX}%`);
+      holoEl.style.setProperty("--posy", `${posY}%`);
+
+      if (cardAnimation) animateHoloCards(holoEl, posX, posY);
+    });
+  }
+
+  function animateHoloCards(holoEl, px, py) {
+    const increment = 0.05;
+    let posX = px;
+    let posY = py;
+    let add = increment;
+
+    function animate() {
+      posX += add;
+      posY += add;
+
+      if (posX > 100) add = -increment;
+      if (posY > 100) add = -increment;
+      if (posX < 0) add = increment;
+      if (posY < 0) add = increment;
+
+      holoEl.style.setProperty("--posx", `${posX}%`);
+      holoEl.style.setProperty("--posy", `${posY}%`);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
   }
 
   function createCardStyle(
@@ -593,6 +682,9 @@
     gradientAngle,
     gradientColors,
     gradientAnimation,
+    fill = DEFAULTS.card_opts.fill,
+    opacity = DEFAULTS.card_opts.opacity,
+    additional,
     filter
   ) {
     return {
@@ -605,7 +697,11 @@
         angle: gradientAngle,
         colors: gradientColors,
         animation: gradientAnimation,
-        generated: getGradient(gradientType, gradientAngle, gradientColors),
+      },
+      card: {
+        fill,
+        opacity,
+        additional,
       },
       filter,
     };
@@ -673,6 +769,27 @@
         "hsl(14.9, 75.8%, 32.4%)",
       ],
       "8s ease-in-out infinite"
+    );
+  }
+
+  function getHoloStylePreset() {
+    return createCardStyle(
+      "#fbe1f6",
+      "8s ease-in-out infinite",
+      "stacked",
+      "133deg",
+      [
+        "linear-gradient(180deg, #FFB7B7 0%, #727272 100%)",
+        "radial-gradient(60.91% 100% at 50% 0%, #FFD1D1 0%, #260000 100%)",
+        "linear-gradient(238.72deg, #FDD 0%, #720066 100%)",
+        "linear-gradient(127.43deg, #0FF 0%, #F44 100%)",
+        "radial-gradient(100.22% 100% at 70.57% 0%, #69e4a5 0%, #00FFE0 100%)",
+        "linear-gradient(127.43deg, #B7D500 0%, #30F 100%)",
+      ],
+      "14s ease-in-out infinite",
+      true,
+      70,
+      "background-blend-mode: screen, overlay, hard-light, color-burn, color-dodge, normal;"
     );
   }
 
