@@ -1,28 +1,28 @@
 name: RenameFile
-description:   Renames video (scene) file names when the user edits the [Title] field located in the scene [Edit] tab.
+description: Renames video (scene) file names when the user edits the [Title] field located in the scene [Edit] tab.
 version: 0.4.0
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/RenameFile
 settings:
   performerAppend:
     displayName: Append Performers
     description: Enable to append performers name to file name when renaming a file. Requires performers to be included in [Key Fields] list, which by default it is included.
-    type: BOOLEAN    
+    type: BOOLEAN
   studioAppend:
     displayName: Append Studio
     description: Enable to append studio name to file name when renaming a file. Requires studio to be included in [Key Fields] list, which by default it is included.
-    type: BOOLEAN    
+    type: BOOLEAN
   tagAppend:
     displayName: Append Tags
     description: Enable to append tag names to file name when renaming a file. Requires tags to be included in [Key Fields] list, which by default it is included.
-    type: BOOLEAN    
+    type: BOOLEAN
   z_keyFIeldsIncludeInFileName: # Prefixing z_ to variable names so that the GUI will place these fields after above fields (alphabatically listed)
     displayName: Include Existing Key Field
     description: Enable to append performer, tags, studios, & galleries even if name already exists in the original file name.
-    type: BOOLEAN    
+    type: BOOLEAN
   zafileRenameViaMove:
     displayName: Rename Using Move
     description: Enable to have file moved when renaming file.
-    type: BOOLEAN    
+    type: BOOLEAN
   zfieldKeyList:
     displayName: Key Fields
     description: '(Default=title,performers,studio,tags) Define key fields to use to format the file name. This is a comma seperated list, and the list should be in the desired format order. For example, if the user wants the performers name before the title, set the performers name first. Example:"performers,title,tags". This is an example of user adding height:"title,performers,tags,height"  Here''s an example using all of the supported fields: "title,performers,tags,studio,galleries,resolution,width,height,video_codec,frame_rate,date".'
@@ -50,11 +50,11 @@ settings:
   zzdebugTracing:
     displayName: Debug Tracing
     description: (Default=false) [***For Advanced Users***] Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\RenameFile\renamefile.log
-    type: BOOLEAN    
+    type: BOOLEAN
   zzdryRun:
     displayName: Dry Run
     description: Enable to run script in [Dry Run] mode. In dry run mode, files are NOT renamed, and only logging is performed. Use the logging to determine if rename will occur as expected. This should always be enabled on the first run after renamefile_settings.py has been modified.
-    type: BOOLEAN    
+    type: BOOLEAN
 exec:
   - python
   - "{pluginDir}/renamefile.py"
