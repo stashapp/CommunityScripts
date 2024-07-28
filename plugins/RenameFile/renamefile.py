@@ -21,6 +21,7 @@ LOG_FILE_PATH = log_file_path = f"{Path(__file__).resolve().parent}\\{Path(__fil
 FORMAT = "[%(asctime)s - LN:%(lineno)s] %(message)s"
 DEFAULT_ENDPOINT = "http://localhost:9999/graphql" # Default GraphQL endpoint
 DEFAULT_FIELD_KEY_LIST = "title,performers,studio,tags" # Default Field Key List with the desired order
+PLUGIN_ID = Path(__file__).stem.lower()
 DEFAULT_SEPERATOR = "-"
 PLUGIN_ARGS = False
 PLUGIN_ARGS_MODE = False
@@ -51,7 +52,7 @@ exitMsg = "Change success!!"
 
 # Configure local log file for plugin within plugin folder having a limited max log file size 
 logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt="%y%m%d %H:%M:%S", handlers=[RFH])
-logger = logging.getLogger('renamefile')
+logger = logging.getLogger(PLUGIN_ID)
 
 # **********************************************************************
 # ----------------------------------------------------------------------
@@ -75,8 +76,8 @@ settings = {
     "zzdebugTracing": False,
     "zzdryRun": False,
 }
-if "renamefile" in pluginConfiguration:
-    settings.update(pluginConfiguration["renamefile"])
+if PLUGIN_ID in pluginConfiguration:
+    settings.update(pluginConfiguration[PLUGIN_ID])
 # ----------------------------------------------------------------------
 debugTracing = settings["zzdebugTracing"]
 
@@ -94,6 +95,13 @@ except:
     pass
 logger.info(f"\nStarting (debugTracing={debugTracing}) (dry_run={dry_run}) (PLUGIN_ARGS_MODE={PLUGIN_ARGS_MODE}) (inputToUpdateScenePost={inputToUpdateScenePost})************************************************")
 if debugTracing: logger.info("settings: %s " % (settings,))
+# if PLUGIN_ID in pluginConfiguration:
+    # if debugTracing: logger.info(f"Debug Tracing (pluginConfiguration[PLUGIN_ID]={pluginConfiguration[PLUGIN_ID]})................")
+    # if 'zmaximumTagKeys' not in pluginConfiguration[PLUGIN_ID]:
+        # if debugTracing: logger.info("Debug Tracing................")
+        # stash.configure_plugin(PLUGIN_ID, settings) # , init_defaults=True
+    # if debugTracing: logger.info("Debug Tracing................")
+
 if dry_run:
     logger.info("Dry run mode is enabled.")
     dry_run_prefix = "Would've "
@@ -131,6 +139,8 @@ separator = settings["zseparators"]
 
 double_separator = separator + separator
 if debugTracing: logger.info(f"Debug Tracing (PLUGIN_ARGS={PLUGIN_ARGS}) (WRAPPER_STYLES={WRAPPER_STYLES}) (POSTFIX_STYLES={POSTFIX_STYLES})................")
+if debugTracing: logger.info(f"Debug Tracing (PLUGIN_ID=\"{PLUGIN_ID}\")................")
+if debugTracing: logger.info("Debug Tracing................")
 
 # Function to make GraphQL requests
 def graphql_request(query, variables=None):

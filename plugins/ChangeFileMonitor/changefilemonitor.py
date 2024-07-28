@@ -1,9 +1,13 @@
 # Description: This is a Stash plugin which updates Stash if any changes occurs in the Stash library paths.
 # By David Maisonave (aka Axter) Jul-2024 (https://www.axter.com/)
 # Get the latest developers version from following link: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/ChangeFileMonitor
+# Note: To call this script outside of Stash, pass any argument. 
+#       Example:    python changefilemonitor.py foofoo
 import os
 import sys
+import time
 import shutil
+import fileinput
 import hashlib
 import json
 from pathlib import Path
@@ -21,9 +25,9 @@ from multiprocessing import shared_memory
 # Constant global variables --------------------------------------------
 LOG_FILE_PATH = log_file_path = f"{Path(__file__).resolve().parent}\\{Path(__file__).stem}.log" 
 FORMAT = "[%(asctime)s - LN:%(lineno)s] %(message)s"
-DEFAULT_ENDPOINT = "http://localhost:9999/graphql" # Default GraphQL endpoint
 PLUGIN_ARGS = False
 PLUGIN_ARGS_MODE = False
+PLUGIN_ID = Path(__file__).stem.lower()
 # GraphQL query to fetch all scenes
 QUERY_ALL_SCENES = """
     query AllScenes {
@@ -51,16 +55,45 @@ mutex = Lock()
 signal = Condition(mutex)
 shouldUpdate = False
 TargetPaths = []
+runningInPluginMode = False
 
 # Configure local log file for plugin within plugin folder having a limited max log file size 
 logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt="%y%m%d %H:%M:%S", handlers=[RFH])
 logger = logging.getLogger(Path(__file__).stem)
-
+    
 # **********************************************************************
 # ----------------------------------------------------------------------
 # Code section to fetch variables from Plugin UI and from changefilemonitor_settings.py
-json_input = json.loads(sys.stdin.read())
-FRAGMENT_SERVER = json_input["server_connection"]
+# Check if being called as Stash plugin
+gettingCalledAsStashPlugin = True
+stopLibraryMonitoring = False
+StdInRead = None
+try:
+    if len(sys.argv) == 1:
+        print(f"Attempting to read stdin. (len(sys.argv)={len(sys.argv)})", file=sys.stderr)
+        StdInRead = sys.stdin.read()
+        # for line in fileinput.input():
+            # StdInRead = line
+            # break
+    else:
+        if len(sys.argv) > 1 and sys.argv[1].lower() == "stop":
+            stopLibraryMonitoring = True
+        raise Exception("Not called in plugin mode.") 
+except:
+    gettingCalledAsStashPlugin = False
+    print(f"Either len(sys.argv) not expected value OR sys.stdin.read() failed! (stopLibraryMonitoring={stopLibraryMonitoring}) (StdInRead={StdInRead}) (len(sys.argv)={len(sys.argv)})", file=sys.stderr)
+    pass
+    
+if gettingCalledAsStashPlugin and StdInRead:
+    print(f"StdInRead={StdInRead} (len(sys.argv)={len(sys.argv)})", file=sys.stderr)
+    runningInPluginMode = True
+    json_input = json.loads(StdInRead)
+    FRAGMENT_SERVER = json_input["server_connection"]
+else:
+    runningInPluginMode = False
+    FRAGMENT_SERVER = {'Scheme': 'http', 'Host': '0.0.0.0', 'Port': 9999, 'SessionCookie': {'Name': 'session', 'Value': '', 'Path': '', 'Domain': '', 'Expires': '0001-01-01T00:00:00Z', 'RawExpires': '', 'MaxAge': 0, 'Secure': False, 'HttpOnly': False, 'SameSite': 0, 'Raw': '', 'Unparsed': None}, 'Dir': os.path.dirname(Path(__file__).resolve().parent), 'PluginDir': Path(__file__).resolve().parent}
+    print("Running in non-plugin mode!", file=sys.stderr)
+
 stash = StashInterface(FRAGMENT_SERVER)
 PLUGINCONFIGURATION = stash.get_configuration()["plugins"]
 STASHCONFIGURATION = stash.get_configuration()["general"]
@@ -69,12 +102,12 @@ stashPaths = []
 settings = {
     "recursiveDisabled": False,
     "runCleanAfterDelete": False,
+    "runGenerateContent": False,
     "scanModified": False,
-    "zgraphqlEndpoint": DEFAULT_ENDPOINT,
     "zzdebugTracing": False,
     "zzdryRun": False,
 }
-PLUGIN_ID = "changefilemonitor"
+
 if PLUGIN_ID in PLUGINCONFIGURATION:
     settings.update(PLUGINCONFIGURATION[PLUGIN_ID])
 # ----------------------------------------------------------------------
@@ -82,6 +115,7 @@ debugTracing = settings["zzdebugTracing"]
 RECURSIVE = settings["recursiveDisabled"] == False
 SCAN_MODIFIED = settings["scanModified"]
 RUN_CLEAN_AFTER_DELETE = settings["runCleanAfterDelete"]
+RUN_GENERATE_CONTENT = settings["runGenerateContent"]
 
 for item in STASHPATHSCONFIG: 
     stashPaths.append(item["path"])
@@ -94,7 +128,7 @@ try:
     PLUGIN_ARGS_MODE    = json_input['args']["mode"]
 except:
     pass
-logger.info(f"\nStarting (debugTracing={debugTracing}) (DRY_RUN={DRY_RUN}) (PLUGIN_ARGS_MODE={PLUGIN_ARGS_MODE}) (PLUGIN_ARGS={PLUGIN_ARGS})************************************************")
+logger.info(f"\nStarting (runningInPluginMode={runningInPluginMode}) (debugTracing={debugTracing}) (DRY_RUN={DRY_RUN}) (PLUGIN_ARGS_MODE={PLUGIN_ARGS_MODE}) (PLUGIN_ARGS={PLUGIN_ARGS})************************************************")
 if debugTracing: logger.info(f"Debug Tracing (stash.get_configuration()={stash.get_configuration()})................")
 if debugTracing: logger.info("settings: %s " % (settings,))
 if debugTracing: logger.info(f"Debug Tracing (STASHCONFIGURATION={STASHCONFIGURATION})................")
@@ -104,11 +138,6 @@ if DRY_RUN:
     logger.info("Dry run mode is enabled.")
     dry_run_prefix = "Would've "
 if debugTracing: logger.info("Debug Tracing................")
-# ToDo: Add split logic here to slpit possible string array into an array
-endpoint = settings["zgraphqlEndpoint"] # GraphQL endpoint
-if not endpoint or endpoint == "":
-    endpoint = DEFAULT_ENDPOINT
-if debugTracing: logger.info(f"Debug Tracing (endpoint={endpoint})................")
 # ----------------------------------------------------------------------
 # **********************************************************************
 if debugTracing: logger.info(f"Debug Tracing (SCAN_MODIFIED={SCAN_MODIFIED}) (RECURSIVE={RECURSIVE})................")
@@ -207,48 +236,53 @@ def start_library_monitor():
                     stash.metadata_scan(paths=TmpTargetPaths)
                 if RUN_CLEAN_AFTER_DELETE and RunCleanMetadata:
                     stash.metadata_clean(paths=TmpTargetPaths, dry_run=DRY_RUN)
-                stash.run_plugin_task(plugin_id=PLUGIN_ID, task_name="Start Library Monitor")
-                if debugTracing: logger.info("Exiting plugin so that metadata_scan task can run.")
-                return
+                if RUN_GENERATE_CONTENT:
+                    stash.metadata_generate()
+                if gettingCalledAsStashPlugin and shm_buffer[0] == CONTINUE_RUNNING_SIG:
+                    stash.run_plugin_task(plugin_id=PLUGIN_ID, task_name="Start Library Monitor")
+                    if debugTracing: logger.info("Exiting plugin so that metadata_scan task can run.")
+                    return
             else:
                 if debugTracing: logger.info("Nothing to scan.")
             if shm_buffer[0] != CONTINUE_RUNNING_SIG:
                 logger.info(f"Exiting Change File Monitor. (shm_buffer[0]={shm_buffer[0]})")
                 shm_a.close()
                 shm_a.unlink()  # Call unlink only once to release the shared memory
-                time.sleep(1)
-                break
+                raise KeyboardInterrupt
     except KeyboardInterrupt:
         observer.stop()
         if debugTracing: logger.info("Stopping observer................")
     observer.join()
     if debugTracing: logger.info("Exiting function................")
 
-# stop_library_monitor does not work because only one task can run at a time. 
-# def stop_library_monitor():
-    # if debugTracing: logger.info("Opening shared memory map.")
-    # try:
-        # shm_a = shared_memory.SharedMemory(name="DavidMaisonaveAxter_ChangeFileMonitor", create=False, size=4)
-    # except:
-        # pass
-        # logger.info("Could not open shared memory map. Change File Monitor must not be running.")
-        # return
-    # type(shm_a.buf)
-    # shm_buffer = shm_a.buf
-    # len(shm_buffer)
-    # shm_buffer[0] = 123
-    # if debugTracing: logger.info(f"Shared memory map opended, and flag set to {shm_buffer[0]}")
-    # shm_a.close()
-    # shm_a.unlink()  # Call unlink only once to release the shared memory
-    # time.sleep(1)
-    # return
+# This function is only useful when called outside of Stash. 
+#       Example: python changefilemonitor.py stop
+# Stops monitoring after triggered by the next file change.
+# ToDo: Add logic so it doesn't have to wait until the next file change
+def stop_library_monitor():
+    if debugTracing: logger.info("Opening shared memory map.")
+    try:
+        shm_a = shared_memory.SharedMemory(name="DavidMaisonaveAxter_ChangeFileMonitor", create=False, size=4)
+    except:
+        pass
+        logger.info("Could not open shared memory map. Change File Monitor must not be running.")
+        return
+    type(shm_a.buf)
+    shm_buffer = shm_a.buf
+    len(shm_buffer)
+    shm_buffer[0] = 123
+    if debugTracing: logger.info(f"Shared memory map opended, and flag set to {shm_buffer[0]}")
+    shm_a.close()
+    shm_a.unlink()  # Call unlink only once to release the shared memory
+    time.sleep(1)
+    return
     
-if PLUGIN_ARGS_MODE == "start_library_monitor":
+if stopLibraryMonitoring:
+    stop_library_monitor()
+    if debugTracing: logger.info(f"stop_library_monitor EXIT................")
+elif PLUGIN_ARGS_MODE == "start_library_monitor" or not gettingCalledAsStashPlugin:
     start_library_monitor()
     if debugTracing: logger.info(f"start_library_monitor EXIT................")
-# elif PLUGIN_ARGS_MODE == "stop_library_monitor":
-    # stop_library_monitor()
-    # if debugTracing: logger.info(f"stop_library_monitor EXIT................")
 else:
     logger.info(f"Nothing to do!!! (PLUGIN_ARGS_MODE={PLUGIN_ARGS_MODE})")
 
