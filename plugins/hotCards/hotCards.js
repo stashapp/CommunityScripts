@@ -329,7 +329,7 @@
       );
 
       if (segmentParams) {
-        const classId = segmentParams.value.join("-");
+        const classId = segmentParams.value.join("-").replace(/\./g, "-");
         createHotElementAndAttachToDOM(card, cardClass, classId, isHome);
         checkHoloCardsAndAttachToDOM(
           cardClass,
@@ -428,7 +428,7 @@
     if (hotCardClasses.length === 0 || !hotCardContainsAllClasses) {
       const pseudoElementStyles = value.map((segment, index) => {
         const segmentOrValue = Array.isArray(segment) ? segment : value;
-        const classId = segmentOrValue.join("-");
+        const classId = segmentOrValue.join("-").replace(/\./g, "-");
         const hotCardClass = `.hot-${card.class}-${classId}`;
 
         // Skip if the hot card class is already present
