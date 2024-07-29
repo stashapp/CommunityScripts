@@ -19,7 +19,6 @@ from renamefile_settings import config # Import settings from renamefile_setting
 # Constant global variables --------------------------------------------
 LOG_FILE_PATH = log_file_path = f"{Path(__file__).resolve().parent}\\{Path(__file__).stem}.log"
 FORMAT = "[%(asctime)s - LN:%(lineno)s] %(message)s"
-DEFAULT_ENDPOINT = "http://localhost:9999/graphql" # Default GraphQL endpoint
 DEFAULT_FIELD_KEY_LIST = "title,performers,studio,tags" # Default Field Key List with the desired order
 PLUGIN_ID = Path(__file__).stem.lower()
 DEFAULT_SEPERATOR = "-"
@@ -58,9 +57,10 @@ logger = logging.getLogger(PLUGIN_ID)
 # ----------------------------------------------------------------------
 # Code section to fetch variables from Plugin UI and from renamefile_settings.py
 json_input = json.loads(sys.stdin.read())
-FRAGMENT_SERVER = json_input["server_connection"]
+FRAGMENT_SERVER = json_input['server_connection']
 stash = StashInterface(FRAGMENT_SERVER)
 pluginConfiguration = stash.get_configuration()["plugins"]
+
 settings = {
     "performerAppend": False,
     "studioAppend": False,
@@ -68,11 +68,8 @@ settings = {
     "z_keyFIeldsIncludeInFileName": False,
     "zafileRenameViaMove": False,
     "zfieldKeyList": DEFAULT_FIELD_KEY_LIST,
-    "zgraphqlEndpoint": DEFAULT_ENDPOINT,
     "zmaximumTagKeys": 12,
-    "zpathToExclude": "",
     "zseparators": DEFAULT_SEPERATOR,
-    "ztagWhitelist": "",
     "zzdebugTracing": False,
     "zzdryRun": False,
 }
@@ -95,11 +92,19 @@ except:
     pass
 logger.info(f"\nStarting (debugTracing={debugTracing}) (dry_run={dry_run}) (PLUGIN_ARGS_MODE={PLUGIN_ARGS_MODE}) (inputToUpdateScenePost={inputToUpdateScenePost})************************************************")
 if debugTracing: logger.info("settings: %s " % (settings,))
-# if PLUGIN_ID in pluginConfiguration:
-    # if debugTracing: logger.info(f"Debug Tracing (pluginConfiguration[PLUGIN_ID]={pluginConfiguration[PLUGIN_ID]})................")
+
+if PLUGIN_ID in pluginConfiguration:
+    if debugTracing: logger.info(f"Debug Tracing (pluginConfiguration[PLUGIN_ID]={pluginConfiguration[PLUGIN_ID]})................")
     # if 'zmaximumTagKeys' not in pluginConfiguration[PLUGIN_ID]:
         # if debugTracing: logger.info("Debug Tracing................")
-        # stash.configure_plugin(PLUGIN_ID, settings) # , init_defaults=True
+        # try:
+            # stash.configure_plugin(PLUGIN_ID, settings)
+            # stash.configure_plugin("renamefile", {"zmaximumTagKeys": 12})
+        # except Exception as e:
+            # logger.error(f"configure_plugin failed!!! Error: {e}")
+            # logger.exception('Got exception on main handler')
+            # pass
+        # # stash.configure_plugin(PLUGIN_ID, settings) # , init_defaults=True
     # if debugTracing: logger.info("Debug Tracing................")
 
 if dry_run:
@@ -109,18 +114,21 @@ if debugTracing: logger.info("Debug Tracing................")
 max_tag_keys = settings["zmaximumTagKeys"] if settings["zmaximumTagKeys"] != 0 else 12 # Need this incase use explicitly sets value to zero in UI
 if debugTracing: logger.info("Debug Tracing................")
 # ToDo: Add split logic here to slpit possible string array into an array
-exclude_paths = settings["zpathToExclude"]
+exclude_paths = config["pathToExclude"]
 exclude_paths = exclude_paths.split()
 if debugTracing: logger.info(f"Debug Tracing (exclude_paths={exclude_paths})................")
 # Extract tag whitelist from settings
-tag_whitelist = settings["ztagWhitelist"]
+tag_whitelist = config["tagWhitelist"]
 if debugTracing: logger.info("Debug Tracing................")
 if not tag_whitelist:
     tag_whitelist = ""
 if debugTracing: logger.info(f"Debug Tracing (tag_whitelist={tag_whitelist})................")
-endpoint = settings["zgraphqlEndpoint"] # GraphQL endpoint
-if not endpoint or endpoint == "":
-    endpoint = DEFAULT_ENDPOINT
+
+endpointHost = json_input['server_connection']['Host']
+if endpointHost == "0.0.0.0":
+    endpointHost = "localhost"
+endpoint = f"{json_input['server_connection']['Scheme']}://{endpointHost}:{json_input['server_connection']['Port']}/graphql"
+
 if debugTracing: logger.info(f"Debug Tracing (endpoint={endpoint})................")
 # Extract rename_files and move_files settings from renamefile_settings.py
 rename_files = config["rename_files"]

@@ -20,6 +20,7 @@ from watchdog.observers import Observer # This is also needed for event attribut
 import watchdog  # pip install watchdog  # https://pythonhosted.org/watchdog/
 from threading import Lock, Condition
 from multiprocessing import shared_memory
+from changefilemonitor_config import config # Import settings from changefilemonitor_config.py
 
 # **********************************************************************
 # Constant global variables --------------------------------------------
@@ -91,7 +92,7 @@ if gettingCalledAsStashPlugin and StdInRead:
     FRAGMENT_SERVER = json_input["server_connection"]
 else:
     runningInPluginMode = False
-    FRAGMENT_SERVER = {'Scheme': 'http', 'Host': '0.0.0.0', 'Port': 9999, 'SessionCookie': {'Name': 'session', 'Value': '', 'Path': '', 'Domain': '', 'Expires': '0001-01-01T00:00:00Z', 'RawExpires': '', 'MaxAge': 0, 'Secure': False, 'HttpOnly': False, 'SameSite': 0, 'Raw': '', 'Unparsed': None}, 'Dir': os.path.dirname(Path(__file__).resolve().parent), 'PluginDir': Path(__file__).resolve().parent}
+    FRAGMENT_SERVER = {'Scheme': config['endpoint_Scheme'], 'Host': config['endpoint_Host'], 'Port': config['endpoint_Port'], 'SessionCookie': {'Name': 'session', 'Value': '', 'Path': '', 'Domain': '', 'Expires': '0001-01-01T00:00:00Z', 'RawExpires': '', 'MaxAge': 0, 'Secure': False, 'HttpOnly': False, 'SameSite': 0, 'Raw': '', 'Unparsed': None}, 'Dir': os.path.dirname(Path(__file__).resolve().parent), 'PluginDir': Path(__file__).resolve().parent}
     print("Running in non-plugin mode!", file=sys.stderr)
 
 stash = StashInterface(FRAGMENT_SERVER)
@@ -102,7 +103,6 @@ stashPaths = []
 settings = {
     "recursiveDisabled": False,
     "runCleanAfterDelete": False,
-    "runGenerateContent": False,
     "scanModified": False,
     "zzdebugTracing": False,
     "zzdryRun": False,
@@ -115,7 +115,7 @@ debugTracing = settings["zzdebugTracing"]
 RECURSIVE = settings["recursiveDisabled"] == False
 SCAN_MODIFIED = settings["scanModified"]
 RUN_CLEAN_AFTER_DELETE = settings["runCleanAfterDelete"]
-RUN_GENERATE_CONTENT = settings["runGenerateContent"]
+RUN_GENERATE_CONTENT = config['runGenerateContent']
 
 for item in STASHPATHSCONFIG: 
     stashPaths.append(item["path"])

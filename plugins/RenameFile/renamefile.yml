@@ -27,25 +27,13 @@ settings:
     displayName: Key Fields
     description: '(Default=title,performers,studio,tags) Define key fields to use to format the file name. This is a comma seperated list, and the list should be in the desired format order. For example, if the user wants the performers name before the title, set the performers name first. Example:"performers,title,tags". This is an example of user adding height:"title,performers,tags,height"  Here''s an example using all of the supported fields: "title,performers,tags,studio,galleries,resolution,width,height,video_codec,frame_rate,date".'
     type: STRING
-  zgraphqlEndpoint:
-    displayName: GraphQL Endpoint
-    description: (Default=http://localhost:9999/graphql). Update with your endpoint, or leave blank to use default.
-    type: STRING
   zmaximumTagKeys:
     displayName: Max Tag Keys
     description: (Default=12) Maximum quantity of tag keys to append to file name. 0=Default(12); -1=No tags appended.
     type: NUMBER
-  zpathToExclude:
-    displayName: Exclude Path
-    description: 'Add path(s) to exclude from RenameFile. Example Usage: r"/path/to/exclude1"  When entering multiple paths, use space. Example: r"/path_1_to/exclude" r"/someOtherPath2Exclude" r"/yetAnotherPath"'
-    type: STRING
   zseparators:
     displayName: Separator
     description: '(Default=-) Define the separator to use between different parts of the filename. Example Usage: ","'
-    type: STRING
-  ztagWhitelist:
-    displayName: Tag Whitelist
-    description: 'Define a whitelist of allowed tags or EMPTY to allow all tags. Example Usage: "tag1", "tag2", "tag3"'
     type: STRING
   zzdebugTracing:
     displayName: Debug Tracing
