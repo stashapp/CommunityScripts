@@ -14,7 +14,7 @@ ui:
 settings:
   addBannerDimension:
     displayName: 3D rating banner
-    description: "Adds aditional dimension to the rating banners."
+    description: "Adds additional dimension to the rating banners."
     type: BOOLEAN
   fileCount:
     displayName: Enable for file count
@@ -22,5 +22,5 @@ settings:
     type: BOOLEAN
   performerProfileCards:
     displayName: Performer profile cards
-    description: "Tweaks performers cards to use a traditional profile design."
+    description: "Tweaks performer cards to use a traditional profile design."
     type: BOOLEAN
