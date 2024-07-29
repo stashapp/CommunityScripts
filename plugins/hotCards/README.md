@@ -239,8 +239,6 @@ You can specify `__gold` for the card type you want the **gold** preset to be ap
 
 ![Holo](/plugins/hotCards/assets/holo.png)
 
-**Important**: Currently, the Holo style preset only works well with **performer** cards. It should not be used with any other card type until a workaround is found.
-
 You can specify `__holo` for the card type you want the **holo** preset to be applied and it will use the configured Tag ID or Rating Threshold.
 
 **Note**: _By default, the animation of the holographic effect is disabled, you can enable it by running: `__holo___,,true`._
