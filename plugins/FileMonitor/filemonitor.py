@@ -1,8 +1,8 @@
 # Description: This is a Stash plugin which updates Stash if any changes occurs in the Stash library paths.
 # By David Maisonave (aka Axter) Jul-2024 (https://www.axter.com/)
-# Get the latest developers version from following link: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/ChangeFileMonitor
+# Get the latest developers version from following link: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
 # Note: To call this script outside of Stash, pass any argument. 
-#       Example:    python changefilemonitor.py foofoo
+#       Example:    python filemonitor.py foofoo
 import os
 import sys
 import time
@@ -20,7 +20,7 @@ from watchdog.observers import Observer # This is also needed for event attribut
 import watchdog  # pip install watchdog  # https://pythonhosted.org/watchdog/
 from threading import Lock, Condition
 from multiprocessing import shared_memory
-from changefilemonitor_config import config # Import settings from changefilemonitor_config.py
+from filemonitor_config import config # Import settings from filemonitor_config.py
 
 # **********************************************************************
 # Constant global variables --------------------------------------------
@@ -64,7 +64,7 @@ logger = logging.getLogger(Path(__file__).stem)
     
 # **********************************************************************
 # ----------------------------------------------------------------------
-# Code section to fetch variables from Plugin UI and from changefilemonitor_settings.py
+# Code section to fetch variables from Plugin UI and from filemonitor_settings.py
 # Check if being called as Stash plugin
 gettingCalledAsStashPlugin = True
 stopLibraryMonitoring = False
@@ -147,7 +147,7 @@ def start_library_monitor():
     global TargetPaths    
     try:
         # Create shared memory buffer which can be used as singleton logic or to get a signal to quit task from external script
-        shm_a = shared_memory.SharedMemory(name="DavidMaisonaveAxter_ChangeFileMonitor", create=True, size=4)
+        shm_a = shared_memory.SharedMemory(name="DavidMaisonaveAxter_FileMonitor", create=True, size=4)
     except:
         pass
         logger.info("Could not open shared memory map. Change File Monitor must be running. Can not run multiple instance of Change File Monitor.")
@@ -256,13 +256,13 @@ def start_library_monitor():
     if debugTracing: logger.info("Exiting function................")
 
 # This function is only useful when called outside of Stash. 
-#       Example: python changefilemonitor.py stop
+#       Example: python filemonitor.py stop
 # Stops monitoring after triggered by the next file change.
 # ToDo: Add logic so it doesn't have to wait until the next file change
 def stop_library_monitor():
     if debugTracing: logger.info("Opening shared memory map.")
     try:
-        shm_a = shared_memory.SharedMemory(name="DavidMaisonaveAxter_ChangeFileMonitor", create=False, size=4)
+        shm_a = shared_memory.SharedMemory(name="DavidMaisonaveAxter_FileMonitor", create=False, size=4)
     except:
         pass
         logger.info("Could not open shared memory map. Change File Monitor must not be running.")

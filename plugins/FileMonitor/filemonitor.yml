@@ -1,7 +1,7 @@
-name: ChangeFileMonitor
+name: FileMonitor
 description: Monitors the Stash library folders, and updates Stash if any changes occurs in the Stash library paths.
-version: 0.1.0
-url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/ChangeFileMonitor
+version: 0.2.0
+url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
 settings:
   recursiveDisabled:
     displayName: No Recursive
@@ -17,7 +17,7 @@ settings:
     type: BOOLEAN
   zzdebugTracing:
     displayName: Debug Tracing
-    description: (Default=false) [***For Advanced Users***] Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\ChangeFileMonitor\changefilemonitor.log
+    description: (Default=false) [***For Advanced Users***] Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\FileMonitor\filemonitor.log
     type: BOOLEAN
   zzdryRun:
     displayName: Dry Run
@@ -25,7 +25,7 @@ settings:
     type: BOOLEAN
 exec:
   - python
-  - "{pluginDir}/changefilemonitor.py"
+  - "{pluginDir}/filemonitor.py"
 interface: raw
 tasks:
   - name: Start Library Monitor
