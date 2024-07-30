@@ -30,8 +30,7 @@ function waitForClass(className, callback) {
   }, checkInterval);
 }
 
-function waitForImageLoad(selector, callback) {
-  var imgEl = document.querySelector(selector);
-  if (imgEl?.complete) return callback(imgEl);
-  setTimeout(waitForImageLoad, 100, selector, callback);
+function waitForImageLoad(imageEl, callback) {
+  if (imageEl.complete) return callback(imageEl);
+  setTimeout(waitForImageLoad, 100, imageEl, callback);
 }

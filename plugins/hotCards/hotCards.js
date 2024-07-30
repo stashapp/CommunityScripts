@@ -640,8 +640,10 @@
     const isImageOrSceneCard = classInArray && !isStudioCard;
     const classSuffix = isImageOrSceneCard ? "preview-image" : "image";
     const imgClass = `.${cardClass}-${classSuffix}`;
-
     const targetEl = hotCardEl.querySelector(imgClass);
+
+    if (!targetEl) return;
+
     const holoEl = createElementFromHTML(`<div class="holo"></div>`);
     const shineEl = createElementFromHTML(`<div class="shine"></div>`);
     const seedX = getRandomInt(100);
@@ -670,7 +672,7 @@
     holoEl.append(shineEl);
     applyInitialStyles();
 
-    waitForImageLoad(imgClass, () => {
+    waitForImageLoad(targetEl, () => {
       const hotBorderEl = hotCardEl.querySelector(".hot-border");
       const studioCardMarginSize = 5;
       const isSceneCard = cardClass === "scene-card";
