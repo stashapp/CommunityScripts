@@ -42,6 +42,15 @@ def initialize(connection):
 
 # ----------------- Tag Methods -----------------
 
+
+tag_categories = ["actions", "bodyparts"]
+
+def get_all_tags_from_server_result(result):
+    alltags = []
+    for category in tag_categories:
+        alltags.extend(result.get(category, []))
+    return alltags
+
 def get_tag_ids(tag_names):
     return [get_tag_id(tag_name) for tag_name in tag_names]
 
