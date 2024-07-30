@@ -1,6 +1,6 @@
 name: Timestamp Trade
 description: Sync Markers with timestamp.trade, a new database for sharing markers.
-version: 0.6
+version: 0.7
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
@@ -31,7 +31,10 @@ settings:
   createMarkers:
     displayName: Add markers from timestamp.trade
     type: BOOLEAN
-
+  path:
+    displayName: Download parent folder
+    description: Download location for files, note this should be in a different folder to stash and in a folder covered by stash. You may need to create a new library path to cover this directory.
+    type: STRING
 hooks:
   - name: Add Marker to Scene
     description: Makes Markers checking against timestamp.trade
@@ -41,7 +44,10 @@ hooks:
     description: Look up gallery metadata from timestamp.trade
     triggeredBy:
       - Gallery.Create.Post
-
+  - name: image add
+    description: Add images
+    triggeredBy:
+      - Image.Create.Post
 tasks:
   - name: "Submit"
     description: Submit markers to timestamp.trade
