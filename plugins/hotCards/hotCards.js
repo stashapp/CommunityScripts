@@ -674,6 +674,9 @@
 
     waitForImageLoad(targetEl, () => {
       const hotBorderEl = hotCardEl.querySelector(".hot-border");
+
+      if (!hotBorderEl) return;
+
       const studioCardMarginSize = 5;
       const isSceneCard = cardClass === "scene-card";
       const degreesOffset = isStudioCard ? 98 : isSceneCard ? 83 : 97;

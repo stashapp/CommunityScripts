@@ -14,20 +14,49 @@ function waitForClass(className, callback) {
   const checkInterval = 100; // ms
   const maxRetries = 30; // Timeout after 3 seconds
   let retryCount = 0;
+  let intervalId;
 
-  const intervalId = setInterval(() => {
+  function checkElements() {
     const elements = document.getElementsByClassName(className);
     if (elements.length > 0) {
-      clearInterval(intervalId);
+      clearAll();
       callback();
     } else if (retryCount >= maxRetries) {
-      clearInterval(intervalId);
+      clearAll();
       console.info(
-        `Element with class ${className} not found within timeout period`
+        `Element with class "${className}" not found within timeout period`
       );
     }
     retryCount++;
-  }, checkInterval);
+  }
+
+  function clearAll() {
+    clearInterval(intervalId);
+    removeEventListeners();
+  }
+
+  function clear() {
+    console.info(
+      `Element with class "${className}" search cancelled due to page change`
+    );
+    clearAll();
+  }
+
+  function addEventListeners() {
+    document.addEventListener("visibilitychange", clear);
+    window.addEventListener("beforeunload", clear);
+    window.addEventListener("popstate", clear);
+  }
+
+  function removeEventListeners() {
+    document.removeEventListener("visibilitychange", clear);
+    window.removeEventListener("beforeunload", clear);
+    window.removeEventListener("popstate", clear);
+  }
+
+  // Start the interval and add event listeners
+  intervalId = setInterval(checkElements, checkInterval);
+  addEventListeners();
 }
 
 function waitForImageLoad(imageEl, callback) {
