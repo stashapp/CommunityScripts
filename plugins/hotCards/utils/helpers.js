@@ -63,3 +63,16 @@ function waitForImageLoad(imageEl, callback) {
   if (imageEl.complete) return callback(imageEl);
   setTimeout(waitForImageLoad, 100, imageEl, callback);
 }
+
+/** History */
+
+function overrideHistoryMethods(callback) {
+  ["pushState", "replaceState"].forEach((method) => {
+    const original = history[method];
+    history[method] = function () {
+      const result = original.apply(this, arguments);
+      callback();
+      return result;
+    };
+  });
+}

@@ -7,10 +7,10 @@ ui:
   requires:
     - CommunityScriptsUILibrary
   javascript:
+    - utils/helpers.js
     - utils/fetchInterceptor.js
     - utils/stashHandler.js
     - utils/registerPathChangeListener.js
-    - utils/helpers.js
     - hotCards.js
   css:
     - hotCards.css

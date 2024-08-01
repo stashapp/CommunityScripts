@@ -165,8 +165,12 @@
    */
   function handleHomeHotCards() {
     const pattern = /^\/$/;
+    let timeoutId;
+
+    overrideHistoryMethods(() => clearTimeout(timeoutId));
+
     registerPathChangeListener(pattern, () => {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         for (const card of Object.values(CARDS))
           if (card.enabled) handleHotCards(card, true);
       }, 3000);
@@ -871,11 +875,5 @@
     hotCards.length = 0;
   }
 
-  ["pushState", "replaceState"].forEach((method) => {
-    const original = history[method];
-    history[method] = function () {
-      restoreCards();
-      return original.apply(this, arguments);
-    };
-  });
+  overrideHistoryMethods(restoreCards);
 })();
