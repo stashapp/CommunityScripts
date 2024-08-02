@@ -419,12 +419,6 @@
     return hotElement;
   }
 
-  function createElementFromHTML(htmlString) {
-    const div = document.createElement("div");
-    div.innerHTML = htmlString.trim();
-    return div.firstChild;
-  }
-
   /**
    * Sets the style of the hot card based on the user's configuration.
    */
