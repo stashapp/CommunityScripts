@@ -30,7 +30,6 @@
   --my: 50%;
   --radius: 4.55% / 3.5%;
   --space: 1%;
-  --angle: 0deg;
   --imgsize: 50%;
 
   --color1: rgb(255, 119, 115) calc(var(--space) * 1);

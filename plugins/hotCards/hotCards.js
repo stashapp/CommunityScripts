@@ -165,8 +165,12 @@
    */
   function handleHomeHotCards() {
     const pattern = /^\/$/;
+    let timeoutId;
+
+    overrideHistoryMethods(() => clearTimeout(timeoutId));
+
     registerPathChangeListener(pattern, () => {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         for (const card of Object.values(CARDS))
           if (card.enabled) handleHotCards(card, true);
       }, 3000);
@@ -640,8 +644,10 @@
     const isImageOrSceneCard = classInArray && !isStudioCard;
     const classSuffix = isImageOrSceneCard ? "preview-image" : "image";
     const imgClass = `.${cardClass}-${classSuffix}`;
-
     const targetEl = hotCardEl.querySelector(imgClass);
+
+    if (!targetEl) return;
+
     const holoEl = createElementFromHTML(`<div class="holo"></div>`);
     const shineEl = createElementFromHTML(`<div class="shine"></div>`);
     const seedX = getRandomInt(100);
@@ -670,8 +676,11 @@
     holoEl.append(shineEl);
     applyInitialStyles();
 
-    waitForImageLoad(imgClass, () => {
+    waitForImageLoad(targetEl, () => {
       const hotBorderEl = hotCardEl.querySelector(".hot-border");
+
+      if (!hotBorderEl) return;
+
       const studioCardMarginSize = 5;
       const isSceneCard = cardClass === "scene-card";
       const degreesOffset = isStudioCard ? 98 : isSceneCard ? 83 : 97;
@@ -866,11 +875,5 @@
     hotCards.length = 0;
   }
 
-  ["pushState", "replaceState"].forEach((method) => {
-    const original = history[method];
-    history[method] = function () {
-      restoreCards();
-      return original.apply(this, arguments);
-    };
-  });
+  overrideHistoryMethods(restoreCards);
 })();
