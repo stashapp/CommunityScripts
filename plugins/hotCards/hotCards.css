@@ -16,7 +16,7 @@
 .hot-border:hover {
   box-shadow:
     0px 0px 1em var(--hover-color),
-    0px 0px 2em var(--hover-color);
+    0px 0px 2em var(--hover-color) !important;
   animation: none !important;
 }
 

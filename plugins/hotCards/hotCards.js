@@ -16,7 +16,7 @@
     },
     hover_opts: {
       color: "transparent",
-      animation: "",
+      animation: "none",
     },
     card_opts: {
       fill: true,
@@ -589,13 +589,16 @@
     const gradientAnimationStr = gradientAnimation
       ? `animation: move ${gradientAnimation};`
       : "";
-    const hoverAnimationStr = hoverOptions.animation
-      ? `animation: pulse ${hoverOptions.animation};`
-      : "";
+    const hoverAnimationStr =
+      hoverOptions.animation === "none"
+        ? "box-shadow: none;"
+        : `animation: pulse ${hoverOptions.animation};`;
     const additionalAttrStr = cardOptions.additional
       ? cardOptions.additional
       : "";
-    const fillStr = fill ? `background-color: rgba(0, 0, 0, ${opacity});` : "";
+    const fillStr = fill
+      ? `background-color: rgba(0, 0, 0, ${opacity}) !important;`
+      : "box-shadow: none;";
     const filterStr = filter ? `filter: ${filter};` : "";
 
     return `${hotCardClass}::before,
