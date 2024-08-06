@@ -1,0 +1,11 @@
+.wall-item-container:hover .marker-delete-button {
+  display: block;
+}
+
+.marker-delete-button {
+  display: none;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  opacity: 0.25;
+}
