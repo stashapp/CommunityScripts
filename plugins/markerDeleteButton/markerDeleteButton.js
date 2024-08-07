@@ -6,15 +6,18 @@
     document
       .querySelectorAll("div.wall-item-container")
       .forEach(function (node) {
+        // Insert delete button.
         var deleteButton = document.createElement("div");
         deleteButton.innerHTML = markerDeleteButton;
         node.prepend(deleteButton);
 
+        // Parse marker ID.
         var markerImg = node
           .querySelector(".wall-item-media")
           .getAttribute("src");
         var markerID = markerImg.split("/")[6];
 
+        // Register click handler.
         deleteButton.addEventListener("click", function (e) {
           deleteMarker(markerID);
         });
@@ -29,7 +32,7 @@
     });
   }
 
-  // Wait for video player to load on scene page.
+  // Wait for markers page to load.
   csLib.PathElementListener(
     "/scenes/markers",
     "div.wall",
