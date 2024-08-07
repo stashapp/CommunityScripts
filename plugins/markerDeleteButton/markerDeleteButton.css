@@ -4,8 +4,13 @@
 
 .marker-delete-button {
   display: none;
+  opacity: 0.25;
   position: absolute;
   top: 5px;
   right: 5px;
-  opacity: 0.25;
+  z-index: 999;
+}
+
+.marker-delete-button:hover {
+  opacity: 0.75;
 }
