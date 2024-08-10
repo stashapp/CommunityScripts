@@ -48,7 +48,7 @@ def run(input, output):
 
 def get_download_py_stashapp_tools(PLUGIN_DIR):
 
-	org_packagedir = sysconfig.get_paths()["purelib"]	# /usr/lib/python3.11/site-packages/usr/lib/python3.11/site-packages
+	org_packagedir = sysconfig.get_paths()["purelib"]	# /usr/lib/python3.12/site-packages
 
 	used_dir = f"{PLUGIN_DIR}"
 	create(f"{used_dir}/venv/", with_pip=True)
@@ -56,7 +56,7 @@ def get_download_py_stashapp_tools(PLUGIN_DIR):
 	# where requirements.txt is in same dir as this script
 	subprocess.run([f"{used_dir}/venv/bin/pip", "install", "-r", abspath(f"{used_dir}/packages/stashtools.txt")],stdout=None)
 
-	# venv/lib/python3.11/site-packages/stashapp_tools-
+	# venv/lib/python3.12/site-packages/stashapp_tools-
 
 	src = f"{used_dir}/venv/lib/python3.11/site-packages"
 	destination = shutil.copytree(src, org_packagedir,ignore_func,None,shutil.copy2,False,True)  
