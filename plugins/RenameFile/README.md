@@ -39,9 +39,9 @@ Error: [WinError 32] The process cannot access the file because it is being used
 To avoid this error, refresh the URL before changing the Title field.
 
 ### Requirements
-pip install -r requirements.txt
+- pip install -r requirements.txt
 - Or manually install each requirement:
-  - `pip install stashapp-tools`
+  - `pip install stashapp-tools --upgrade`
   - `pip install pyYAML`
   - `pip install requests`
 

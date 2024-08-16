@@ -17,7 +17,7 @@ from renamefile_settings import config # Import settings from renamefile_setting
 
 # **********************************************************************
 # Constant global variables --------------------------------------------
-LOG_FILE_PATH = log_file_path = f"{Path(__file__).resolve().parent}\\{Path(__file__).stem}.log"
+LOG_FILE_PATH = f"{Path(__file__).resolve().parent}\\{Path(__file__).stem}.log"
 FORMAT = "[%(asctime)s - LN:%(lineno)s] %(message)s"
 DEFAULT_FIELD_KEY_LIST = "title,performers,studio,tags" # Default Field Key List with the desired order
 PLUGIN_ID = Path(__file__).stem.lower()

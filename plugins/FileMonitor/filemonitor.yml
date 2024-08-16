@@ -1,34 +1,38 @@
 name: FileMonitor
 description: Monitors the Stash library folders, and updates Stash if any changes occurs in the Stash library paths.
-version: 0.2.0
+version: 0.8.2
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
 settings:
   recursiveDisabled:
     displayName: No Recursive
-    description: Enable stop monitoring paths recursively.
+    description: Enable to STOP monitoring paths recursively.
     type: BOOLEAN
-  runCleanAfterDelete:
-    displayName: Run Clean
-    description: Enable to run metadata clean task after file deletion.
+  turnOnScheduler:
+    displayName: Scheduler
+    description: Enable to turn on the scheduler. See filemonitor_config.py for more details.
     type: BOOLEAN
-  scanModified:
-    displayName: Scan Modifications
-    description: Enable to monitor changes in file system for modification flag. This option is NOT needed for Windows, because on Windows changes are triggered via CREATE, DELETE, and MOVE flags. Other OS may differ.
-    type: BOOLEAN
+  zmaximumBackups:
+    displayName: Max DB Backups
+    description: When value greater than 1, will trim the number of database backup files to set value. Requires [Scheduler] enabled and backupDirectoryPath populated with path length longer than 4.
+    type: NUMBER
   zzdebugTracing:
     displayName: Debug Tracing
-    description: (Default=false) [***For Advanced Users***] Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\FileMonitor\filemonitor.log
-    type: BOOLEAN
-  zzdryRun:
-    displayName: Dry Run
-    description: Enable to run script in [Dry Run] mode. In this mode, Stash does NOT call meta_scan, and only logs the action it would have taken.
+    description: Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\FileMonitor\filemonitor.log
     type: BOOLEAN
 exec:
   - python
   - "{pluginDir}/filemonitor.py"
 interface: raw
 tasks:
-  - name: Start Library Monitor
-    description: Monitors paths in Stash library for media file changes, and updates Stash.
+  - name: Start Library Monitor Service
+    description: Run [Library Monitor] as a SERVICE to update Stash with any media file changes.
+    defaultArgs:
+      mode: start_library_monitor_service
+  - name: Stop Library Monitor
+    description: Stops library monitoring within 2 minute.
+    defaultArgs:
+      mode: stop_library_monitor
+  - name: Monitor as a Plugin
+    description: Run [Library Monitor] as a plugin (*not recommended method*)
     defaultArgs:
       mode: start_library_monitor
