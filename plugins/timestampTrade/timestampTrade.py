@@ -7,12 +7,13 @@ import requests
 import json
 import time
 import math
-
+import uuid
+from pathlib import Path
 
 per_page = 100
 request_s = requests.Session()
 scrapers = {}
-
+tags_cache = {}
 
 def processScene(s):
     if "https://timestamp.trade/scene/" in [u[:30] for u in s["urls"]]:
@@ -24,6 +25,7 @@ def processScene(s):
 
 
 def processSceneTimestamTrade(s):
+    log.debug(s)
     if "https://timestamp.trade/scene/" in [u[:30] for u in s["urls"]]:
 
         for url in s["urls"]:
@@ -47,6 +49,7 @@ def processSceneTimestamTrade(s):
                         log.debug("creating markers")
                         markers = []
                         for m in data["markers"]:
+
                             marker = {
                                 "seconds": m["start_time"] / 1000,
                                 "primary_tag": None,
@@ -57,7 +60,8 @@ def processSceneTimestamTrade(s):
                                 marker["primary_tag"] = m["tag_name"]
                             else:
                                 marker["primary_tag"] = m["name"]
-                            markers.append(marker)
+                            if len(marker["primary_tag"]) > 0:
+                                markers.append(marker)
                         #                        log.debug(marker)
                         if len(markers) > 0:
                             if settings["overwriteMarkers"]:
@@ -69,7 +73,10 @@ def processSceneTimestamTrade(s):
                     needs_update = False
                     if settings["createGalleryFromScene"]:
                         for g in data["galleries"]:
+                            if len(g) ==0:
+                                break;
                             for f in g["files"]:
+                                log.debug(f)
                                 res = stash.find_galleries(
                                     f={
                                         "checksum": {
@@ -128,7 +135,6 @@ def processSceneTimestamTrade(s):
                                     if needs_update:
                                         log.info("updating gallery: %s" % (gal["id"],))
                                         stash.update_gallery(gallery_data=gallery)
-
                     if settings["extraUrls"]:
                         if "urls" in data and data["urls"]:
                             extra_urls = s["urls"]
@@ -145,6 +151,7 @@ def processSceneTimestamTrade(s):
                                 log.debug("movie: %s" % (m,))
 #                                log.debug("scene: %s" % (s,))
                                 movies = []
+                                m["urls"].append({"url":"https://timestamp.trade/movie/%s" % (m["id"],)})
                                 scene_index = None
                                 for sc in m["scenes"]:
                                     if sc["scene_id"] == data["scene_id"]:
@@ -206,7 +213,7 @@ def processSceneTimestamTrade(s):
                                                         "synopsis": movie_scrape[
                                                             "synopsis"
                                                         ],
-                                                        "url": movie_scrape["url"],
+#                                                        "url": movie_scrape["url"],
                                                         "front_image": movie_scrape[
                                                             "front_image"
                                                         ],
@@ -218,7 +225,7 @@ def processSceneTimestamTrade(s):
                                                         new_movie["name"] = m["title"]
                                                     if new_movie["date"] == "1-01-01":
                                                         new_movie["date"] = None
-                                                    if not movie_scrape["url"]:
+                                                    if not movie_scrape["urls"]:
                                                         new_movie["url"] = u["url"]
                                                     if movie_scrape["studio"]:
                                                         new_movie["studio_id"] = (
@@ -226,6 +233,8 @@ def processSceneTimestamTrade(s):
                                                                 "stored_id"
                                                             ]
                                                         )
+                                                    if settings["schema"] >= 63:
+                                                        new_movie["urls"]=[x["url"] for x in m["urls"]]
                                                     log.debug(
                                                         "new movie: %s" % (new_movie,)
                                                     )
@@ -242,10 +251,11 @@ def processSceneTimestamTrade(s):
                                         }
                                         if len(m["urls"]) > 0:
                                             new_movie["url"] = m["urls"][0]["url"]
+
                                         log.debug("new movie: %s" % (new_movie,))
                                         nm = stash.create_movie(new_movie)
                                         if nm:
-                                            movies.append(nm)
+                                            new_movie["urls"]=m["urls"]
                                 movies_to_add.extend(
                                     [
                                         {
@@ -256,14 +266,46 @@ def processSceneTimestamTrade(s):
                                     ]
                                 )
                             if len(movies_to_add) > 0:
-
-                                new_scene["movies"] = []
+                                if settings["schema"] >=64:
+                                    new_scene["movies"] = [{'movie_id':x["group"]["id"],'scene_index':x["scene_index"]} for x in s["groups"]]
+                                else:
+                                    new_scene["movies"] = [{'movie_id':x["movie"]["id"],'scene_index':x["scene_index"]} for x in s["movies"]]
                                 for m in movies_to_add:
-                                    if m["movie_id"] not in [
-                                        x["movie"]["id"] for x in s["movies"]
-                                    ]:
+                                    if m["movie_id"] not in [x["movie_id"] for x in new_scene["movies"]]:
                                         new_scene["movies"].append(m)
                                         needs_update = True
+                    log.debug(s)
+                    if getTag("[Timestamp: Auto Gallery]") in [x["id"] for x in s["tags"]]:
+                        autoGallery=True
+                        for g in s["galleries"]:
+                            gal=stash.find_gallery(g['id'])
+                            if getTag("[Timestamp: Auto Gallery]") in [x["id"] for x in gal["tags"]]:
+                                autoGallery=False
+                        if autoGallery:
+                            log.debug("creating auto gallery")
+                            # check the gallery if we have already
+                            log.debug(s["galleries"])
+                            gallery_input = {
+                                "title": s["title"],
+                                "date": s["date"],
+                                "details": s["details"],
+                                "urls": s["urls"],
+                                "scene_ids": [s["id"]],
+                                "tag_ids": [x["id"] for x in s["tags"]],
+                                "performer_ids": [x["id"] for x in s["performers"]],
+                            }
+                            if s["studio"]:
+                                gallery_input["studio_id"]=s["studio"]["id"]
+                            gallery_input["tag_ids"].append(getTag("[Timestamp: Auto Gallery]"))
+                            gallery_input["tag_ids"].append(getTag("[Timestamp: Skip Submit]"))
+                            gal = stash.create_gallery(gallery_input)
+                            new_scene["gallery_ids"]=[x["id"] for x in s["galleries"]]
+                            new_scene["gallery_ids"].append(gal)
+                            needs_update=True
+
+
+                        else:
+                            log.debug("auto gallery already exists")
 
                     if needs_update:
                         log.debug("updating scene: %s" % (new_scene,))
@@ -275,7 +317,7 @@ def processSceneStashid(s):
     if len(s["stash_ids"]) == 0:
         log.debug("no scenes to process")
         return
-    skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get("id")
+#    skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get("id")
 
     for sid in s["stash_ids"]:
         try:
@@ -294,14 +336,16 @@ def processSceneStashid(s):
                 log.debug("bad result from api, skipping")
                 return
             if "scene_id" in md:
-                s["urls"].append("https://timestamp.trade/scene/%s" % (md["scene_id"],))
                 if settings["addTimestampTradeUrl"] and "https://timestamp.trade/scene/" not in [u[:30] for u in s["urls"]]:
                     new_scene = {
                         "id": s["id"],
-                        "urls": s["urls"]
+                        "urls": s["urls"],
                     }
+                    s["urls"].append("https://timestamp.trade/scene/%s" % (md["scene_id"],))
                     log.debug("new scene update: %s" % (new_scene,))
                     stash.update_scene(new_scene)
+                else:
+                    s["urls"].append("https://timestamp.trade/scene/%s" % (md["scene_id"],))
 
         except json.decoder.JSONDecodeError:
             log.error("api returned invalid JSON for stash id: " + sid["stash_id"])
@@ -316,8 +360,10 @@ def processAll(query):
         get_count=True,
     )[0]
     log.info(str(count) + " scenes to process.")
-    i = 0
+#    i = 0
+    # 98
     for r in range(1, int(count / per_page) + 2):
+        i=(r-1)*per_page
         log.info(
             "fetching data: %s - %s %0.1f%%"
             % (
@@ -370,6 +416,15 @@ def submitScene(query):
               name
            }
        }
+       files{
+            basename
+            duration
+            size
+            fingerprints{
+                type
+                value
+            }
+      }
     galleries{
       title
       urls
@@ -421,6 +476,99 @@ def submitScene(query):
       }
     }
        """
+    if settings["schema"] >= 64:
+        scene_fgmt = """title
+           details
+           urls
+           date
+           performers{
+               name
+               stash_ids{
+                  endpoint
+                  stash_id
+               }
+           }
+           tags{
+               name
+           }
+           studio{
+               name
+               stash_ids{
+                  endpoint
+                  stash_id
+               }
+           }
+           stash_ids{
+               endpoint
+               stash_id
+           }
+           scene_markers{
+               title
+               seconds
+               primary_tag{
+                  name
+               }
+           }
+           files{
+                basename
+                duration
+                size
+                fingerprints{
+                    type
+                    value
+                }
+          }
+        galleries{
+          title
+          urls
+          date
+          details
+          tags{
+               name
+           }
+
+          studio{
+               name
+               stash_ids{
+                  endpoint
+                  stash_id
+               }
+          }
+          performers{
+               name
+               stash_ids{
+                  endpoint
+                  stash_id
+               }
+           }
+
+          files{
+            basename
+            size
+            fingerprints{
+              type
+              value
+            }
+          }
+        }
+        groups{
+            scene_index
+        	group{
+            name
+            urls
+            date
+            director
+            synopsis
+            studio{
+               name
+               stash_ids{
+                  endpoint
+                  stash_id
+               }
+            }
+          }
+        }"""
+
     count = stash.find_scenes(f=query, filter={"per_page": 1}, get_count=True)[0]
     i = 0
     for r in range(1, math.ceil(count / per_page) + 1):
@@ -520,7 +668,7 @@ def submitGallery():
         fragment=scene_fgmt,
     )[0]
 #    log.debug(count)
-    i = 0
+    i = 500
     for r in range(1, math.ceil(count / per_page) + 1):
         log.info(
             "submitting gallery: %s - %s %0.1f%%"
@@ -611,6 +759,9 @@ def processGallery(gallery):
     # ignore galleries with a url
     if len(gallery["urls"]) == 0:
         process = True
+    else:
+        if "https://timestamp.trade/scene/" in [u[:30] for u in gallery["urls"]]:
+            downloadGallery(gallery)
     # Process the gallery if it has the [Timestamp: Tag Gallery] tag
     tag_gallery_tag_id = stash.find_tag("[Timestamp: Tag Gallery]", create=True).get(
         "id"
@@ -728,6 +879,81 @@ def processGallery(gallery):
                         log.debug("bad response from api")
                         time.sleep(10)
 
+def downloadGallery(gallery):
+    dir = Path(settings["path"])
+    dir.mkdir(parents=True, exist_ok=True)
+    scene={}
+    if len(gallery["scenes"])==1:
+        scene=stash.find_scene(gallery["scenes"][0]["id"])
+        log.debug('scene: %s' % (scene,))
+
+
+
+    for url in gallery["urls"]:
+        log.debug(url)
+        if url.startswith("https://timestamp.trade/scene/"):
+            json_url = "https://timestamp.trade/json-scene/%s" % (url[30:],)
+            res = request_s.get(json_url)
+            if res.status_code == 200:
+                data = res.json()
+                log.debug(data)
+                if len(data) == 0:
+                    log.debug("no scene metadata")
+                    return
+                log.info("Processing auto Gallery")
+                counts={"gallery":1,"cover":1}
+                for i in data['images']:
+
+                    log.debug(i)
+                    # have we downloaded this image before? check for images with that url, if no results download it
+                    img= stash.find_images(f={"url": {"modifier": "EQUALS","value": i["url"]	}})
+                    if len(img) ==0:
+                        image_id=uuid.uuid4().hex
+                        image_file=Path(settings["path"]) / (image_id +'.jpg')
+                        metadata_file = Path(settings["path"]) / (image_id +".json")
+                        image_data = {
+                            "title": "%s - %s "
+                                     % (
+                                         i["type"],
+                                         counts[i["type"]],
+                                     ),
+                            "details": "",
+                            "urls": [i["url"]],
+                            "performer_ids": [],
+                            "tag_ids": [getTag("[Timestamp: Auto Gallery]"),getTag("[Timestamp: Skip Submit]")],
+                            "gallery_ids": [
+                                gallery["id"]
+                            ],
+                        }
+                        if gallery["studio"]:
+                                image_data["studio_id"]=gallery["studio"]["id"]
+                        if i["type"]=="cover":
+                            image_data["tag_ids"].append(getTag("[Timestamp: Cover]"))
+                        elif i["type"] == "gallery":
+                            image_data["tag_ids"].append(getTag("[Timestamp: Gallery Image]"))
+
+                        if scene:
+                            image_data["performer_ids"].extend([x["id"] for x in scene["performers"]])
+                        else:
+                            for p in gallery["performers"]:
+                                perf=stash.find_performers(p["name"])
+                                for p1 in perf:
+                                    image_data["performer_ids"].append(p1["id"])
+
+                        log.debug(image_data)
+                        log.info("Downloading image %s to file %s" % (i["url"],str(image_file),))
+                        r = requests.get(i["url"])
+                        if r.status_code==200:
+                            with open(metadata_file, "w") as f:
+                                json.dump(image_data, f)
+                            with open(image_file, "wb") as f:
+                                f.write(r.content)
+                                f.close()
+
+
+                        counts[i["type"]]=counts[i["type"]]+1
+    stash.metadata_scan(paths=[settings["path"]])
+
 
 def getImages(gallery_id):
     images = []
@@ -748,6 +974,34 @@ def getImages(gallery_id):
         print(img)
     print(images)
 
+def getTag(name):
+    if name not in tags_cache:
+        tag=stash.find_tag(name, create=True)
+        tags_cache[name]=tag.get("id")
+    return tags_cache[name]
+
+
+def processImages(img):
+    log.debug("image: %s" % (img,))
+    image_data = None
+    for file in [x["path"] for x in img["visual_files"]]:
+        if settings["path"] in file:
+            index_file = Path(Path(file).parent) / (Path(file).stem + ".json")
+            log.debug(index_file)
+            if index_file.exists():
+                log.debug("loading index file %s" % (index_file,))
+                with open(index_file) as f:
+                    index = json.load(f)
+                    index["id"] = img["id"]
+                    if image_data:
+                        image_data["gallery_ids"].extend(index["gallery_ids"])
+                    else:
+                        image_data = index
+    if image_data:
+        #        log.debug(image_data)
+        stash.update_image(image_data)
+
+
 
 json_input = json.loads(sys.stdin.read())
 
@@ -767,6 +1021,10 @@ settings = {
 }
 if "timestampTrade" in config:
     settings.update(config["timestampTrade"])
+
+# check the schema version for features in the dev release
+res=stash.callGQL("{systemStatus {databaseSchema}}")
+settings["schema"]=res["systemStatus"]["databaseSchema"]
 log.debug("settings: %s " % (settings,))
 
 
@@ -834,6 +1092,7 @@ if "mode" in json_input["args"]:
     elif "processGallery" == PLUGIN_ARGS:
         if "gallery_id" in json_input["args"]:
             gallery = stash.find_gallery(json_input["args"]["gallery_id"])
+            log.debug(gallery)
             processGallery(gallery)
         else:
             processGalleries()
@@ -908,3 +1167,14 @@ elif "hookContext" in json_input["args"]:
         stash.run_plugin_task(
             "timestampTrade", "Sync Gallery", args={"gallery_id": _id}
         )
+    if _type == "Gallery.Create.Post" and not settings["disableGalleryLookupHook"]:
+        #        gallery = stash.find_gallery(_id)
+        #        processGallery(gallery)
+        stash.run_plugin_task(
+            "timestampTrade", "Sync Gallery", args={"gallery_id": _id}
+        )
+
+    if _type == "Image.Create.Post":
+        img = stash.find_image(image_in=_id)
+        processImages(img)
+

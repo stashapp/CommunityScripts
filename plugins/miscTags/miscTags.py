@@ -174,7 +174,7 @@ def getPerformer(p):
         performer_cache[p['id']] = p2
         log.debug(performer_cache)
         return p2
-    return performer_cache[p]
+    return performer_cache[p['id']]
 
 
 def processGroupMakeup(tag_strings, makeup_label, count, scene, tags):

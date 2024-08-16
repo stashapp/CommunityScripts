@@ -10,14 +10,7 @@ function registerPathChangeListener(pattern, callback) {
   window.addEventListener("popstate", checkURL);
 
   // Hijack pushState and replaceState methods
-  ["pushState", "replaceState"].forEach((method) => {
-    const original = history[method];
-    history[method] = function () {
-      const result = original.apply(this, arguments);
-      checkURL();
-      return result;
-    };
-  });
+  overrideHistoryMethods(checkURL);
 
   // Initial check
   checkURL();
