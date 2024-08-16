@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import json
-import base64
 
 try:
     import stashapi.log as log
