@@ -10,10 +10,11 @@ import time
 per_page = 100
 request_s = requests.Session()
 
+TPDB_ENDPOINT = "https://theporndb.net/graphql"
 
 def processScene(scene):
     for sid in scene["stash_ids"]:
-        if sid["endpoint"] == "https://theporndb.net/graphql":
+        if sid["endpoint"] == TPDB_ENDPOINT:
             log.debug("Scene has a TPDB stash id, looking up %s " % (sid["stash_id"],))
             res = request_s.get(
                 "https://api.theporndb.net/scenes/%s" % (sid["stash_id"],)
@@ -58,7 +59,7 @@ def processAll():
     count = stash.find_scenes(
         f={
             "stash_id_endpoint": {
-                "endpoint": "https://theporndb.net/graphql",
+                "endpoint": TPDB_ENDPOINT,
                 "modifier": "NOT_NULL",
                 "stash_id": "",
             },
@@ -87,7 +88,7 @@ def processAll():
         scenes = stash.find_scenes(
             f={
                 "stash_id_endpoint": {
-                    "endpoint": "https://theporndb.net/graphql",
+                    "endpoint": TPDB_ENDPOINT,
                     "modifier": "NOT_NULL",
                     "stash_id": "",
                 },
@@ -160,11 +161,11 @@ if "tPdBmarkers" in config:
 log.debug("settings: %s " % (settings,))
 
 # Set up the auth token for tpdb
-if "https://theporndb.net/graphql" in [
+if TPDB_ENDPOINT in [
     x["endpoint"] for x in stash.get_configuration()["general"]["stashBoxes"]
 ]:
     for x in stash.get_configuration()["general"]["stashBoxes"]:
-        if x["endpoint"] == "https://theporndb.net/graphql":
+        if x["endpoint"] == TPDB_ENDPOINT:
             request_s.headers["Authorization"] = "Bearer %s" % (x["api_key"],)
 
     if "mode" in json_input["args"]:
