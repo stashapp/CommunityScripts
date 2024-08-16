@@ -27,6 +27,7 @@ class StashPluginHelper(StashInterface):
     PLUGIN_TASK_NAME = None
     PLUGIN_ID = None
     PLUGIN_CONFIGURATION = None
+    PLUGINS_PATH = None
     pluginSettings = None
     pluginConfig = None
     STASH_INTERFACE_INIT = False
@@ -165,6 +166,8 @@ class StashPluginHelper(StashInterface):
             self.PLUGIN_CONFIGURATION = self.get_configuration()["plugins"]
             self.STASH_CONFIGURATION = self.get_configuration()["general"]
             self.STASHPATHSCONFIG = self.STASH_CONFIGURATION['stashes']
+            if 'pluginsPath' in self.STASH_CONFIGURATION:
+                self.PLUGINS_PATH = self.STASH_CONFIGURATION['pluginsPath']
             for item in self.STASHPATHSCONFIG: 
                 self.STASH_PATHS.append(item["path"])
             if settings:

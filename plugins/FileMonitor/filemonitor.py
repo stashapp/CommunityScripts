@@ -45,8 +45,6 @@ stash = StashPluginHelper(
 stash.Status()
 stash.Log(f"\nStarting (__file__={__file__}) (stash.CALLED_AS_STASH_PLUGIN={stash.CALLED_AS_STASH_PLUGIN}) (stash.DEBUG_TRACING={stash.DEBUG_TRACING}) (stash.DRY_RUN={stash.DRY_RUN}) (stash.PLUGIN_TASK_NAME={stash.PLUGIN_TASK_NAME})************************************************")
 
-# stash.Log(f"{stash.find_duplicate_scenes()}")
-
 exitMsg = "Change success!!"
 mutex = Lock()
 signal = Condition(mutex)
@@ -260,8 +258,23 @@ class StashScheduler: # Stash Scheduler
             # ToDo: Add code to check if plugin is installed.
             try:
                 if 'pluginId' in task and task['pluginId'] != "":
-                    stash.Trace(f"Running plugin task pluginID={task['pluginId']}, task name = {task['task']}")
-                    stash.run_plugin_task(plugin_id=task['pluginId'], task_name=task['task'])
+                    invalidDir = False
+                    validDirMsg = ""
+                    if 'validateDir' in task and task['validateDir'] != "":
+                        invalidDir = True
+                        communityPluginPath = f"{stash.PLUGINS_PATH}{os.sep}community{os.sep}{task['validateDir']}"
+                        basePluginPath = f"{stash.PLUGINS_PATH}{os.sep}{task['validateDir']}"
+                        if os.path.exists(communityPluginPath):
+                            invalidDir = False
+                            validDirMsg = f"Valid path in {communityPluginPath}"
+                        elif os.path.exists(basePluginPath):
+                            invalidDir = False
+                            validDirMsg = f"Valid path in {basePluginPath}"
+                    if invalidDir:
+                        stash.Error(f"Could not run task '{task['task']}' because sub directory '{task['validateDir']}' does not exist under path '{stash.PLUGINS_PATH}'")
+                    else:
+                        stash.Trace(f"Running plugin task pluginID={task['pluginId']}, task name = {task['task']}. {validDirMsg}")
+                        stash.run_plugin_task(plugin_id=task['pluginId'], task_name=task['task'])
                 else:
                     stash.Error(f"Can not run task '{task['task']}', because it's an invalid task.")
                     stash.LogOnce(f"If task '{task['task']}' is supposed to be a built-in task, check for correct task name spelling.")

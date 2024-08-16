@@ -11,12 +11,13 @@ config = {
     # Note: The hour section in time MUST be a two digit number, and use military time format. Example: 1PM = "13:00" and 1AM = "01:00"
     "task_scheduler": [
          # To create a daily task, include each day of the week for the weekday field.
-        {"task" : "Auto Tag",   "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "06:00"},  # Auto Tag -> [Auto Tag] (Daily at 6AM)
-        {"task" : "Optimise Database",   "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "07:00"},  # Maintenance -> [Optimise Database] (Daily at 7AM)
+        {"task" : "Auto Tag",           "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "06:00"},  # Auto Tag -> [Auto Tag] (Daily at 6AM)
+        {"task" : "Optimise Database",  "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "07:00"},  # Maintenance -> [Optimise Database] (Daily at 7AM)
+        {"task" : "Create Tags", "pluginId" : "pathParser",  "validateDir" : "pathParser",  "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "05:00"}, # [Plugin Tasks] - > [Path Parser] -> [Create Tags]  (Daily at 5AM) : This task requires plugin [Path Parser]
         
         # The following tasks are scheduled for 3 days out of the week.
-        {"task" : "Clean",   "weekday" : "monday,wednesday,friday",  "time" : "08:00"},  # Maintenance -> [Clean] (3 days per week at 8AM)
-        {"task" : "Clean Generated Files",   "weekday" : "tuesday,thursday,saturday",  "time" : "08:00"},  # Maintenance -> [Clean Generated Files] (3 days per week at 8AM)
+        {"task" : "Clean",                  "weekday" : "monday,wednesday,friday",  "time" : "08:00"},  # Maintenance -> [Clean] (3 days per week at 8AM)
+        {"task" : "Clean Generated Files",  "weekday" : "tuesday,thursday,saturday",  "time" : "08:00"},  # Maintenance -> [Clean Generated Files] (3 days per week at 8AM)
         
         # The following tasks are scheduled weekly
         {"task" : "Generate",   "weekday" : "sunday",   "time" : "07:00"}, # Generated Content-> [Generate] (Every Sunday at 7AM)
@@ -29,11 +30,7 @@ config = {
                 # 3 = 3rd specified weekday of the month.
                 # 4 = 4th specified weekday of the month.
         # The following task is scheduled monthly
-        {"task" : "Backup",     "weekday" : "sunday",   "time" : "01:00", "monthly" : 2}, # Backup -> [Backup] 2nd sunday of the month at 1AM (01:00)
-        
-        # The following task is the syntax used for a plugins. A plugin task requires the plugin name for the [task] field, and the plugin-ID for the [pluginId] field.
-        # This task requires plugin [Path Parser], and it's disabled by default.
-        {"task" : "Create Tags", "pluginId" : "pathParser",  "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "DISABLED"}, # To enable this task change time "DISABLED" to a valid time.
+        {"task" : "Backup",     "weekday" : "sunday",   "time" : "01:00", "monthly" : 2}, # Backup -> [Backup] 2nd sunday of the month at 1AM (01:00)        
         
         # Example#A1: Task to call call_GQL API with custom input
         {"task" : "GQL", "input" : "mutation OptimiseDatabase { optimiseDatabase }", "weekday" : "sunday",   "time" : "DISABLED"}, # To enable, change "DISABLED" to valid time
@@ -62,13 +59,15 @@ config = {
         #               And days usage is discourage, because it only works if FileMonitor is running for X many days non-stop.
         # The below example tasks are done using hours and minutes, however any of these task types can be converted to a daily, weekly, or monthly syntax.
                        
-        # Example#B1: Task for calling another Stash plugin, which needs plugin name and plugin ID.
+        # Example#B1: The following task is the syntax used for a plugin. A plugin task requires the plugin name for the [task] field, and the plugin-ID for the [pluginId] field.
         {"task" : "PluginButtonName_Here", "pluginId" : "PluginId_Here", "hours" : 0}, # The zero frequency value makes this task disabled.
+        # Example#B2: Optionally, the validateDir field can be included which is used to validate that the plugin is installed either under the plugins folder or under the plugins-community folder.
+        {"task" : "PluginButtonName_Here", "pluginId" : "PluginId_Here",  "validateDir" : "UsuallySameAsPluginID", "hours" : 0}, # The zero frequency value makes this task disabled.
         
-        # Example#B2: Task to execute a command
+        # Example#B3: Task to execute a command
         {"task" : "execute", "command" : "C:\\MyPath\\HelloWorld.bat", "hours" : 0},
         
-        # Example#B3: Task to execute a command with optional args field, and using keyword <plugin_path>, which gets replaced with filemonitor.py current directory.
+        # Example#B4: Task to execute a command with optional args field, and using keyword <plugin_path>, which gets replaced with filemonitor.py current directory.
         {"task" : "execute", "command" : "<plugin_path>HelloWorld.cmd", "args" : "--name David", "minutes" : 0},
         
         # Comment out **test** tasks.
@@ -77,27 +76,28 @@ config = {
         # These tasks are usually executed before updating major releases on https://github.com/David-Maisonave/Axter-Stash/blob/main/plugins/FileMonitor
         # These tasks are ALWAYS executed before updating to https://github.com/stashapp/CommunityScripts
         # MUST ToDo: Always comment out below test task before checking in this code!!!
-        # {"task" : "TestBadTaskNameError",               "minutes" : 1}, # Test invalid task name
-        # {"task" : "execute",                            "minutes" : 1}, # Test invalid task (missing command)
-        # {"task" : "python",                             "minutes" : 1}, # Test invalid task (missing scripts)
-        # {"task" : "PluginWithOutID",                    "minutes" : 1}, # Test invalid task (missing pluginId)
-        # {"task" : "execute", "command" : "",            "minutes" : 1}, # Test invalid task (missing command)
-        # {"task" : "python", "script" : "",              "minutes" : 1}, # Test invalid task (missing scripts)
-        # {"task" : "PluginWithOutID", "pluginId" : "",   "minutes" : 1}, # Test invalid task (missing pluginId)
-        # {"task" : "Generate",                                                                           "weekday" : "friday",   "time" : "00:00"},
-        # {"task" : "Clean",                                                                              "weekday" : "friday",   "time" : "00:00"},
-        # {"task" : "Auto Tag",                                                                           "weekday" : "friday",   "time" : "00:00"},
-        # {"task" : "Optimise Database",                                                                  "weekday" : "friday",   "time" : "00:00"},
-        # {"task" : "Create Tags", "pluginId" : "pathParser",                                             "weekday" : "friday",   "time" : "00:00"}, # In task queue as -> Running plugin task: Create Tags
-        # {"task" : "Scan","paths": [r"B:\_\SpecialSet", r"C:\foo"],                                      "weekday" : "friday",   "time" : "00:00"},
-        # {"task" : "GQL", "input" : "mutation OptimiseDatabase { optimiseDatabase }",                    "weekday" : "friday",   "time" : "00:00"}, # In task queue as -> Optimising database...
-        # {"task" : "Clean Generated Files",                                                              "weekday" : "friday",   "time" : "00:00"},
-        # {"task" : "RenameGeneratedFiles",                                                               "weekday" : "friday",   "time" : "00:00"}, # In task queue as -> Migrating scene hashes...
-        # {"task" : "Backup", "maxBackups" : 0,                                                           "weekday" : "friday",   "time" : "00:00"}, # Does NOT show up in the Task Queue. Must check STASH log file to verify run.
-        # {"task" : "python", "script" : "<plugin_path>test_hello_world2.py",                             "weekday" : "friday",   "time" : "00:00"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'python' result=???
-        # {"task" : "python", "script" : "<plugin_path>test_hello_world.py", "detach" : False,            "weekday" : "friday",   "time" : "00:00"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'python' result=???
-        # {"task" : "execute", "command" : "<plugin_path>test_hello_world2.cmd",                          "weekday" : "friday",   "time" : "00:00"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'execute' result=???
-        # {"task" : "execute", "command" : "<plugin_path>test_hello_world.bat", "args" : "--name David",  "weekday" : "friday",   "time" : "00:00"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'execute' result=???
+        # {"task" : "TestBadTaskNameError",                       "minutes" : 1}, # Test invalid task name
+        # {"task" : "execute",                                    "minutes" : 1}, # Test invalid task (missing command)
+        # {"task" : "python",                                     "minutes" : 1}, # Test invalid task (missing scripts)
+        # {"task" : "PluginWithOutID",                            "minutes" : 1}, # Test invalid task (missing pluginId)
+        # {"task" : "execute", "command" : "",                    "minutes" : 1}, # Test invalid task (missing command)
+        # {"task" : "python", "script" : "",                      "minutes" : 1}, # Test invalid task (missing scripts)
+        # {"task" : "PluginWithOutID", "pluginId" : "",           "minutes" : 1}, # Test invalid task (missing pluginId)
+        # {"task" : "Foo","pluginId":"foo","validateDir":"foo",   "minutes" : 1}, # Test invalid task (missing plugin directory)
+        # {"task" : "Generate",                                                                           "weekday" : "friday",   "time" : "12:03"},
+        # {"task" : "Clean",                                                                              "weekday" : "friday",   "time" : "12:03"},
+        # {"task" : "Auto Tag",                                                                           "weekday" : "friday",   "time" : "12:03"},
+        # {"task" : "Optimise Database",                                                                  "weekday" : "friday",   "time" : "12:03"},
+        # {"task" : "Create Tags", "pluginId" : "pathParser",  "validateDir" : "pathParser",              "weekday" : "friday",   "time" : "12:03"}, # In task queue as -> Running plugin task: Create Tags
+        # {"task" : "Scan","paths": [r"B:\_\SpecialSet", r"C:\foo"],                                      "weekday" : "friday",   "time" : "12:03"},
+        # {"task" : "GQL", "input" : "mutation OptimiseDatabase { optimiseDatabase }",                    "weekday" : "friday",   "time" : "12:03"}, # In task queue as -> Optimising database...
+        # {"task" : "Clean Generated Files",                                                              "weekday" : "friday",   "time" : "12:03"},
+        # {"task" : "RenameGeneratedFiles",                                                               "weekday" : "friday",   "time" : "12:03"}, # In task queue as -> Migrating scene hashes...
+        # {"task" : "Backup", "maxBackups" : 0,                                                           "weekday" : "friday",   "time" : "12:03"}, # Does NOT show up in the Task Queue. Must check STASH log file to verify run.
+        # {"task" : "python", "script" : "<plugin_path>test_hello_world2.py",                             "weekday" : "friday",   "time" : "12:03"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'python' result=???
+        # {"task" : "python", "script" : "<plugin_path>test_hello_world.py", "detach" : False,            "weekday" : "friday",   "time" : "12:03"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'python' result=???
+        # {"task" : "execute", "command" : "<plugin_path>test_hello_world2.cmd",                          "weekday" : "friday",   "time" : "12:03"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'execute' result=???
+        # {"task" : "execute", "command" : "<plugin_path>test_hello_world.bat", "args" : "--name David",  "weekday" : "friday",   "time" : "12:03"}, # Does NOT show up in the Task Queue. Check FileMonitor log file, and look for -> Task 'execute' result=???
     ],
     
     # Timeout in seconds. This is how often FileMonitor will check the scheduler and (in-plugin mode) check if another job (Task) is in the queue.
