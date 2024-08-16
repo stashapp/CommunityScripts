@@ -1,4 +1,3 @@
-stashapp-tools
+stashapp-tools >= 0.2.49
 pyYAML
 watchdog
-requests
