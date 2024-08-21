@@ -66,7 +66,7 @@ settings = {
     "studioAppend": False,
     "tagAppend": False,
     "z_keyFIeldsIncludeInFileName": False,
-    "zafileRenameViaMove": False,
+    "zafileRenameViaRaname": False,
     "zfieldKeyList": DEFAULT_FIELD_KEY_LIST,
     "zmaximumTagKeys": 12,
     "zseparators": DEFAULT_SEPERATOR,
@@ -133,7 +133,7 @@ endpoint = f"{json_input['server_connection']['Scheme']}://{endpointHost}:{json_
 if debugTracing: logger.info(f"Debug Tracing (endpoint={endpoint})................")
 # Extract rename_files and move_files settings from renamefile_settings.py
 rename_files = config["rename_files"]
-move_files = settings["zafileRenameViaMove"]
+move_files = False if settings["zafileRenameViaRaname"] else True
 if debugTracing: logger.info("Debug Tracing................")
 fieldKeyList = settings["zfieldKeyList"] # Default Field Key List with the desired order
 if not fieldKeyList or fieldKeyList == "":
