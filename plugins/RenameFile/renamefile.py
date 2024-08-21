@@ -117,6 +117,7 @@ if debugTracing: logger.info("Debug Tracing................")
 exclude_paths = config["pathToExclude"]
 exclude_paths = exclude_paths.split()
 if debugTracing: logger.info(f"Debug Tracing (exclude_paths={exclude_paths})................")
+excluded_tags = config["excludeTags"]
 # Extract tag whitelist from settings
 tag_whitelist = config["tagWhitelist"]
 if debugTracing: logger.info("Debug Tracing................")
@@ -203,7 +204,9 @@ def form_filename(original_file_stem, scene_details):
         if debugTracing: logger.info(f"Debug Tracing (tag_name={tag_name})................")
         if max_tag_keys == -1 or (max_tag_keys is not None and tag_keys_added >= int(max_tag_keys)):
             return  # Skip adding more tags if the maximum limit is reached
-        
+        if tag_name in excluded_tags:
+            if debugTracing: logger.info(f"Debug Tracing EXCLUDING (tag_name={tag_name})")
+            return
         # Check if the tag name is in the whitelist
         if tag_whitelist == "" or tag_whitelist == None or (tag_whitelist and tag_name in tag_whitelist):
             if WRAPPER_STYLES.get('tag'):
@@ -261,8 +264,8 @@ def form_filename(original_file_stem, scene_details):
                 scene_date += POSTFIX_STYLES.get('date')
                 if debugTracing: logger.info("Debug Tracing................")
                 if WRAPPER_STYLES.get('date'):
-                    filename_parts.append(f"{WRAPPER_STYLES['date'][0]}{scene_date}{WRAPPER_STYLES['date'][1]}")
-                else:
+                    scene_date = f"{WRAPPER_STYLES['date'][0]}{scene_date}{WRAPPER_STYLES['date'][1]}"
+                if scene_date not in title:
                     filename_parts.append(scene_date)
         elif key == 'resolution':
             width = str(scene_details.get('files', [{}])[0].get('width', ''))  # Convert width to string
@@ -270,40 +273,40 @@ def form_filename(original_file_stem, scene_details):
             if width and height:
                 resolution = width + POSTFIX_STYLES.get('width_height_seperator') + height + POSTFIX_STYLES.get('resolution')
                 if WRAPPER_STYLES.get('resolution'):
-                    filename_parts.append(f"{WRAPPER_STYLES['resolution'][0]}{resolution}{WRAPPER_STYLES['width'][1]}")
-                else:
+                    resolution = f"{WRAPPER_STYLES['resolution'][0]}{resolution}{WRAPPER_STYLES['width'][1]}"
+                if resolution not in title:
                     filename_parts.append(resolution)
         elif key == 'width':
             width = str(scene_details.get('files', [{}])[0].get('width', ''))  # Convert width to string
             if width:
                 width += POSTFIX_STYLES.get('width')
                 if WRAPPER_STYLES.get('width'):
-                    filename_parts.append(f"{WRAPPER_STYLES['width'][0]}{width}{WRAPPER_STYLES['width'][1]}")
-                else:
+                    width = f"{WRAPPER_STYLES['width'][0]}{width}{WRAPPER_STYLES['width'][1]}"
+                if width not in title:
                     filename_parts.append(width)
         elif key == 'height':
             height = str(scene_details.get('files', [{}])[0].get('height', ''))  # Convert height to string
             if height:
                 height += POSTFIX_STYLES.get('height')
                 if WRAPPER_STYLES.get('height'):
-                    filename_parts.append(f"{WRAPPER_STYLES['height'][0]}{height}{WRAPPER_STYLES['height'][1]}")
-                else:
+                    height = f"{WRAPPER_STYLES['height'][0]}{height}{WRAPPER_STYLES['height'][1]}"
+                if height not in title:
                     filename_parts.append(height)
         elif key == 'video_codec':
             video_codec = scene_details.get('files', [{}])[0].get('video_codec', '').upper()  # Convert to uppercase
             if video_codec:
                 video_codec += POSTFIX_STYLES.get('video_codec')
                 if WRAPPER_STYLES.get('video_codec'):
-                    filename_parts.append(f"{WRAPPER_STYLES['video_codec'][0]}{video_codec}{WRAPPER_STYLES['video_codec'][1]}")
-                else:
+                    video_codec = f"{WRAPPER_STYLES['video_codec'][0]}{video_codec}{WRAPPER_STYLES['video_codec'][1]}"
+                if video_codec not in title:
                     filename_parts.append(video_codec)
         elif key == 'frame_rate':
             frame_rate = str(scene_details.get('files', [{}])[0].get('frame_rate', '')) + 'FPS'  # Convert to string and append ' FPS'
             if frame_rate:
                 frame_rate += POSTFIX_STYLES.get('frame_rate')
                 if WRAPPER_STYLES.get('frame_rate'):
-                    filename_parts.append(f"{WRAPPER_STYLES['frame_rate'][0]}{frame_rate}{WRAPPER_STYLES['frame_rate'][1]}")
-                else:
+                    frame_rate = f"{WRAPPER_STYLES['frame_rate'][0]}{frame_rate}{WRAPPER_STYLES['frame_rate'][1]}"
+                if frame_rate not in title:
                     filename_parts.append(frame_rate)
         elif key == 'galleries':
             galleries = [gallery.get('title', '') for gallery in scene_details.get('galleries', [])]

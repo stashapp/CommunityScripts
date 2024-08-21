@@ -1,4 +1,4 @@
-# RenameFile: Ver 0.4.1 (By David Maisonave)
+# RenameFile: Ver 0.4.2 (By David Maisonave)
 RenameFile is a [Stash](https://github.com/stashapp/stash) plugin which performs the following tasks.
 - **Rename Scene File Name** (On-The-Fly)
 - **Append tag names** to file name
@@ -56,4 +56,12 @@ That's it!!!
 ### Options
 - Main options are accessible in the GUI via Settings->Plugins->Plugins->[RenameFile].
 - Advanced options are avialable in the **renamefile_settings.py** file. After making changes, go to http://localhost:9999/settings?tab=plugins, and click [Reload Plugins].
+
+## Bugs and Feature Request
+Please use the following link to report RenameFile bugs:
+[RenameFile Bug Report](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Plugin_Bug&projects=&template=bug_report_plugin.yml&title=%F0%9F%AA%B2%5BRenameFile%5D+Your_Short_title)
+
+Please use the following link to report RenameFile Feature Request:[RenameFile Feature Reques](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Enhancement&projects=&template=feature_request_plugin.yml&title=%F0%9F%92%A1%EF%B8%8F%5BEnhancement%5D%3A%5BRenameFile%5D+Your_Short_title)
+
+Please do **NOT** use the feature request to include any problems associated with errors. Instead use the bug report for error issues.
 
