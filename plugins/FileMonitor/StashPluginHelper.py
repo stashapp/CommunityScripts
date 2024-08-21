@@ -1,6 +1,6 @@
 from stashapi.stashapp import StashInterface
 from logging.handlers import RotatingFileHandler
-import inspect, sys, os, pathlib, logging, json
+import re, inspect, sys, os, pathlib, logging, json
 import concurrent.futures
 from stashapi.stash_types import PhashDistance
 import __main__
@@ -30,7 +30,6 @@ class StashPluginHelper(StashInterface):
     PLUGINS_PATH = None
     pluginSettings = None
     pluginConfig = None
-    STASH_INTERFACE_INIT = False
     STASH_URL = None
     STASH_CONFIGURATION = None
     JSON_INPUT = None
@@ -41,6 +40,7 @@ class StashPluginHelper(StashInterface):
     FRAGMENT_SERVER = None
     STASHPATHSCONFIG = None
     STASH_PATHS = []
+    API_KEY = None
     
     # printTo argument
     LOG_TO_FILE = 1
@@ -61,6 +61,7 @@ class StashPluginHelper(StashInterface):
     pluginLog = None
     logLinePreviousHits = []
     thredPool = None
+    STASH_INTERFACE_INIT = False
     
     # Prefix message value
     LEV_TRACE = "TRACE: "
@@ -95,6 +96,7 @@ class StashPluginHelper(StashInterface):
                     config = None,                  # From pluginName_config.py or pluginName_setting.py
                     fragmentServer = None,
                     stash_url = None,               # Stash URL (endpoint URL) Example: http://localhost:9999
+                    apiKey = None,                  # API Key only needed when username and password set while running script via command line
                     DebugTraceFieldName = "zzdebugTracing",
                     DryRunFieldName = "zzdryRun",
                     setStashLoggerAsPluginLogger = False):              
@@ -104,7 +106,7 @@ class StashPluginHelper(StashInterface):
         if logToNormSet: self.log_to_norm = logToNormSet
         if stash_url and len(stash_url): self.STASH_URL = stash_url
         self.MAIN_SCRIPT_NAME = mainScriptName if mainScriptName != "" else __main__.__file__
-        self.PLUGIN_ID = pluginID if pluginID != "" else pathlib.Path(self.MAIN_SCRIPT_NAME).stem.lower()
+        self.PLUGIN_ID = pluginID if pluginID != "" else pathlib.Path(self.MAIN_SCRIPT_NAME).stem
         # print(f"self.MAIN_SCRIPT_NAME={self.MAIN_SCRIPT_NAME}, self.PLUGIN_ID={self.PLUGIN_ID}", file=sys.stderr)
         self.LOG_FILE_NAME = logFilePath if logFilePath != "" else f"{pathlib.Path(self.MAIN_SCRIPT_NAME).resolve().parent}{os.sep}{pathlib.Path(self.MAIN_SCRIPT_NAME).stem}.log" 
         self.LOG_FILE_DIR = pathlib.Path(self.LOG_FILE_NAME).resolve().parent 
@@ -124,11 +126,16 @@ class StashPluginHelper(StashInterface):
         if debugTracing: self.DEBUG_TRACING = debugTracing        
         if config:
             self.pluginConfig = config        
+            if 'apiKey' in self.pluginConfig and self.pluginConfig['apiKey'] != "":
+                self.FRAGMENT_SERVER['ApiKey'] = self.pluginConfig['apiKey']
             if DebugTraceFieldName in self.pluginConfig:
                 self.DEBUG_TRACING = self.pluginConfig[DebugTraceFieldName]
             if DryRunFieldName in self.pluginConfig:
                 self.DRY_RUN = self.pluginConfig[DryRunFieldName]
-                
+        
+        if apiKey and apiKey != "":
+            self.FRAGMENT_SERVER['ApiKey'] = apiKey
+        
         if len(sys.argv) > 1:
             RUNNING_IN_COMMAND_LINE_MODE = True
             if not debugTracing or not stash_url:
@@ -178,6 +185,8 @@ class StashPluginHelper(StashInterface):
                     self.DEBUG_TRACING = self.pluginSettings[DebugTraceFieldName]
                 if DryRunFieldName in self.pluginSettings:
                     self.DRY_RUN = self.pluginSettings[DryRunFieldName]
+            if 'apiKey' in self.STASH_CONFIGURATION:
+                self.API_KEY = self.STASH_CONFIGURATION['apiKey']
         if self.DEBUG_TRACING: self.LOG_LEVEL = logging.DEBUG
         
         logging.basicConfig(level=self.LOG_LEVEL, format=logFormat, datefmt=dateFmt, handlers=[RFH])
@@ -301,6 +310,9 @@ class StashPluginHelper(StashInterface):
         argsWithPython = [f"{PythonExe}"] + args
         return self.ExecuteProcess(argsWithPython,ExecDetach=ExecDetach)
     
+    def Submit(*args, **kwargs):
+        thredPool.submit(*args, **kwargs)
+    
     # Extends class StashInterface with functions which are not yet in the class
     def metadata_autotag(self, paths:list=[], performers:list=[], studios:list=[], tags:list=[]):
         query = """
@@ -343,24 +355,20 @@ class StashPluginHelper(StashInterface):
     
     def rename_generated_files(self):
         return self.call_GQL("mutation MigrateHashNaming {migrateHashNaming}")
-    # def find_duplicate_scenes(self, distance: PhashDistance=PhashDistance.EXACT, fragment=None):
-        # query = """
-            # query FindDuplicateScenes($distance: Int) {
-                # findDuplicateScenes(distance: $distance) {
-                    # ...SceneSlim
-                # }
-            # }
-        # """
-        # if fragment:
-            # query = re.sub(r'\.\.\.SceneSlim', fragment, query)
-        # else:
-            # query = """
-                # query FindDuplicateScenes($distance: Int) {
-                    # findDuplicateScenes(distance: $distance)
-                # }
-            # """    
-        # variables = { 
-            # "distance": distance
-        # }
-        # result = self.call_GQL(query, variables)
-        # return result['findDuplicateScenes']
+       
+    def find_duplicate_scenes_diff(self, distance: PhashDistance=PhashDistance.EXACT, fragment='id', duration_diff: float=10.00 ):
+        query = """
+        	query FindDuplicateScenes($distance: Int, $duration_diff: Float) {
+        		findDuplicateScenes(distance: $distance, duration_diff: $duration_diff) {
+        			...SceneSlim
+        		}
+        	}
+        """
+        if fragment:
+        	query = re.sub(r'\.\.\.SceneSlim', fragment, query)
+        else:
+        	query += "fragment SceneSlim on Scene { id  }"
+        
+        variables = { "distance": distance, "duration_diff": duration_diff }
+        result = self.call_GQL(query, variables)
+        return result['findDuplicateScenes'] 

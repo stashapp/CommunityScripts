@@ -1,7 +1,6 @@
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import stashapi.marker_parse as mp
-import os
 import sys
 import requests
 import json

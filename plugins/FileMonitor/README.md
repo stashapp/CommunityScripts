@@ -1,4 +1,4 @@
-# FileMonitor: Ver 0.8.3 (By David Maisonave)
+# FileMonitor: Ver 0.8.6 (By David Maisonave)
 FileMonitor is a [Stash](https://github.com/stashapp/stash) plugin with the following two main features:
 - Updates Stash when any file changes occurs in the Stash library.
 - **Task Scheduler**: Runs scheduled task based on the scheduler configuration in **filemonitor_config.py**.
@@ -35,7 +35,7 @@ To enable the scheduler go to **Stash->Settings->Plugins->Plugins->FileMonitor**
   - Generated Content-> [Generate] (Every Sunday at 7AM)
   - Library -> [Scan] (Weekly) (Every Sunday at 3AM)
   - Backup -> [Backup] 2nd sunday of the month at 1AM
-- The example task are disabled by default because they have a zero frequency value.
+- The example tasks are disabled by default because they either have a zero frequency value or the time field is set to **DISABLED**.
 
 To configure the schedule or to add new task, edit the **task_scheduler** section in the **filemonitor_config.py** file.
 ```` python
@@ -102,6 +102,7 @@ To configure the schedule or to add new task, edit the **task_scheduler** sectio
 ],
 ````
 - To add plugins to the task list, both the Plugin-ID and the plugin name is required. The plugin ID is usually the file name of the script without the extension.
+  - For plugin task, optionally **validateDir** field can be included that defines the plugin sub directory, which is checked to see if it exist before running the task.
 - Task can be scheduled to run monthly, weekly, hourly, and by minutes.
 - The scheduler list uses two types of syntax. One is **weekday** based, and the other is **frequency** based.
   - **weekday Based**
@@ -164,4 +165,11 @@ That's it!!!
   - The other options are self explanatory from the UI.
 - Additional options available in filemonitor_config.py. The options are well documented in the commented code.
 
+## Bugs and Feature Request
+Please use the following link to report FileMonitor bugs:
+[FileMonitor Bug Report](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Plugin_Bug&projects=&template=bug_report_plugin.yml&title=%F0%9F%AA%B2%5BFileMonitor%5D+Your_Short_title)
+
+Please use the following link to report FileMonitor Feature Request:[FileMonitor Feature Reques](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Enhancement&projects=&template=feature_request_plugin.yml&title=%F0%9F%92%A1%EF%B8%8F%5BEnhancement%5D%3A%5BFileMonitor%5D+Your_Short_title)
+
+Please do **NOT** use the feature request to include any problems associated with errors. Instead use the bug report for error issues.
 
