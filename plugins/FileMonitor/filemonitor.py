@@ -313,7 +313,7 @@ class StashScheduler: # Stash Scheduler
             pass
         return None
     
-    def checkStashIsRunning(self, task):
+    def checkStashIsRunning(self, task = {}, sleepAfterStart = 10):
         try:
             result = stash.stash_version()
         except:
@@ -349,7 +349,7 @@ class StashScheduler: # Stash Scheduler
                     stash.Error("Could not start Stash, because could not find executable Stash file '{execPath}'")
                     return None
             result = f"Execute process PID = {stash.ExecuteProcess(args)}"
-            time.sleep(10)
+            time.sleep(sleepAfterStart)
             if "RunAfter" in task and len(task['RunAfter']) > 0:
                 for runAfterTask in task['RunAfter']:
                     self.runTask(runAfterTask)
@@ -585,13 +585,15 @@ def start_library_monitor():
                 if lastScanJob['DelayedProcessTargetPaths'] != [] or len(TmpTargetPaths) > 1 or TmpTargetPaths[0] != SPECIAL_FILE_DIR:
                     if not stash.DRY_RUN:
                         if lastScanJob['id'] > -1:
+                            if stashScheduler:
+                                stashScheduler.checkStashIsRunning()
                             lastScanJob['lastStatus'] = stash.find_job(lastScanJob['id'])
                             elapsedTime = time.time() - lastScanJob['timeAddedToTaskQueue']
-                            if 'status' not in lastScanJob['lastStatus']:
+                            if lastScanJob['lastStatus'] == None or lastScanJob['lastStatus'] == "" or 'status' not in lastScanJob['lastStatus']:
                                 stash.Warn(f"Could not get a status from scan job {lastScanJob['id']}; result = {lastScanJob['lastStatus']}; Elapse-Time = {elapsedTime}")
                             else:
                                 stash.Trace(f"Last Scan Job ({lastScanJob['id']}); Status = {lastScanJob['lastStatus']['status']}; result = {lastScanJob['lastStatus']}; Elapse-Time = {elapsedTime}")
-                            if 'status' not in lastScanJob['lastStatus'] or lastScanJob['lastStatus']['status'] in JOB_ENDED_STATUSES or elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
+                            if lastScanJob['lastStatus'] == None or lastScanJob['lastStatus'] == "" or 'status' not in lastScanJob['lastStatus'] or lastScanJob['lastStatus']['status'] in JOB_ENDED_STATUSES or elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
                                 if elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
                                     stash.Warn(f"Timeout occurred waiting for scan job {lastScanJob['id']} to complete. Elapse-Time = {elapsedTime}; Max-Time={MAX_SECONDS_WAIT_SCANJOB_COMPLETE}; Scan-Path(s) = {lastScanJob['TargetPaths']}")
                                 lastScanJob['id'] = -1
