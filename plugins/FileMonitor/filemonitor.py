@@ -407,8 +407,10 @@ lastScanJob = {
     "TargetPaths": [],
     "DelayedProcessTargetPaths": [],
     "timeAddedToTaskQueue": None,
+    "timeOutDelayProcess": 1,
     "lastStatus" : ""
 }
+JOB_ENDED_STATUSES = ["FINISHED", "CANCELLED"]
 
 def start_library_monitor():
     global shouldUpdate
@@ -541,8 +543,12 @@ def start_library_monitor():
                     if stash.pluginSettings['turnOnScheduler']:
                         stashScheduler.checkSchedulePending()
                     timeOutInSeconds = SIGNAL_TIMEOUT
-                    if lastScanJob['DelayedProcessTargetPaths'] != [] and timeOutInSeconds > MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS:
-                        timeOutInSeconds = MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS
+                    if lastScanJob['DelayedProcessTargetPaths'] != [] and timeOutInSeconds > lastScanJob['timeOutDelayProcess']:
+                        if lastScanJob['timeOutDelayProcess'] < MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS:
+                            lastScanJob['timeOutDelayProcess'] = lastScanJob['timeOutDelayProcess'] * 2
+                            if lastScanJob['timeOutDelayProcess'] > MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS:
+                                lastScanJob['timeOutDelayProcess'] = MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS
+                        timeOutInSeconds = lastScanJob['timeOutDelayProcess']
                         stash.LogOnce(f"Awaiting file change-trigger, with a short timeout ({timeOutInSeconds} seconds), because of active delay path processing.")
                     else:
                         stash.LogOnce(f"Waiting for a file change-trigger. Timeout = {timeOutInSeconds} seconds.")
@@ -580,12 +586,16 @@ def start_library_monitor():
                     if not stash.DRY_RUN:
                         if lastScanJob['id'] > -1:
                             lastScanJob['lastStatus'] = stash.find_job(lastScanJob['id'])
-                            stash.Trace(f"Last Scan Job ({lastScanJob['id']}); result = {lastScanJob['lastStatus']}")
                             elapsedTime = time.time() - lastScanJob['timeAddedToTaskQueue']
-                            if ('status' in lastScanJob['lastStatus'] and lastScanJob['lastStatus']['status'] == "FINISHED") or elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
+                            if 'status' not in lastScanJob['lastStatus']:
+                                stash.Warn(f"Could not get a status from scan job {lastScanJob['id']}; result = {lastScanJob['lastStatus']}; Elapse-Time = {elapsedTime}")
+                            else:
+                                stash.Trace(f"Last Scan Job ({lastScanJob['id']}); Status = {lastScanJob['lastStatus']['status']}; result = {lastScanJob['lastStatus']}; Elapse-Time = {elapsedTime}")
+                            if 'status' not in lastScanJob['lastStatus'] or lastScanJob['lastStatus']['status'] in JOB_ENDED_STATUSES or elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
                                 if elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
                                     stash.Warn(f"Timeout occurred waiting for scan job {lastScanJob['id']} to complete. Elapse-Time = {elapsedTime}; Max-Time={MAX_SECONDS_WAIT_SCANJOB_COMPLETE}; Scan-Path(s) = {lastScanJob['TargetPaths']}")
                                 lastScanJob['id'] = -1
+                                lastScanJob['timeOutDelayProcess'] = 1
                                 if len(lastScanJob['DelayedProcessTargetPaths']) > 0:
                                     stash.Trace(f"Adding {lastScanJob['DelayedProcessTargetPaths']} to {TmpTargetPaths}")
                                     for path in lastScanJob['DelayedProcessTargetPaths']:

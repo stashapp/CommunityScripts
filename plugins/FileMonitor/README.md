@@ -1,4 +1,4 @@
-# FileMonitor: Ver 0.8.6 (By David Maisonave)
+# FileMonitor: Ver 0.8.7 (By David Maisonave)
 FileMonitor is a [Stash](https://github.com/stashapp/stash) plugin with the following two main features:
 - Updates Stash when any file changes occurs in the Stash library.
 - **Task Scheduler**: Runs scheduled task based on the scheduler configuration in **filemonitor_config.py**.
