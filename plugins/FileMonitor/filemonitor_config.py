@@ -46,6 +46,11 @@ config = {
     
     # Timeout in seconds. This is how often FileMonitor will check the scheduler and (in-plugin mode) check if another job (Task) is in the queue.
     "timeOut": 60,
+    # Timeout in seconds for delay processing of path scan jobs. This value should always be smaller than timeOut
+    "timeOutDelayProcess": 3,
+    # Maximum time to wait for a scan job to complete. Need this incase Stash gets restarted in the middle of a scan job.
+    "maxWaitTimeJobFinish": 30 * 60, # Wait 30 minutes max
+    
     # ApiKey only needed when Stash credentials are set and while calling FileMonitor via command line.
     "apiKey" : "", # Example: "eyJabccideJIUfg1NigRInD345I6dfpXVCfd.eyJ1abcDEfGheHRlHJiJklMonPQ32FsVewtsfSIsImlhdCI6MTcyMzg2NzkwOH0.5bkHU6sfs3532dsryu1ki3iFBwnd_4AHs325yHljsPw"
     # Enable to run metadata clean task after file deletion.

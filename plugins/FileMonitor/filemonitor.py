@@ -65,6 +65,8 @@ RUN_CLEAN_AFTER_DELETE = stash.pluginConfig["runCleanAfterDelete"]
 RUN_GENERATE_CONTENT = stash.pluginConfig['runGenerateContent']
 SCAN_ON_ANY_EVENT = stash.pluginConfig['onAnyEvent']
 SIGNAL_TIMEOUT = stash.pluginConfig['timeOut'] if stash.pluginConfig['timeOut'] > 0 else 1
+MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS = stash.pluginConfig['timeOutDelayProcess']
+MAX_SECONDS_WAIT_SCANJOB_COMPLETE = stash.pluginConfig['maxWaitTimeJobFinish']
 
 CREATE_SPECIAL_FILE_TO_EXIT = stash.pluginConfig['createSpecFileToExit']
 DELETE_SPECIAL_FILE_ON_STOP = stash.pluginConfig['deleteSpecFileInStop']
@@ -399,10 +401,19 @@ class StashScheduler: # Stash Scheduler
         schedule.run_pending()
         stash.TraceOnce("Pending check complete.")
 
-TargetPaths = []   
+TargetPaths = []
+lastScanJob = {
+    "id": -1,
+    "TargetPaths": [],
+    "DelayedProcessTargetPaths": [],
+    "timeAddedToTaskQueue": None,
+    "lastStatus" : ""
+}
+
 def start_library_monitor():
     global shouldUpdate
     global TargetPaths
+    global lastScanJob
     try:
         # Create shared memory buffer which can be used as singleton logic or to get a signal to quit task from external script
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=True, size=4)
@@ -529,9 +540,17 @@ def start_library_monitor():
                         break
                     if stash.pluginSettings['turnOnScheduler']:
                         stashScheduler.checkSchedulePending()
-                    stash.LogOnce("Waiting for a file change-trigger.")
-                    signal.wait(timeout=SIGNAL_TIMEOUT)
-                    if stash.pluginSettings['turnOnScheduler'] and not shouldUpdate:
+                    timeOutInSeconds = SIGNAL_TIMEOUT
+                    if lastScanJob['DelayedProcessTargetPaths'] != [] and timeOutInSeconds > MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS:
+                        timeOutInSeconds = MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS
+                        stash.LogOnce(f"Awaiting file change-trigger, with a short timeout ({timeOutInSeconds} seconds), because of active delay path processing.")
+                    else:
+                        stash.LogOnce(f"Waiting for a file change-trigger. Timeout = {timeOutInSeconds} seconds.")
+                    signal.wait(timeout=timeOutInSeconds)
+                    if lastScanJob['DelayedProcessTargetPaths'] != []:
+                        stash.TraceOnce(f"Processing delay scan for path(s) {lastScanJob['DelayedProcessTargetPaths']}")
+                        break
+                    elif stash.pluginSettings['turnOnScheduler'] and not shouldUpdate:
                         stash.TraceOnce("Checking the scheduler.")
                     elif shouldUpdate:
                         stash.LogOnce("File change trigger occurred.")
@@ -555,12 +574,39 @@ def start_library_monitor():
                     stash.Log(f"[SpFl]Detected trigger file to kill FileMonitor. {SPECIAL_FILE_NAME}", printTo = stash.LOG_TO_FILE + stash.LOG_TO_CONSOLE + stash.LOG_TO_STASH)
                 TargetPaths = []
                 TmpTargetPaths = list(set(TmpTargetPaths))
-            if TmpTargetPaths != []:
+            if TmpTargetPaths != [] or lastScanJob['DelayedProcessTargetPaths'] != []:
                 stash.Log(f"Triggering Stash scan for path(s) {TmpTargetPaths}")
-                if len(TmpTargetPaths) > 1 or TmpTargetPaths[0] != SPECIAL_FILE_DIR:
+                if lastScanJob['DelayedProcessTargetPaths'] != [] or len(TmpTargetPaths) > 1 or TmpTargetPaths[0] != SPECIAL_FILE_DIR:
                     if not stash.DRY_RUN:
-                        # ToDo: Consider using create_scene, update_scene, and destroy_scene over general method metadata_scan
-                        stash.metadata_scan(paths=TmpTargetPaths)
+                        if lastScanJob['id'] > -1:
+                            lastScanJob['lastStatus'] = stash.find_job(lastScanJob['id'])
+                            stash.Trace(f"Last Scan Job ({lastScanJob['id']}); result = {lastScanJob['lastStatus']}")
+                            elapsedTime = time.time() - lastScanJob['timeAddedToTaskQueue']
+                            if ('status' in lastScanJob['lastStatus'] and lastScanJob['lastStatus']['status'] == "FINISHED") or elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
+                                if elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
+                                    stash.Warn(f"Timeout occurred waiting for scan job {lastScanJob['id']} to complete. Elapse-Time = {elapsedTime}; Max-Time={MAX_SECONDS_WAIT_SCANJOB_COMPLETE}; Scan-Path(s) = {lastScanJob['TargetPaths']}")
+                                lastScanJob['id'] = -1
+                                if len(lastScanJob['DelayedProcessTargetPaths']) > 0:
+                                    stash.Trace(f"Adding {lastScanJob['DelayedProcessTargetPaths']} to {TmpTargetPaths}")
+                                    for path in lastScanJob['DelayedProcessTargetPaths']:
+                                        if path not in TmpTargetPaths:
+                                            TmpTargetPaths.append(path)
+                                    # TmpTargetPaths += [lastScanJob['DelayedProcessTargetPaths']]
+                                    stash.Trace(f"TmpTargetPaths = {TmpTargetPaths}")
+                                    lastScanJob['DelayedProcessTargetPaths'] = []
+                            else:
+                                if TmpTargetPaths != []:
+                                    stash.Trace(f"Adding {TmpTargetPaths} to {lastScanJob['DelayedProcessTargetPaths']}")
+                                    for path in TmpTargetPaths:
+                                        if path not in lastScanJob['DelayedProcessTargetPaths']:
+                                            lastScanJob['DelayedProcessTargetPaths'].append(path)
+                                stash.Trace(f"lastScanJob['DelayedProcessTargetPaths'] = {lastScanJob['DelayedProcessTargetPaths']}")
+                        if lastScanJob['id'] == -1:
+                            stash.Trace(f"Calling metadata_scan for paths '{TmpTargetPaths}'")
+                            lastScanJob['id'] = int(stash.metadata_scan(paths=TmpTargetPaths))
+                            lastScanJob['TargetPaths'] = TmpTargetPaths
+                            lastScanJob['timeAddedToTaskQueue'] = time.time()
+                            stash.Trace(f"metadata_scan JobId = {lastScanJob['id']}, Start-Time = {lastScanJob['timeAddedToTaskQueue']}, paths = {lastScanJob['TargetPaths']}")
                     if RUN_CLEAN_AFTER_DELETE and RunCleanMetadata:
                         stash.metadata_clean(paths=TmpTargetPaths, dry_run=stash.DRY_RUN)
                     if RUN_GENERATE_CONTENT:
