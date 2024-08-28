@@ -17,9 +17,6 @@ config = {
         # Task "Create Tags" is a plugin task. Optional fields are taskName and validateDir field. For detail usage, see examples #B1, #B2, #B3, and #B4 in filemonitor_task_examples.py
         {"task" : "pathParser", "taskName" : "Create Tags",  "validateDir" : "pathParser",  
                     "weekday" : "every",             "time" : "05:30"}, # [Plugin Tasks] - > [Path Parser] -> [Create Tags]  (Daily at 5AM) : This task requires plugin [Path Parser]
-        # The following task runs plugin DupFileManager (tag_duplicates_task) if the plugin is installed. The task runs in the background because of "taskQue" : False
-        {"task" : "DupFileManager", "taskMode" : "tag_duplicates_task",  "validateDir" : "DupFileManager",  "taskQue" : False,
-                    "weekday" : "every",   "time" : "02:30"}, # [Plugin Tasks] -> DupFileManager -> [Delete Duplicates] (Daily at 2:30AM)
         {"task" : "Optimise Database",  "weekday" : "monday,tuesday,wednesday,thursday,friday", "time" : "07:00"},  # Maintenance -> [Optimise Database] (Every weekday at 7AM)
         
         # The following tasks are scheduled weekly
@@ -30,6 +27,12 @@ config = {
         {"task" : "Clean",                  "weekday" : "saturday",   "time" : "04:30"}, # Maintenance -> [Clean] (Every saturday at 4:30AM)
         {"task" : "Clean Generated Files",  "weekday" : "saturday",   "time" : "05:00"}, # Maintenance -> [Clean Generated Files] (Every saturday at 5AM)
         {"task" : "Optimise Database",      "weekday" : "saturday",   "time" : "05:30"}, # Maintenance -> [Optimise Database] (Every saturday at 5:30AM)
+        # The following task runs plugin DupFileManager (tag_duplicates_task) if the plugin is installed. The task runs in the background because of "taskQue" : False
+        {"task" : "DupFileManager", "taskMode" : "tag_duplicates_task",  "validateDir" : "DupFileManager",  "taskQue" : False,
+                    "weekday" : "sunday",   "time" : "02:30"}, # [Plugin Tasks] -> DupFileManager -> [Tag Duplicates] (Sunday at 2:30AM)
+        # The following task requires plugin DupFileManager and UI option [Delete Duplicate Scheduler] enabled.
+        {"task" : "DupFileManager", "taskName" : "Delete Tagged Duplicates",  "validateDir" : "DupFileManager",  
+                    "weekday" : "saturday",  "time" : "02:30"}, # [Plugin Tasks] -> DupFileManager -> [Delete Tagged Duplicates] 6 days after tagging at 2:30AM
         
         # To perform a task monthly, specify the day of the month as in the weekly schedule format, and add a monthly field.
             # The monthly field value must be 1, 2, 3, or 4.
@@ -40,9 +43,6 @@ config = {
         # The Backup task is scheduled monthly
         # Optional field for task "Backup" is maxBackup. For detail usage, see example #A5 in filemonitor_task_examples.py
         {"task" : "Backup",                 "weekday" : "sunday",  "time" : "01:00", "monthly" : 2}, # Backup -> [Backup] 2nd sunday of the month at 1AM (01:00)        
-        # The following task requires plugin DupFileManager and UI option [Delete Duplicate Scheduler] enabled.
-        {"task" : "DupFileManager", "taskName" : "Delete Duplicates",  "validateDir" : "DupFileManager",  
-                                            "weekday" : "sunday",  "time" : "02:00", "monthly" : 2}, # [Plugin Tasks] -> DupFileManager -> [Delete Duplicates] 2nd sunday of the month at 2AM (02:00)     
         
         # The [CheckStashIsRunning] task checks if Stash is running. If not running, it will start up stash. 
         # This task only works if FileMonitor is started as a service or in command line mode.

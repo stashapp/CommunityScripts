@@ -161,11 +161,11 @@ class StashScheduler: # Stash Scheduler
                 else:
                     weekDays = task['weekday'].lower()
                     if 'monthly' in task:
-                        stash.Log(f"Adding to scheduler task '{task['task']}' monthly on number {task['monthly']} {task['weekday']} at {task['time']}")
+                        stash.Log(f"Adding to scheduler task '{self.taskName(task)}' monthly on number {task['monthly']} {task['weekday']} at {task['time']}")
                     elif task['weekday'] == "every":
-                        stash.Log(f"Adding to scheduler task '{task['task']}' (weekly) every day at {task['time']}")
+                        stash.Log(f"Adding to scheduler task '{self.taskName(task)}' (weekly) every day at {task['time']}")
                     else:
-                        stash.Log(f"Adding to scheduler task '{task['task']}' (weekly) every {task['weekday']} at {task['time']}")
+                        stash.Log(f"Adding to scheduler task '{self.taskName(task)}' (weekly) every {task['weekday']} at {task['time']}")
                     
                     hasValidDay = False
                     if "monday" in weekDays or "every" in weekDays:
@@ -195,6 +195,16 @@ class StashScheduler: # Stash Scheduler
             else:
                 stash.Error(f"Task '{task['task']}' is missing fields.")
         self.checkSchedulePending()
+    
+    def taskName(self, task):
+        pluginTask = None
+        if 'taskName' in task:
+            pluginTask = task['taskName']
+        elif 'taskMode' in task:
+            pluginTask = task['taskMode']
+        if pluginTask == None or pluginTask == "":
+            return task['task']
+        return f"{task['task']}->{pluginTask}"
     
     # ToDo: Add asynchronous threading logic to running task.
     def runTask(self, task):
@@ -319,7 +329,7 @@ class StashScheduler: # Stash Scheduler
             if invalidDir:
                 stash.Error(f"Could not run task '{task['task']}' because sub directory '{task['validateDir']}' does not exist under path '{stash.PLUGINS_PATH}'")
                 return None
-            if not turnOnSchedulerDeleteDup and  (task['task'] == "Delete Duplicates" or  ('taskName' in task and task['taskName'] == "Delete Duplicates") or ('taskMode' in task and task['taskMode'] == "delete_duplicates_task")):
+            if not turnOnSchedulerDeleteDup and  (task['task'] == "Delete Duplicates" or  ('taskName' in task and (task['taskName'] == "Delete Duplicates" or task['taskName'] == "Delete Tagged Duplicates")) or ('taskMode' in task and task['taskMode'] == "delete_duplicates_task")):
                 stash.Warn(f"Not running task {task['task']}, because [Delete Duplicate Scheduler] is NOT enabled. See Stash UI option Settings->Plugins->Plugins->FileMonitor->[Delete Duplicate Scheduler]")
                 return None           
             # The pluginId field is only here for backward compatibility, and should not be used in future scheduler configurations
