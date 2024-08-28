@@ -37,12 +37,12 @@ config = {
         "frame_rate": 'FR',  
         "date": '',      
     },
+    # Add tags to exclude from RenameFile.
+    "excludeTags": ["DuplicateMarkForDeletion", "DuplicateMarkForSwap", "DuplicateWhitelistFile","_DuplicateMarkForDeletion","_DuplicateMarkForSwap", "_DuplicateWhitelistFile"],
     # Add path(s) to exclude from RenameFile. Example Usage: r"/path/to/exclude1"  When entering multiple paths, use space. Example: r"/path_1_to/exclude" r"/someOtherPath2Exclude" r"/yetAnotherPath"
     "pathToExclude": "",
     # Define a whitelist of allowed tags or EMPTY to allow all tags. Example Usage: "tag1", "tag2", "tag3"
     "tagWhitelist": "",
-    # Define whether files should be renamed when moved
-    "rename_files": True,
     # Define whether the original file name should be used if title is empty
     "if_notitle_use_org_filename": True, # Warning: Do not recommend setting this to False.
     # Current Stash DB schema only allows maximum base file name length to be 255

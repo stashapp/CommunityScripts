@@ -3,13 +3,21 @@
 # Get the latest developers version from following link: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
 # Note: To call this script outside of Stash, pass argument --url and the Stash URL.
 #       Example:    python filemonitor.py --url http://localhost:9999
-import os, sys, time, pathlib, argparse
+import os, sys, time, pathlib, argparse, platform, traceback, logging
 from StashPluginHelper import StashPluginHelper
 import watchdog  # pip install watchdog  # https://pythonhosted.org/watchdog/
 from watchdog.observers import Observer # This is also needed for event attributes
 from threading import Lock, Condition
 from multiprocessing import shared_memory
-from filemonitor_config import config # Import settings from filemonitor_config.py
+from filemonitor_config import config
+from filemonitor_task_examples import task_examples
+from filemonitor_self_unit_test import self_unit_test
+
+config['task_scheduler'] = config['task_scheduler'] + task_examples['task_scheduler']
+if self_unit_test['selfUnitTest_repeat']:
+    config['task_scheduler'] = config['task_scheduler'] + self_unit_test['task_scheduler_repeat']
+if self_unit_test['selfUnitTest_set_time']:
+    config['task_scheduler'] = config['task_scheduler'] + self_unit_test['task_scheduler_set_time']
 
 CONTINUE_RUNNING_SIG = 99
 STOP_RUNNING_SIG = 32
@@ -20,6 +28,7 @@ parser.add_argument('--trace', '-t', dest='trace', action='store_true', help='En
 parser.add_argument('--stop', '-s', dest='stop', action='store_true', help='Stop (kill) a running FileMonitor task.')
 parser.add_argument('--restart', '-r', dest='restart', action='store_true', help='Restart FileMonitor.')
 parser.add_argument('--silent', '--quit', '-q', dest='quit', action='store_true', help='Run in silent mode. No output to console or stderr. Use this when running from pythonw.exe')
+parser.add_argument('--apikey', '-a', dest='apikey', type=str, help='API Key')
 parse_args = parser.parse_args()
 
 logToErrSet = 0
@@ -31,7 +40,8 @@ if parse_args.quit:
 settings = {
     "recursiveDisabled": False,
     "turnOnScheduler": False,
-    "zmaximumBackups": 0,
+    "turnOnSchedulerDeleteDup": False,
+    "zmaximumBackups": 1,
     "zzdebugTracing": False
 }
 stash = StashPluginHelper(
@@ -40,12 +50,12 @@ stash = StashPluginHelper(
         settings=settings,
         config=config,
         logToErrSet=logToErrSet,
-        logToNormSet=logToNormSet
+        logToNormSet=logToNormSet,
+        maxbytes=5*1024*1024,
+        apiKey=parse_args.apikey
         )
-stash.Status()
+stash.Status(logLevel=logging.DEBUG)
 stash.Log(f"\nStarting (__file__={__file__}) (stash.CALLED_AS_STASH_PLUGIN={stash.CALLED_AS_STASH_PLUGIN}) (stash.DEBUG_TRACING={stash.DEBUG_TRACING}) (stash.DRY_RUN={stash.DRY_RUN}) (stash.PLUGIN_TASK_NAME={stash.PLUGIN_TASK_NAME})************************************************")
-
-# stash.Log(f"{stash.find_duplicate_scenes()}")
 
 exitMsg = "Change success!!"
 mutex = Lock()
@@ -59,6 +69,8 @@ RUN_CLEAN_AFTER_DELETE = stash.pluginConfig["runCleanAfterDelete"]
 RUN_GENERATE_CONTENT = stash.pluginConfig['runGenerateContent']
 SCAN_ON_ANY_EVENT = stash.pluginConfig['onAnyEvent']
 SIGNAL_TIMEOUT = stash.pluginConfig['timeOut'] if stash.pluginConfig['timeOut'] > 0 else 1
+MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS = stash.pluginConfig['timeOutDelayProcess']
+MAX_SECONDS_WAIT_SCANJOB_COMPLETE = stash.pluginConfig['maxWaitTimeJobFinish']
 
 CREATE_SPECIAL_FILE_TO_EXIT = stash.pluginConfig['createSpecFileToExit']
 DELETE_SPECIAL_FILE_ON_STOP = stash.pluginConfig['deleteSpecFileInStop']
@@ -73,8 +85,7 @@ if CREATE_SPECIAL_FILE_TO_EXIT and os.path.isfile(SPECIAL_FILE_NAME):
 fileExtTypes = stash.pluginConfig['fileExtTypes'].split(",") if stash.pluginConfig['fileExtTypes'] != "" else []
 includePathChanges = stash.pluginConfig['includePathChanges'] if len(stash.pluginConfig['includePathChanges']) > 0 else stash.STASH_PATHS
 excludePathChanges = stash.pluginConfig['excludePathChanges']
-
-stash.Trace(f"(includePathChanges={includePathChanges})")
+turnOnSchedulerDeleteDup = stash.pluginSettings['turnOnSchedulerDeleteDup']
 
 if stash.DRY_RUN:
     stash.Log("Dry run mode is enabled.")
@@ -84,7 +95,6 @@ StartFileMonitorAsAPluginTaskName = "Monitor as a Plugin"
 StartFileMonitorAsAServiceTaskName = "Start Library Monitor Service"
 StartFileMonitorAsAPluginTaskID = "start_library_monitor"
 StartFileMonitorAsAServiceTaskID = "start_library_monitor_service"
-
 
 FileMonitorPluginIsOnTaskQue =  stash.CALLED_AS_STASH_PLUGIN
 StopLibraryMonitorWaitingInTaskQueue = False
@@ -151,30 +161,32 @@ class StashScheduler: # Stash Scheduler
                 else:
                     weekDays = task['weekday'].lower()
                     if 'monthly' in task:
-                        stash.Log(f"Adding to scheduler task '{task['task']}' monthly on number {task['monthly']} {task['weekday']} at {task['time']}")
+                        stash.Log(f"Adding to scheduler task '{self.taskName(task)}' monthly on number {task['monthly']} {task['weekday']} at {task['time']}")
+                    elif task['weekday'] == "every":
+                        stash.Log(f"Adding to scheduler task '{self.taskName(task)}' (weekly) every day at {task['time']}")
                     else:
-                        stash.Log(f"Adding to scheduler task '{task['task']}' (weekly) every {task['weekday']} at {task['time']}")
+                        stash.Log(f"Adding to scheduler task '{self.taskName(task)}' (weekly) every {task['weekday']} at {task['time']}")
                     
                     hasValidDay = False
-                    if "monday" in weekDays:
+                    if "monday" in weekDays or "every" in weekDays:
                         schedule.every().monday.at(task['time']).do(self.runTask, task)
                         hasValidDay = True
-                    if "tuesday" in weekDays:
+                    if "tuesday" in weekDays or "every" in weekDays:
                         schedule.every().tuesday.at(task['time']).do(self.runTask, task)
                         hasValidDay = True
-                    if "wednesday" in weekDays:
+                    if "wednesday" in weekDays or "every" in weekDays:
                         schedule.every().wednesday.at(task['time']).do(self.runTask, task)
                         hasValidDay = True
-                    if "thursday" in weekDays:
+                    if "thursday" in weekDays or "every" in weekDays:
                         schedule.every().thursday.at(task['time']).do(self.runTask, task)
                         hasValidDay = True
-                    if "friday" in weekDays:
+                    if "friday" in weekDays or "every" in weekDays:
                         schedule.every().friday.at(task['time']).do(self.runTask, task)
                         hasValidDay = True
-                    if "saturday" in weekDays:
+                    if "saturday" in weekDays or "every" in weekDays or "weekend" in weekDays:
                         schedule.every().saturday.at(task['time']).do(self.runTask, task)
                         hasValidDay = True
-                    if "sunday" in weekDays:
+                    if "sunday" in weekDays or "every" in weekDays or "weekend" in weekDays:
                         schedule.every().sunday.at(task['time']).do(self.runTask, task)
                         hasValidDay = True
                     
@@ -183,6 +195,16 @@ class StashScheduler: # Stash Scheduler
             else:
                 stash.Error(f"Task '{task['task']}' is missing fields.")
         self.checkSchedulePending()
+    
+    def taskName(self, task):
+        pluginTask = None
+        if 'taskName' in task:
+            pluginTask = task['taskName']
+        elif 'taskMode' in task:
+            pluginTask = task['taskMode']
+        if pluginTask == None or pluginTask == "":
+            return task['task']
+        return f"{task['task']}->{pluginTask}"
     
     # ToDo: Add asynchronous threading logic to running task.
     def runTask(self, task):
@@ -202,76 +224,201 @@ class StashScheduler: # Stash Scheduler
         
         result = None
         if task['task'] == "Clean":
-            result = stash.metadata_clean(paths=targetPaths, dry_run=stash.DRY_RUN)
+            result = self.jobIdOutput(stash.metadata_clean(paths=targetPaths, dry_run=stash.DRY_RUN))
         elif task['task'] == "Clean Generated Files":
-            result = stash.metadata_clean_generated()
+            result = self.jobIdOutput(stash.metadata_clean_generated())
         elif task['task'] == "Generate":
-            result = stash.metadata_generate()
+            result = self.jobIdOutput(stash.metadata_generate())
         elif task['task'] == "Backup":
-            stash.LogOnce("Note: Backup task does not get listed in the Task Queue, but user can verify that it started by looking in the Stash log file as an INFO level log line.")
-            result = stash.backup_database()
-            maximumBackup = stash.pluginSettings['zmaximumBackups']
-            if "maxBackups" in task:
-                maximumBackup = task['maxBackups']
-            if maximumBackup < 2:
-                stash.TraceOnce(f"Skipping DB backup file trim because zmaximumBackups={maximumBackup}. Value has to be greater than 1.")
-            elif 'backupDirectoryPath' in stash.STASH_CONFIGURATION:
-                if len(stash.STASH_CONFIGURATION['backupDirectoryPath']) < 5:
-                    stash.TraceOnce(f"Skipping DB backup file trim because backupDirectoryPath length is to short. Len={len(stash.STASH_CONFIGURATION['backupDirectoryPath'])}. Only support length greater than 4 characters.")
-                elif os.path.exists(stash.STASH_CONFIGURATION['backupDirectoryPath']):
-                    stash.LogOnce(f"Checking quantity of DB backups if path {stash.STASH_CONFIGURATION['backupDirectoryPath']} exceeds {maximumBackup} backup files.")
-                    self.trimDbFiles(stash.STASH_CONFIGURATION['backupDirectoryPath'], maximumBackup)
-                else:
-                    stash.TraceOnce(f"Skipping DB backup file trim because backupDirectoryPath does NOT exist. backupDirectoryPath={stash.STASH_CONFIGURATION['backupDirectoryPath']}")
+            result = self.jobIdOutput(self.runBackupTask(task))
         elif task['task'] == "Scan":
-            result = stash.metadata_scan(paths=targetPaths)
+            result = self.jobIdOutput(stash.metadata_scan(paths=targetPaths))
         elif task['task'] == "Auto Tag":
-            result = stash.metadata_autotag(paths=targetPaths)
+            result = self.jobIdOutput(stash.metadata_autotag(paths=targetPaths))
         elif task['task'] == "Optimise Database":
-            result = stash.optimise_database()
+            result = self.jobIdOutput(stash.optimise_database())
         elif task['task'] == "RenameGeneratedFiles":
-            result = stash.rename_generated_files()
+            result = self.jobIdOutput(stash.rename_generated_files())
         elif task['task'] == "GQL":
-            result = stash.call_GQL(task['input'])
+            result = self.jobIdOutput(stash.call_GQL(task['input']))
+        elif task['task'] == "Log":
+            Msg = "Scheduled Logging (INFO)."
+            if 'msg' in task and task['msg'] != "":
+                Msg = task['msg']
+            result = stash.Log(Msg)
+        elif task['task'] == "Trace":
+            Msg = "Scheduled Logging (DBG)."
+            if 'msg' in task and task['msg'] != "":
+                Msg = task['msg']
+            result = stash.Trace(Msg)
+        elif task['task'] == "LogOnce":
+            Msg = "Scheduled LogOnce."
+            if 'msg' in task and task['msg'] != "":
+                Msg = task['msg']
+            result = stash.LogOnce(Msg)
+        elif task['task'] == "TraceOnce":
+            Msg = "Scheduled TraceOnce."
+            if 'msg' in task and task['msg'] != "":
+                Msg = task['msg']
+            result = stash.TraceOnce(Msg)
+        elif task['task'] == "CheckStashIsRunning":
+            result = self.checkStashIsRunning(task)
         elif task['task'] == "python":
-            if 'script' in task and task['script'] != "":
-                script = task['script'].replace("<plugin_path>", f"{pathlib.Path(__file__).resolve().parent}{os.sep}")
-                stash.Log(f"Executing python script {script}.")
-                args = [script]
-                if 'args' in task and len(task['args']) > 0:
-                    args = args + [task['args']]
-                detached = True
-                if 'detach' in task:
-                    detached = task['detach']
-                result = f"Python process PID = {stash.ExecutePythonScript(args, ExecDetach=detached)}"
-            else:
-                stash.Error(f"Can not run task '{task['task']}', because it's missing 'script' field.")
+            result = self.runPythonScript(task)
         elif task['task'] == "execute":
-            if 'command' in task and task['command'] != "":
-                cmd = task['command'].replace("<plugin_path>", f"{pathlib.Path(__file__).resolve().parent}{os.sep}")
-                args = [cmd]
-                if 'args' in task and len(task['args']) > 0:
-                    args = args + [task['args']]
-                stash.Log(f"Executing command arguments {args}.")
-                result = f"Execute process PID = {stash.ExecuteProcess(args)}"
-            else:
-                stash.Error(f"Can not run task '{task['task']}', because it's missing 'command' field.")
+            result = self.runExecuteProcessTask(task)
         else:
-            # ToDo: Add code to check if plugin is installed.
-            try:
-                if 'pluginId' in task and task['pluginId'] != "":
-                    stash.Trace(f"Running plugin task pluginID={task['pluginId']}, task name = {task['task']}")
-                    stash.run_plugin_task(plugin_id=task['pluginId'], task_name=task['task'])
-                else:
-                    stash.Error(f"Can not run task '{task['task']}', because it's an invalid task.")
-                    stash.LogOnce(f"If task '{task['task']}' is supposed to be a built-in task, check for correct task name spelling.")
-                    stash.LogOnce(f"If task '{task['task']}' is supposed to be a plugin, make sure to include the pluginId field in the task. task={task}")
-            except Exception as e:
-                stash.LogOnce(f"Failed to call plugin {task['task']} with plugin-ID {task['pluginId']}. Error: {e}")
-                pass
+            result = self.jobIdOutput(self.runPluginTask(task))
         
         if result:
             stash.Trace(f"Task '{task['task']}' result={result}")
+    
+    def jobIdOutput(self, result):
+        if result == None or result == "":
+            return result
+        jobId = None
+        if type(result) is int:
+            jobId = result
+        elif str(result).isnumeric():
+            jobId = int(result)
+        else:
+            return result
+        return f"Task started with Job-ID#({jobId})"
+    
+    def runExecuteProcessTask(self, task):
+        if 'command' in task and task['command'] != "":
+            cmd = task['command'].replace("<plugin_path>", f"{pathlib.Path(__file__).resolve().parent}{os.sep}")
+            args = [cmd]
+            if 'args' in task and len(task['args']) > 0:
+                args = args + [task['args']]
+            stash.Log(f"Executing command arguments {args}.")
+            return f"Execute process PID = {stash.ExecuteProcess(args)}"
+        else:
+            stash.Error(f"Can not run task '{task['task']}', because it's missing 'command' field.")
+        return None
+    
+    def runPythonScript(self, task):
+        if 'script' in task and task['script'] != "":
+            script = task['script'].replace("<plugin_path>", f"{pathlib.Path(__file__).resolve().parent}{os.sep}")
+            stash.Log(f"Executing python script {script}.")
+            args = [script]
+            if 'args' in task and len(task['args']) > 0:
+                args = args + [task['args']]
+            detached = True
+            if 'detach' in task:
+                detached = task['detach']
+            return f"Python process PID = {stash.ExecutePythonScript(args, ExecDetach=detached)}"
+        else:
+            stash.Error(f"Can not run task '{task['task']}', because it's missing 'script' field.")
+        return None
+    
+    def runPluginTask(self, task):
+        try:
+            invalidDir = False
+            validDirMsg = ""
+            if 'validateDir' in task and task['validateDir'] != "":
+                invalidDir = True
+                communityPluginPath = f"{stash.PLUGINS_PATH}{os.sep}community{os.sep}{task['validateDir']}"
+                basePluginPath = f"{stash.PLUGINS_PATH}{os.sep}{task['validateDir']}"
+                if os.path.exists(communityPluginPath):
+                    invalidDir = False
+                    validDirMsg = f"Valid path in {communityPluginPath}"
+                elif os.path.exists(basePluginPath):
+                    invalidDir = False
+                    validDirMsg = f"Valid path in {basePluginPath}"
+            if invalidDir:
+                stash.Error(f"Could not run task '{task['task']}' because sub directory '{task['validateDir']}' does not exist under path '{stash.PLUGINS_PATH}'")
+                return None
+            if not turnOnSchedulerDeleteDup and  (task['task'] == "Delete Duplicates" or  ('taskName' in task and (task['taskName'] == "Delete Duplicates" or task['taskName'] == "Delete Tagged Duplicates")) or ('taskMode' in task and task['taskMode'] == "delete_duplicates_task")):
+                stash.Warn(f"Not running task {task['task']}, because [Delete Duplicate Scheduler] is NOT enabled. See Stash UI option Settings->Plugins->Plugins->FileMonitor->[Delete Duplicate Scheduler]")
+                return None           
+            # The pluginId field is only here for backward compatibility, and should not be used in future scheduler configurations
+            if 'pluginId' in task and task['pluginId'] != "": # Obsolete method
+                stash.Trace(f"Adding to Task Queue plugin task pluginID={task['pluginId']}, task name = {task['task']}. {validDirMsg}")
+                return stash.run_plugin_task(plugin_id=task['pluginId'], task_name=task['task'])
+            else:
+                taskName = None
+                taskMode = None
+                if 'taskName' in task:
+                    taskName = task['taskName']
+                if 'taskMode' in task:
+                    taskMode = task['taskMode']
+                if ('taskQue' in task and task['taskQue'] == False) or taskName == None:
+                    stash.Log(f"Running plugin task pluginID={task['task']}, task mode = {taskMode}. {validDirMsg}")
+                    # Asynchronous threading logic to call run_plugin, because it's a blocking call.
+                    stash.run_plugin(plugin_id=task['task'], task_mode=taskMode, asyn=True)
+                    return None
+                else:
+                    stash.Trace(f"Adding to Task Queue plugin task pluginID={task['task']}, task name = {taskName}. {validDirMsg}")
+                    return stash.run_plugin_task(plugin_id=task['task'], task_name=taskName)
+        except Exception as e:
+            stash.LogOnce(f"Failed to call plugin {task['task']} with plugin-ID {task['pluginId']}. Error: {e}")
+            pass
+        return None
+    
+    def checkStashIsRunning(self, task = {}, sleepAfterStart = 10):
+        try:
+            result = stash.stash_version()
+        except:
+            pass
+            stash.Error("Failed to get response from Stash.")
+            if platform.system() == "Windows":
+                execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-win.exe"
+            elif platform.system() == "Darwin": # MacOS
+                execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep} stash-macos "
+            elif platform.system().lower().startswith("linux"):
+                # ToDo: Need to verify this method will work for (stash-linux-arm32v6, stash-linux-arm32v7, and stash-linux-arm64v8)
+                if platform.system().lower().find("32v6") > -1:
+                    execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-linux-arm32v6"
+                elif platform.system().lower().find("32v7") > -1:
+                    execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-linux-arm32v7"
+                elif platform.system().lower().find("64v8 ") > -1:
+                    execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-linux-arm64v8"
+                else:
+                    execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-linux"
+            elif platform.system().lower().startswith("freebsd"):
+                execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-freebsd"
+            elif 'command' not in task or task['command'] == "":
+                stash.Error("Can not start Stash, because failed to determine platform OS. As a workaround, add 'command' field to this task.")
+                return None
+            
+            if 'command' in task and task['command'] != "":
+                cmd = task['command'].replace("<stash_path>", f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}")
+                args = [cmd]
+            else:
+                if os.path.isfile(execPath):
+                    args = [execPath]
+                else:
+                    stash.Error("Could not start Stash, because could not find executable Stash file '{execPath}'")
+                    return None
+            result = f"Execute process PID = {stash.ExecuteProcess(args)}"
+            time.sleep(sleepAfterStart)
+            if "RunAfter" in task and len(task['RunAfter']) > 0:
+                for runAfterTask in task['RunAfter']:
+                    self.runTask(runAfterTask)
+        return result 
+    
+    def runBackupTask(self, task):
+        stash.LogOnce("Note: Backup task does not get listed in the Task Queue, but user can verify that it started by looking in the Stash log file as an INFO level log line.")
+        result = stash.backup_database()
+        maximumBackup = stash.pluginSettings['zmaximumBackups']
+        stash.Trace(f"maximumBackup={maximumBackup}")
+        if "maxBackups" in task:
+            maximumBackup = task['maxBackups']
+        stash.Trace(f"maximumBackup={maximumBackup}")
+        if isinstance(maximumBackup,str):
+            maximumBackup = int(maximumBackup)
+        if maximumBackup < 2:
+            stash.TraceOnce(f"Skipping DB backup file trim because zmaximumBackups={maximumBackup}. Value has to be greater than 1.")
+        elif 'backupDirectoryPath' in stash.STASH_CONFIGURATION:
+            if len(stash.STASH_CONFIGURATION['backupDirectoryPath']) < 5:
+                stash.TraceOnce(f"Skipping DB backup file trim because backupDirectoryPath length is to short. Len={len(stash.STASH_CONFIGURATION['backupDirectoryPath'])}. Only support length greater than 4 characters.")
+            elif os.path.exists(stash.STASH_CONFIGURATION['backupDirectoryPath']):
+                stash.LogOnce(f"Checking quantity of DB backups if path {stash.STASH_CONFIGURATION['backupDirectoryPath']} exceeds {maximumBackup} backup files.")
+                self.trimDbFiles(stash.STASH_CONFIGURATION['backupDirectoryPath'], maximumBackup)
+            else:
+                stash.TraceOnce(f"Skipping DB backup file trim because backupDirectoryPath does NOT exist. backupDirectoryPath={stash.STASH_CONFIGURATION['backupDirectoryPath']}")        
+        return result
     
     def trimDbFiles(self, dbPath, maxFiles):
         if not os.path.exists(dbPath):
@@ -297,10 +444,21 @@ class StashScheduler: # Stash Scheduler
         schedule.run_pending()
         stash.TraceOnce("Pending check complete.")
 
-TargetPaths = []   
+TargetPaths = []
+lastScanJob = {
+    "id": -1,
+    "TargetPaths": [],
+    "DelayedProcessTargetPaths": [],
+    "timeAddedToTaskQueue": None,
+    "timeOutDelayProcess": 1,
+    "lastStatus" : ""
+}
+JOB_ENDED_STATUSES = ["FINISHED", "CANCELLED"]
+
 def start_library_monitor():
     global shouldUpdate
     global TargetPaths
+    global lastScanJob
     try:
         # Create shared memory buffer which can be used as singleton logic or to get a signal to quit task from external script
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=True, size=4)
@@ -427,9 +585,21 @@ def start_library_monitor():
                         break
                     if stash.pluginSettings['turnOnScheduler']:
                         stashScheduler.checkSchedulePending()
-                    stash.LogOnce("Waiting for a file change-trigger.")
-                    signal.wait(timeout=SIGNAL_TIMEOUT)
-                    if stash.pluginSettings['turnOnScheduler'] and not shouldUpdate:
+                    timeOutInSeconds = SIGNAL_TIMEOUT
+                    if lastScanJob['DelayedProcessTargetPaths'] != [] and timeOutInSeconds > lastScanJob['timeOutDelayProcess']:
+                        if lastScanJob['timeOutDelayProcess'] < MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS:
+                            lastScanJob['timeOutDelayProcess'] = lastScanJob['timeOutDelayProcess'] * 2
+                            if lastScanJob['timeOutDelayProcess'] > MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS:
+                                lastScanJob['timeOutDelayProcess'] = MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS
+                        timeOutInSeconds = lastScanJob['timeOutDelayProcess']
+                        stash.LogOnce(f"Awaiting file change-trigger, with a short timeout ({timeOutInSeconds} seconds), because of active delay path processing.")
+                    else:
+                        stash.LogOnce(f"Waiting for a file change-trigger. Timeout = {timeOutInSeconds} seconds.")
+                    signal.wait(timeout=timeOutInSeconds)
+                    if lastScanJob['DelayedProcessTargetPaths'] != []:
+                        stash.TraceOnce(f"Processing delay scan for path(s) {lastScanJob['DelayedProcessTargetPaths']}")
+                        break
+                    elif stash.pluginSettings['turnOnScheduler'] and not shouldUpdate:
                         stash.TraceOnce("Checking the scheduler.")
                     elif shouldUpdate:
                         stash.LogOnce("File change trigger occurred.")
@@ -453,12 +623,45 @@ def start_library_monitor():
                     stash.Log(f"[SpFl]Detected trigger file to kill FileMonitor. {SPECIAL_FILE_NAME}", printTo = stash.LOG_TO_FILE + stash.LOG_TO_CONSOLE + stash.LOG_TO_STASH)
                 TargetPaths = []
                 TmpTargetPaths = list(set(TmpTargetPaths))
-            if TmpTargetPaths != []:
+            if TmpTargetPaths != [] or lastScanJob['DelayedProcessTargetPaths'] != []:
                 stash.Log(f"Triggering Stash scan for path(s) {TmpTargetPaths}")
-                if len(TmpTargetPaths) > 1 or TmpTargetPaths[0] != SPECIAL_FILE_DIR:
+                if lastScanJob['DelayedProcessTargetPaths'] != [] or len(TmpTargetPaths) > 1 or TmpTargetPaths[0] != SPECIAL_FILE_DIR:
                     if not stash.DRY_RUN:
-                        # ToDo: Consider using create_scene, update_scene, and destroy_scene over general method metadata_scan
-                        stash.metadata_scan(paths=TmpTargetPaths)
+                        if lastScanJob['id'] > -1:
+                            if stashScheduler:
+                                stashScheduler.checkStashIsRunning()
+                            lastScanJob['lastStatus'] = stash.find_job(lastScanJob['id'])
+                            elapsedTime = time.time() - lastScanJob['timeAddedToTaskQueue']
+                            if lastScanJob['lastStatus'] == None or lastScanJob['lastStatus'] == "" or 'status' not in lastScanJob['lastStatus']:
+                                stash.Warn(f"Could not get a status from scan job {lastScanJob['id']}; result = {lastScanJob['lastStatus']}; Elapse-Time = {elapsedTime}")
+                            else:
+                                stash.Trace(f"Last Scan Job ({lastScanJob['id']}); Status = {lastScanJob['lastStatus']['status']}; result = {lastScanJob['lastStatus']}; Elapse-Time = {elapsedTime}")
+                            if lastScanJob['lastStatus'] == None or lastScanJob['lastStatus'] == "" or 'status' not in lastScanJob['lastStatus'] or lastScanJob['lastStatus']['status'] in JOB_ENDED_STATUSES or elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
+                                if elapsedTime > MAX_SECONDS_WAIT_SCANJOB_COMPLETE:
+                                    stash.Warn(f"Timeout occurred waiting for scan job {lastScanJob['id']} to complete. Elapse-Time = {elapsedTime}; Max-Time={MAX_SECONDS_WAIT_SCANJOB_COMPLETE}; Scan-Path(s) = {lastScanJob['TargetPaths']}")
+                                lastScanJob['id'] = -1
+                                lastScanJob['timeOutDelayProcess'] = 1
+                                if len(lastScanJob['DelayedProcessTargetPaths']) > 0:
+                                    stash.Trace(f"Adding {lastScanJob['DelayedProcessTargetPaths']} to {TmpTargetPaths}")
+                                    for path in lastScanJob['DelayedProcessTargetPaths']:
+                                        if path not in TmpTargetPaths:
+                                            TmpTargetPaths.append(path)
+                                    # TmpTargetPaths += [lastScanJob['DelayedProcessTargetPaths']]
+                                    stash.Trace(f"TmpTargetPaths = {TmpTargetPaths}")
+                                    lastScanJob['DelayedProcessTargetPaths'] = []
+                            else:
+                                if TmpTargetPaths != []:
+                                    stash.Trace(f"Adding {TmpTargetPaths} to {lastScanJob['DelayedProcessTargetPaths']}")
+                                    for path in TmpTargetPaths:
+                                        if path not in lastScanJob['DelayedProcessTargetPaths']:
+                                            lastScanJob['DelayedProcessTargetPaths'].append(path)
+                                stash.Trace(f"lastScanJob['DelayedProcessTargetPaths'] = {lastScanJob['DelayedProcessTargetPaths']}")
+                        if lastScanJob['id'] == -1:
+                            stash.Trace(f"Calling metadata_scan for paths '{TmpTargetPaths}'")
+                            lastScanJob['id'] = int(stash.metadata_scan(paths=TmpTargetPaths))
+                            lastScanJob['TargetPaths'] = TmpTargetPaths
+                            lastScanJob['timeAddedToTaskQueue'] = time.time()
+                            stash.Trace(f"metadata_scan JobId = {lastScanJob['id']}, Start-Time = {lastScanJob['timeAddedToTaskQueue']}, paths = {lastScanJob['TargetPaths']}")
                     if RUN_CLEAN_AFTER_DELETE and RunCleanMetadata:
                         stash.metadata_clean(paths=TmpTargetPaths, dry_run=stash.DRY_RUN)
                     if RUN_GENERATE_CONTENT:
@@ -520,8 +723,10 @@ def start_library_monitor_service():
         pass
         stash.Trace("FileMonitor is not running, so it's safe to start it as a service.")
     args = [f"{pathlib.Path(__file__).resolve().parent}{os.sep}filemonitor.py", '--url', f"{stash.STASH_URL}"]
+    if stash.API_KEY:
+        args = args + ["-a", stash.API_KEY]
     stash.ExecutePythonScript(args)
-    
+
 if parse_args.stop or parse_args.restart or stash.PLUGIN_TASK_NAME == "stop_library_monitor":
     stop_library_monitor()
     if parse_args.restart:
@@ -539,9 +744,11 @@ elif stash.PLUGIN_TASK_NAME == StartFileMonitorAsAPluginTaskID:
 elif not stash.CALLED_AS_STASH_PLUGIN:
     try:
         start_library_monitor()
-        stash.Trace(f"Command line FileMonitor EXIT")
+        stash.Trace("Command line FileMonitor EXIT")
     except Exception as e:
-        stash.Error(f"Exception while running FileMonitor from the command line. Error: {e}")
+        tb = traceback.format_exc()
+        stash.Error(f"Exception while running FileMonitor from the command line. Error: {e}\nTraceBack={tb}")
+        stash.log.exception('Got exception on main handler')
 else:
     stash.Log(f"Nothing to do!!! (stash.PLUGIN_TASK_NAME={stash.PLUGIN_TASK_NAME})")
 
