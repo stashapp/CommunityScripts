@@ -13,7 +13,7 @@ settings:
     type: BOOLEAN
   turnOnSchedulerDeleteDup:
     displayName: Delete Duplicate Scheduler
-    description: Turn on scheduler for deleting duplicates in Stash library. (Requires plugin DupFileManager and [Scheduler] enabled) 
+    description: Turn on scheduler for deleting duplicates in Stash library. (Requires plugin DupFileManager and [Scheduler] enabled)
     type: BOOLEAN
   zmaximumBackups:
     displayName: Max DB Backups

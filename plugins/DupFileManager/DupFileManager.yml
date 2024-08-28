@@ -5,7 +5,7 @@ url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/DupFileMan
 settings:
   mergeDupFilename:
     displayName: Merge Duplicate Tags
-    description: Before deletion, merge metadata from duplicate. E.g. Tag names, performers, studios, title, galleries, rating, details, etc... 
+    description: Before deletion, merge metadata from duplicate. E.g. Tag names, performers, studios, title, galleries, rating, details, etc...
     type: BOOLEAN
   permanentlyDelete:
     displayName: Permanent Delete
