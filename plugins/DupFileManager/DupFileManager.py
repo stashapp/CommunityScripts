@@ -3,12 +3,6 @@
 # Get the latest developers version from following link: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/DupFileManager
 # Note: To call this script outside of Stash, pass argument --url 
 #       Example:    python DupFileManager.py --url http://localhost:9999 -a
-
-# Research:
-#   Research following links to complete this plugin:
-#       Python library for parse-reparsepoint
-#       https://pypi.org/project/parse-reparsepoint/
-#       pip install parse-reparsepoint
 import os, sys, time, pathlib, argparse, platform, shutil, logging
 from StashPluginHelper import StashPluginHelper
 from DupFileManager_config import config # Import config from DupFileManager_config.py
