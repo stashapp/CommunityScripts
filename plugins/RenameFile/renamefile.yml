@@ -1,6 +1,6 @@
 name: RenameFile
 description: Renames video (scene) file names when the user edits the [Title] field located in the scene [Edit] tab.
-version: 0.4.3
+version: 0.4.6
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/RenameFile
 settings:
   performerAppend:
@@ -19,9 +19,9 @@ settings:
     displayName: Include Existing Key Field
     description: Enable to append performer, tags, studios, & galleries even if name already exists in the original file name.
     type: BOOLEAN
-  zafileRenameViaRaname:
-    displayName: Rename Instead of Move
-    description: Enable to rename file instead of Move file. (Not recommended for Windows OS)
+  zafileRenameViaMove:
+    displayName: Move Instead of Rename
+    description: Enable to move file instead of rename file. (Not recommended for Windows OS)
     type: BOOLEAN
   zfieldKeyList:
     displayName: Key Fields
