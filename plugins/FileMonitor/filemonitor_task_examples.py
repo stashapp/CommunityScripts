@@ -30,20 +30,24 @@ task_examples = {
         #               And days usage is discourage, because it only works if FileMonitor is running for X many days non-stop.
         # The below example tasks are done using hours and minutes, however any of these task types can be converted to a daily, weekly, or monthly syntax.
                        
-        # Example#B1: The following task is the syntax used for a plugin. A plugin task requires the plugin name for the [task] field, and the plugin-ID for the [pluginId] field.
-        {"task" : "PluginButtonName_Here", "pluginId" : "PluginId_Here", "hours" : 0}, # The zero frequency value makes this task disabled.
+        # Example#B1: The following task is the syntax used for a plugin. A plugin task requires the plugin-ID for the [task] field. Optional fields are taskName, taskMode, validateDir, and taskQue.
+        {"task" : "PluginId_Here", "taskName" : "Task Name or Plugin Button Name Here", "hours" : 0}, # The zero frequency value makes this task disabled.
         # Example#B2: Optionally, the validateDir field can be included which is used to validate that the plugin is installed either under the plugins folder or under the plugins-community folder.
-        {"task" : "PluginButtonName_Here", "pluginId" : "PluginId_Here",  "validateDir" : "UsuallySameAsPluginID", "hours" : 0}, # The zero frequency value makes this task disabled.
+        {"task" : "PluginId_Here", "taskName" : "Task Name or Plugin Button Name Here",  "validateDir" : "UsuallySameAsPluginID", "hours" : 0},
+        # Example#B3: To run a plugin WITHOUT using the Task Queue, use taskMode instead of taskName and/or add field "taskQue":False. The plugin will run immediately
+        {"task" : "PluginId_Here", "taskMode" : "Plugin_Task_MODE",  "taskQue" : False, "hours" : 0}, # Do NOT use taskName when including "taskQue":False 
+        # Example#B4: When taskName field is missing, it will always run the task without using the Task Queue. The plugin will run immediately
+        {"task" : "PluginId_Here", "hours" : 0},
         
-        # Example#B3: Task to execute a command
+        # Example#C1: Task to execute a command
         {"task" : "execute", "command" : "C:\\MyPath\\HelloWorld.bat", "hours" : 0},
         
-        # Example#B4: Task to execute a command with optional args field, and using keyword <plugin_path>, which gets replaced with filemonitor.py current directory.
+        # Example#C2: Task to execute a command with optional args field, and using keyword <plugin_path>, which gets replaced with filemonitor.py current directory.
         {"task" : "execute", "command" : "<plugin_path>HelloWorld.cmd", "args" : "--name David", "minutes" : 0},
         
-        # Example#C1 Some OS may need the "command" field, which specifies the binary path.
+        # Example#D1 Some OS may need the "command" field, which specifies the binary path.
         {"task" : "CheckStashIsRunning",    "command" : "<stash_path>stash-linux-arm64v8",                          "minutes" :0},
-        # Example#C2 RunAfter field can be used to specify task to run after starting Stash
+        # Example#D2 RunAfter field can be used to specify task to run after starting Stash
         {"task" : "CheckStashIsRunning", "RunAfter" : [{"task" : "Scan"},{"task" : "Backup", "maxBackup" : 0},{"task" : "Clean"}],   "minutes" :0},        
     ],
 }

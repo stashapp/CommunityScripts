@@ -5,6 +5,8 @@ import concurrent.futures
 from stashapi.stash_types import PhashDistance
 import __main__
 
+_ARGUMENT_UNSPECIFIED_ = "_ARGUMENT_UNSPECIFIED_"
+
 # StashPluginHelper (By David Maisonave aka Axter)
     # See end of this file for example usage
     # Log Features:
@@ -41,6 +43,7 @@ class StashPluginHelper(StashInterface):
     STASHPATHSCONFIG = None
     STASH_PATHS = []
     API_KEY = None
+    excludeMergeTags = None
     
     # printTo argument
     LOG_TO_FILE = 1
@@ -62,6 +65,9 @@ class StashPluginHelper(StashInterface):
     logLinePreviousHits = []
     thredPool = None
     STASH_INTERFACE_INIT = False
+    _mergeMetadata = None
+    encodeToUtf8 = False
+    convertToAscii = False # If set True, it takes precedence over encodeToUtf8
     
     # Prefix message value
     LEV_TRACE = "TRACE: "
@@ -84,7 +90,7 @@ class StashPluginHelper(StashInterface):
                     debugTracing = None,            # Set debugTracing to True so as to output debug and trace logging
                     logFormat = LOG_FORMAT,         # Plugin log line format
                     dateFmt = "%y%m%d %H:%M:%S",    # Date format when logging to plugin log file
-                    maxbytes = 2*1024*1024,         # Max size of plugin log file
+                    maxbytes = 8*1024*1024,         # Max size of plugin log file
                     backupcount = 2,                # Backup counts when log file size reaches max size
                     logToWrnSet = 0,                # Customize the target output set which will get warning logging
                     logToErrSet = 0,                # Customize the target output set which will get error logging
@@ -126,12 +132,9 @@ class StashPluginHelper(StashInterface):
         if debugTracing: self.DEBUG_TRACING = debugTracing        
         if config:
             self.pluginConfig = config        
-            if 'apiKey' in self.pluginConfig and self.pluginConfig['apiKey'] != "":
-                self.FRAGMENT_SERVER['ApiKey'] = self.pluginConfig['apiKey']
-            if DebugTraceFieldName in self.pluginConfig:
-                self.DEBUG_TRACING = self.pluginConfig[DebugTraceFieldName]
-            if DryRunFieldName in self.pluginConfig:
-                self.DRY_RUN = self.pluginConfig[DryRunFieldName]
+            if self.Setting('apiKey', "") != "":
+                self.FRAGMENT_SERVER['ApiKey'] = self.Setting('apiKey')
+
         
         if apiKey and apiKey != "":
             self.FRAGMENT_SERVER['ApiKey'] = apiKey
@@ -169,6 +172,9 @@ class StashPluginHelper(StashInterface):
             super().__init__(self.FRAGMENT_SERVER)
             self.STASH_INTERFACE_INIT = True
             
+        if self.STASH_URL.startswith("http://0.0.0.0:"):
+            self.STASH_URL = self.STASH_URL.replace("http://0.0.0.0:", "http://localhost:")
+        
         if self.STASH_INTERFACE_INIT:
             self.PLUGIN_CONFIGURATION = self.get_configuration()["plugins"]
             self.STASH_CONFIGURATION = self.get_configuration()["general"]
@@ -181,12 +187,11 @@ class StashPluginHelper(StashInterface):
                 self.pluginSettings = settings
                 if self.PLUGIN_ID in self.PLUGIN_CONFIGURATION:
                     self.pluginSettings.update(self.PLUGIN_CONFIGURATION[self.PLUGIN_ID])
-                if DebugTraceFieldName in self.pluginSettings:
-                    self.DEBUG_TRACING = self.pluginSettings[DebugTraceFieldName]
-                if DryRunFieldName in self.pluginSettings:
-                    self.DRY_RUN = self.pluginSettings[DryRunFieldName]
             if 'apiKey' in self.STASH_CONFIGURATION:
                 self.API_KEY = self.STASH_CONFIGURATION['apiKey']
+        
+        self.DRY_RUN = self.Setting(DryRunFieldName, self.DRY_RUN)
+        self.DEBUG_TRACING = self.Setting(DebugTraceFieldName, self.DEBUG_TRACING)
         if self.DEBUG_TRACING: self.LOG_LEVEL = logging.DEBUG
         
         logging.basicConfig(level=self.LOG_LEVEL, format=logFormat, datefmt=dateFmt, handlers=[RFH])
@@ -197,7 +202,22 @@ class StashPluginHelper(StashInterface):
     def __del__(self):
         self.thredPool.shutdown(wait=False)
     
-    def Log(self, logMsg, printTo = 0, logLevel = logging.INFO, lineNo = -1, levelStr = "", logAlways = False):
+    def Setting(self, name, default=_ARGUMENT_UNSPECIFIED_, raiseEx=True, notEmpty=False):
+        if self.pluginSettings != None and name in self.pluginSettings:
+            if notEmpty == False or self.pluginSettings[name] != "":
+                return self.pluginSettings[name]
+        if self.pluginConfig != None and name in self.pluginConfig:
+            if notEmpty == False or self.pluginConfig[name] != "":
+                return self.pluginConfig[name]
+        if default == _ARGUMENT_UNSPECIFIED_ and raiseEx:
+            raise Exception(f"Missing {name} from both UI settings and config file settings.") 
+        return default
+    
+    def Log(self, logMsg, printTo = 0, logLevel = logging.INFO, lineNo = -1, levelStr = "", logAlways = False, toAscii = None):
+        if toAscii or (toAscii == None and (self.encodeToUtf8 or self.convertToAscii)):
+            logMsg = self.asc2(logMsg)
+        else:
+            logMsg = logMsg
         if printTo == 0: 
             printTo = self.log_to_norm
         elif printTo == self.LOG_TO_ERROR and logLevel == logging.INFO:
@@ -238,7 +258,7 @@ class StashPluginHelper(StashInterface):
         if (printTo & self.LOG_TO_STDERR) and (logLevel != logging.DEBUG or self.DEBUG_TRACING or logAlways):
             print(f"StdErr: {LN_Str} {levelStr}{logMsg}", file=sys.stderr)
     
-    def Trace(self, logMsg = "", printTo = 0, logAlways = False, lineNo = -1):
+    def Trace(self, logMsg = "", printTo = 0, logAlways = False, lineNo = -1, toAscii = None):
         if printTo == 0: printTo = self.LOG_TO_FILE
         if lineNo == -1:
             lineNo = inspect.currentframe().f_back.f_lineno
@@ -246,40 +266,40 @@ class StashPluginHelper(StashInterface):
         if self.DEBUG_TRACING or logAlways:
             if logMsg == "":
                 logMsg = f"Line number {lineNo}..."
-            self.Log(logMsg, printTo, logLev, lineNo, self.LEV_TRACE, logAlways)
+            self.Log(logMsg, printTo, logLev, lineNo, self.LEV_TRACE, logAlways, toAscii=toAscii)
     
     # Log once per session. Only logs the first time called from a particular line number in the code.
-    def TraceOnce(self, logMsg = "", printTo = 0, logAlways = False):
+    def TraceOnce(self, logMsg = "", printTo = 0, logAlways = False, toAscii = None):
         lineNo = inspect.currentframe().f_back.f_lineno
         if self.DEBUG_TRACING or logAlways:
             FuncAndLineNo = f"{inspect.currentframe().f_back.f_code.co_name}:{lineNo}"
             if FuncAndLineNo in self.logLinePreviousHits:
                 return
             self.logLinePreviousHits.append(FuncAndLineNo)
-            self.Trace(logMsg, printTo, logAlways, lineNo)
+            self.Trace(logMsg, printTo, logAlways, lineNo, toAscii=toAscii)
 
     # Log INFO on first call, then do Trace on remaining calls.
-    def LogOnce(self, logMsg = "", printTo = 0, logAlways = False, traceOnRemainingCalls = True):
+    def LogOnce(self, logMsg = "", printTo = 0, logAlways = False, traceOnRemainingCalls = True, toAscii = None):
         if printTo == 0: printTo = self.LOG_TO_FILE
         lineNo = inspect.currentframe().f_back.f_lineno
         FuncAndLineNo = f"{inspect.currentframe().f_back.f_code.co_name}:{lineNo}"
         if FuncAndLineNo in self.logLinePreviousHits:
             if traceOnRemainingCalls:
-                self.Trace(logMsg, printTo, logAlways, lineNo) 
+                self.Trace(logMsg, printTo, logAlways, lineNo, toAscii=toAscii) 
         else:
             self.logLinePreviousHits.append(FuncAndLineNo)
-            self.Log(logMsg, printTo, logging.INFO, lineNo)   
+            self.Log(logMsg, printTo, logging.INFO, lineNo, toAscii=toAscii)   
     
-    def Warn(self, logMsg, printTo = 0):
+    def Warn(self, logMsg, printTo = 0, toAscii = None):
         if printTo == 0: printTo = self.log_to_wrn_set
         lineNo = inspect.currentframe().f_back.f_lineno
-        self.Log(logMsg, printTo, logging.WARN, lineNo)
+        self.Log(logMsg, printTo, logging.WARN, lineNo, toAscii=toAscii)
     
-    def Error(self, logMsg, printTo = 0):
+    def Error(self, logMsg, printTo = 0, toAscii = None):
         if printTo == 0: printTo = self.log_to_err_set
         lineNo = inspect.currentframe().f_back.f_lineno
-        self.Log(logMsg, printTo, logging.ERROR, lineNo)
-
+        self.Log(logMsg, printTo, logging.ERROR, lineNo, toAscii=toAscii)
+    
     def Status(self, printTo = 0, logLevel = logging.INFO, lineNo = -1):
         if printTo == 0: printTo = self.log_to_norm
         if lineNo == -1:
@@ -310,10 +330,86 @@ class StashPluginHelper(StashInterface):
         argsWithPython = [f"{PythonExe}"] + args
         return self.ExecuteProcess(argsWithPython,ExecDetach=ExecDetach)
     
-    def Submit(*args, **kwargs):
-        thredPool.submit(*args, **kwargs)
+    def Submit(self, *args, **kwargs):
+        return self.thredPool.submit(*args, **kwargs)
     
-    # Extends class StashInterface with functions which are not yet in the class
+    def asc2(self, data, convertToAscii=None):
+        if convertToAscii or (convertToAscii == None and self.convertToAscii):
+            return ascii(data)
+        return str(str(data).encode('utf-8'))[2:-1] # This works better for logging than ascii function
+        # data = str(data).encode('ascii','ignore') # This works better for logging than ascii function
+        # return str(data)[2:-1] # strip out b'str'
+    
+    def init_mergeMetadata(self, excludeMergeTags=None):
+        self.excludeMergeTags = excludeMergeTags
+        self._mergeMetadata = mergeMetadata(self, self.excludeMergeTags)
+    
+    # Must call init_mergeMetadata, before calling merge_metadata
+    def merge_metadata(self, SrcData, DestData): # Input arguments can be scene ID or scene metadata
+        if type(SrcData) is int:
+            SrcData = self.find_scene(SrcData)
+            DestData = self.find_scene(DestData)
+        return self._mergeMetadata.merge(SrcData, DestData)
+    
+    def Progress(self, currentIndex, maxCount):
+        progress = (currentIndex / maxCount) if currentIndex < maxCount else (maxCount / currentIndex)
+        self.log.progress(progress)
+    
+    def run_plugin(self, plugin_id, task_mode=None, args:dict={}, asyn=False):
+        """Runs a plugin operation.
+           The operation is run immediately and does not use the job queue.
+        Args:
+            plugin_id (ID):             plugin_id
+            task_name (str, optional):  Plugin task to perform
+            args (dict, optional):      Arguments to pass to plugin. Plugin access via JSON_INPUT['args']
+        Returns:
+            A map of the result.
+        """
+        query = """mutation RunPluginOperation($plugin_id: ID!, $args: Map!) {
+            runPluginOperation(plugin_id: $plugin_id, args: $args)
+            }"""        
+        if task_mode != None:
+            args.update({"mode" : task_mode})
+        variables = {
+            "plugin_id": plugin_id,
+            "args": args,
+        }
+        if asyn:
+            self.Submit(self.call_GQL, query, variables)
+            return f"Made asynchronous call for plugin {plugin_id}"
+        else:
+            return self.call_GQL(query, variables)
+       
+    def find_duplicate_scenes_diff(self, distance: PhashDistance=PhashDistance.EXACT, fragment='id', duration_diff: float=10.00 ):
+        query = """
+        	query FindDuplicateScenes($distance: Int, $duration_diff: Float) {
+        		findDuplicateScenes(distance: $distance, duration_diff: $duration_diff) {
+        			...SceneSlim
+        		}
+        	}
+        """
+        if fragment:
+        	query = re.sub(r'\.\.\.SceneSlim', fragment, query)
+        else:
+        	query += "fragment SceneSlim on Scene { id  }"
+        
+        variables = { "distance": distance, "duration_diff": duration_diff }
+        result = self.call_GQL(query, variables)
+        return result['findDuplicateScenes'] 
+    
+    # #################################################################################################
+    # The below functions extends class StashInterface with functions which are not yet in the class
+    def get_all_scenes(self):
+        query_all_scenes = """
+            query AllScenes {
+                allScenes {
+                    id
+                    updated_at
+                }
+            }
+        """
+        return self.call_GQL(query_all_scenes)
+    
     def metadata_autotag(self, paths:list=[], performers:list=[], studios:list=[], tags:list=[]):
         query = """
         mutation MetadataAutoTag($input:AutoTagMetadataInput!) {
@@ -355,20 +451,76 @@ class StashPluginHelper(StashInterface):
     
     def rename_generated_files(self):
         return self.call_GQL("mutation MigrateHashNaming {migrateHashNaming}")
-       
-    def find_duplicate_scenes_diff(self, distance: PhashDistance=PhashDistance.EXACT, fragment='id', duration_diff: float=10.00 ):
-        query = """
-        	query FindDuplicateScenes($distance: Int, $duration_diff: Float) {
-        		findDuplicateScenes(distance: $distance, duration_diff: $duration_diff) {
-        			...SceneSlim
-        		}
-        	}
-        """
-        if fragment:
-        	query = re.sub(r'\.\.\.SceneSlim', fragment, query)
-        else:
-        	query += "fragment SceneSlim on Scene { id  }"
-        
-        variables = { "distance": distance, "duration_diff": duration_diff }
-        result = self.call_GQL(query, variables)
-        return result['findDuplicateScenes'] 
+
+class mergeMetadata: # A class to merge scene metadata from source scene to destination scene
+    srcData = None
+    destData = None
+    stash = None
+    excludeMergeTags = None
+    dataDict = None
+    result = "Nothing To Merge"
+    def __init__(self, stash, excludeMergeTags=None):
+        self.stash = stash
+        self.excludeMergeTags = excludeMergeTags
+    
+    def merge(self, SrcData, DestData):
+        self.srcData = SrcData
+        self.destData = DestData
+        ORG_DATA_DICT = {'id' : self.destData['id']}
+        self.dataDict = ORG_DATA_DICT.copy()
+        self.mergeItems('tags', 'tag_ids', [], excludeName=self.excludeMergeTags)
+        self.mergeItems('performers', 'performer_ids', [])
+        self.mergeItems('galleries', 'gallery_ids', [])
+        self.mergeItems('movies', 'movies', [])
+        self.mergeItems('urls', listToAdd=self.destData['urls'], NotStartWith=self.stash.STASH_URL)
+        self.mergeItem('studio', 'studio_id', 'id')
+        self.mergeItem('title')
+        self.mergeItem('director')
+        self.mergeItem('date')
+        self.mergeItem('details')
+        self.mergeItem('rating100')
+        self.mergeItem('code')
+        if self.dataDict != ORG_DATA_DICT:
+            self.stash.Trace(f"Updating scene ID({self.destData['id']}) with {self.dataDict}; path={self.destData['files'][0]['path']}", toAscii=True)
+            self.result = self.stash.update_scene(self.dataDict)
+        return self.result
+    
+    def Nothing(self, Data):
+        if not Data or Data == "" or (type(Data) is str and Data.strip() == ""):
+            return True
+        return False
+    
+    def mergeItem(self,fieldName, updateFieldName=None, subField=None):
+        if updateFieldName == None:
+            updateFieldName = fieldName
+        if self.Nothing(self.destData[fieldName]) and not self.Nothing(self.srcData[fieldName]):
+            if subField == None:
+                self.dataDict.update({ updateFieldName : self.srcData[fieldName]})
+            else:
+                self.dataDict.update({ updateFieldName : self.srcData[fieldName][subField]})
+    def mergeItems(self, fieldName, updateFieldName=None, listToAdd=[], NotStartWith=None, excludeName=None):
+        dataAdded = ""
+        for item in self.srcData[fieldName]:
+            if item not in self.destData[fieldName]:
+                if NotStartWith == None or not item.startswith(NotStartWith):
+                    if excludeName == None or item['name'] not in excludeName:
+                        if fieldName == 'movies':
+                            listToAdd += [{"movie_id" : item['movie']['id'], "scene_index" : item['scene_index']}]
+                            dataAdded += f"{item['movie']['id']} "                    
+                        elif updateFieldName == None:
+                            listToAdd += [item]
+                            dataAdded += f"{item} "
+                        else:
+                            listToAdd += [item['id']]
+                            dataAdded += f"{item['id']} "
+        if dataAdded != "":
+            if updateFieldName == None:
+                updateFieldName = fieldName
+            else:
+                for item in self.destData[fieldName]:
+                    if fieldName == 'movies':
+                        listToAdd += [{"movie_id" : item['movie']['id'], "scene_index" : item['scene_index']}]
+                    else:
+                        listToAdd += [item['id']]
+            self.dataDict.update({ updateFieldName : listToAdd})
+            # self.stash.Trace(f"Added {fieldName} ({dataAdded}) to scene ID({self.destData['id']})", toAscii=True)

@@ -1,4 +1,4 @@
-# FileMonitor: Ver 0.8.7 (By David Maisonave)
+# FileMonitor: Ver 0.9.0 (By David Maisonave)
 FileMonitor is a [Stash](https://github.com/stashapp/stash) plugin with the following two main features:
 - Updates Stash when any file changes occurs in the Stash library.
 - **Task Scheduler**: Runs scheduled task based on the scheduler configuration in **filemonitor_config.py**.
@@ -40,18 +40,25 @@ To enable the scheduler go to **Stash->Settings->Plugins->Plugins->FileMonitor**
 To configure the schedule or to add new task, edit the **task_scheduler** section in the **filemonitor_config.py** file.
 ```` python
 "task_scheduler": [
-	 # To create a daily task, include each day of the week for the weekday field.
-	{"task" : "Auto Tag",           "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "06:00"},  # Auto Tag -> [Auto Tag] (Daily at 6AM)
-	{"task" : "Optimise Database",  "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "07:00"},  # Maintenance -> [Optimise Database] (Daily at 7AM)
-	{"task" : "Create Tags", "pluginId" : "pathParser",  "validateDir" : "pathParser",  "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "05:00"}, # [Plugin Tasks] - > [Path Parser] -> [Create Tags]  (Daily at 5AM) : This task requires plugin [Path Parser]
-	
-	# The following tasks are scheduled for 3 days out of the week.
-	{"task" : "Clean",                  "weekday" : "monday,wednesday,friday",  "time" : "08:00"},  # Maintenance -> [Clean] (3 days per week at 8AM)
-	{"task" : "Clean Generated Files",  "weekday" : "tuesday,thursday,saturday",  "time" : "08:00"},  # Maintenance -> [Clean Generated Files] (3 days per week at 8AM)
+	# To create a daily task, include each day of the week for the weekday field or "every"
+	# Optional field for task "Auto Tag" is 'paths'. For detail usage, see example #A3: in filemonitor_task_examples.py
+	{"task" : "Auto Tag",           "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "05:00"},  # Auto Tag -> [Auto Tag] (Daily at 6AM)
+	# Task "Create Tags" is a plugin task. Optional fields are taskName and validateDir field. For detail usage, see examples #B1, #B2, #B3, and #B4 in filemonitor_task_examples.py
+	{"task" : "pathParser", "taskName" : "Create Tags",  "validateDir" : "pathParser",  
+				"weekday" : "every",             "time" : "05:30"}, # [Plugin Tasks] - > [Path Parser] -> [Create Tags]  (Daily at 5AM) : This task requires plugin [Path Parser]
+	# The following task runs plugin DupFileManager (tag_duplicates_task) if the plugin is installed. The task runs in the background because of "taskQue" : False
+	{"task" : "DupFileManager", "taskMode" : "tag_duplicates_task",  "validateDir" : "DupFileManager",  "taskQue" : False,
+				"weekday" : "every",   "time" : "02:30"}, # [Plugin Tasks] -> DupFileManager -> [Delete Duplicates] (Daily at 2:30AM)
+	{"task" : "Optimise Database",  "weekday" : "monday,tuesday,wednesday,thursday,friday", "time" : "07:00"},  # Maintenance -> [Optimise Database] (Every weekday at 7AM)
 	
 	# The following tasks are scheduled weekly
-	{"task" : "Generate",   "weekday" : "sunday",   "time" : "07:00"}, # Generated Content-> [Generate] (Every Sunday at 7AM)
-	{"task" : "Scan",       "weekday" : "sunday",   "time" : "03:00"}, # Library -> [Scan] (Weekly) (Every Sunday at 3AM)
+	# Optional field for task "Scan", "Auto Tag", and "Clean" is 'paths'. For detail usage, see examples #A3: in filemonitor_task_examples.py
+	{"task" : "Scan",                   "weekday" : "saturday",   "time" : "03:00"}, # Library -> [Scan] (Weekly) (Every saturday at 3AM)
+	{"task" : "Auto Tag",               "weekday" : "saturday",   "time" : "03:30"}, # Auto Tag -> [Auto Tag] (Weekly) (Every saturday at 3:30AM)
+	{"task" : "Generate",               "weekday" : "saturday",   "time" : "04:00"}, # Generated Content-> [Generate] (Every saturday at 4AM)
+	{"task" : "Clean",                  "weekday" : "saturday",   "time" : "04:30"}, # Maintenance -> [Clean] (Every saturday at 4:30AM)
+	{"task" : "Clean Generated Files",  "weekday" : "saturday",   "time" : "05:00"}, # Maintenance -> [Clean Generated Files] (Every saturday at 5AM)
+	{"task" : "Optimise Database",      "weekday" : "saturday",   "time" : "05:30"}, # Maintenance -> [Optimise Database] (Every saturday at 5:30AM)
 	
 	# To perform a task monthly, specify the day of the month as in the weekly schedule format, and add a monthly field.
 		# The monthly field value must be 1, 2, 3, or 4.
@@ -59,60 +66,37 @@ To configure the schedule or to add new task, edit the **task_scheduler** sectio
 			# 2 = 2nd specified weekday of the month. Example 2nd monday of the month.
 			# 3 = 3rd specified weekday of the month.
 			# 4 = 4th specified weekday of the month.
-	# The following task is scheduled monthly
-	{"task" : "Backup",     "weekday" : "sunday",   "time" : "01:00", "monthly" : 2}, # Backup -> [Backup] 2nd sunday of the month at 1AM (01:00)        
+	# The Backup task is scheduled monthly
+	# Optional field for task "Backup" is maxBackup. For detail usage, see example #A5 in filemonitor_task_examples.py
+	{"task" : "Backup",                 "weekday" : "sunday",  "time" : "01:00", "monthly" : 2}, # Backup -> [Backup] 2nd sunday of the month at 1AM (01:00)        
+	# The following task requires plugin DupFileManager and UI option [Delete Duplicate Scheduler] enabled.
+	{"task" : "DupFileManager", "taskName" : "Delete Duplicates",  "validateDir" : "DupFileManager",  
+										"weekday" : "sunday",  "time" : "02:00", "monthly" : 2}, # [Plugin Tasks] -> DupFileManager -> [Delete Duplicates] 2nd sunday of the month at 2AM (02:00)     
 	
-	# Example#A1: Task to call call_GQL API with custom input
-	{"task" : "GQL", "input" : "mutation OptimiseDatabase { optimiseDatabase }", "weekday" : "sunday",   "time" : "DISABLED"}, # To enable, change "DISABLED" to valid time
-	
-	# Example#A2: Task to call a python script. When this task is executed, the keyword <plugin_path> is replaced by filemonitor.py current directory.
-	#           The args field is NOT required.
-	{"task" : "python", "script" : "<plugin_path>test_script_hello_world.py", "args" : "--MyArguments Hello", "weekday" : "monday",   "time" : "DISABLED"}, # change "DISABLED" to valid time
-	
-	# Example#A3: The following task types can optionally take a [paths] field. If the paths field does not exists, the paths in the Stash library is used.
-	{"task" : "Scan",       "paths" : [r"E:\MyVideos\downloads", r"V:\MyOtherVideos"],   "weekday" : "sunday",   "time" : "DISABLED"}, # Library -> [Scan]
-	{"task" : "Auto Tag",   "paths" : [r"E:\MyVideos\downloads", r"V:\MyOtherVideos"],   "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",  "time" : "DISABLED"},  # Auto Tag -> [Auto Tag]
-	{"task" : "Clean",      "paths" : ["E:\\MyVideos\\downloads", "V:\\MyOtherVideos"],   "weekday" : "sunday",   "time" : "DISABLED"}, # Generated Content-> [Generate]
-	
-	# Example#A4: Task which calls Migrations -> [Rename generated files]
-	{"task" : "RenameGeneratedFiles",       "weekday" : "tuesday,thursday",   "time" : "DISABLED"}, # (bi-weekly) example
-	
-	# Example#A5: The Backup task using optional field maxBackup, which overrides the UI [Max DB Backups] value
-	{"task" : "Backup", "maxBackup" : 12,   "weekday" : "sunday",   "time" : "DISABLED"}, # Trim the DB backup files down to 12 backup files.
-	{"task" : "Backup", "maxBackup" : 0,    "weekday" : "sunday",   "time" : "DISABLED"}, # When used with a zero value, it will make sure no file trimming will occur no matter the value of the UI [Max DB Backups]
-	
-	# The above weekday method is the more reliable method to schedule task, because it doesn't rely on FileMonitor running continuously (non-stop).
-	
-	# The below examples use frequency field method which can work with minutes and hours. A zero frequency value disables the task.
-	#       Note:   Both seconds and days are also supported for the frequency field. 
-	#               However, seconds is mainly used for test purposes.
-	#               And days usage is discourage, because it only works if FileMonitor is running for X many days non-stop.
-	# The below example tasks are done using hours and minutes, however any of these task types can be converted to a daily, weekly, or monthly syntax.
-				   
-	# Example#B1: The following task is the syntax used for a plugin. A plugin task requires the plugin name for the [task] field, and the plugin-ID for the [pluginId] field.
-	{"task" : "PluginButtonName_Here", "pluginId" : "PluginId_Here", "hours" : 0}, # The zero frequency value makes this task disabled.
-	# Example#B2: Optionally, the validateDir field can be included which is used to validate that the plugin is installed either under the plugins folder or under the plugins-community folder.
-	{"task" : "PluginButtonName_Here", "pluginId" : "PluginId_Here",  "validateDir" : "UsuallySameAsPluginID", "hours" : 0}, # The zero frequency value makes this task disabled.
-	
-	# Example#B3: Task to execute a command
-	{"task" : "execute", "command" : "C:\\MyPath\\HelloWorld.bat", "hours" : 0},
-	
-	# Example#B4: Task to execute a command with optional args field, and using keyword <plugin_path>, which gets replaced with filemonitor.py current directory.
-	{"task" : "execute", "command" : "<plugin_path>HelloWorld.cmd", "args" : "--name David", "minutes" : 0},
+	# The [CheckStashIsRunning] task checks if Stash is running. If not running, it will start up stash. 
+	# This task only works if FileMonitor is started as a service or in command line mode.
+	# Optional fields are 'command' and 'RunAfter'. For detail usage, see examples #C1 and #C2 in filemonitor_task_examples.py
+	{"task" : "CheckStashIsRunning",    "minutes" :5}, # Checks every 5 minutes
 ],
 ````
-- To add plugins to the task list, both the Plugin-ID and the plugin name is required. The plugin ID is usually the file name of the script without the extension.
-  - For plugin task, optionally **validateDir** field can be included that defines the plugin sub directory, which is checked to see if it exist before running the task.
+- To add plugins to the task list, use the Plugin-ID in the "task" field. The plugin ID is usually the file name of the script without the extension.
+  - Plugin task have the following optional fields: taskName, taskMode, validateDir, and taskQue
+    - The **validateDir** field can be used to define the plugin sub directory, which is checked to see if it exist before running the task.
+    - **taskName** field is used to name the task to call for the associated plugin. It can not be used with "taskQue":False
+    - **taskQue** field is used to call the plugin without using the Task Queue. I.E. "taskQue":False. When this field is set to False, the taskName field can NOT be used.  Instead use taskMode to identify the task to call.
+    - **taskMode** field is used in order to run the plugin without using the Task Queue. The plugin runs immediatly. Be careful not to confuse taskMode with taskName. Look in the plugin *.yml file under the **tasks** section where it defines both the task-name and the task-mode.
 - Task can be scheduled to run monthly, weekly, hourly, and by minutes.
 - The scheduler list uses two types of syntax. One is **weekday** based, and the other is **frequency** based.
   - **weekday Based**
     - Use the weekday based syntax for daily, weekly, and monthly schedules.
     - All the weekday based methods must have a **weekday** field and a **time** field, which specifies the day(s) of the week and the time to start the task.
     - **Daily**:
-      - A daily task populates the weekday field with all the days of the week.
+      - A daily task populates the weekday field with all the days of the week or with keyword **every**.
       - **Daily Example**:
         - Starts a task daily at 6AM.
           - `{"task" : "Optimise Database",   "weekday" : "monday,tuesday,wednesday,thursday,friday,saturday,sunday",   "time" : "06:00"},`
+        - Starts a task daily at 2PM.
+          - `{"task" : "Optimise Database",   "weekday" : "every",   "time" : "14:00"},`
     - **Weekly**:
       - **Weekly Example**:
         - Starts a task weekly every monday and 9AM.
