@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FansDB Submission Helper
 // @author      mmenanno, DogmaDragon
-// @version     0.7
+// @version     0.7.1
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/FansDB/docs/main/docs/assets/images/favicon.png
 // @namespace   FansDB-Submission-Helper
@@ -184,12 +184,16 @@ function urlSite(url) {
     site = "Bluesky";
   } else if (/(^https?:\/\/(?:www.)?bongacams\.com\/[^?]+)/.test(url)) {
     site = "BongaCams";
+  } else if (/(^https?:\/\/(?:www.)?bybio\.co\/[^?]+)/.test(url)) {
+    site = "Bybio";
   } else if (/(^https?:\/\/(?:www.)?campsite\.bio\/[^?]+)/.test(url)) {
     site = "Campsite";
   } else if (/(^https?:\/\/(?:www.)?camsoda\.com\/[^?]+)/.test(url)) {
     site = "CamSoda";
   } else if (/(^https?:\/\/(?:www.)?chaturbate\.com\/[^?]+)/.test(url)) {
     site = "Chaturbate";
+  } else if (/(^https?:\/\/(?:www.)?clips4sale\.com\/[^?]+)/.test(url)) {
+    site = "Clips4Sale";
   } else if (/(^https?:\/\/(?:www.)?cosoc\.com\/[^?]+)/.test(url)) {
     site = "Compiled";
   } else if (/(^https?:\/\/(?:www.)?f2f\.com\/[^?]+)/.test(url)) {
@@ -212,6 +216,8 @@ function urlSite(url) {
     site = "Fansoda";
   } else if (/(^https?:\/\/(?:www.)?fantia\.jp\/[^?]+)/.test(url)) {
     site = "Fantia";
+  } else if (/(^https?:\/\/(?:www.)?faphouse\.com\/[^?]+)/.test(url)) {
+    site = "FapHouse";
   } else if (
     /(^https?:\/\/(?:www.)?adult\.contents\.fc2\.com\/[^?]+)/.test(url)
   ) {
@@ -236,6 +242,8 @@ function urlSite(url) {
     site = "IAFD";
   } else if (/(^https?:\/\/(?:www.)?instagram\.com\/[^?]+)/.test(url)) {
     site = "Instagram";
+  } else if (/(^https?:\/\/(?:www.)?iwantclips\.com\/[^?]+)/.test(url)) {
+    site = "IWantClips";
   } else if (/(^https?:\/\/(?:www.)?justfor\.fans\/[^?]+)/.test(url)) {
     site = "JustForFans";
   } else if (/(^https?:\/\/(?:www.)?jvid\.com\/[^?]+)/.test(url)) {
@@ -272,6 +280,8 @@ function urlSite(url) {
     )
   ) {
     site = "MFC Share";
+  } else if (/(^https?:\/\/(?:www.)?msha\.ke\/[^?]+)/.test(url)) {
+    site = "Milkshake";
   } else if (/(^https?:\/\/(?:www.)?modelmayhem\.com\/[^?]+)/.test(url)) {
     site = "Model Mayhem";
   } else if (/(^https?:\/\/(?:www.)?(?:.+)\.modelcentro\.com)/.test(url)) {
@@ -286,6 +296,8 @@ function urlSite(url) {
     site = "MyDirtyHobby";
   } else if (/(^https?:\/\/(?:www.)?mym\.fans\/[^?]+)/.test(url)) {
     site = "MYM";
+  } else if (/(^https?:\/\/(?:www.)?mynx\.co\/[^?]+)/.test(url)) {
+    site = "Mynx";
   } else if (/(^https?:\/\/(?:www.)?onlyfans\.com\/[^?]+)/.test(url)) {
     site = "OnlyFans";
   } else if (/(^https?:\/\/(?:www.)?patreon\.com\/[^?]+)/.test(url)) {
@@ -314,6 +326,8 @@ function urlSite(url) {
     site = "Snipfeed";
   } else if (/(^https?:\/\/(?:www.)?socprofile\.com\/[^?]+)/.test(url)) {
     site = "SocProfile";
+  } else if (/(^https?:\/\/(?:www.)?solo\.to\/[^?]+)/.test(url)) {
+    site = "solo";
   } else if (
     /(^https:\/\/stashdb\.org\/performers\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/.test(
       url

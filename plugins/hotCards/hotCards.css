@@ -9,7 +9,7 @@
   height: auto;
 }
 
-.hot-card::after {
+.hot-card:after {
   z-index: -1;
 }
 
@@ -18,6 +18,128 @@
     0px 0px 1em var(--hover-color),
     0px 0px 2em var(--hover-color);
   animation: none !important;
+}
+
+.holo {
+  --img: url("https://raw.githubusercontent.com/stashapp/CommunityScripts/main/plugins/hotCards/assets/illusion.webp");
+  --posx: 50%;
+  --posy: 50%;
+  --hyp: 0.2;
+  --o: 1;
+  --mx: 50%;
+  --my: 50%;
+  --radius: 4.55% / 3.5%;
+  --space: 1%;
+  --imgsize: 50%;
+
+  --color1: rgb(255, 119, 115) calc(var(--space) * 1);
+  --color2: rgba(255, 237, 95, 1) calc(var(--space) * 2);
+  --color3: rgba(168, 255, 95, 1) calc(var(--space) * 3);
+  --color4: rgba(131, 255, 247, 1) calc(var(--space) * 4);
+  --color5: rgba(120, 148, 255, 1) calc(var(--space) * 5);
+  --color6: rgb(216, 117, 255) calc(var(--space) * 6);
+  --color7: rgb(255, 119, 115) calc(var(--space) * 7);
+
+  display: grid;
+}
+
+.holo-img {
+  grid-area: 1/1;
+}
+
+.shine {
+  height: 100%;
+  mix-blend-mode: color-dodge;
+  background-image: var(--img),
+    repeating-linear-gradient(
+      0deg,
+      var(--color1),
+      var(--color2),
+      var(--color3),
+      var(--color4),
+      var(--color5),
+      var(--color6),
+      var(--color7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      #0e152e 0%,
+      hsl(180, 10%, 60%) 3.8%,
+      hsl(180, 29%, 66%) 4.5%,
+      hsl(180, 10%, 60%) 5.2%,
+      #0e152e 10%,
+      #0e152e 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--mx) var(--my),
+      rgba(0, 0, 0, 0.1) 12%,
+      rgba(0, 0, 0, 0.15) 20%,
+      rgba(0, 0, 0, 0.25) 120%
+    );
+  background-blend-mode: exclusion, hue, hard-light, exclusion;
+  background-size:
+    var(--imgsize),
+    200% 700%,
+    300%,
+    200%;
+  background-position:
+    center,
+    0% var(--posy),
+    var(--posx) var(--posy),
+    var(--posx) var(--posy);
+  filter: brightness(calc((var(--hyp) * 0.3) + 0.5)) contrast(2) saturate(1.5);
+  -webkit-filter: brightness(calc((var(--hyp) * 0.3) + 0.5)) contrast(2)
+    saturate(1.5);
+  display: grid;
+  grid-area: 1/1;
+  opacity: var(--o);
+}
+
+.shine:after {
+  content: "";
+  visibility: visible;
+  height: 100%;
+  mix-blend-mode: exclusion;
+  background-image: var(--img),
+    repeating-linear-gradient(
+      0deg,
+      var(--color1),
+      var(--color2),
+      var(--color3),
+      var(--color4),
+      var(--color5),
+      var(--color6),
+      var(--color7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      #0e152e 0%,
+      hsl(180, 10%, 60%) 3.8%,
+      hsl(180, 29%, 66%) 4.5%,
+      hsl(180, 10%, 60%) 5.2%,
+      #0e152e 10%,
+      #0e152e 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--mx) var(--my),
+      rgba(0, 0, 0, 0.1) 12%,
+      rgba(0, 0, 0, 0.15) 20%,
+      rgba(0, 0, 0, 0.25) 120%
+    );
+  background-blend-mode: exclusion, hue, hard-light, exclusion;
+  background-size:
+    var(--imgsize),
+    200% 400%,
+    195%,
+    200%;
+  background-position:
+    center,
+    0% var(--posy),
+    calc(var(--posx) * -1) calc(var(--posy) * -1),
+    var(--posx) var(--posy);
+  filter: brightness(calc((var(--hyp) * 0.5) + 0.8)) contrast(1.6) saturate(1.4);
+  -webkit-filter: brightness(calc((var(--hyp) * 0.5) + 0.8)) contrast(1.6)
+    saturate(1.4);
 }
 
 @keyframes pulse {
@@ -43,6 +165,18 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@media (max-width: 576px) {
+  .hot-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) and (orientation: portrait) {
+  div[class*=" hot-performer-card"] {
+    width: 14rem;
   }
 }
 

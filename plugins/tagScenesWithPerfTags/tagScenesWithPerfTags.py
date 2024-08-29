@@ -1,8 +1,6 @@
-import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import sys
 import json
-
 
 def processAll():
     query = {

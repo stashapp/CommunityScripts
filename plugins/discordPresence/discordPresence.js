@@ -16,18 +16,15 @@
    * @typedef {{
    * id, title, code, details, director, urls?: string[], date, rating100, o_counter,
    * organized, interactive, interactive_speed, created_at, updated_at, resume_time,
-   * last_played_at, play_duration, play_count, files: {duration:number}[], studio?: {id, name}
+   * last_played_at, play_duration, play_count, files: {duration:number}[],
+   * studio?: {id, name}, performers: {name, gender}[]
    * }} SceneData
    */
 
   /**
-   * @typedef {{ studio_name: string, url: string, file_duration: string }
-   * & Omit<SceneData, ['urls', 'files', 'studio']>
+   * @typedef {{ studio_name: string, url: string, file_duration: string, performers: string }
+   * & Omit<SceneData, ['urls', 'files', 'studio', 'performers']>
    * } FlattenedSceneData
-   */
-
-  /**
-   * @typedef {{ data: { findScene: SceneData | null } }} GQLSceneDataResponse
    */
 
   const SCENE_GQL_QUERY = `
@@ -58,6 +55,7 @@
       play_count
       files { duration }
       studio { name }
+      performers { name, gender }
     }
   `;
 
@@ -82,31 +80,28 @@
 
   console.debug("Discord Presence Plugin: loaded config", CONFIG);
 
+  function throttle(mainFunction, delay) {
+    let timerFlag = null;
+
+    return (...args) => {
+      if (timerFlag === null) {
+        mainFunction(...args);
+        timerFlag = setTimeout(() => {
+          timerFlag = null;
+        }, delay);
+      }
+    };
+  }
+
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const player = () => document.querySelector("#VideoJsPlayer video");
 
+  let WAITING_FOR_REFRESH = true;
   let SCENE_ID = null;
   /** @type {FlattenedSceneData?} */ let cachedSceneData;
 
   /** @type {WebSocket} */ let ws;
   const wsAlive = () => ws && ws.readyState === 1;
-
-  const videoListener = (video) => {
-    SCENE_ID = parseInt(location.pathname.split("/")[2]);
-    video.addEventListener("playing", setDiscordActivity);
-    video.addEventListener("play", setDiscordActivity);
-    video.addEventListener("timeupdate", setDiscordActivity);
-    video.addEventListener("seeked", setDiscordActivity);
-    video.addEventListener("ended", clearDiscordActivity);
-  };
-
-  const unbindVideoListener = (video) => {
-    video.removeEventListener("playing", setDiscordActivity);
-    video.removeEventListener("play", setDiscordActivity);
-    video.removeEventListener("timeupdate", setDiscordActivity);
-    video.removeEventListener("seeked", setDiscordActivity);
-    video.removeEventListener("ended", clearDiscordActivity);
-  };
 
   // Start ws connection to RPC server and add video listener
   // Will retry on disconnection/error after 10s
@@ -166,7 +161,7 @@
       query: SCENE_GQL_QUERY,
     };
 
-    /** @type {GQLSceneDataResponse} */
+    /** @type {SceneData} */
     const sceneData = await csLib
       .callGQL(reqData)
       .then((data) => data.findScene);
@@ -177,17 +172,21 @@
       studio_name: sceneData.studio?.name ?? "Unknown Studio",
       url: sceneData.urls?.length ? sceneData.urls[0] : "",
       file_duration: sceneData.files?.length ? sceneData.files[0].duration : 0,
+      performers: sceneData.performers.length
+        ? sceneData.performers.map((performer) => performer.name).join(", ")
+        : "Unlisted Performer(s)",
     };
 
     delete sceneData.urls;
     delete sceneData.studio;
     delete sceneData.files;
+    delete sceneData.performers;
 
     cachedSceneData = { ...sceneData, ...newProps };
     return cachedSceneData;
   }
 
-  function clearDiscordActivity() {
+  const clearDiscordActivity = () => {
     if (!!SCENE_ID === false || !wsAlive()) {
       return;
     }
@@ -199,9 +198,18 @@
         clearActivity: true,
       })
     );
-  }
+  };
 
-  async function setDiscordActivity() {
+  const setDiscordActivity = throttle(async (event) => {
+    if (event?.type === "timeupdate") {
+      if (!WAITING_FOR_REFRESH) {
+        return;
+      }
+
+      WAITING_FOR_REFRESH = false;
+      setTimeout(() => (WAITING_FOR_REFRESH = true), 5000);
+    }
+
     const sceneData = await getSceneData(SCENE_ID);
     if (!sceneData) return;
 
@@ -239,7 +247,7 @@
         presence: body,
       })
     );
-  }
+  }, 1000);
 
   /**
    * Performs string replacement on templated config vars with scene data
@@ -248,6 +256,32 @@
    */
   function replaceVars(templateStr, sceneData) {
     const pattern = /{\s*(\w+?)\s*}/g;
-    return templateStr.replace(pattern, (_, token) => sceneData[token] ?? "");
+
+    const replacedStr = templateStr
+      .replace(pattern, (_, token) => sceneData[token] ?? "")
+      .trim();
+
+    if (replacedStr.length <= 128) {
+      return replacedStr;
+    }
+
+    return replacedStr.substring(0, 125) + "...";
   }
+
+  const videoListener = (video) => {
+    SCENE_ID = parseInt(location.pathname.split("/")[2]);
+    video.addEventListener("playing", setDiscordActivity);
+    video.addEventListener("play", setDiscordActivity);
+    video.addEventListener("timeupdate", setDiscordActivity);
+    video.addEventListener("seeked", setDiscordActivity);
+    video.addEventListener("ended", clearDiscordActivity);
+  };
+
+  const unbindVideoListener = (video) => {
+    video.removeEventListener("playing", setDiscordActivity);
+    video.removeEventListener("play", setDiscordActivity);
+    video.removeEventListener("timeupdate", setDiscordActivity);
+    video.removeEventListener("seeked", setDiscordActivity);
+    video.removeEventListener("ended", clearDiscordActivity);
+  };
 })();

@@ -50,3 +50,4 @@ Below are a list of available variable names:
 - `{url}`
 - `{studio_name}`
 - `{file_duration}`
+- `{performers}`
