@@ -172,10 +172,13 @@ async def __tag_images(images):
         finally:
             increment_progress()
             for temp_file in temp_files:
-                if os.path.isdir(temp_file):
-                    shutil.rmtree(temp_file)
-                else:
-                    os.remove(temp_file)
+                try:
+                    if os.path.isdir(temp_file):
+                        shutil.rmtree(temp_file)
+                    else:
+                        os.remove(temp_file)
+                except Exception as e:
+                    log.debug(f"Failed to remove temp file {temp_file}: {e}")
 
 # ----------------- Scene Processing -----------------
 
