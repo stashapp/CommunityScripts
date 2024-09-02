@@ -96,11 +96,21 @@
         while (vjsPlayer.currentTime() < newTime) {
           vjsPlayer.currentTime(newTime + extraDelta);
           ++extraDelta;
+
+          if (vjsPlayer.currentTime() + extraDelta >= vjsPlayer.duration()) {
+            vjsPlayer.currentTime(vjsPlayer.duration());
+            break;
+          }
         }
       } else {
         while (vjsPlayer.currentTime() > newTime) {
           vjsPlayer.currentTime(newTime - extraDelta);
           ++extraDelta;
+
+          if (vjsPlayer.currentTime() - extraDelta <= 0) {
+            vjsPlayer.currentTime(0);
+            break;
+          }
         }
       }
     }

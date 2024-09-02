@@ -1,12 +1,10 @@
 import stashapi.log as log
-from stashapi.stashapp import StashInterface, StashItem
+from stashapi.stashapp import StashInterface
 from stashapi.stashbox import StashBoxInterface
 import os
 import sys
 import requests
 import json
-import time
-import math
 import requests
 from pathlib import Path
 import base64

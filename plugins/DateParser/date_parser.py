@@ -1,11 +1,9 @@
 import sys, json
-from pathlib import Path
 
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import re
 from dateparser import parse
-from datetime import datetime
 
 
 def main():

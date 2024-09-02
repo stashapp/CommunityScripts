@@ -1,0 +1,18 @@
+name: StashAppAndroidTV Companion
+description: A companion plugin for StashAppAndroidTV
+version: 0.0.1
+url: https://github.com/damontecres/StashAppAndroidTV-Companion
+
+exec:
+  - python
+  - "{pluginDir}/stashAppAndroidTvCompanion.py"
+interface: raw
+tasks:
+  - name: logcat
+    description: Send android app's logcat logs
+    defaultArgs:
+      mode: logcat
+  - name: crash_report
+    description: Send android app's crash report
+    defaultArgs:
+      mode: crash_report

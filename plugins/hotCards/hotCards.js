@@ -21,7 +21,7 @@
     card_opts: {
       fill: true,
       opacity: 80,
-      animation: false,
+      animate: false,
     },
   };
   const CRITERIA = { tag: "t", rating: "r", disabled: "d" };
@@ -102,7 +102,7 @@
       card_opts: parseArraySegment(segments[5], DEFAULTS.card_opts, [
         "fill",
         "opacity",
-        "animation",
+        "animate",
       ]),
     };
   }
@@ -165,8 +165,12 @@
    */
   function handleHomeHotCards() {
     const pattern = /^\/$/;
+    let timeoutId;
+
+    overrideHistoryMethods(() => clearTimeout(timeoutId));
+
     registerPathChangeListener(pattern, () => {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         for (const card of Object.values(CARDS))
           if (card.enabled) handleHotCards(card, true);
       }, 3000);
@@ -329,11 +333,16 @@
       );
 
       if (segmentParams) {
-        const classId = segmentParams.value.join("-");
-        createHotElementAndAttachToDOM(card, cardClass, classId, isHome);
-        checkHoloCardsAndAttachToDOM(
+        const classId = segmentParams.value.join("-").replace(/\./g, "-");
+        const hotCardEl = createHotElementAndAttachToDOM(
+          card,
           cardClass,
           classId,
+          isHome
+        );
+        checkHoloCardAndAttachToDOM(
+          hotCardEl,
+          cardClass,
           segmentParams.style,
           segmentParams.cardOptions
         );
@@ -406,6 +415,8 @@
     cardElement.before(hotElement);
     hotElement.append(cardElement);
     hotCards.push(hotElement);
+
+    return hotElement;
   }
 
   function createElementFromHTML(htmlString) {
@@ -428,7 +439,7 @@
     if (hotCardClasses.length === 0 || !hotCardContainsAllClasses) {
       const pseudoElementStyles = value.map((segment, index) => {
         const segmentOrValue = Array.isArray(segment) ? segment : value;
-        const classId = segmentOrValue.join("-");
+        const classId = segmentOrValue.join("-").replace(/\./g, "-");
         const hotCardClass = `.hot-${card.class}-${classId}`;
 
         // Skip if the hot card class is already present
@@ -579,7 +590,7 @@
     gradientAnimation = "",
     filter = ""
   ) {
-    const opacity = getBackgroundOpacity(cardOptions.opacity);
+    const opacity = getFixedBackgroundOpacity(cardOptions.opacity);
     const fill = /true/i.test(cardOptions.fill);
     const gradientAnimationStr = gradientAnimation
       ? `animation: move ${gradientAnimation};`
@@ -618,44 +629,92 @@
       }`;
   }
 
-  /**
-   * Currently, it only works for performer cards
-   */
-  function checkHoloCardsAndAttachToDOM(
+  function checkHoloCardAndAttachToDOM(
+    hotCardEl,
     cardClass,
-    classId,
     style,
     cardOptions
   ) {
-    const cardAnimation = /true/i.test(cardOptions.animation);
-    const hotCardClass = `.hot-${cardClass}-${classId}`;
-    const cards = document.querySelectorAll(`${hotCardClass}`);
-
     if (STYLES[style] !== STYLES.holo) return;
 
-    cards.forEach((card) => {
-      const imgElement = card.querySelector(".thumbnail-section > a > img");
-      const holoEl = createElementFromHTML(`<div class="holo">`);
-      const shineEl = createElementFromHTML(`<div class="shine"></div>`);
-      const posX = getRandomInt(100);
-      const posY = getRandomInt(100);
+    const animateCard = /true/i.test(cardOptions.animate);
+    const cardClasses = ["image-card", "scene-card", "studio-card"];
+    const classInArray = cardClasses.includes(cardClass);
+    const isStudioCard = cardClass === "studio-card";
+    const isImageOrSceneCard = classInArray && !isStudioCard;
+    const classSuffix = isImageOrSceneCard ? "preview-image" : "image";
+    const imgClass = `.${cardClass}-${classSuffix}`;
+    const targetEl = hotCardEl.querySelector(imgClass);
 
-      imgElement?.classList.add("holo-img");
-      imgElement?.before(holoEl);
-      holoEl.append(imgElement);
-      holoEl.append(shineEl);
+    if (!targetEl) return;
 
-      holoEl.style.setProperty("--posx", `${posX}%`);
-      holoEl.style.setProperty("--posy", `${posY}%`);
+    const holoEl = createElementFromHTML(`<div class="holo"></div>`);
+    const shineEl = createElementFromHTML(`<div class="shine"></div>`);
+    const seedX = getRandomInt(100);
+    const seedY = getRandomInt(100);
 
-      if (cardAnimation) animateHoloCards(holoEl, posX, posY);
+    const calculateAspectRatio = (width, height) => width / height;
+    const calculateDegrees = (aspectRatio, degreesOffset) =>
+      degreesOffset + Math.atan(aspectRatio) * (180 / Math.PI);
+    const setFixedAspectRatio = (el, aspectRatio) => {
+      el.style.setProperty("aspect-ratio", aspectRatio.toFixed(3));
+    };
+    const applyInitialStyles = () => {
+      if (isStudioCard) {
+        holoEl.style.display = "block";
+        shineEl.style.position = "absolute";
+        shineEl.style.top = "0px";
+        shineEl.style.left = "0px";
+      }
+      holoEl.style.setProperty("--posx", `${seedX}%`);
+      holoEl.style.setProperty("--posy", `${seedY}%`);
+    };
+
+    targetEl.classList.add("holo-img");
+    targetEl.before(holoEl);
+    holoEl.append(targetEl);
+    holoEl.append(shineEl);
+    applyInitialStyles();
+
+    waitForImageLoad(targetEl, () => {
+      const hotBorderEl = hotCardEl.querySelector(".hot-border");
+
+      if (!hotBorderEl) return;
+
+      const studioCardMarginSize = 5;
+      const isSceneCard = cardClass === "scene-card";
+      const degreesOffset = isStudioCard ? 98 : isSceneCard ? 83 : 97;
+      let aspectRatio = 0;
+      let degrees = 0;
+
+      // Delay to ensure the resizing of the width for the cardClass element / hotBorderEl has been completed
+      setTimeout(() => {
+        if (isStudioCard) {
+          aspectRatio = calculateAspectRatio(
+            hotBorderEl.offsetWidth - studioCardMarginSize,
+            hotBorderEl.offsetHeight - studioCardMarginSize
+          );
+          degrees = Math.floor(calculateDegrees(aspectRatio, degreesOffset));
+        } else {
+          aspectRatio = calculateAspectRatio(
+            hotBorderEl.offsetWidth,
+            targetEl.offsetHeight
+          );
+          degrees = Math.round(calculateDegrees(aspectRatio, degreesOffset));
+        }
+
+        holoEl.style.setProperty("--angle", `${degrees}deg`);
+        setFixedAspectRatio(shineEl, aspectRatio);
+      }, 100);
     });
+
+    if (animateCard) animateHoloCards(holoEl, seedX, seedY);
   }
 
-  function animateHoloCards(holoEl, px, py) {
+  function animateHoloCards(holoEl, seedX, seedY) {
     const increment = 0.05;
-    let posX = px;
-    let posY = py;
+    let posX = seedX;
+    let posY = seedY;
     let add = increment;
 
     function animate() {
@@ -673,14 +732,6 @@
       requestAnimationFrame(animate);
     }
     animate();
-  }
-
-  function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
-  }
-
-  function getBackgroundOpacity(opacity) {
-    return parseFloat((1 - opacity / 100).toFixed(1));
   }
 
   function createCardStyle(
@@ -824,11 +875,5 @@
     hotCards.length = 0;
   }
 
-  ["pushState", "replaceState"].forEach((method) => {
-    const original = history[method];
-    history[method] = function () {
-      restoreCards();
-      return original.apply(this, arguments);
-    };
-  });
+  overrideHistoryMethods(restoreCards);
 })();

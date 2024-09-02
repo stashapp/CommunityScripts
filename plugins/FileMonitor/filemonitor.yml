@@ -1,0 +1,42 @@
+name: FileMonitor
+description: Monitors the Stash library folders, and updates Stash if any changes occurs in the Stash library paths.
+version: 0.9.0
+url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
+settings:
+  recursiveDisabled:
+    displayName: No Recursive
+    description: Enable to STOP monitoring paths recursively.
+    type: BOOLEAN
+  turnOnScheduler:
+    displayName: Scheduler
+    description: Enable to turn on the scheduler. See filemonitor_config.py for more details.
+    type: BOOLEAN
+  turnOnSchedulerDeleteDup:
+    displayName: Delete Duplicate Scheduler
+    description: Turn on scheduler for deleting duplicates in Stash library. (Requires plugin DupFileManager and [Scheduler] enabled)
+    type: BOOLEAN
+  zmaximumBackups:
+    displayName: Max DB Backups
+    description: Trim database backup files to set value. Requires [Scheduler] enabled and backupDirectoryPath path length longer than 4.
+    type: NUMBER
+  zzdebugTracing:
+    displayName: Debug Tracing
+    description: Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\FileMonitor\filemonitor.log
+    type: BOOLEAN
+exec:
+  - python
+  - "{pluginDir}/filemonitor.py"
+interface: raw
+tasks:
+  - name: Start Library Monitor Service
+    description: Run [Library Monitor] as a SERVICE to update Stash with any media file changes.
+    defaultArgs:
+      mode: start_library_monitor_service
+  - name: Stop Library Monitor
+    description: Stops library monitoring within 2 minutes.
+    defaultArgs:
+      mode: stop_library_monitor
+  - name: Monitor as a Plugin
+    description: Run [Library Monitor] as a plugin (*Not recommended*)
+    defaultArgs:
+      mode: start_library_monitor
