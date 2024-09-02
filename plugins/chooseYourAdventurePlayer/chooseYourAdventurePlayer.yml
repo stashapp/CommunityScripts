@@ -1,0 +1,30 @@
+name: Choose Your Own Adventure Player
+description: Plugin to adapt Choose Your Own Adventure Games to the VideoJS player.
+version: 1.0
+# requires: CommunityScriptsUILibrary
+ui:
+  requires:
+    - CommunityScriptsUILibrary
+  assets:
+    /: assets
+settings:
+  gameTag:
+    displayName: Game tag
+    description: Name of the tag indicating a scene is the starting point of game. Player will initialize once scene with this tag is loaded. Only use this tag on the starting scene.
+    type: STRING
+  enableGameSave:
+    displayName: Enable game save
+    description: When enabled you will be giving the opportunity to resume your games from where you last left off which all your choices in tack.
+    type: BOOLEAN
+  resourcePath:
+    displayName: Resource path
+    description: Location where game resources live (images, jsons). It is recommended to create custom served folder for this.
+    type: STRING
+  rootScenesPath:
+    displayName: Root scenes directory path
+    description: Data path where game scenes live.
+    type: STRING
+  useCustomPosters:
+    displayName: Use custom game posters
+    description: When enabled the t=start game screen will use provided poster instead of default scene cover. Poster should be named with the following comvention {resourcePath}/{gameId}/poster_{number}.jpg
+    type: BOOLEAN
