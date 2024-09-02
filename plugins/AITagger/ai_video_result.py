@@ -145,8 +145,8 @@ class AIVideoResult(BaseModel):
         tags = {}
         for result in server_result:
             frame_index = result["frame_index"]
-            actions = result["actions"]
-            for action in actions:
+            alltags = media_handler.get_all_tags_from_server_result(result)
+            for action in alltags:
                 tag_name, confidence = action
                 if tag_name not in tags:
                     tags[tag_name] = TagData(ai_model_name=model_name, time_frames=[TagTimeFrame(start=frame_index, end=None, confidence=confidence)])

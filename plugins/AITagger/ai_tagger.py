@@ -154,10 +154,10 @@ async def __tag_images(images):
                         log.error(f"Error processing image: {result['error']}")
                         media_handler.add_error_images([id])
                     else:
-                        actions = result['actions']
-                        action_stashtag_ids = media_handler.get_tag_ids(actions)
-                        action_stashtag_ids.append(media_handler.ai_tagged_tag_id)
-                        media_handler.add_tags_to_image(id, action_stashtag_ids)
+                        tags = media_handler.get_all_tags_from_server_result(result)
+                        stashtag_ids = media_handler.get_tag_ids(tags)
+                        stashtag_ids.append(media_handler.ai_tagged_tag_id)
+                        media_handler.add_tags_to_image(id, stashtag_ids)
 
             log.info(f"Tagged {len(imageIds)} images")
             media_handler.remove_tagme_tags_from_images(imageIds)
@@ -166,16 +166,19 @@ async def __tag_images(images):
         except asyncio.TimeoutError as a:
             log.error(f"Timeout processing images: {a}")
         except Exception as e:
-            log.error(f"Failed to process images: {e}")
+            log.error(f"Failed to process images: {e}Stack trace: {traceback.format_exc()}")
             media_handler.add_error_images(imageIds)
             media_handler.remove_tagme_tags_from_images(imageIds)
         finally:
             increment_progress()
             for temp_file in temp_files:
-                if os.path.isdir(temp_file):
-                    shutil.rmtree(temp_file)
-                else:
-                    os.remove(temp_file)
+                try:
+                    if os.path.isdir(temp_file):
+                        shutil.rmtree(temp_file)
+                    else:
+                        os.remove(temp_file)
+                except Exception as e:
+                    log.debug(f"Failed to remove temp file {temp_file}: {e}")
 
 # ----------------- Scene Processing -----------------
 

@@ -1,28 +1,10 @@
 import requests, os, shutil
 import re, sys, json
 import datetime as dt
-import pathlib
 import time
-from inspect import getmembers, isfunction
-
-CurRunDir = pathlib.Path(__file__).parent.resolve()
-vENVDir = f"{CurRunDir}/../PythonToolsInstaller/venv/lib/python3.11/site-packages"
-
-try:
-    if os.path.isdir(vENVDir):
-        print(f"VENV Dir {vENVDir} used", file=sys.stderr)
-        sys.path.insert(0, vENVDir)
-    else:
-        print(f"VENV Dir {vENVDir} not used", file=sys.stderr)
-
-except Exception as e:
-    # Ignore
-    print("Caught exception")
 
 try:
     import stashapi.log as log
-    from stashapi.tools import human_bytes, human_bits
-    from stashapi.stash_types import PhashDistance
     from stashapi.stashapp import StashInterface
 
 except ModuleNotFoundError:
@@ -85,13 +67,10 @@ def main():
         if MODE == "disable":
             return True
     else:
-        FRAGMENT_HOOK_TYPE = FRAGMENT["args"]["hookContext"]["type"]
-        FRAGMENT_SCENE_ID = FRAGMENT["args"]["hookContext"]["id"]
         try:
             get_download()  # ToDo use single Scene
         except Exception as err:
             log.LogError(f"main function error: {err}")
-            traceback.print_exc()
 
     log.exit("Plugin exited normally.")
 
@@ -135,10 +114,7 @@ def get_download():
 
     i = 0
     for i, scene in enumerate(scenes):
-        title = re.sub(r"\[PDT: .+?\]\s+", "", scene["title"])
-        url = scene["url"]
         urls = scene["urls"]
-
         for u in urls:
             # if re.search(r"members\.adulttime\.com", u):
             if re.search(r"\.adulttime\.com", u):
@@ -176,7 +152,7 @@ def get_download():
                     else:
                         log.debug(f"No Interactive for this ID")
 
-                except KeyError as error:
+                except KeyError:
                     log.error(
                         "File '%s' can not be read, invailed format" % fpw
                     )
@@ -193,7 +169,6 @@ def get_download():
 
 
 def map_file_with_funscript(sceneinfo, funscriptfile):
-
     scenefiles = sceneinfo["files"]
     for u in scenefiles:
         filepath = os.path.dirname(os.path.abspath(u["path"]))

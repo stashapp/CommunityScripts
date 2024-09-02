@@ -29,8 +29,7 @@
   --mx: 50%;
   --my: 50%;
   --radius: 4.55% / 3.5%;
-  --space: 1%; /* 5% */
-  --angle: 133deg;
+  --space: 1%;
   --imgsize: 50%;
 
   --color1: rgb(255, 119, 115) calc(var(--space) * 1);
@@ -50,7 +49,6 @@
 
 .shine {
   height: 100%;
-  aspect-ratio: 0.714;
   mix-blend-mode: color-dodge;
   background-image: var(--img),
     repeating-linear-gradient(
@@ -101,7 +99,6 @@
   content: "";
   visibility: visible;
   height: 100%;
-  aspect-ratio: 0.714;
   mix-blend-mode: exclusion;
   background-image: var(--img),
     repeating-linear-gradient(
