@@ -42,25 +42,47 @@ def processSceneTimestamTrade(s):
 #                    log.debug(len(s["scene_markers"]) > 0)
                     if (
                         settings["createMarkers"]
-                        and (len(s["scene_markers"]) == 0)
+                        and (True if settings["runOnScenesWithMarkers"] else (len(s["scene_markers"]) == 0))
                         or settings["overwriteMarkers"]
                     ):
                         log.debug("creating markers")
                         markers = []
                         for m in data["markers"]:
-
+                            markerTitle=f"[TsTrade] {m["name"]}" if settings["addTsTradeTitle"] else m["name"]
                             marker = {
                                 "seconds": m["start_time"] / 1000,
                                 "primary_tag": None,
                                 "tags": [],
-                                "title": m["name"],
+                                "title": markerTitle,
                             }
                             if m["tag_name"]:
                                 marker["primary_tag"] = m["tag_name"]
                             else:
                                 marker["primary_tag"] = m["name"]
+                            if settings["addTsTradeTag"]:
+                                getTag("[TsTrade]")
+                                marker["tags"]=["[TsTrade]"]
                             if len(marker["primary_tag"]) > 0:
-                                markers.append(marker)
+                                found=False
+                                cur_marker_string=";".join([
+                                        str(marker["title"]),
+                                        str(int(marker["seconds"])),
+                                        str(getTag(marker["primary_tag"])),
+                                    ])
+
+                                for m in s['scene_markers']:
+                                    scene_marker_string = ";".join([
+                                            str(m["title"]),
+                                            str(m["seconds"]),
+                                            str(m["primary_tag"]["id"]),
+                                        ])
+                                    if cur_marker_string==scene_marker_string:
+                                        found=True
+                                        break
+                                if found:
+                                    log.debug("Duplicate marker, ignoring")
+                                else:
+                                    markers.append(marker)
                         #                        log.debug(marker)
                         if len(markers) > 0:
                             if settings["overwriteMarkers"]:
@@ -1003,9 +1025,10 @@ def processImages(img):
 
 
 json_input = json.loads(sys.stdin.read())
-
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
+
+
 config = stash.get_configuration()["plugins"]
 settings = {
     "createGalleryFromScene": False,
@@ -1015,6 +1038,9 @@ settings = {
     "disableSceneMarkersHook": False,
     "disableGalleryLookupHook": False,
     "createMarkers": True,
+    "runOnScenesWithMarkers": True,
+    "addTsTradeTag": True,
+    "addTsTradeTitle": True,
     "overwriteMarkers": False,
     "createGalleries": True,
 }
@@ -1103,20 +1129,35 @@ if "mode" in json_input["args"]:
             scene = stash.find_scene(json_input["args"]["scene_id"])
             processScene(scene)
         else:
-            query = {
-                "stash_id_endpoint": {
-                    "endpoint": "",
-                    "modifier": "NOT_NULL",
-                    "stash_id": "",
-                },
-                "has_markers": "false",
-                "tags": {
-                    "depth": 0,
-                    "excludes": [skip_sync_tag_id],
-                    "modifier": "INCLUDES_ALL",
-                    "value": [],
-                },
-            }
+            if settings["runOnScenesWithMarkers"]:
+                query = {
+                    "stash_id_endpoint": {
+                        "endpoint": "",
+                        "modifier": "NOT_NULL",
+                        "stash_id": "",
+                    },
+                    "tags": {
+                        "depth": 0,
+                        "excludes": [skip_sync_tag_id],
+                        "modifier": "INCLUDES_ALL",
+                        "value": [],
+                    },
+                }
+            if not settings["runOnScenesWithMarkers"]:
+                query = {
+                    "stash_id_endpoint": {
+                        "endpoint": "",
+                        "modifier": "NOT_NULL",
+                        "stash_id": "",
+                    },
+                    "has_markers": "false",
+                    "tags": {
+                        "depth": 0,
+                        "excludes": [skip_sync_tag_id],
+                        "modifier": "INCLUDES_ALL",
+                        "value": [],
+                    },
+                }
             processAll(query)
     elif "reprocessScene" == PLUGIN_ARGS:
         skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get(
