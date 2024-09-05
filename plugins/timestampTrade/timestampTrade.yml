@@ -31,6 +31,15 @@ settings:
   createMarkers:
     displayName: Add markers from timestamp.trade
     type: BOOLEAN
+  runOnScenesWithMarkers:
+    displayName: Run on scenes that already have markers.
+    type: BOOLEAN
+  addTsTradeTag:
+    displayName: Add the [tsTrade] tag to created markers.
+    type: BOOLEAN
+  addTsTradeTitle:
+    displayName: Add "TsTrade" to the start of generated marker titles.
+    type: BOOLEAN
   path:
     displayName: Download parent folder
     description: Download location for files, note this should be in a different folder to stash and in a folder covered by stash. You may need to create a new library path to cover this directory.
