@@ -1,3 +1,5 @@
+import math
+
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import stashapi.marker_parse as mp
@@ -7,12 +9,21 @@ import json
 import time
 
 
-per_page = 100
+#per_page = 100
+per_page = 5
 request_s = requests.Session()
 
 TPDB_ENDPOINT = "https://theporndb.net/graphql"
+tags_cache={}
+
+def getTag(name):
+    if name not in tags_cache:
+        tag = stash.find_tag(name, create=True)
+        tags_cache[name] = tag.get("id")
+    return tags_cache[name]
 
 def processScene(scene):
+    getTag("[TPDBMarker]")
     for sid in scene["stash_ids"]:
         if sid["endpoint"] == TPDB_ENDPOINT:
             log.debug("Scene has a TPDB stash id, looking up %s " % (sid["stash_id"],))
@@ -26,10 +37,20 @@ def processScene(scene):
                     markers = []
                     for m in data["markers"]:
                         log.debug(m)
+                        marker_title = (
+                          f"[TPDBMarker] {m["title"]}"
+                          if settings["addTPDBMarkerTitle"]
+                          else m["title"]
+                        )
+                        marker_tags = (
+                          ["[TPDBMarker]"]
+                          if settings["addTPDBMarkerTag"]
+                          else []
+                        )
                         marker = {
-                            "title": m["title"],
+                            "title": marker_title,
                             "primary_tag": m["title"],
-                            "tags": [],
+                            "tags": marker_tags,
                             "seconds": m["start_time"],
                         }
                         markers.append(marker)
@@ -56,27 +77,29 @@ def processScene(scene):
 def processAll():
     log.info("Getting scene count")
     skip_sync_tag_id = stash.find_tag("[TPDB: Skip Marker]", create=True).get("id")
-    count = stash.find_scenes(
-        f={
-            "stash_id_endpoint": {
-                "endpoint": TPDB_ENDPOINT,
-                "modifier": "NOT_NULL",
-                "stash_id": "",
-            },
-            "has_markers": "false",
-            "tags": {
-                "depth": 0,
-                "excludes": [skip_sync_tag_id],
-                "modifier": "INCLUDES_ALL",
-                "value": [],
-            },
+    f = {
+        "stash_id_endpoint": {
+            "endpoint": TPDB_ENDPOINT,
+            "modifier": "NOT_NULL",
+            "stash_id": "",
         },
+        "tags": {
+            "depth": 0,
+            "excludes": [skip_sync_tag_id],
+            "modifier": "INCLUDES_ALL",
+            "value": [],
+        },
+    }
+    if not settings["runOnScenesWithMarkers"]:
+        f["has_markers"]="false"
+    count = stash.find_scenes(
+        f,
         filter={"per_page": 1},
         get_count=True,
     )[0]
     log.info(str(count) + " scenes to submit.")
     i = 0
-    for r in range(1, int(count / per_page) + 1):
+    for r in range(1, math.ceil(count / per_page) + 1):
         log.info(
             "fetching data: %s - %s %0.1f%%"
             % (
@@ -85,15 +108,17 @@ def processAll():
                 (i / count) * 100,
             )
         )
-        scenes = stash.find_scenes(
-            f={
-                "stash_id_endpoint": {
-                    "endpoint": TPDB_ENDPOINT,
-                    "modifier": "NOT_NULL",
-                    "stash_id": "",
-                },
-                "has_markers": "false",
+        f = {
+            "stash_id_endpoint": {
+                "endpoint": TPDB_ENDPOINT,
+                "modifier": "NOT_NULL",
+                "stash_id": "",
             },
+        }
+        if not settings["runOnScenesWithMarkers"]:
+            f["has_markers"]="false"
+        scenes = stash.find_scenes(
+            f,
             filter={"page": r, "per_page": per_page},
         )
         for s in scenes:
@@ -147,7 +172,6 @@ def processMovie(m):
 
 
 json_input = json.loads(sys.stdin.read())
-
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
 
@@ -155,9 +179,12 @@ config = stash.get_configuration()["plugins"]
 settings = {
     "disableSceneMarkerHook": False,
     "createMovieFromScene":True,
+    "addTPDBMarkerTag":False,
+    "addTPDBMarkerTitle":False,
+    "runOnScenesWithMarkers":False
 }
-if "tPdBmarkers" in config:
-    settings.update(config["tPdBmarkers"])
+if "TPDBMarkers" in config:
+    settings.update(config["TPDBMarkers"])
 log.debug("settings: %s " % (settings,))
 
 # Set up the auth token for tpdb
