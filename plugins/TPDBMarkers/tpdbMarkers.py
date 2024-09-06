@@ -9,8 +9,7 @@ import json
 import time
 
 
-#per_page = 100
-per_page = 5
+per_page = 100
 request_s = requests.Session()
 
 TPDB_ENDPOINT = "https://theporndb.net/graphql"
