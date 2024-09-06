@@ -72,33 +72,7 @@ def processSceneTimestamTrade(s):
                                 getTag("[TsTrade]")
                                 marker["tags"] = ["[TsTrade]"]
                             if len(marker["primary_tag"]) > 0:
-                                if settings["runOnScenesWithMarkers"]:
-                                    found = False
-                                    cur_marker_string = ";".join(
-                                        [
-                                            str(marker["title"]),
-                                            str(int(marker["seconds"])),
-                                            str(getTag(marker["primary_tag"])),
-                                        ]
-                                    )
-
-                                    for m in s["scene_markers"]:
-                                        scene_marker_string = ";".join(
-                                            [
-                                                str(m["title"]),
-                                                str(m["seconds"]),
-                                                str(m["primary_tag"]["id"]),
-                                            ]
-                                        )
-                                        if cur_marker_string == scene_marker_string:
-                                            found = True
-                                            break
-                                    if found:
-                                        log.debug("Duplicate marker, ignoring")
-                                    else:
-                                        markers.append(marker)
-                                else:
-                                    markers.append(marker)
+                                  markers.append(marker)
                         if len(markers) > 0:
                             if settings["overwriteMarkers"]:
                                 stash.destroy_scene_markers(s["id"])
