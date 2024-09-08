@@ -505,12 +505,13 @@ function getHotCardPseudoElementString(
 ) {
   const opacity = getFixedBackgroundOpacity(cardOptions.opacity);
   const fill = /true/i.test(cardOptions.fill);
-  const gradientAnimationStr = gradientAnimation
-    ? `animation: move ${gradientAnimation};`
-    : "";
+  const gradientAnimationStr =
+    gradientAnimation === "none"
+      ? "animation: none;"
+      : `animation: move ${gradientAnimation};`;
   const hoverAnimationStr =
     hoverOptions.animation === "none"
-      ? "box-shadow: none;"
+      ? `box-shadow: none; animation: none;`
       : `animation: pulse ${hoverOptions.animation};`;
   const additionalAttrStr = cardOptions.additional
     ? cardOptions.additional

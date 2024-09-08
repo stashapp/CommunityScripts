@@ -12,7 +12,7 @@ const DEFAULTS = {
   },
   hover_opts: {
     color: "transparent",
-    animation: "none",
+    animation: "",
   },
   card_opts: {
     fill: true,
