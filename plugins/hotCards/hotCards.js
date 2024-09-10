@@ -71,21 +71,57 @@ async function hotCardsSetup() {
 /**
  * Add hot cards to the home page.
  *
- * Sets up a path listener for the home page, and after a delay,
- * processes each enabled card type to add hot elements.
+ * Waits for the recommendation rows to be initialized.
+ * Once all rows of a card type are initialized, it adds hot cards to them.
  */
 function handleHomeHotCards() {
   const pattern = /^\/$/;
-  let timeoutId;
-
-  overrideHistoryMethods(() => clearTimeout(timeoutId));
 
   registerPathChangeListener(pattern, () => {
-    timeoutId = setTimeout(() => {
-      for (const card of Object.values(CARDS)) {
-        if (card.enabled) handleHotCards(card.type, true);
-      }
-    }, 3000);
+    Object.values(CARD_KEYS).forEach((type) => {
+      const recommendationRows = document.querySelectorAll(
+        `.recommendation-row.${type}-recommendations`
+      );
+      const initializedRows = new Set();
+      const rowsLength = recommendationRows.length;
+
+      const checkAndProceed = () => {
+        if (initializedRows.size === rowsLength) {
+          // All elements of this card type are initialized
+          if (CARDS[type].enabled) handleHotCards(type, true);
+        }
+      };
+
+      const observerConfig = { attributes: true, subtree: true };
+      const observer = new MutationObserver((mutationsList) => {
+        mutationsList.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "class" &&
+            mutation.target.classList.contains("slick-initialized")
+          ) {
+            initializedRows.add(mutation.target);
+            checkAndProceed();
+            observer.disconnect();
+          }
+        });
+      });
+
+      recommendationRows.forEach((row) => {
+        const slickSlider = row.querySelector(".slick-slider");
+        if (
+          slickSlider &&
+          slickSlider.classList.contains("slick-initialized")
+        ) {
+          initializedRows.add(slickSlider);
+        } else {
+          observer.observe(row, observerConfig);
+        }
+      });
+
+      // Initial check
+      checkAndProceed();
+    });
   });
 }
 
