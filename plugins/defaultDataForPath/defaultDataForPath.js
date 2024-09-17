@@ -19,7 +19,7 @@ function ok() {
 function main() {
   var hookContext = input.Args.hookContext;
   var type = hookContext.type;
-  var ID = hookContext.ID;
+  var ID = hookContext.id;
 
   if (!type || !ID) {
     // just return
@@ -158,7 +158,9 @@ function getScenePath(ID) {
     "\
 query findScene($id: ID) {\
     findScene(id: $id) {\
-        path\
+        files {\
+            path\
+        }\
     }\
 }";
 
@@ -172,7 +174,7 @@ query findScene($id: ID) {\
     return null;
   }
 
-  var path = findScene.path;
+  var path = findScene.files[0].path;
   return path;
 }
 
@@ -181,7 +183,11 @@ function getImagePath(ID) {
     "\
 query findImage($id: ID) {\
     findImage(id: $id) {\
-        path\
+        visual_files {\
+            ... on ImageFile {\
+                path\
+            }\
+        }\
     }\
 }";
 
@@ -195,7 +201,7 @@ query findImage($id: ID) {\
     return null;
   }
 
-  var path = findImage.path;
+  var path = findImage["visual_files"][0].path;
   return path;
 }
 
@@ -239,7 +245,7 @@ function getTagId(tagName) {
     },
   };
 
-  result = gql.Do(query, variables);
+  var result = gql.Do(query, variables);
   if (result.findTags.tags[0]) {
     return result.findTags.tags[0].id;
   } else {
@@ -265,7 +271,7 @@ function getPerformerId(performerName) {
     },
   };
 
-  result = gql.Do(query, variables);
+  var result = gql.Do(query, variables);
   if (result.findPerformers.performers[0]) {
     return result.findPerformers.performers[0].id;
   } else {
@@ -291,7 +297,7 @@ function getStudioId(studioName) {
     },
   };
 
-  result = gql.Do(query, variables);
+  var result = gql.Do(query, variables);
   if (result.findStudios.studios[0]) {
     return result.findStudios.studios[0].id;
   } else {

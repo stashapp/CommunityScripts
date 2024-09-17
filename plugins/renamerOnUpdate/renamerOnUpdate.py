@@ -25,12 +25,13 @@ try:
 except Exception:
     MODULE_UNIDECODE = False
 
+import log
 
 try:
-    import renamerOnUpdate_config as config
-except Exception:
     import config
-import log
+except Exception:
+    log.LogWarning("Could not import ROU config file, did you rename the template file to 'config.py'? Defaulting to template config file")
+    import renamerOnUpdate_config as config
 
 
 DB_VERSION_FILE_REFACTOR = 32

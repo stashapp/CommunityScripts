@@ -1,0 +1,26 @@
+name: CJ's Card Tweaks.
+description: Provides various tweaks for the Stash Cards.
+version: 1.0
+# requires: CommunityScriptsUILibrary
+ui:
+  requires:
+    - CommunityScriptsUILibrary
+  javascript:
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/fetchInterceptor.js
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/stashHandler.js
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/registerPathChangeListener.js
+    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/waitForClass.js
+    - cjCardTweaks.js
+settings:
+  addBannerDimension:
+    displayName: 3D rating banner
+    description: "Adds additional dimension to the rating banners."
+    type: BOOLEAN
+  fileCount:
+    displayName: Enable for file count
+    description: "Displays file count on scene, gallery, and image cards."
+    type: BOOLEAN
+  performerProfileCards:
+    displayName: Performer profile cards
+    description: "Tweaks performer cards to use a traditional profile design."
+    type: BOOLEAN

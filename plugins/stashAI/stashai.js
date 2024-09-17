@@ -34,26 +34,6 @@
     "Cumshot",
   ];
 
-  function waitForElm(selector) {
-    return new Promise((resolve) => {
-      if (document.querySelector(selector)) {
-        return resolve(document.querySelector(selector));
-      }
-
-      const observer = new MutationObserver((mutations) => {
-        if (document.querySelector(selector)) {
-          resolve(document.querySelector(selector));
-          observer.disconnect();
-        }
-      });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-    });
-  }
-
   /**
    * Retrieves the tags associated with a given scene ID.
    *
@@ -61,17 +41,10 @@
    * @returns {Promise<string[]>} - A promise that resolves with an array of tag IDs.
    */
   async function getTagsForScene(scene_id) {
-    const reqData = {
-      query: `{
-      findScene(id: "${scene_id}") {
-        tags {
-          id
-        }
-      }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    return result.data.findScene.tags.map((p) => p.id);
+    const query = `query { findScene(id: "${scene_id}") { tags { id }}}`;
+    return csLib
+      .callGQL({ query })
+      .then((data) => data.findScene.tags.map((p) => p.id));
   }
 
   /**
@@ -81,15 +54,10 @@
    * @returns {Promise<Object>} - A promise that resolves with the updated scene object.
    */
   async function updateScene(scene_id, tag_ids) {
-    const reqData = {
-      variables: { input: { id: scene_id, tag_ids: tag_ids } },
-      query: `mutation sceneUpdate($input: SceneUpdateInput!){
-      sceneUpdate(input: $input) {
-        id
-      }
-    }`,
-    };
-    return stash.callGQL(reqData);
+    const variables = { input: { id: scene_id, tag_ids: tag_ids } };
+    const query = `mutation sceneUpdate($input: SceneUpdateInput!){
+      sceneUpdate(input: $input) { id }}`;
+    return csLib.callGQL({ query, variables });
   }
 
   /**
@@ -109,16 +77,11 @@
    * @returns {Promise<string>} - A Promise that resolves with the ID of the newly created tag.
    */
   async function createTag(tag_name) {
-    const reqData = {
-      variables: { input: { name: tag_name } },
-      query: `mutation tagCreate($input: TagCreateInput!) {
-      tagCreate(input: $input){
-            id
-        }
-      }`,
-    };
-    let result = await stash.callGQL(reqData);
-    return result.data.tagCreate.id;
+    const variables = { input: { name: tag_name } };
+    const query = `mutation ($input: TagCreateInput!) { tagCreate(input: $input){ id }}`;
+    return await csLib
+      .callGQL({ query, variables })
+      .then((data) => data.tagCreate.id);
   }
 
   /**
@@ -129,20 +92,18 @@
    * @returns {Promise<string>} - The ID of the created marker.
    */
   async function createMarker(scene_id, primary_tag_id, seconds) {
-    const reqData = {
-      variables: {
-        scene_id: scene_id,
-        primary_tag_id: primary_tag_id,
-        seconds: seconds,
-      },
-      query: `mutation SceneMarkerCreate($seconds: Float!, $scene_id: ID!, $primary_tag_id: ID!) {
+    const variables = {
+      scene_id: scene_id,
+      primary_tag_id: primary_tag_id,
+      seconds: seconds,
+    };
+    const query = `mutation SceneMarkerCreate($seconds: Float!, $scene_id: ID!, $primary_tag_id: ID!) {
       sceneMarkerCreate(input: {title:"", seconds: $seconds, scene_id: $scene_id, primary_tag_id: $primary_tag_id}) {
         id
-      }
-    }`,
-    };
-    let result = await stash.callGQL(reqData);
-    return result.data.sceneMarkerCreate.id;
+      }}`;
+    return csLib
+      .callGQL({ query, variables })
+      .then((data) => data.sceneMarkerCreate.id);
   }
 
   /**
@@ -150,17 +111,15 @@
    * @returns {Promise<Object>} An object with tag names as keys and tag IDs as values.
    */
   async function getAllTags() {
-    const reqData = {
-      query: `{
+    const query = `{
       allTags{
         id
         name
         aliases
       }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    return result.data.allTags.reduce((map, obj) => {
+    }`;
+    var result = await csLib.callGQL({ query });
+    return result.allTags.reduce((map, obj) => {
       map[obj.name.toLowerCase()] = obj.id;
       obj.aliases.forEach((alias) => {
         map[alias.toLowerCase()] = obj.id;
@@ -175,23 +134,12 @@
    * @returns {Promise<string|null>} - A Promise that resolves with the sprite URL if it exists, or null if it does not.
    */
   async function getUrlSprite(scene_id) {
-    const reqData = {
-      query: `{
-      findScene(id: ${scene_id}){
-        paths{
-          sprite
-        }
-      }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    const url = result.data.findScene.paths["sprite"];
+    const query = `query { findScene(id: ${scene_id}){ paths{ sprite }} }`;
+    const url = await csLib
+      .callGQL({ query })
+      .then((data) => data.findScene.paths.sprite);
     const response = await fetch(url);
-    if (response.status === 404) {
-      return null;
-    } else {
-      return result.data.findScene.paths["sprite"];
-    }
+    return response.ok ? url : null;
   }
 
   function noop() {}
@@ -4172,20 +4120,15 @@
     }
   }
 
-  stash.addEventListener("stash:page:scene", function () {
-    let elms = ".ml-auto .btn-group";
-    waitForElm(elms).then(() => {
-      if (!document.querySelector("#stashmarker")) {
-        new MarkerButton({ target: document.querySelector(elms) });
-      }
-    });
-  });
-  stash.addEventListener("stash:page:scene", function () {
-    let elms = ".ml-auto .btn-group";
-    waitForElm(elms).then(() => {
-      if (!document.querySelector("#stashtag")) {
-        new TagButton({ target: document.querySelector(elms) });
-      }
-    });
-  });
+  function addButtons(elms) {
+    if (!document.querySelector("#stashtag")) new TagButton({ target: elms });
+    if (!document.querySelector("#stashmarker"))
+      new MarkerButton({ target: elms });
+  }
+  // v25 and v24 compatibility
+  csLib.PathElementListener(
+    "/scenes/",
+    ".scene-toolbar-group .btn-group, .ml-auto .btn-group",
+    addButtons
+  );
 })();

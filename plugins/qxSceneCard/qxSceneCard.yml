@@ -1,0 +1,26 @@
+name: Qx Scene Card
+description: Redesigns the scene card.
+version: 1.0
+settings:
+  fadeWatched:
+    displayName: Fade watched scenes
+    type: BOOLEAN
+  hideMarkers:
+    displayName: Hide marker popover button
+    type: BOOLEAN
+  hideMovies:
+    displayName: Hide movie popover button
+    type: BOOLEAN
+  hideOCounter:
+    displayName: Hide o-counter popover button
+    type: BOOLEAN
+  hideStudio:
+    displayName: Hide studio logo
+    type: BOOLEAN
+ui:
+  javascript:
+    - qxSceneCard.js
+  css:
+    - qxSceneCard.css
+  assets:
+    /: .

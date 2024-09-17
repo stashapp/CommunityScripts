@@ -1,6 +1,0 @@
-name: Stash Userscript Library
-description: Exports utility functions and a Stash class that emits events whenever a GQL response is received and whenenever a page navigation change is detected
-version: 1.0
-ui:
-  javascript:
-    - stashUserscriptLibrary.js

@@ -1,0 +1,20 @@
+name: Tag Scenes From Performer Tags
+description: tags scenes with performer tags.
+version: 0.1
+exec:
+  - python
+  - "{pluginDir}/tagScenesWithPerfTags.py"
+interface: raw
+
+hooks:
+  - name: update scene
+    description: Will tag scene with selected performers tags
+    triggeredBy:
+      - Scene.Update.Post
+      - Scene.Create.Post
+
+tasks:
+  - name: "Tag All Scenes"
+    description: Loops through all performers, finds all of their scenes, then applies the performers tags to each of the scenes they appear in. Can take a long time on large db's.
+    defaultArgs:
+      mode: processAll

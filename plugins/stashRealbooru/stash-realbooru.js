@@ -4,26 +4,6 @@
   let REALBOORU_API_URL = "https://cc1234-deepdanbooru.hf.space/api/predict";
   let THRESHOLD = 0.6; // remove matches with a distance higher than this
 
-  function waitForElm(selector) {
-    return new Promise((resolve) => {
-      if (document.querySelector(selector)) {
-        return resolve(document.querySelector(selector));
-      }
-
-      const observer = new MutationObserver((mutations) => {
-        if (document.querySelector(selector)) {
-          resolve(document.querySelector(selector));
-          observer.disconnect();
-        }
-      });
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-    });
-  }
-
   /**
    * Retrieves the tags associated with a given image ID.
    *
@@ -31,17 +11,11 @@
    * @returns {Promise<string[]>} - A promise that resolves with an array of tag IDs.
    */
   async function getTagsForImage(image_id) {
-    const reqData = {
-      query: `{
-      findImage(id: "${image_id}") {
-        tags {
-          id
-        }
-      }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    return result.data.findImage.tags.map((p) => p.id);
+    const query = `query ($id: ID) { findImage(id: $id) { tags { id }}}`;
+    const variables = { id: image_id };
+    return csLib
+      .callGQL({ query, variables })
+      .then((data) => data.findImage.tags.map((p) => p.id));
   }
 
   /**
@@ -51,15 +25,10 @@
    * @returns {Promise<Object>} - A promise that resolves with the updated image object.
    */
   async function updateImage(image_id, tag_ids) {
-    const reqData = {
-      variables: { input: { id: image_id, tag_ids: tag_ids } },
-      query: `mutation imageUpdate($input: ImageUpdateInput!){
-      imageUpdate(input: $input) {
-        id
-      }
-    }`,
-    };
-    return stash.callGQL(reqData);
+    const variables = { input: { id: image_id, tag_ids: tag_ids } };
+    const query = `mutation ($input: ImageUpdateInput!){
+      imageUpdate(input: $input) { id }}`;
+    return csLib.callGQL({ query, variables });
   }
 
   /**
@@ -79,16 +48,11 @@
    * @returns {Promise<string>} - A Promise that resolves with the ID of the newly created tag.
    */
   async function createTag(tag_name) {
-    const reqData = {
-      variables: { input: { name: tag_name } },
-      query: `mutation tagCreate($input: TagCreateInput!) {
-      tagCreate(input: $input){
-            id
-        }
-      }`,
-    };
-    let result = await stash.callGQL(reqData);
-    return result.data.tagCreate.id;
+    const variables = { input: { name: tag_name } };
+    const query = `mutation ($input: TagCreateInput!) { tagCreate(input: $input){ id }}`;
+    return await csLib
+      .callGQL({ query, variables })
+      .then((data) => data.tagCreate.id);
   }
 
   /**
@@ -96,17 +60,15 @@
    * @returns {Promise<Object>} An object with tag names as keys and tag IDs as values.
    */
   async function getAllTags() {
-    const reqData = {
-      query: `{
+    const query = `{
       allTags{
         id
         name
         aliases
       }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    return result.data.allTags.reduce((map, obj) => {
+    }`;
+    var result = await csLib.callGQL({ query });
+    return result.allTags.reduce((map, obj) => {
       map[obj.name.toLowerCase()] = obj.id;
       obj.aliases.forEach((alias) => {
         map[alias.toLowerCase()] = obj.id;
@@ -13287,12 +13249,14 @@
     }
   }
 
-  stash.addEventListener("stash:page:image", function () {
-    let elms = ".ml-auto .btn-group";
-    waitForElm(elms).then(() => {
-      if (!document.querySelector("#stashrealbooru")) {
-        new TagButton({ target: document.querySelector(elms) });
-      }
-    });
-  });
+  function createTagButton(target) {
+    if (document.querySelector("#stashrealbooru")) return;
+    new TagButton({ target });
+  }
+  // v25 and v24 compatibility
+  csLib.PathElementListener(
+    "/images/",
+    ".image-toolbar-group .btn-group, .ml-auto .btn-group",
+    createTagButton
+  );
 })();

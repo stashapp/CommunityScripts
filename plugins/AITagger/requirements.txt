@@ -1,0 +1,4 @@
+stashapp-tools
+aiohttp
+asyncio
+pydantic

@@ -135,13 +135,16 @@ def makeFilename(scene_info, query):
     return new_filename
 
 
-def edit_db(query_filename, optionnal_query=None):
-    query = "SELECT id,path,title,date,studio_id,height from scenes;"
-    if optionnal_query is not None:
-        query = "SELECT id,path,title,date,studio_id,height from scenes {};".format(
-            optionnal_query
-        )
-    cursor.execute(query)
+def edit_db(query_filename, optional_query=""):
+    scene_query = """
+    SELECT s.id,f.basename,d.path,s.title,s.date,s.studio_id,vf.height
+    FROM scenes AS s
+    LEFT JOIN scenes_files AS sf ON s.id = sf.scene_id
+    LEFT JOIN files AS f ON sf.file_id = f.id
+    LEFT JOIN folders AS d ON f.parent_folder_id = d.id
+    LEFT JOIN video_files AS vf ON f.id = vf.file_id
+    """
+    cursor.execute(f'{scene_query} {optional_query};')
     record = cursor.fetchall()
     if len(record) == 0:
         logPrint("[Warn] There is no scene to change with this query")
@@ -154,14 +157,14 @@ def edit_db(query_filename, optionnal_query=None):
         progressbar_Index += 1
         scene_ID = str(row[0])
         # Fixing letter (X:Folder -> X:\Folder)
-        current_path = re.sub(r"^(.):\\*", r"\1:\\", str(row[1]))
-        current_directory = os.path.dirname(current_path)
-        current_filename = os.path.basename(current_path)
-        file_extension = os.path.splitext(current_path)[1]
-        scene_title = str(row[2])
-        scene_date = str(row[3])
-        scene_Studio_id = str(row[4])
-        file_height = str(row[5])
+        current_filename = str(row[1])
+        current_directory = str(row[2])
+        current_path = os.path.join(current_directory, current_filename)
+        file_extension = os.path.splitext(current_filename)[1]
+        scene_title = str(row[3])
+        scene_date = str(row[4])
+        scene_Studio_id = str(row[5])
+        file_height = str(row[6])
         # By default, title contains extensions.
         scene_title = re.sub(file_extension + "$", "", scene_title)
 
@@ -189,6 +192,9 @@ def edit_db(query_filename, optionnal_query=None):
         logPrint("[DEBUG] Scene information: {}".format(scene_info))
         # Create the new filename
         new_filename = makeFilename(scene_info, query_filename) + file_extension
+        if "None" in new_filename:
+            logPrint("[Error] Information missing for new filename, ID: {}".format(scene_ID))
+            continue
 
         # Remove illegal character for Windows ('#' and ',' is not illegal you can remove it)
         new_filename = re.sub('[\\/:"*?<>|#,]+', "", new_filename)
@@ -231,7 +237,7 @@ def edit_db(query_filename, optionnal_query=None):
 
         # Looking for duplicate filename
         cursor.execute(
-            "SELECT id FROM scenes WHERE path LIKE ? AND NOT id=?;",
+            "SELECT sf.scene_id FROM scenes_files AS sf LEFT JOIN files AS f ON sf.file_id = f.id WHERE f.basename LIKE ? AND NOT sf.scene_id=?;",
             ["%" + new_filename, scene_ID],
         )
         dupl_check = cursor.fetchall()
@@ -255,8 +261,8 @@ def edit_db(query_filename, optionnal_query=None):
             # THIS PART WILL EDIT YOUR DATABASE, FILES (be careful and know what you do)
             #
             # Windows Rename
-            if os.path.isfile(current_path) == True:
-                if DRY_RUN == False:
+            if DRY_RUN == False:
+                if os.path.isfile(current_path) == True:
                     os.rename(current_path, new_path)
                     if os.path.isfile(new_path) == True:
                         logPrint("[OS] File Renamed! ({})".format(current_filename))
@@ -265,13 +271,6 @@ def edit_db(query_filename, optionnal_query=None):
                                 "{}|{}|{}\n".format(scene_ID, current_path, new_path),
                                 file=open("rename_log.txt", "a", encoding="utf-8"),
                             )
-
-                        # Database rename
-                        cursor.execute(
-                            "UPDATE scenes SET path=? WHERE id=?;", [new_path, scene_ID]
-                        )
-                        sqliteConnection.commit()
-                        logPrint("[SQLITE] Datebase Updated!")
                     else:
                         logPrint(
                             "[OS] File failed to rename ? ({})".format(current_filename)
@@ -281,14 +280,14 @@ def edit_db(query_filename, optionnal_query=None):
                             file=open("renamer_fail.txt", "a", encoding="utf-8"),
                         )
                 else:
-                    logPrint("[DRY_RUN][OS] File should be renamed")
-                    print(
-                        "{} -> {}\n".format(current_path, new_path),
-                        file=open("renamer_dryrun.txt", "a", encoding="utf-8"),
+                    logPrint(
+                        "[OS] File don't exist in your Disk/Drive ({})".format(current_path)
                     )
             else:
-                logPrint(
-                    "[OS] File don't exist in your Disk/Drive ({})".format(current_path)
+                logPrint("[DRY_RUN][OS] File should be renamed")
+                print(
+                    "{} -> {}\n".format(current_path, new_path),
+                    file=open("renamer_dryrun.txt", "a", encoding="utf-8"),
                 )
             logPrint("\n")
         # break

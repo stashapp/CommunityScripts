@@ -1,9 +1,5 @@
-/* Author: ronilaukkarinen */
-/* stylelint-disable selector-max-specificity, declaration-no-important, selector-type-no-unknown, selector-max-class, a11y/no-outline-none, no-descending-specificity, selector-max-pseudo-class, property-disallowed-list, font-weight-notation, max-line-length, a11y/no-display-none, a11y/font-size-is-readable */
-/* Pornhub inspired stash theme */
-/* Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
-
+/* NEEDS PLEX THEME TO BE INSTALLED AND ENABLED */
+/* Stashub: A pornhub inspired stash theme by neurokinin */
 /* Variables */
 :root {
   --color-black: #000;
@@ -30,6 +26,7 @@ body {
   color: var(--color-text);
   font-family:
     Inter,
+    system-ui,
     -apple-system,
     BlinkMacSystemFont,
     Segoe UI,
@@ -348,6 +345,7 @@ option:focus {
   z-index: 10;
 }
 
+#root,
 body {
   background: var(--color-black) !important;
 }
@@ -968,4 +966,9 @@ h2 {
     padding-bottom: 1rem;
     padding-top: 0;
   }
+}
+
+[href="/performers/new"],
+[href="/scenes/new"] {
+  display: none;
 }
