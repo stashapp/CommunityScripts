@@ -21,6 +21,15 @@ settings:
     displayName: Create Movie from scene
     description: If there is a Movie linked to the scene in the timestamp.trade database automatically create a movie in stash with that info
     type: BOOLEAN
+  runOnScenesWithMarkers:
+    displayName: Run on scenes that already have markers.
+    type: BOOLEAN
+  addTPDBMarkerTag:
+    displayName: Add the [TPDBMarker] tag to created markers.
+    type: BOOLEAN
+  addTPDBMarkerTitle:
+    displayName: Add "[TPDBMarker]" to the start of generated marker titles.
+    type: BOOLEAN
 tasks:
   - name: "Sync"
     description: Get markers for all scenes with a stashid from theporndb.net and no markers
