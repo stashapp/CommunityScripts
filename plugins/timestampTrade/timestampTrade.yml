@@ -109,4 +109,3 @@ tasks:
     description: scan for funscript files to be matched and submitted
     defaultArgs:
       mode: indexFunscripts
-

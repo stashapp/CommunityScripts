@@ -712,7 +712,7 @@ def submitScene(query):
                     )
             s.pop("id")
             log.debug(s)
-            #            request_s.post("https://timestamp.trade/submit-stash", json=s)
+            request_s.post("https://timestamp.trade/submit-stash", json=s)
             i = i + 1
             log.progress((i / count))
             time.sleep(0.5)
