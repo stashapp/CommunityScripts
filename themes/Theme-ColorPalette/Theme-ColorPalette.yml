@@ -2,7 +2,7 @@ name: Theme - colorPalette
 description: Based on the default theme, change the overall color of the page by setting the hue value. Make minor changes to the remaining styles.
 version: 0.1
 ui:
-  requires: 
+  requires:
     - CommunityScriptsUILibrary
   javascript:
     - Theme-ColorPalette.js
@@ -13,4 +13,3 @@ settings:
     displayName: hue value
     description: An angle value of 0-360. Red (0) - Orange - Yellow - Green (120) - Cyan - Blue (240) - Purple - Red (360)
     type: NUMBER
-  
