@@ -9,7 +9,7 @@ document.documentElement.style.setProperty(
 async function mainFunction() {
   let hueValue;
   try {
-    const config = await csLib.getConfiguration("colorPalette", {});
+    const config = await csLib.getConfiguration("Theme-ColorPalette", {});
     hueValue = config.hue;
     let UserColorValue = hueValue;
     localStorage.setItem("UserColor", UserColorValue);
