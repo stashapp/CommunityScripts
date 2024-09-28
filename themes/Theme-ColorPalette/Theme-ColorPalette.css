@@ -1,10 +1,10 @@
 :root {
-    /* 定义主颜色角度 */
+    /* Define the main color angle */
     --maincolorDeg: 140deg;
-    /* 定义所有颜色的通用饱和度 */
+    /* Define the universal saturation for all colors */
     --saturation: 80%;
 
-    /* 定义亮度级别变量 */
+    /* Define brightness level variable */
     --brightestLevel: 95%;
     --veryBrightLevel: 90%;
     --brightLevel: 75%;
@@ -15,7 +15,7 @@
     --veryDarkLevel: 8%;
     --extremelyDarkLevel: 2%;
 
-    /* 主颜色及相关设置 */
+    /* Main color and related settings */
     --mainLightest: hsl(var(--maincolorDeg), var(--saturation), var(--brightestLevel));
     --mainVeryBright: hsl(var(--maincolorDeg), var(--saturation), var(--veryBrightLevel));
     --mainBright: hsl(var(--maincolorDeg), var(--saturation), var(--brightLevel));
@@ -27,20 +27,20 @@
     --mainExtremelyDark: hsl(var(--maincolorDeg), var(--saturation), var(--extremelyDarkLevel));
     --mainGrey:hsl(var(--maincolorDeg),20%, var(--darkLevel));
 
-    /* 互补色设置 */
-    --complementary: 20deg;
-    --complementaryColor: calc(var(--maincolorDeg) + var(--complementary));
-    --complementaryLightest: hsl(var(--complementaryColor), var(--saturation), var(--brightestLevel));
-    --complementaryVeryBright: hsl(var(--complementaryColor), var(--saturation), var(--veryBrightLevel));
-    --complementaryBright: hsl(var(--complementaryColor), var(--saturation), var(--brightLevel));
-    --complementaryModeratelyBright: hsl(var(--complementaryColor), var(--saturation), var(--moderatelyBrightLevel));
-    --complementaryMedium: hsl(var(--complementaryColor), var(--saturation), var(--mediumLevel));
-    --complementaryModeratelyDark: hsl(var(--complementaryColor), var(--saturation), var(--moderatelyDarkLevel));
-    --complementaryDark: hsl(var(--complementaryColor), var(--saturation), var(--darkLevel));
-    --complementaryVeryDark: hsl(var(--complementaryColor), var(--saturation), var(--veryDarkLevel));
-    --complementaryExtremelyDark: hsl(var(--complementaryColor), var(--saturation), var(--extremelyDarkLevel));
+    /* secondary color settings */
+    --secondary: 20deg;
+    --secondaryColor: calc(var(--maincolorDeg) + var(--secondary));
+    --secondaryLightest: hsl(var(--secondaryColor), var(--saturation), var(--brightestLevel));
+    --secondaryVeryBright: hsl(var(--secondaryColor), var(--saturation), var(--veryBrightLevel));
+    --secondaryBright: hsl(var(--secondaryColor), var(--saturation), var(--brightLevel));
+    --secondaryModeratelyBright: hsl(var(--secondaryColor), var(--saturation), var(--moderatelyBrightLevel));
+    --secondaryMedium: hsl(var(--secondaryColor), var(--saturation), var(--mediumLevel));
+    --secondaryModeratelyDark: hsl(var(--secondaryColor), var(--saturation), var(--moderatelyDarkLevel));
+    --secondaryDark: hsl(var(--secondaryColor), var(--saturation), var(--darkLevel));
+    --secondaryVeryDark: hsl(var(--secondaryColor), var(--saturation), var(--veryDarkLevel));
+    --secondaryExtremelyDark: hsl(var(--secondaryColor), var(--saturation), var(--extremelyDarkLevel));
 
-    /* 三分色设置 */
+    /* Three-point color setting */
     --tertiary1: calc(var(--maincolorDeg) + 120deg);
     --tertiary1Lightest: hsl(var(--tertiary1), var(--saturation), var(--brightestLevel));
     --tertiary1VeryBright: hsl(var(--tertiary1), var(--saturation), var(--veryBrightLevel));
@@ -62,22 +62,22 @@
     --tertiary2VeryDark: hsl(var(--tertiary2), var(--saturation), var(--veryDarkLevel));
     --tertiary2ExtremelyDark: hsl(var(--tertiary2), var(--saturation), var(--extremelyDarkLevel));
 
-    /* 背景类型 */
+    /* Background Type */
     --bgTypeNormal: var(--mainDark);
     --bgTypeBright: var(--mainMedium);
     --bgTypeDark: var(--mainVeryDark);
     --bgTypeSpecial: var(--mainModeratelyDark);
     --bgTypeGrey:var(--mainGrey);
 
-    /* 文本类型 */
+    /* Text Type */
     --textTypeNormal: var(--mainModeratelyDark);
     --textTypeBright: var(--mainBright);
     --textTypeDark: var(--mainVeryBright);
-    --textTypeSpecial: var(--complementaryModeratelyBright);
+    --textTypeSpecial: var(--secondaryModeratelyBright);
 
-    /* 边框类型 */
-    --borderTypeNormal: var(--complementaryMedium);
-    --borderTypeBright: var(--complementaryBright);
+    /* border type */
+    --borderTypeNormal: var(--secondaryMedium);
+    --borderTypeBright: var(--secondaryBright);
     --borderTypeDark: var(--mainDark);
     --borderTypeSpecial: var(--mainBright);
 }
@@ -186,7 +186,7 @@ box-shadow: 0 0 0 .2rem var(--borderTypeSpecial);
     color: #fff;
     background-color: var(--bgTypeBright);
     border-color: var(--borderTypeDark);
-    box-shadow: 0 0 0 .2rem var(--complementaryLightest);
+    box-shadow: 0 0 0 .2rem var(--secondaryLightest);
 }
 div.react-select__menu, div.dropdown-menu {
     background-color: var(--bgTypeNormal);

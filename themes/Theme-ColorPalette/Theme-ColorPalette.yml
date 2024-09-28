@@ -5,9 +5,9 @@ ui:
   requires: 
     - CommunityScriptsUILibrary
   javascript:
-    - main.js
+    - Theme-ColorPalette.js
   css:
-    - main.css
+    - Theme-ColorPalette.css
 settings:
   hue:
     displayName: hue value
