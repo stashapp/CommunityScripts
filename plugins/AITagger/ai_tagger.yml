@@ -1,6 +1,6 @@
 name: AI Tagger
 description: Tag videos and Images with Locally hosted AI using Skier's Patreon AI models
-version: 1.7
+version: 1.8
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/AITagger
 exec:
   - python

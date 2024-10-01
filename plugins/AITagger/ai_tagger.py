@@ -246,7 +246,7 @@ async def __tag_scene(scene):
             vr_video = media_handler.is_vr_scene(scene.get('tags'))
             if vr_video:
                 log.info(f"Processing VR video {scenePath}")
-            server_result = await ai_server.process_video_async(mutated_path, vr_video)
+            server_result = await ai_server.process_video_async(video_path=mutated_path, vr_video=vr_video)
             if server_result is None:
                 log.error("Server returned no results")
                 media_handler.add_error_scene(sceneId)
