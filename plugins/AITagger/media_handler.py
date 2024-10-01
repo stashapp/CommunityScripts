@@ -43,7 +43,7 @@ def initialize(connection):
 # ----------------- Tag Methods -----------------
 
 
-tag_categories = ["actions", "bodyparts"]
+tag_categories = ["actions", "bodyparts", "bdsm", "clothing", "describingperson", "environment", "describingbody", "describingimage", "describingscene", "sextoys"]
 
 def get_all_tags_from_server_result(result):
     alltags = []
