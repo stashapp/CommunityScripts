@@ -91,7 +91,11 @@ def remove_tagme_tags_from_images(image_ids):
 def add_tags_to_image(image_id, tag_ids):
     stash.update_images({"ids": [image_id], "tag_ids": {"ids": tag_ids, "mode": "ADD"}})
 
+worker_counter = 0
+
 def get_image_paths_and_ids(images):
+    global worker_counter
+    counter_updated = False
     imagePaths = []
     imageIds = []
     temp_files = []
@@ -100,14 +104,25 @@ def get_image_paths_and_ids(images):
             imagePath = image['files'][0]['path']
             imageId = image['id']
             if '.zip' in imagePath:
+                if not counter_updated:
+                    worker_counter += 1
+                    counter_updated = True
                 zip_index = imagePath.index('.zip') + 4
                 zip_path, img_path = imagePath[:zip_index], imagePath[zip_index+1:].replace('\\', '/')
+
+                 # Create a unique temporary directory for this worker
+                temp_dir = os.path.join(config.temp_image_dir, f"worker_{worker_counter}")
+                os.makedirs(temp_dir, exist_ok=True)
+                
+                temp_path = os.path.join(temp_dir, img_path)
+                os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    temp_path = os.path.join(config.temp_image_dir, img_path)
-                    os.makedirs(os.path.dirname(temp_path), exist_ok=True)
-                    zip_ref.extract(img_path, config.temp_image_dir)
+                    zip_ref.extract(img_path, temp_dir)
                     imagePath = os.path.abspath(os.path.normpath(temp_path))
-                    temp_files.append(imagePath)
+                
+                temp_files.append(temp_path)
+                temp_files.append(temp_dir)  # Ensure the temp directory is also added to temp_files
             imagePaths.append(imagePath)
             imageIds.append(imageId)
         except IndexError:
