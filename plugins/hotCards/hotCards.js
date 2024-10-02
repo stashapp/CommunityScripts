@@ -71,8 +71,8 @@ async function hotCardsSetup() {
 /**
  * Add hot cards to the home page.
  *
- * Waits for the recommendation rows to be initialized.
- * Once all rows of a card type are initialized, it adds hot cards to them.
+ * Waits for the recommendation rows of each card type to be initialized.
+ * Once all slides of a card type are initialized, it adds hot cards to them.
  */
 function handleHomeHotCards() {
   const pattern = /^\/$/;
@@ -82,42 +82,46 @@ function handleHomeHotCards() {
       const recommendationRows = document.querySelectorAll(
         `.recommendation-row.${type}-recommendations`
       );
-      const initializedRows = new Set();
-      const rowsLength = recommendationRows.length;
+      const observerConfig = { childList: true, subtree: true };
+      const observer = {};
+      const hasInitializedCard = (element) =>
+        element.querySelector(`div>.${type}-card`);
+
+      observer[type] = new MutationObserver((mutationsList) => {
+        if (
+          mutationsList.some(
+            (mutation) =>
+              mutation.type === "childList" &&
+              hasInitializedCard(mutation.target)
+          )
+        ) {
+          checkAndProceed();
+        }
+      });
+
+      const allCardsLoaded = () => {
+        return Array.from(recommendationRows).every((row) => {
+          const slickSlider = row.querySelector(".slick-slider");
+          return (
+            slickSlider &&
+            Array.from(slickSlider.querySelectorAll(".slick-slide")).every(
+              (slide) => {
+                if (hasInitializedCard(slide)) return true;
+                observer[type].observe(slide, observerConfig);
+                return false;
+              }
+            )
+          );
+        });
+      };
 
       const checkAndProceed = () => {
-        if (initializedRows.size === rowsLength) {
+        if (allCardsLoaded()) {
+          observer[type].disconnect();
           // All elements of this card type are initialized
           if (CARDS[type].enabled) handleHotCards(type, true);
         }
       };
-
-      const observerConfig = { attributes: true, subtree: true };
-      const observer = new MutationObserver((mutationsList) => {
-        mutationsList.forEach((mutation) => {
-          if (
-            mutation.type === "attributes" &&
-            mutation.attributeName === "class" &&
-            mutation.target.classList.contains("slick-initialized")
-          ) {
-            initializedRows.add(mutation.target);
-            checkAndProceed();
-            observer.disconnect();
-          }
-        });
-      });
-
-      recommendationRows.forEach((row) => {
-        const slickSlider = row.querySelector(".slick-slider");
-        if (
-          slickSlider &&
-          slickSlider.classList.contains("slick-initialized")
-        ) {
-          initializedRows.add(slickSlider);
-        } else {
-          observer.observe(row, observerConfig);
-        }
-      });
 
       // Initial check
       checkAndProceed();
