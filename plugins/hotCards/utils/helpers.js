@@ -70,6 +70,10 @@ function createElementFromHTML(htmlString) {
   return div.firstChild;
 }
 
+function isCardInitialized(element, type) {
+  return element.querySelector(`div>.${type}-card`);
+}
+
 /** History */
 
 function overrideHistoryMethods(callback) {

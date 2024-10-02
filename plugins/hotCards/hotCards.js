@@ -76,57 +76,52 @@ async function hotCardsSetup() {
  */
 function handleHomeHotCards() {
   const pattern = /^\/$/;
-
   registerPathChangeListener(pattern, () => {
     Object.values(CARD_KEYS).forEach((type) => {
-      const recommendationRows = document.querySelectorAll(
-        `.recommendation-row.${type}-recommendations`
-      );
-      const observerConfig = { childList: true, subtree: true };
-      const observer = {};
-      const hasInitializedCard = (element) =>
-        element.querySelector(`div>.${type}-card`);
-
-      observer[type] = new MutationObserver((mutationsList) => {
-        if (
-          mutationsList.some(
-            (mutation) =>
-              mutation.type === "childList" &&
-              hasInitializedCard(mutation.target)
-          )
-        ) {
-          checkAndProceed();
-        }
-      });
-
-      const allCardsLoaded = () => {
-        return Array.from(recommendationRows).every((row) => {
-          const slickSlider = row.querySelector(".slick-slider");
-          return (
-            slickSlider &&
-            Array.from(slickSlider.querySelectorAll(".slick-slide")).every(
-              (slide) => {
-                if (hasInitializedCard(slide)) return true;
-                observer[type].observe(slide, observerConfig);
-                return false;
-              }
-            )
-          );
-        });
-      };
-
-      const checkAndProceed = () => {
-        if (allCardsLoaded()) {
-          observer[type].disconnect();
-          // All elements of this card type are initialized
-          if (CARDS[type].enabled) handleHotCards(type, true);
-        }
-      };
-
-      // Initial check
-      checkAndProceed();
+      setupObserverAndProcessCard(type);
     });
   });
+}
+
+function setupObserverAndProcessCard(type) {
+  const observer = new MutationObserver((mutationsList) => {
+    if (
+      mutationsList.some((mutation) => isCardInitialized(mutation.target, type))
+    ) {
+      processCard(type, observer);
+    }
+  });
+
+  // Initial check
+  processCard(type, observer);
+}
+
+function areAllCardsLoaded(type, observer) {
+  const recommendationRows = document.querySelectorAll(
+    `.recommendation-row.${type}-recommendations`
+  );
+  const observerConfig = { childList: true, subtree: true };
+  return Array.from(recommendationRows).every((row) => {
+    const slickSlider = row.querySelector(".slick-slider");
+    return (
+      slickSlider &&
+      Array.from(slickSlider.querySelectorAll(".slick-slide")).every(
+        (slide) => {
+          if (isCardInitialized(slide, type)) return true;
+          observer.observe(slide, observerConfig);
+          return false;
+        }
+      )
+    );
+  });
+}
+
+function processCard(type, observer) {
+  if (areAllCardsLoaded(type, observer)) {
+    observer.disconnect();
+    // All elements of this card type are initialized
+    if (CARDS[type].enabled) handleHotCards(type, true);
+  }
 }
 
 /**
