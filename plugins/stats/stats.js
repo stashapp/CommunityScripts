@@ -64,7 +64,7 @@
 
   // percentage helper
   const percentage = (portion, total) =>
-    (total > 0 ? ((portion / total) * 100).toFixed(2) : 0) + "%";
+    (total > 0 ? (portion / total) * 100 : 0).toFixed(2) + "%";
 
   // *** actual stats fetching ***
   // performer of scenes with any StashID
