@@ -27,8 +27,6 @@ let backupImgElements = [];
 // Current holo elements
 let holoElements = [];
 
-let previousPathname = window.location.pathname;
-
 async function hotCardsSetup() {
   await setConfiguration();
 

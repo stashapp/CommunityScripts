@@ -29,6 +29,8 @@ const CARD_KEYS = {
   studios: "studio",
 };
 
+let previousPathname = window.location.pathname;
+
 async function getUserSettings() {
   const userSettings = await csLib.getConfiguration("hotCards", {});
   return parseSettings(userSettings ?? "");
