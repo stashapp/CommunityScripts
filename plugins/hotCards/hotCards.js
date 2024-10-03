@@ -14,9 +14,18 @@ const STYLES = {
 const STYLE_ELEMENT = document.createElement("style");
 document.head.appendChild(STYLE_ELEMENT);
 
-let backupCards = [];
-let hotCards = [];
+// Backup card elements
+let backupCardElements = [];
+// Current hot card elements
+let hotCardElements = [];
+// Current hot card classes
 let hotCardClasses = [];
+// Current active hot card types
+let activeHotCardTypes = [];
+// Backup img elements for holo cards
+let backupImgElements = [];
+// Current holo elements
+let holoElements = [];
 
 let previousPathname = window.location.pathname;
 
@@ -55,14 +64,23 @@ async function hotCardsSetup() {
    * -
    */
   function restoreCards() {
-    backupCards.forEach((backupCard, i) => {
-      if (hotCards[i] && hotCards[i].parentNode) {
-        hotCards[i].before(backupCard);
-        hotCards[i].remove();
+    backupCardElements.forEach((backupCard, i) => {
+      if (hotCardElements[i] && hotCardElements[i].parentNode) {
+        hotCardElements[i].before(backupCard);
+        hotCardElements[i].remove();
       }
     });
-    backupCards.length = 0;
-    hotCards.length = 0;
+    backupImgElements.forEach((backupImg, i) => {
+      if (holoElements[i] && holoElements[i].parentNode) {
+        holoElements[i].before(backupImg);
+        holoElements[i].remove();
+      }
+    });
+    backupCardElements.length = 0;
+    hotCardElements.length = 0;
+    activeHotCardTypes.length = 0;
+    backupImgElements.length = 0;
+    holoElements.length = 0;
   }
 
   overrideHistoryMethods(restoreCards);
@@ -261,8 +279,8 @@ function createAndInsertHotCards(stashData, cardClass, config, isHome) {
     CONFIG.is.ratingBased &&
     (criterion === CRITERIA.rating || criterion.length === 0);
 
-  // Skip processing if hotCards are already present and we're not on the home page.
-  if (hotCards.length !== 0 && !isHome) return;
+  // Skip processing if the card type is already active
+  if (activeHotCardTypes.includes(cardClass)) return;
 
   cards.forEach((card) => {
     const link = card.querySelector(".thumbnail-section > a");
@@ -297,6 +315,7 @@ function createAndInsertHotCards(stashData, cardClass, config, isHome) {
       );
     }
   });
+  activeHotCardTypes.push(cardClass);
 }
 
 function findMatchingValueSegment(
@@ -364,12 +383,12 @@ function createHotElementAndAttachToDOM(
   );
   if (isHome) hotElement.style.height = "100%";
 
-  backupCards.push(cardElement);
+  backupCardElements.push(cardElement);
   cardElement.style.removeProperty("box-shadow");
   cardElement.classList.add("hot-border");
   cardElement.before(hotElement);
   hotElement.append(cardElement);
-  hotCards.push(hotElement);
+  hotCardElements.push(hotElement);
 
   return hotElement;
 }
@@ -617,10 +636,12 @@ function checkHoloCardAndAttachToDOM(hotCardEl, cardClass, style, cardOptions) {
     holoEl.style.setProperty("--posy", `${seedY}%`);
   };
 
+  backupImgElements.push(targetEl);
   targetEl.classList.add("holo-img");
   targetEl.before(holoEl);
   holoEl.append(targetEl);
   holoEl.append(shineEl);
+  holoElements.push(holoEl);
   applyInitialStyles();
 
   waitForImageLoad(targetEl, () => {
