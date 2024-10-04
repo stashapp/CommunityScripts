@@ -35,8 +35,8 @@ settings:
     displayName: Enable for images
     description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
-  movies:
-    displayName: Enable for movies
+  groups:
+    displayName: Enable for groups
     description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
   galleries:

@@ -5,7 +5,7 @@ Hot Cards is a Stash CommunityScript plugin designed to enhance your visual expe
 ## Features
 
 - Custom styling to card elements that match a specified Tag ID or Rating Threshold.
-- Enable or disable Hot Cards on various sections like home, scenes, images, movies, galleries, performers, and studios.
+- Enable or disable Hot Cards on various sections like home, scenes, images, groups, galleries, performers, and studios.
 - Specify Hot Cards to be tag-based or rating-based for each card type, as desired.
 - Customizable Hot Cards.
 - Support for multi-tag and multi-style configurations.
@@ -19,7 +19,7 @@ Hot Cards is a Stash CommunityScript plugin designed to enhance your visual expe
 
 ## Usage
 
-After installation, you can configure the plugin to suit your needs. Set a desired Tag ID or Rating Threshold and enable Hot Cards for the card types you want. Customize the appearance of Hot Cards for each type of card (scene, image, movie, gallery, performer, studio) using the format provided or leave the fields empty to apply the default style.
+After installation, you can configure the plugin to suit your needs. Set a desired Tag ID or Rating Threshold and enable Hot Cards for the card types you want. Customize the appearance of Hot Cards for each type of card (scene, image, group, gallery, performer, studio) using the format provided or leave the fields empty to apply the default style.
 
 ### Configure the field format:
 

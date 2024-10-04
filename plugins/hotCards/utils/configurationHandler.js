@@ -23,7 +23,7 @@ const DEFAULTS = {
 const CARD_KEYS = {
   galleries: "gallery",
   images: "image",
-  movies: "movie",
+  groups: "group",
   performers: "performer",
   scenes: "scene",
   studios: "studio",

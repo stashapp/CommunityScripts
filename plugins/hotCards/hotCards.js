@@ -34,7 +34,7 @@ async function hotCardsSetup() {
   const hotCardsHandlers = {
     gallery: handleGalleriesHotCards,
     image: handleImagesHotCards,
-    movie: handleMoviesHotCards,
+    group: handleGroupsHotCards,
     performer: handlePerformersHotCards,
     scene: handleScenesHotCards,
     studio: handleStudiosHotCards,
@@ -173,18 +173,19 @@ function handleImagesHotCards(type) {
 }
 
 /**
- * Adds movie hot cards to specific paths in the application.
+ * Adds group hot cards to specific paths in the application.
  *
  * The supported paths are:
- * - /movies
- * - /performers/{id}/movies
- * - /studios/{id}/movies
- * - /tags/{id}/movies
+ * - /groups
+ * - /groups/{id}/subgroups
+ * - /performers/{id}/groups
+ * - /studios/{id}/groups
+ * - /tags/{id}/groups
  * - /scenes/{id}
  */
-function handleMoviesHotCards(type) {
+function handleGroupsHotCards(type) {
   const pattern =
-    /^\/(movies|(performers|studios|tags)\/\d+\/movies|scenes\/\d+)$/;
+    /^\/(groups|(groups\/\d+\/subgroups)|(performers|studios|tags)\/\d+\/groups|scenes\/\d+)$/;
   addHotCards(pattern, type);
 }
 
@@ -214,12 +215,12 @@ function handlePerformersHotCards(type) {
  * - /performers/{id}/scenes
  * - /studios/{id}/scenes
  * - /tags/{id}/scenes
- * - /movies/{id}
+ * - /groups/{id}
  * - /galleries/{id}
  */
 function handleScenesHotCards(type) {
   const pattern =
-    /^\/(scenes|(performers|studios|tags|movies)\/\d+\/scenes|(movies|galleries)\/\d+)$/;
+    /^\/(scenes|(performers|studios|tags|groups)\/\d+\/scenes|(groups|galleries)\/\d+)$/;
   addHotCards(pattern, type);
 }
 

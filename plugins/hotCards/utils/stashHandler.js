@@ -1,7 +1,7 @@
 const stash = {
   galleries: {},
   images: {},
-  movies: {},
+  groups: {},
   performers: {},
   scenes: {},
   studios: {},
@@ -11,7 +11,7 @@ stashListener.addEventListener("response", (event) => {
   const dataProcessors = {
     galleries: processData("findGalleries", "galleries"),
     images: processData("findImages", "images"),
-    movies: processData("findMovies", "movies"),
+    groups: processData("findGroups", "groups"),
     performers: processData("findPerformers", "performers"),
     scenes: processData("findScenes", "scenes"),
     studios: processData("findStudios", "studios"),
@@ -36,7 +36,7 @@ function processData(findKey, dataKey) {
 
 function processOtherData(data) {
   const otherDataMappings = [
-    { findKey: "findScene", key: "movies", nested: true },
+    { findKey: "findScene", key: "groups", nested: true },
     { findKey: "findScene", key: "galleries", nested: false },
     { findKey: "findScene", key: "performers", nested: false },
     { findKey: "findImage", key: "performers", nested: false },
