@@ -85,6 +85,10 @@ function overrideHistoryMethods(callback) {
       return result;
     };
   });
+
+  window.addEventListener("popstate", function () {
+    callback();
+  });
 }
 
 /** Path Change Listener */
