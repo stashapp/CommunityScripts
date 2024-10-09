@@ -1,0 +1,32 @@
+name: Addtional Files Deleter
+description: Deletes addtional files assosiated with an image or scene object. Which will usually have identical PHashes for scenes or Checksum for images. Unless is a scene manually merged. Apply ignore tag to scene/image object for plugin to bypass.
+version: 0.1
+exec:
+  - python
+  - "{pluginDir}/deleter.py"
+interface: raw
+tasks:
+  - name: Create Tag
+    description: Create the plugin Ignore Tag
+    defaultArgs:
+      mode: create_tag
+  - name: Remove Tag
+    description: Remove the plugin Ignore Tag
+    defaultArgs:
+      mode: remove_tag
+  - name: Images - Delete
+    description: Image objects that contain addtional files will be deleted
+    defaultArgs:
+      mode: images_delete
+  - name: Images - Delete & Record
+    description: Addtional files will be deleted & old paths will be stored in Image object URLs field (Incase they contain future needed metadata)
+    defaultArgs:
+      mode: images_delete_record_paths
+  - name: Scenes - Delete
+    description: Scene objects that contain addtional files will be deleted
+    defaultArgs:
+      mode: scenes_delete
+  - name: Scenes - Delete & Record
+    description: Addtional files will be deleted & old paths will be stored in Scene object URLs field (Incase they contain future needed metadata)
+    defaultArgs:
+      mode: scenes_delete_record_paths
