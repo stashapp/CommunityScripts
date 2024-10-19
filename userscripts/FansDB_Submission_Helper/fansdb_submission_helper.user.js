@@ -186,12 +186,12 @@ const urlPatterns = [
     site: "Alua",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?alua\.com\/[^?]+)/,
-    site: "Alua",
-  },
-  {
     pattern: /(^https?:\/\/(?:www.)?apclips\.com\/[^?]+)/,
     site: "APClips",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?arousetv.\.vip\/[^?]+)/,
+    site: "ArouseTV",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?beacons\.ai\/[^?]+)/,
@@ -210,8 +210,12 @@ const urlPatterns = [
     site: "BongaCams",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?bybio\.co\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?cam4\.com\/[^?]+)/,
     site: "Bybio",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?bybio\.co\/[^?]+)/,
+    site: "Cam4",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?campsite\.bio\/[^?]+)/,
@@ -220,6 +224,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?camsoda\.com\/[^?]+)/,
     site: "CamSoda",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?(?:.+)\.carrd\.to)/,
+    site: "Carrd",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?chaturbate\.com\/[^?]+)/,
@@ -236,6 +244,18 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?cosoc\.com\/[^?]+)/,
     site: "Compiled",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?darkfans\.com\/[^?]+)/,
+    site: "Darkfans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?dirtyfans\.com\/[^?]+)/,
+    site: "dirtyFans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?eplay\.com\/[^?]+)/,
+    site: "ePlay",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?f2f\.com\/[^?]+)/,
@@ -274,8 +294,16 @@ const urlPatterns = [
     site: "Fansoda",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?fanspicy\.com\/[^?]+)/,
+    site: "Fanspicy",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?fantia\.jp\/[^?]+)/,
     site: "Fantia",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fanvue\.com\/[^?]+)/,
+    site: "Fanvue",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?faphouse\.com\/[^?]+)/,
@@ -302,6 +330,10 @@ const urlPatterns = [
     site: "GEVI",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?glamino\.com\/[^?]+)/,
+    site: "Glamino",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?honeydrip\.com\/[^?]+)/,
     site: "HoneyDrip",
   },
@@ -326,6 +358,14 @@ const urlPatterns = [
     site: "IWantClips",
   },
   {
+    pattern: /(^https:\/\/javstash\.org\/performers\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/,
+    site: "JAV Stash",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?justforfans\.app\/[^?]+)/,
+    site: "Just for Fans",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?justfor\.fans\/[^?]+)/,
     site: "JustForFans",
   },
@@ -336,6 +376,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?kick\.com\/[^?]+)/,
     site: "Kick",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?linkin\.bio\/[^?]+)/,
+    site: "Later",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?lemmynsfw\.com\/[^?]+)/,
@@ -423,6 +467,10 @@ const urlPatterns = [
     site: "Mynx",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?myurl\.bio\/[^?]+)/,
+    site: "myurlbio",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?onlyfans\.com\/[^?]+)/,
     site: "OnlyFans",
   },
@@ -451,8 +499,20 @@ const urlPatterns = [
     site: "RedGIFs",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?revealme\.com\/[^?]+)/,
+    site: "RevealMe",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?rumble\.com\/[^?]+)/,
     site: "Rumble",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?scatbook\.Com\/[^?]+)/,
+    site: "Scatbook",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?sxyvip\.com\.br\/[^?]+)/,
+    site: "SexyVip",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?myslink\.app\/[^?]+)/,
@@ -477,6 +537,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?solo\.to\/[^?]+)/,
     site: "solo",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)southern\-charms\.com\/[^?]+)/,
+    site: "Southern Charms",
   },
   {
     pattern:
@@ -536,12 +600,24 @@ const urlPatterns = [
     site: "VISIT-X",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?wetspace\.com\/[^?]+)/,
+    site: "WetSpace",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?xhamsterlive\.com\/[^?]+)/,
+    site: "xHamsterLive",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?xvideos\.com\/[^?]+)/,
     site: "XVideos",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?xxxclusive\.com\/[^?]+)/,
     site: "XXXCLUSIVE",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?xxxfollow\.com\/[^?]+)/,
+    site: "XXXfollow",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?youtube\.com\/[^?]+)/,
