@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FansDB Submission Helper
 // @author      mmenanno, DogmaDragon
-// @version     0.7.1
+// @version     0.8.3
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/FansDB/docs/main/docs/assets/images/favicon.png
 // @namespace   FansDB-Submission-Helper
@@ -160,217 +160,479 @@ function existingUrlObjects() {
   return urlObjects;
 }
 
+const urlPatterns = [
+  {
+    pattern: /(^https?:\/\/(?:www.)?addfriends\.com\/[^?]+)/,
+    site: "+AddFriends",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?4based\.com\/[^?]+)/,
+    site: "4based",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?4my\.fans\/[^?]+)/,
+    site: "4MyFans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?admireme\.vip\/[^?]+)/,
+    site: "AdmireMe",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?allmylinks\.com\/[^?]+)/,
+    site: "AllMyLinks",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?alua\.com\/[^?]+)/,
+    site: "Alua",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?apclips\.com\/[^?]+)/,
+    site: "APClips",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?arousetv.\.vip\/[^?]+)/,
+    site: "ArouseTV",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?beacons\.ai\/[^?]+)/,
+    site: "Beacons",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?bestfans\.com\/[^?]+)/,
+    site: "BestFans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?bsky\.app\/[^?]+)/,
+    site: "Bluesky",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?bongacams\.com\/[^?]+)/,
+    site: "BongaCams",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?cam4\.com\/[^?]+)/,
+    site: "Bybio",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?bybio\.co\/[^?]+)/,
+    site: "Cam4",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?campsite\.bio\/[^?]+)/,
+    site: "Campsite",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?camsoda\.com\/[^?]+)/,
+    site: "CamSoda",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?(?:.+)\.carrd\.to)/,
+    site: "Carrd",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?chaturbate\.com\/[^?]+)/,
+    site: "Chaturbate",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?chaturbate\.com\/[^?]+)/,
+    site: "Chaturbate",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?clips4sale\.com\/[^?]+)/,
+    site: "Clips4Sale",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?cosoc\.com\/[^?]+)/,
+    site: "Compiled",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?darkfans\.com\/[^?]+)/,
+    site: "Darkfans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?dirtyfans\.com\/[^?]+)/,
+    site: "dirtyFans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?eplay\.com\/[^?]+)/,
+    site: "ePlay",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?f2f\.com\/[^?]+)/,
+    site: "F2F",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?facebook\.com\/[^?]+)/,
+    site: "Facebook",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fanberry\.com\/[^?]+)/,
+    site: "Fanberry",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fancentro\.com\/[^?]+)/,
+    site: "Fancentro",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fanfever\.com\/[^?]+)/,
+    site: "FanFever",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fanplace\.com\/[^?]+)/,
+    site: "Fanplace",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fanseven\.com\/[^?]+)/,
+    site: "fanseven",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fansly\.com\/[^?]+)/,
+    site: "Fansly",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fansoda\.com\/[^?]+)/,
+    site: "Fansoda",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fanspicy\.com\/[^?]+)/,
+    site: "Fanspicy",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fantia\.jp\/[^?]+)/,
+    site: "Fantia",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fanvue\.com\/[^?]+)/,
+    site: "Fanvue",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?faphouse\.com\/[^?]+)/,
+    site: "FapHouse",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?adult\.contents\.fc2\.com\/[^?]+)/,
+    site: "FC2",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?findrow\.com\/[^?]+)/,
+    site: "Findrow",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?flow\.page\/[^?]+)/,
+    site: "Flowpage",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?frisk\.chat\/[^?]+)/,
+    site: "Frisk",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?gayeroticvideoindex\.com\/[^?]+)/,
+    site: "GEVI",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?glamino\.com\/[^?]+)/,
+    site: "Glamino",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?honeydrip\.com\/[^?]+)/,
+    site: "HoneyDrip",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?hoo\.be\/[^?]+)/,
+    site: "Hoo",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?hubzter\.com\/[^?]+)/,
+    site: "Hubzter",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?iafd\.com\/[^?]+)/,
+    site: "IAFD",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?instagram\.com\/[^?]+)/,
+    site: "Instagram",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?iwantclips\.com\/[^?]+)/,
+    site: "IWantClips",
+  },
+  {
+    pattern:
+      /(^https:\/\/javstash\.org\/performers\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/,
+    site: "JAV Stash",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?justforfans\.app\/[^?]+)/,
+    site: "Just for Fans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?justfor\.fans\/[^?]+)/,
+    site: "JustForFans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?jvid\.com\/[^?]+)/,
+    site: "JVID",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?kick\.com\/[^?]+)/,
+    site: "Kick",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?linkin\.bio\/[^?]+)/,
+    site: "Later",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?lemmynsfw\.com\/[^?]+)/,
+    site: "LemmyNSFW",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?lemmynsfw\.com\/[^?]+)/,
+    site: "LemmyNSFW",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?linkgenie\.net\/[^?]+)/,
+    site: "LinkGenie",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?link\.me\/[^?]+)/,
+    site: "Linkme",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?linkr\.bio\/[^?]+)/,
+    site: "Linkr",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?linktr\.ee\/[^?]+)/,
+    site: "Linktree",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?lnk\.bio\/[^?]+)/,
+    site: "LnkBio",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?loverfans\.com\/[^?]+)/,
+    site: "Loverfans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?loyalfans\.com\/[^?]+)/,
+    site: "LoyalFans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?magic\.ly\/[^?]+)/,
+    site: "Magicly",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?many\.bio\/[^?]+)/,
+    site: "ManyBio",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?manyvids\.com\/[^?]+)/,
+    site: "ManyVids",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?memberme\.net\/[^?]+)/,
+    site: "MemberMe",
+  },
+  {
+    pattern:
+      /(^https?:\/\/(?:www.)?(?:profiles|share)\.myfreecams\.com\/[^?]+)/,
+    site: "MFC Share",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?msha\.ke\/[^?]+)/,
+    site: "Milkshake",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?modelmayhem\.com\/[^?]+)/,
+    site: "Model Mayhem",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?(?:.+)\.modelcentro\.com)/,
+    site: "ModelCentro",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?modelhub\.com\/[^?]+)/,
+    site: "Modelhub",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?my\.club\/[^?]+)/,
+    site: "MyClub",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?mydirtyhobby\.(?:com|de)\/[^?]+)/,
+    site: "MyDirtyHobby",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?mynx\.co\/[^?]+)/,
+    site: "Mynx",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?myurl\.bio\/[^?]+)/,
+    site: "myurlbio",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?onlyfans\.com\/[^?]+)/,
+    site: "OnlyFans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?patreon\.com\/[^?]+)/,
+    site: "Patreon",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?legacy\.peach\.com\/[^?]+)/,
+    site: "Peach (legacy)",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?pornhub\.com\/[^?]+)/,
+    site: "Pornhub",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?privacy\.com\.br\/[^?]+)/,
+    site: "Privacy",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?reddit\.com\/[^?]+)/,
+    site: "Reddit",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?redgifs\.com\/[^?]+)/,
+    site: "RedGIFs",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?revealme\.com\/[^?]+)/,
+    site: "RevealMe",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?rumble\.com\/[^?]+)/,
+    site: "Rumble",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?scatbook\.Com\/[^?]+)/,
+    site: "Scatbook",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?sxyvip\.com\.br\/[^?]+)/,
+    site: "SexyVip",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?myslink\.app\/[^?]+)/,
+    site: "Slink",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?slushy\.com\/[^?]+)/,
+    site: "Slushy",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?snapchat\.com\/[^?]+)/,
+    site: "Snapchat",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?snipfeed\.co\/[^?]+)/,
+    site: "Snipfeed",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?socprofile\.com\/[^?]+)/,
+    site: "SocProfile",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?solo\.to\/[^?]+)/,
+    site: "solo",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)southern\-charms\.com\/[^?]+)/,
+    site: "Southern Charms",
+  },
+  {
+    pattern:
+      /(^https:\/\/stashdb\.org\/performers\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/,
+    site: "StashDB",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?swag\.live\/[^?]+)/,
+    site: "SWAG",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?stripchat\.com\/[^?]+)/,
+    site: "Stripchat",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?swame\.com\/[^?]+)/,
+    site: "Swame",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?tempted\.com\/[^?]+)/,
+    site: "Tempted",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?theporndb\.net\/[^?]+)/,
+    site: "ThePornDB",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?threads\.net\/[^?]+)/,
+    site: "Threads",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?tiktok\.com\/[^?]+)/,
+    site: "TikTok",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?tumblr\.com\/[^?]+)/,
+    site: "Tumblr",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?twitch\.tv\/[^?]+)/,
+    site: "Twitch",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?(?:twitter|x)\.com\/[^?]+)/,
+    site: "Twitter",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?unlockedxx\.com\/[^?]+)/,
+    site: "UnlockedXX",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?uviu\.com\/[^?]+)/,
+    site: "UViU",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?visit-x\.net\/[^?]+)/,
+    site: "VISIT-X",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?wetspace\.com\/[^?]+)/,
+    site: "WetSpace",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?xhamsterlive\.com\/[^?]+)/,
+    site: "xHamsterLive",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?xvideos\.com\/[^?]+)/,
+    site: "XVideos",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?xxxclusive\.com\/[^?]+)/,
+    site: "XXXCLUSIVE",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?xxxfollow\.com\/[^?]+)/,
+    site: "XXXfollow",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?youtube\.com\/[^?]+)/,
+    site: "YouTube",
+  },
+];
 function urlSite(url) {
-  let site;
-  if (/(^https?:\/\/(?:www.)?addfriends\.com\/[^?]+)/.test(url)) {
-    site = "+AddFriends";
-  } else if (/(^https?:\/\/(?:www.)?4based\.com\/[^?]+)/.test(url)) {
-    site = "4based";
-  } else if (/(^https?:\/\/(?:www.)?4my\.fans\/[^?]+)/.test(url)) {
-    site = "4MyFans";
-  } else if (/(^https?:\/\/(?:www.)?admireme\.vip\/[^?]+)/.test(url)) {
-    site = "AdmireMe";
-  } else if (/(^https?:\/\/(?:www.)?allmylinks\.com\/[^?]+)/.test(url)) {
-    site = "AllMyLinks";
-  } else if (/(^https?:\/\/(?:www.)?alua\.com\/[^?]+)/.test(url)) {
-    site = "Alua";
-  } else if (/(^https?:\/\/(?:www.)?apclips\.com\/[^?]+)/.test(url)) {
-    site = "APClips";
-  } else if (/(^https?:\/\/(?:www.)?beacons\.ai\/[^?]+)/.test(url)) {
-    site = "Beacons";
-  } else if (/(^https?:\/\/(?:www.)?bestfans\.com\/[^?]+)/.test(url)) {
-    site = "BestFans";
-  } else if (/(^https?:\/\/(?:www.)?bsky\.app\/[^?]+)/.test(url)) {
-    site = "Bluesky";
-  } else if (/(^https?:\/\/(?:www.)?bongacams\.com\/[^?]+)/.test(url)) {
-    site = "BongaCams";
-  } else if (/(^https?:\/\/(?:www.)?bybio\.co\/[^?]+)/.test(url)) {
-    site = "Bybio";
-  } else if (/(^https?:\/\/(?:www.)?campsite\.bio\/[^?]+)/.test(url)) {
-    site = "Campsite";
-  } else if (/(^https?:\/\/(?:www.)?camsoda\.com\/[^?]+)/.test(url)) {
-    site = "CamSoda";
-  } else if (/(^https?:\/\/(?:www.)?chaturbate\.com\/[^?]+)/.test(url)) {
-    site = "Chaturbate";
-  } else if (/(^https?:\/\/(?:www.)?clips4sale\.com\/[^?]+)/.test(url)) {
-    site = "Clips4Sale";
-  } else if (/(^https?:\/\/(?:www.)?cosoc\.com\/[^?]+)/.test(url)) {
-    site = "Compiled";
-  } else if (/(^https?:\/\/(?:www.)?f2f\.com\/[^?]+)/.test(url)) {
-    site = "F2F";
-  } else if (/(^https?:\/\/(?:www.)?facebook\.com\/[^?]+)/.test(url)) {
-    site = "Facebook";
-  } else if (/(^https?:\/\/(?:www.)?fanberry\.com\/[^?]+)/.test(url)) {
-    site = "Fanberry";
-  } else if (/(^https?:\/\/(?:www.)?fancentro\.com\/[^?]+)/.test(url)) {
-    site = "Fancentro";
-  } else if (/(^https?:\/\/(?:www.)?fanfever\.com\/[^?]+)/.test(url)) {
-    site = "FanFever";
-  } else if (/(^https?:\/\/(?:www.)?fanplace\.com\/[^?]+)/.test(url)) {
-    site = "Fanplace";
-  } else if (/(^https?:\/\/(?:www.)?fanseven\.com\/[^?]+)/.test(url)) {
-    site = "fanseven";
-  } else if (/(^https?:\/\/(?:www.)?fansly\.com\/[^?]+)/.test(url)) {
-    site = "Fansly";
-  } else if (/(^https?:\/\/(?:www.)?fansoda\.com\/[^?]+)/.test(url)) {
-    site = "Fansoda";
-  } else if (/(^https?:\/\/(?:www.)?fantia\.jp\/[^?]+)/.test(url)) {
-    site = "Fantia";
-  } else if (/(^https?:\/\/(?:www.)?faphouse\.com\/[^?]+)/.test(url)) {
-    site = "FapHouse";
-  } else if (
-    /(^https?:\/\/(?:www.)?adult\.contents\.fc2\.com\/[^?]+)/.test(url)
-  ) {
-    site = "FC2";
-  } else if (/(^https?:\/\/(?:www.)?findrow\.com\/[^?]+)/.test(url)) {
-    site = "Findrow";
-  } else if (/(^https?:\/\/(?:www.)?flow\.page\/[^?]+)/.test(url)) {
-    site = "Flowpage";
-  } else if (/(^https?:\/\/(?:www.)?frisk\.chat\/[^?]+)/.test(url)) {
-    site = "Frisk";
-  } else if (
-    /(^https?:\/\/(?:www.)?gayeroticvideoindex\.com\/[^?]+)/.test(url)
-  ) {
-    site = "GEVI";
-  } else if (/(^https?:\/\/(?:www.)?honeydrip\.com\/[^?]+)/.test(url)) {
-    site = "HoneyDrip";
-  } else if (/(^https?:\/\/(?:www.)?hoo\.be\/[^?]+)/.test(url)) {
-    site = "Hoo";
-  } else if (/(^https?:\/\/(?:www.)?hubzter\.com\/[^?]+)/.test(url)) {
-    site = "Hubzter";
-  } else if (/(^https?:\/\/(?:www.)?iafd\.com\/[^?]+)/.test(url)) {
-    site = "IAFD";
-  } else if (/(^https?:\/\/(?:www.)?instagram\.com\/[^?]+)/.test(url)) {
-    site = "Instagram";
-  } else if (/(^https?:\/\/(?:www.)?iwantclips\.com\/[^?]+)/.test(url)) {
-    site = "IWantClips";
-  } else if (/(^https?:\/\/(?:www.)?justfor\.fans\/[^?]+)/.test(url)) {
-    site = "JustForFans";
-  } else if (/(^https?:\/\/(?:www.)?jvid\.com\/[^?]+)/.test(url)) {
-    site = "JVID";
-  } else if (/(^https?:\/\/(?:www.)?kick\.com\/[^?]+)/.test(url)) {
-    site = "Kick";
-  } else if (/(^https?:\/\/(?:www.)?lemmynsfw\.com\/[^?]+)/.test(url)) {
-    site = "LemmyNSFW";
-  } else if (/(^https?:\/\/(?:www.)?linkgenie\.net\/[^?]+)/.test(url)) {
-    site = "LinkGenie";
-  } else if (/(^https?:\/\/(?:www.)?link\.me\/[^?]+)/.test(url)) {
-    site = "Linkme";
-  } else if (/(^https?:\/\/(?:www.)?linkr\.bio\/[^?]+)/.test(url)) {
-    site = "Linkr";
-  } else if (/(^https?:\/\/(?:www.)?linktr\.ee\/[^?]+)/.test(url)) {
-    site = "Linktree";
-  } else if (/(^https?:\/\/(?:www.)?lnk\.bio\/[^?]+)/.test(url)) {
-    site = "LnkBio";
-  } else if (/(^https?:\/\/(?:www.)?loverfans\.com\/[^?]+)/.test(url)) {
-    site = "Loverfans";
-  } else if (/(^https?:\/\/(?:www.)?loyalfans\.com\/[^?]+)/.test(url)) {
-    site = "LoyalFans";
-  } else if (/(^https?:\/\/(?:www.)?magic\.ly\/[^?]+)/.test(url)) {
-    site = "Magicly";
-  } else if (/(^https?:\/\/(?:www.)?many\.bio\/[^?]+)/.test(url)) {
-    site = "Many";
-  } else if (/(^https?:\/\/(?:www.)?manyvids\.com\/[^?]+)/.test(url)) {
-    site = "ManyVids";
-  } else if (/(^https?:\/\/(?:www.)?memberme\.net\/[^?]+)/.test(url)) {
-    site = "MemberMe";
-  } else if (
-    /(^https?:\/\/(?:www.)?(?:profiles|share)\.myfreecams\.com\/[^?]+)/.test(
-      url
-    )
-  ) {
-    site = "MFC Share";
-  } else if (/(^https?:\/\/(?:www.)?msha\.ke\/[^?]+)/.test(url)) {
-    site = "Milkshake";
-  } else if (/(^https?:\/\/(?:www.)?modelmayhem\.com\/[^?]+)/.test(url)) {
-    site = "Model Mayhem";
-  } else if (/(^https?:\/\/(?:www.)?(?:.+)\.modelcentro\.com)/.test(url)) {
-    site = "ModelCentro";
-  } else if (/(^https?:\/\/(?:www.)?modelhub\.com\/[^?]+)/.test(url)) {
-    site = "Modelhub";
-  } else if (/(^https?:\/\/(?:www.)?my\.club\/[^?]+)/.test(url)) {
-    site = "MyClub";
-  } else if (
-    /(^https?:\/\/(?:www.)?mydirtyhobby\.(?:com|de)\/[^?]+)/.test(url)
-  ) {
-    site = "MyDirtyHobby";
-  } else if (/(^https?:\/\/(?:www.)?mym\.fans\/[^?]+)/.test(url)) {
-    site = "MYM";
-  } else if (/(^https?:\/\/(?:www.)?mynx\.co\/[^?]+)/.test(url)) {
-    site = "Mynx";
-  } else if (/(^https?:\/\/(?:www.)?onlyfans\.com\/[^?]+)/.test(url)) {
-    site = "OnlyFans";
-  } else if (/(^https?:\/\/(?:www.)?patreon\.com\/[^?]+)/.test(url)) {
-    site = "Patreon";
-  } else if (/(^https?:\/\/(?:www.)?legacy\.peach\.com\/[^?]+)/.test(url)) {
-    site = "Peach (legacy)";
-  } else if (/(^https?:\/\/(?:www.)?pornhub\.com\/[^?]+)/.test(url)) {
-    site = "Pornhub";
-  } else if (/(^https?:\/\/(?:www.)?privacy\.com\.br\/[^?]+)/.test(url)) {
-    site = "Privacy";
-  } else if (/(^https?:\/\/(?:www.)?reddit\.com\/[^?]+)/.test(url)) {
-    site = "Reddit";
-  } else if (/(^https?:\/\/(?:www.)?redgifs\.com\/[^?]+)/.test(url)) {
-    site = "RedGIFs";
-  } else if (/(^https?:\/\/(?:www.)?rumble\.com\/[^?]+)/.test(url)) {
-    site = "Rumble";
-  } else if (/(^https?:\/\/(?:www.)?sheer\.com\/[^?]+)/.test(url)) {
-    site = "Sheer";
-  } else if (/(^https?:\/\/(?:www.)?myslink\.app\/[^?]+)/.test(url)) {
-    site = "Slink";
-  } else if (/(^https?:\/\/(?:www.)?slushy\.com\/[^?]+)/.test(url)) {
-    site = "Slushy";
-  } else if (/(^https?:\/\/(?:www.)?snapchat\.com\/[^?]+)/.test(url)) {
-    site = "Snapchat";
-  } else if (/(^https?:\/\/(?:www.)?snipfeed\.co\/[^?]+)/.test(url)) {
-    site = "Snipfeed";
-  } else if (/(^https?:\/\/(?:www.)?socprofile\.com\/[^?]+)/.test(url)) {
-    site = "SocProfile";
-  } else if (/(^https?:\/\/(?:www.)?solo\.to\/[^?]+)/.test(url)) {
-    site = "solo";
-  } else if (
-    /(^https:\/\/stashdb\.org\/performers\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/.test(
-      url
-    )
-  ) {
-    site = "StashDB";
-  } else if (/(^https?:\/\/(?:www.)?swag\.live\/[^?]+)/.test(url)) {
-    site = "SWAG";
-  } else if (/(^https?:\/\/(?:www.)?stripchat\.com\/[^?]+)/.test(url)) {
-    site = "Stripchat";
-  } else if (/(^https?:\/\/(?:www.)?swame\.com\/[^?]+)/.test(url)) {
-    site = "Swame";
-  } else if (/(^https?:\/\/(?:www.)?tempted\.com\/[^?]+)/.test(url)) {
-    site = "Tempted";
-  } else if (/(^https?:\/\/(?:www.)?theporndb\.net\/[^?]+)/.test(url)) {
-    site = "ThePornDB";
-  } else if (/(^https?:\/\/(?:www.)?threads\.net\/[^?]+)/.test(url)) {
-    site = "Threads";
-  } else if (/(^https?:\/\/(?:www.)?tiktok\.com\/[^?]+)/.test(url)) {
-    site = "TikTok";
-  } else if (/(^https?:\/\/(?:www.)?tumblr\.com\/[^?]+)/.test(url)) {
-    site = "Tumblr";
-  } else if (/(^https?:\/\/(?:www.)?twitch\.tv\/[^?]+)/.test(url)) {
-    site = "Twitch";
-  } else if (/(^https?:\/\/(?:www.)?(?:twitter|x)\.com\/[^?]+)/.test(url)) {
-    site = "Twitter";
-  } else if (/(^https?:\/\/(?:www.)?unlockedxx\.com\/[^?]+)/.test(url)) {
-    site = "UnlockedXX";
-  } else if (/(^https?:\/\/(?:www.)?uviu\.com\/[^?]+)/.test(url)) {
-    site = "UVIU";
-  } else if (/(^https?:\/\/(?:www.)?visit-x\.net\/[^?]+)/.test(url)) {
-    site = "VISIT-X";
-  } else if (/(^https?:\/\/(?:www.)?xvideos\.com\/[^?]+)/.test(url)) {
-    site = "XVideos";
-  } else if (/(^https?:\/\/(?:www.)?xxxclusive\.com\/[^?]+)/.test(url)) {
-    site = "XXXCLUSIVE";
-  } else if (/(^https?:\/\/(?:www.)?youtube\.com\/[^?]+)/.test(url)) {
-    site = "YouTube";
-  } else {
-    return;
+  for (const { pattern, site } of urlPatterns) {
+    if (pattern.test(url)) {
+      return site;
+    }
   }
 
-  return site;
+  return;
 }
 
 function siteMatch(url, selections) {
@@ -400,10 +662,18 @@ function addUrl(url) {
   const addButton = urlInput.children[3];
 
   const selection = siteMatch(url, selections);
+
+  // Check if the selection is valid
+  if (!selection) {
+    console.warn(`Skipping URL '${url}' as it does not match any site.`);
+    return; // Skip unmatched URL
+  }
+
   setNativeValue(selections, selection.value);
   setNativeValue(inputField, url);
   if (addButton.disabled) {
     console.warn("Unable to add url (Add button is disabled)");
+    return; // Exit if the button is disabled
   }
 
   formTab("Links").click();
