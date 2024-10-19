@@ -358,7 +358,8 @@ const urlPatterns = [
     site: "IWantClips",
   },
   {
-    pattern: /(^https:\/\/javstash\.org\/performers\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/,
+    pattern:
+      /(^https:\/\/javstash\.org\/performers\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})/,
     site: "JAV Stash",
   },
   {
