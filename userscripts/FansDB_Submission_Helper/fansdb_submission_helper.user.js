@@ -210,11 +210,11 @@ const urlPatterns = [
     site: "BongaCams",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?cam4\.com\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?bybio\.co\/[^?]+)/,
     site: "Bybio",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?bybio\.co\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?cam4\.com\/[^?]+)/,
     site: "Cam4",
   },
   {
