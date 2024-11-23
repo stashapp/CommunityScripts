@@ -64,6 +64,16 @@ function waitForImageLoad(imageEl, callback) {
   setTimeout(waitForImageLoad, 100, imageEl, callback);
 }
 
+function createElementFromHTML(htmlString) {
+  const div = document.createElement("div");
+  div.innerHTML = htmlString.trim();
+  return div.firstChild;
+}
+
+function isCardInitialized(element, type) {
+  return element.querySelector(`div>.${type}-card`);
+}
+
 /** History */
 
 function overrideHistoryMethods(callback) {
@@ -75,4 +85,31 @@ function overrideHistoryMethods(callback) {
       return result;
     };
   });
+
+  window.addEventListener("popstate", function () {
+    callback();
+  });
+}
+
+/** Path Change Listener */
+
+function registerPathChangeListener(pattern, callback) {
+  const regex = new RegExp(pattern);
+
+  function checkURL() {
+    const currentPathName = window.location.pathname;
+
+    checkConfigurationRefresh().then(() => {
+      if (regex.test(currentPathName)) callback();
+    });
+  }
+
+  // Listen to popstate event for back/forward navigation
+  window.addEventListener("popstate", checkURL);
+
+  // Hijack pushState and replaceState methods
+  overrideHistoryMethods(checkURL);
+
+  // Initial check
+  checkURL();
 }

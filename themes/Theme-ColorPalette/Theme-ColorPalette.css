@@ -1,0 +1,451 @@
+:root {
+  /* Define the main color angle */
+  --maincolorDeg: 140deg;
+  /* Define the universal saturation for all colors */
+  --saturation: 80%;
+
+  /* Define brightness level variable */
+  --brightestLevel: 95%;
+  --veryBrightLevel: 90%;
+  --brightLevel: 75%;
+  --moderatelyBrightLevel: 60%;
+  --mediumLevel: 40%;
+  --moderatelyDarkLevel: 25%;
+  --darkLevel: 15%;
+  --veryDarkLevel: 8%;
+  --extremelyDarkLevel: 2%;
+
+  /* Main color and related settings */
+  --mainLightest: hsl(
+    var(--maincolorDeg),
+    var(--saturation),
+    var(--brightestLevel)
+  );
+  --mainVeryBright: hsl(
+    var(--maincolorDeg),
+    var(--saturation),
+    var(--veryBrightLevel)
+  );
+  --mainBright: hsl(var(--maincolorDeg), var(--saturation), var(--brightLevel));
+  --mainModeratelyBright: hsl(
+    var(--maincolorDeg),
+    var(--saturation),
+    var(--moderatelyBrightLevel)
+  );
+  --mainMedium: hsl(var(--maincolorDeg), var(--saturation), var(--mediumLevel));
+  --mainModeratelyDark: hsl(
+    var(--maincolorDeg),
+    var(--saturation),
+    var(--moderatelyDarkLevel)
+  );
+  --mainDark: hsl(var(--maincolorDeg), var(--saturation), var(--darkLevel));
+  --mainVeryDark: hsl(
+    var(--maincolorDeg),
+    var(--saturation),
+    var(--veryDarkLevel)
+  );
+  --mainExtremelyDark: hsl(
+    var(--maincolorDeg),
+    var(--saturation),
+    var(--extremelyDarkLevel)
+  );
+  --mainGrey: hsl(var(--maincolorDeg), 20%, var(--darkLevel));
+
+  /* secondary color settings */
+  --secondary: 20deg;
+  --secondaryColor: calc(var(--maincolorDeg) + var(--secondary));
+  --secondaryLightest: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--brightestLevel)
+  );
+  --secondaryVeryBright: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--veryBrightLevel)
+  );
+  --secondaryBright: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--brightLevel)
+  );
+  --secondaryModeratelyBright: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--moderatelyBrightLevel)
+  );
+  --secondaryMedium: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--mediumLevel)
+  );
+  --secondaryModeratelyDark: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--moderatelyDarkLevel)
+  );
+  --secondaryDark: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--darkLevel)
+  );
+  --secondaryVeryDark: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--veryDarkLevel)
+  );
+  --secondaryExtremelyDark: hsl(
+    var(--secondaryColor),
+    var(--saturation),
+    var(--extremelyDarkLevel)
+  );
+
+  /* Three-point color setting */
+  --tertiary1: calc(var(--maincolorDeg) + 120deg);
+  --tertiary1Lightest: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--brightestLevel)
+  );
+  --tertiary1VeryBright: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--veryBrightLevel)
+  );
+  --tertiary1Bright: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--brightLevel)
+  );
+  --tertiary1ModeratelyBright: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--moderatelyBrightLevel)
+  );
+  --tertiary1Medium: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--mediumLevel)
+  );
+  --tertiary1ModeratelyDark: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--moderatelyDarkLevel)
+  );
+  --tertiary1Dark: hsl(var(--tertiary1), var(--saturation), var(--darkLevel));
+  --tertiary1VeryDark: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--veryDarkLevel)
+  );
+  --tertiary1ExtremelyDark: hsl(
+    var(--tertiary1),
+    var(--saturation),
+    var(--extremelyDarkLevel)
+  );
+  --tertiary2: calc(var(--maincolorDeg) + 240deg);
+  --tertiary2Lightest: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--brightestLevel)
+  );
+  --tertiary2VeryBright: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--veryBrightLevel)
+  );
+  --tertiary2Bright: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--brightLevel)
+  );
+  --tertiary2ModeratelyBright: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--moderatelyBrightLevel)
+  );
+  --tertiary2Medium: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--mediumLevel)
+  );
+  --tertiary2ModeratelyDark: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--moderatelyDarkLevel)
+  );
+  --tertiary2Dark: hsl(var(--tertiary2), var(--saturation), var(--darkLevel));
+  --tertiary2VeryDark: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--veryDarkLevel)
+  );
+  --tertiary2ExtremelyDark: hsl(
+    var(--tertiary2),
+    var(--saturation),
+    var(--extremelyDarkLevel)
+  );
+
+  /* Background Type */
+  --bgTypeNormal: var(--mainDark);
+  --bgTypeBright: var(--mainMedium);
+  --bgTypeDark: var(--mainVeryDark);
+  --bgTypeSpecial: var(--mainModeratelyDark);
+  --bgTypeGrey: var(--mainGrey);
+
+  /* Text Type */
+  --textTypeNormal: var(--mainModeratelyDark);
+  --textTypeBright: var(--mainBright);
+  --textTypeDark: var(--mainVeryBright);
+  --textTypeSpecial: var(--secondaryModeratelyBright);
+
+  /* border type */
+  --borderTypeNormal: var(--secondaryMedium);
+  --borderTypeBright: var(--secondaryBright);
+  --borderTypeDark: var(--mainDark);
+  --borderTypeSpecial: var(--mainBright);
+}
+body {
+  color: var(--textTypeBright);
+  background-color: var(--bgTypeDark);
+}
+.card {
+  background-color: #55555555;
+}
+.bg-dark {
+  background-color: var(--bgTypeSpecial) !important;
+}
+.clearable-text-field,
+.clearable-text-field:active,
+.clearable-text-field:focus {
+  background-color: var(--bgTypeNormal);
+  border-color: var(--borderTypeNormal);
+  color: #fff;
+}
+
+.btn-secondary {
+  color: #fff;
+  background-color: var(--bgTypeNormal);
+  border-color: var(--borderTypeDark);
+}
+.btn-secondary:not(:disabled):not(.disabled):active,
+.btn-secondary:not(:disabled):not(.disabled).active,
+.show > .btn-secondary.dropdown-toggle {
+  color: #fff;
+  background-color: var(--bgTypeDark);
+  border-color: var(--borderTypeDark);
+}
+.bg-secondary {
+  background-color: var(--bgTypeNormal) !important;
+}
+.input-control,
+.input-control:focus,
+.input-control:disabled {
+  background-color: var(--darkBg);
+}
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  color: var(--textTypeBright);
+  background-color: var(--bgTypeDark);
+}
+.btn-primary {
+  color: #fff;
+  background-color: var(--bgTypeBright);
+  border-color: var(--bgTypeDark);
+}
+.custom-control-input:checked ~ .custom-control-label:before {
+  color: var(--bgTypeDark);
+  border-color: var(--borderTypeNormal);
+  background-color: var(--bgTypeBright);
+}
+#tasks-panel .tasks-panel-queue {
+  background-color: var(--bgTypeDark);
+}
+.job-table.card {
+  background-color: var(--bgTypeDark);
+}
+.btn-primary:hover {
+  color: #fff;
+  background-color: var(--bgTypeDark);
+  border-color: var(--borderTypeDark);
+}
+.btn-primary.disabled,
+.btn-primary:disabled {
+  color: #fff;
+  background-color: #888;
+  border-color: var(--borderTypeDark);
+}
+
+a {
+  color: var(--bgTypeBright);
+}
+
+.detail-header {
+  background-color: var(--bgTypeDark);
+}
+.nav-tabs .nav-link.active {
+  border-bottom: 4px solid;
+  color: var(--textTypeBright);
+}
+
+div.react-select__control {
+  background-color: rgba(16, 22, 26, 0.3);
+  border-color: var(--borderTypeNormal);
+}
+.modal-header,
+.modal-body,
+.modal-footer {
+  background-color: var(--bgTypeNormal);
+  color: #f5f8fa;
+}
+.btn-secondary:hover {
+  color: #fff;
+  background-color: var(--bgTypeBright);
+  border-color: var(--borderTypeDark);
+}
+
+h5,
+.h5 {
+  font-size: 1.5rem;
+  text-shadow: 0px 0px 7px var(--textTypeBright);
+  font-family: Pingfang;
+  font-variation-settings:
+    "wght" 900,
+    "wdth" 50;
+}
+primary.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.2rem var(--borderTypeSpecial);
+}
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active,
+.show > .btn-primary.dropdown-toggle {
+  color: #fff;
+  background-color: var(--bgTypeNormal);
+  border-color: var(--borderTypeSpecial);
+}
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.show > .btn-primary.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.2rem var(--borderTypeSpecial);
+}
+.btn-primary:focus,
+.btn-primary.focus {
+  color: #fff;
+  background-color: var(--bgTypeBright);
+  border-color: var(--borderTypeDark);
+  box-shadow: 0 0 0 0.2rem var(--secondaryLightest);
+}
+div.react-select__menu,
+div.dropdown-menu {
+  background-color: var(--bgTypeNormal);
+}
+.package-manager table thead {
+  background-color: var(--bgTypeNormal);
+}
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--bgTypeBright);
+}
+.btn-secondary.disabled,
+.btn-secondary:disabled {
+  color: #fff;
+  background-color: var(--bgTypeGrey);
+}
+.markdown blockquote,
+.markdown pre {
+  background-color: var(--bgTypeSpecial);
+}
+.markdown code {
+  background-color: var(--bgTypeBright);
+}
+.modal-header,
+.modal-body,
+.modal-footer {
+  background-color: var(--bgTypeDark);
+}
+.markdown table tr:nth-child(2n) {
+  background-color: var(--bgTypeGrey);
+}
+a:hover {
+  color: var(--textTypeSpecial);
+}
+.collapsed .detail-item-value {
+  -webkit-line-clamp: 10;
+}
+.TruncatedText.scene-card__description {
+  -webkit-line-clamp: 10 !important;
+}
+.StudioTagger-studio {
+  background-color: var(--bgTypeNormal);
+}
+.search-item {
+  background-color: #88888866;
+  border-radius: 8px;
+}
+.StudioTagger-studio .studio-card img {
+  background-color: #fff0;
+}
+.StudioTagger-studio .studio-card {
+  background-color: #fff0;
+}
+
+.text-input,
+.text-input:focus,
+.text-input[readonly],
+.text-input:disabled {
+  background-color: rgba(16, 22, 26, 0.3);
+  border-color: var(--borderTypeNormal);
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 1px;
+}
+.PerformerTagger-performer {
+  background-color: var(--bgTypeNormal);
+}
+
+#queue-viewer .current {
+  background-color: var(--bgTypeSpecial);
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  background-color: var(--bgTypeGrey);
+}
+
+div.react-datepicker {
+  background-color: var(--mainModeratelyBright);
+  border-color: var(--bgTypeBright);
+  color: var(--textTypeDark);
+}
+
+div.react-datepicker .react-datepicker__header,
+div.react-datepicker .react-datepicker-time__header {
+  background-color: var(--bgTypeSpecial);
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range,
+.react-datepicker__month-text--selected,
+.react-datepicker__month-text--in-selecting-range,
+.react-datepicker__month-text--in-range,
+.react-datepicker__quarter-text--selected,
+.react-datepicker__quarter-text--in-selecting-range,
+.react-datepicker__quarter-text--in-range,
+.react-datepicker__year-text--selected,
+.react-datepicker__year-text--in-selecting-range,
+.react-datepicker__year-text--in-range {
+  background-color: var(--bgTypeNormal);
+}
+a.bg-secondary:hover,
+a.bg-secondary:focus,
+button.bg-secondary:hover,
+button.bg-secondary:focus {
+  background-color: var(--bgTypeBright) !important;
+}
+.nav-tabs .nav-link.active:hover {
+  border-bottom-color: var(--tertiary1ModeratelyBright);
+}
+#scene-edit-details .edit-buttons-container {
+  background-color: var(--bgTypeGrey);
+}

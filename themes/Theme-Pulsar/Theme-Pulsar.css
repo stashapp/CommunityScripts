@@ -1993,11 +1993,6 @@ div.react-select__menu .react-select__option--is-focused {
   background-color: rgba(24, 130, 195, 0.85);
 }
 
-.toast-container {
-  left: 74%;
-  top: 1rem;
-}
-
 /* --- Settings / About adjustments --- */
 #configuration-tabs-tabpane-about .table {
   width: 100%;

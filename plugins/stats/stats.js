@@ -64,7 +64,7 @@
 
   // percentage helper
   const percentage = (portion, total) =>
-    ((portion / total) * 100).toFixed(2) + "%";
+    (total > 0 ? (portion / total) * 100 : 0).toFixed(2) + "%";
 
   // *** actual stats fetching ***
   // performer of scenes with any StashID
@@ -181,7 +181,7 @@
     "div.container-fluid div.mt-5",
     setupStats
   );
-  function setupStats(el) {
+  async function setupStats(el) {
     if (document.querySelector(".custom-stats-row")) return;
     const changelog = el.querySelector("div.changelog");
     const rowOne = document.createElement("div");
@@ -190,16 +190,16 @@
     const rowTwo = rowOne.cloneNode();
     el.insertBefore(rowTwo, changelog);
     // row one
-    createSceneStashIDPct(rowOne);
-    createStudioStashIDPct(rowOne);
-    createPerformerStashIDPct(rowOne);
-    createPerformerFavorites(rowOne);
-    createMarkersStat(rowOne);
+    await createSceneStashIDPct(rowOne);
+    await createStudioStashIDPct(rowOne);
+    await createPerformerStashIDPct(rowOne);
+    await createPerformerFavorites(rowOne);
+    await createMarkersStat(rowOne);
     // row two
-    createTagHasImage(rowTwo);
-    createStudioHasimage(rowTwo);
-    createPerformerHasImage(rowTwo);
-    createMovieHasCover(rowTwo);
-    createSceneOverWebHD(rowTwo);
+    await createTagHasImage(rowTwo);
+    await createStudioHasimage(rowTwo);
+    await createPerformerHasImage(rowTwo);
+    await createMovieHasCover(rowTwo);
+    await createSceneOverWebHD(rowTwo);
   }
 })();

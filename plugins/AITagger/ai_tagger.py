@@ -172,10 +172,13 @@ async def __tag_images(images):
         finally:
             increment_progress()
             for temp_file in temp_files:
-                if os.path.isdir(temp_file):
-                    shutil.rmtree(temp_file)
-                else:
-                    os.remove(temp_file)
+                try:
+                    if os.path.isdir(temp_file):
+                        shutil.rmtree(temp_file)
+                    else:
+                        os.remove(temp_file)
+                except Exception as e:
+                    log.debug(f"Failed to remove temp file {temp_file}: {e}")
 
 # ----------------- Scene Processing -----------------
 
@@ -243,7 +246,7 @@ async def __tag_scene(scene):
             vr_video = media_handler.is_vr_scene(scene.get('tags'))
             if vr_video:
                 log.info(f"Processing VR video {scenePath}")
-            server_result = await ai_server.process_video_async(mutated_path, vr_video)
+            server_result = await ai_server.process_video_async(video_path=mutated_path, vr_video=vr_video)
             if server_result is None:
                 log.error("Server returned no results")
                 media_handler.add_error_scene(sceneId)
