@@ -1,55 +1,70 @@
 name: DupFileManager
 description: Manages duplicate files.
-version: 0.1.2
+version: 0.1.9
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/DupFileManager
+ui:
+  javascript:
+  - DupFileManager.js
+  css:
+  - DupFileManager.css
+  - DupFileManager.css.map
+  - DupFileManager.js.map
 settings:
+  matchDupDistance:
+    displayName: Match Duplicate Distance
+    description: (Default=0) Where 0 = Exact Match, 1 = High Match, 2 = Medium Match, and 3 = Low Match. 
+    type: NUMBER
   mergeDupFilename:
     displayName: Merge Duplicate Tags
     description: Before deletion, merge metadata from duplicate. E.g. Tag names, performers, studios, title, galleries, rating, details, etc...
-    type: BOOLEAN
-  permanentlyDelete:
-    displayName: Permanent Delete
-    description: Enable to permanently delete files, instead of moving files to trash can.
     type: BOOLEAN
   whitelistDelDupInSameFolder:
     displayName: Whitelist Delete In Same Folder
     description: Allow whitelist deletion of duplicates within the same whitelist folder.
     type: BOOLEAN
-  whitelistDoTagLowResDup:
-    displayName: Whitelist Duplicate Tagging
-    description: Enable to tag whitelist duplicates of lower resolution or duration or same folder.
-    type: BOOLEAN
-  zCleanAfterDel:
-    displayName: Run Clean After Delete
-    description: After running a 'Delete Duplicates' task, run Clean, Clean-Generated, and Optimize-Database.
-    type: BOOLEAN
-  zSwapHighRes:
-    displayName: Swap High Resolution
-    description: If enabled, swap higher resolution duplicate files to preferred path.
-    type: BOOLEAN
-  zSwapLongLength:
-    displayName: Swap Longer Duration
-    description: If enabled, swap longer duration media files to preferred path. Longer is determine by significantLongerTime field.
-    type: BOOLEAN
-  zWhitelist:
+  zvWhitelist:
     displayName: White List
     description: A comma seperated list of paths NOT to be deleted. E.g. C:\Favorite\,E:\MustKeep\
     type: STRING
-  zxGraylist:
+  zwGraylist:
     displayName: Gray List
-    description: List of preferential paths to determine which duplicate should be the primary. E.g. C:\2nd_Favorite\,H:\ShouldKeep\
+    description: Preferential paths to determine which duplicate should be kept. E.g. C:\2nd_Fav,C:\3rd_Fav,C:\4th_Fav,H:\ShouldKeep
     type: STRING
-  zyBlacklist:
+  zxBlacklist:
     displayName: Black List
-    description: List of LEAST preferential paths to determine primary candidates for deletion. E.g. C:\Downloads\,F:\DeleteMeFirst\
+    description: Least preferential paths; Determine primary deletion candidates. E.g. C:\Downloads,C:\DelMe-3rd,C:\DelMe-2nd,C:\DeleteMeFirst
     type: STRING
   zyMaxDupToProcess:
     displayName: Max Dup Process
-    description: Maximum number of duplicates to process. If 0, infinity
+    description: (Default=0) Maximum number of duplicates to process. If 0, infinity.
     type: NUMBER
-  zzdebugTracing:
-    displayName: Debug Tracing
-    description: (Default=false) [***For Advanced Users***] Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\DupFileManager\DupFileManager.log
+  zySwapBetterBitRate:
+    displayName: Swap Better Bit Rate
+    description: Swap better bit rate for duplicate files. Use with DupFileManager_config.py file option favorHighBitRate
+    type: BOOLEAN
+  zySwapBetterFrameRate:
+    displayName: Swap Better Frame Rate
+    description: Swap better frame rate for duplicates. Use with DupFileManager_config.py file option favorHigherFrameRate
+    type: BOOLEAN
+  zySwapCodec:
+    displayName: Swap Better Codec
+    description: If enabled, swap better codec duplicate files to preferred path.
+    type: BOOLEAN
+  zySwapHighRes:
+    displayName: Swap Higher Resolution
+    description: If enabled, swap higher resolution duplicate files to preferred path.
+    type: BOOLEAN
+  zySwapLongLength:
+    displayName: Swap Longer Duration
+    description: If enabled, swap longer duration media files to preferred path. Longer is determine by significantLongerTime field.
+    type: BOOLEAN
+  zzDebug:
+    displayName: Debug
+    description: Enable debug so-as to add additional debug logging in Stash\plugins\DupFileManager\DupFileManager.log
+    type: BOOLEAN
+  zzTracing:
+    displayName: Tracing
+    description: Enable tracing and debug so-as to add additional tracing and debug logging in Stash\plugins\DupFileManager\DupFileManager.log
     type: BOOLEAN
 exec:
   - python
@@ -60,7 +75,11 @@ tasks:
     description: Set tag DuplicateMarkForDeletion to the duplicates with lower resolution, duration, file name length, or black list path.
     defaultArgs:
       mode: tag_duplicates_task
-  - name: Delete Tagged Duplicates
+  - name: Clear Tags
+    description: Clear tag DuplicateMarkForDeletion. Remove the tag from all files.
+    defaultArgs:
+      mode: clear_duplicate_tags_task
+  - name: Delete Tagged Scenes
     description: Only delete scenes having DuplicateMarkForDeletion tag.
     defaultArgs:
       mode: delete_tagged_duplicates_task
