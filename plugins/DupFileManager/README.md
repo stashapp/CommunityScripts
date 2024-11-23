@@ -7,7 +7,7 @@ It has both **task** and **tools-UI** components.
 
 - Creates a duplicate file report which can be accessed from the settings->tools menu options.The report is created as an HTML file and stored in local path under plugins\DupFileManager\report\DuplicateTagScenes.html.
   - See screenshot at the bottom of this page for example report.
-  - Items on the left side of the report are the primary duplicates designated for deletion. By default, these duplicates are given a special _duplicate tag.
+  - Items on the left side of the report are the primary duplicates designated for deletion. By default, these duplicates are given a special \_duplicate tag.
   - Items on the right side of the report are designated as primary duplicates to keep. They usually have higher resolution, duration and/or preferred paths.
   - The report has the following options:
     - Delete: Delete file and remove from Stash library.
@@ -42,11 +42,11 @@ It has both **task** and **tools-UI** components.
     - **Delete Duplicates** - Deletes duplicate files. Performs deletion without first tagging.
   - Plugin UI options (Settings->Plugins->Plugins->[DupFileManager])
     - Has a 3 tier path selection to determine which duplicates to keep, and which should be candidates for deletions.
-      - **Whitelist** - List of paths NOT to be deleted. 
+      - **Whitelist** - List of paths NOT to be deleted.
         - E.g. C:\Favorite\,E:\MustKeep\
-      - **Gray-List** - List of preferential paths to determine which duplicate should be the primary. 
+      - **Gray-List** - List of preferential paths to determine which duplicate should be the primary.
         - E.g. C:\2nd_Favorite\,H:\ShouldKeep\
-      - **Blacklist** - List of LEAST preferential paths to determine primary candidates for deletion. 
+      - **Blacklist** - List of LEAST preferential paths to determine primary candidates for deletion.
         - E.g. C:\Downloads\,F:\DeleteMeFirst\
     - **Permanent Delete** - Enable to permanently delete files, instead of moving files to trash can.
     - **Max Dup Process** - Use to limit the maximum files to process. Can be used to do a limited test run.
@@ -58,8 +58,9 @@ It has both **task** and **tools-UI** components.
     - **toRecycleBeforeSwap** - When enabled, moves destination file to recycle bin before swapping files.
     - **addPrimaryDupPathToDetails** - If enabled, adds the primary duplicate path to the scene detail.
 - Tools UI Menu
-![Screenshot 2024-11-22 145512](https://github.com/user-attachments/assets/03e166eb-ddaa-4eb8-8160-4c9180ca1323)
+  ![Screenshot 2024-11-22 145512](https://github.com/user-attachments/assets/03e166eb-ddaa-4eb8-8160-4c9180ca1323)
   - Can access either **Duplicate File Report (DupFileManager)** or **DupFileManager Tools and Utilities** menu options.
+
 ### Requirements
 
 - `pip install --upgrade stashapp-tools`
@@ -87,9 +88,9 @@ That's it!!!
   - ![Screenshot 2024-11-22 225359](https://github.com/user-attachments/assets/dc705b24-e2d7-4663-92fd-1516aa7aacf5)
   - If there's a scene on the left side that has a higher resolution or duration, it gets a yellow highlight on the report.
   - There's an optional setting that allows both preview videos and preview images to be displayed on the report. See settings **htmlIncludeImagePreview** in the **DupFileManager_report_config.py** file.
-  - There are many more options available for how the report is created. These options are targeted for more advanced users.  The options are all available in the **DupFileManager_report_config.py** file, and the settings have commented descriptions preceeding them. See the **DupFileManager_report_config.py** file in the DupFileManager plugin folder for more details.
+  - There are many more options available for how the report is created. These options are targeted for more advanced users. The options are all available in the **DupFileManager_report_config.py** file, and the settings have commented descriptions preceeding them. See the **DupFileManager_report_config.py** file in the DupFileManager plugin folder for more details.
 - Tools UI Menu
-![Screenshot 2024-11-22 145512](https://github.com/user-attachments/assets/03e166eb-ddaa-4eb8-8160-4c9180ca1323)
+  ![Screenshot 2024-11-22 145512](https://github.com/user-attachments/assets/03e166eb-ddaa-4eb8-8160-4c9180ca1323)
   - Can access either **Duplicate File Report (DupFileManager)** or **DupFileManager Tools and Utilities** menu options.
 - DupFileManager Report Menu
   - ![Screenshot 2024-11-22 151630](https://github.com/user-attachments/assets/834ee60f-1a4a-4a3e-bbf7-23aeca2bda1f)
@@ -99,6 +100,7 @@ That's it!!!
   - ![Screenshot 2024-11-22 232208](https://github.com/user-attachments/assets/bf1f3021-3a8c-4875-9737-60ee3d7fe675)
 
 ### Future Planned Features
+
 - Currently, the report and advanced menu do not work with Stash settings requiring a password. Additional logic will be added to have them use the API Key. Planned for 1.0.0 Version.
 - Add an advanced menu that will work with non-tagged reports. It will iterated through the existing report file(s) to aplly deletions, instead of searching Stash DB for tagged files. Planned for 1.1.0 Version.
 - Greylist deletion option will be added to the advanced menu. Planned for 1.0.5 Version.
@@ -106,6 +108,3 @@ That's it!!!
 - Add report directly to the Settings->Tools menu. Planned for 1.5.0 Version.
 - Remove all flags from all scenes option. Planned for 1.0.5 Version.
 - Transfer option settings **[Disable Complete Confirmation]** and **[Disable Delete Confirmation]** when paginating. Planned for 1.0.5 Version.
-
-
-

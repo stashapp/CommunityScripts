@@ -33,7 +33,7 @@
   margin: 1em;
 }
 
- /* Dashed border */
+/* Dashed border */
 hr.dashed {
   border-top: 3px dashed #bbb;
 }
@@ -55,13 +55,13 @@ hr.rounded {
 }
 
 h3.under_construction {
-	color:red;
-	background-color:yellow;
+  color: red;
+  background-color: yellow;
 }
 
 h3.submenu {
-	color:Tomato;
-	background-color:rgba(100, 100, 100);
+  color: Tomato;
+  background-color: rgba(100, 100, 100);
 }
 
 /*# sourceMappingURL=DupFileManager.css.map */
