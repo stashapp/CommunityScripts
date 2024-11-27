@@ -1333,6 +1333,7 @@ settings = {
     "matchFunscripts": True,
     "addTsTradeTag": False,
     "addTsTradeTitle": False,
+    "path": "/download_dir/tt-auto"
 }
 if "timestampTrade" in config["plugins"]:
     settings.update(config["plugins"]["timestampTrade"])
