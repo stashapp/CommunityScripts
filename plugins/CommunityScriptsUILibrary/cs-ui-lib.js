@@ -54,8 +54,7 @@
     return response.configuration.plugins?.[pluginId] ?? fallback;
   };
 
-
-/**
+  /**
    * Set configuration of a plugin in the server via GraphQL
    * @param {string} pluginId - The ID of the plugin as it is registered in the server
    * @param {*} values - The configuration object with the values you want to save in the server
@@ -74,14 +73,14 @@
   const setConfiguration = async (pluginId, values) => {
     const query = `mutation ConfigurePlugin($pluginId: ID!, $input: Map!) { configurePlugin(plugin_id: $pluginId, input: $input) }`;
     const queryBody = {
-        query : query,
-        variables : {
-            pluginId : pluginId,
-            input : values
-        }
-    }
+      query: query,
+      variables: {
+        pluginId: pluginId,
+        input: values,
+      },
+    };
     const response = await csLib.callGQL({ ...queryBody });
-    return response.configurePlugin
+    return response.configurePlugin;
   };
 
   /**
