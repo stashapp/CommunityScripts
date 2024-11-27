@@ -66,7 +66,7 @@ def processSceneTimestamTrade(s):
                                 marker["primary_tag"] = m["name"]
 
                             if settings["addTsTradeTitle"]:
-                                marker["title"] = f"[TsTrade] {m["name"]}"
+                                marker["title"] = f"[TsTrade] {m['name']}"
 
                             # check for markers with a zero length title, skip adding
                             if len(marker["primary_tag"]) == 0:
@@ -1331,6 +1331,7 @@ settings = {
     "submitFunscriptHash": True,
     "excludedMarkerWords": "",
     "matchFunscripts": True,
+    "addTsTradeTag": False,
     "addTsTradeTitle": False,
 }
 if "timestampTrade" in config["plugins"]:
