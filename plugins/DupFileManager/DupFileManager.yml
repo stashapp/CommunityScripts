@@ -4,15 +4,15 @@ version: 1.0.0
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/DupFileManager
 ui:
   javascript:
-    - DupFileManager.js
+  - DupFileManager.js
   css:
-    - DupFileManager.css
-    - DupFileManager.css.map
-    - DupFileManager.js.map
+  - DupFileManager.css
+  - DupFileManager.css.map
+  - DupFileManager.js.map
 settings:
   matchDupDistance:
     displayName: Match Duplicate Distance
-    description: (Default=0) Where 0 = Exact Match, 1 = High Match, 2 = Medium Match, and 3 = Low Match.
+    description: (Default=0) Where 0 = Exact Match, 1 = High Match, 2 = Medium Match, and 3 = Low Match. 
     type: NUMBER
   mergeDupFilename:
     displayName: Merge Duplicate Tags
