@@ -47,22 +47,73 @@
       html.wait * {
         cursor: wait !important;
       }
+      /* The dropdown container */
+      .dropdown {
+        float: left;
+        overflow: hidden;
+      }
+      /******** Dropdown button *********/
+      .dropdown .dropbtn {
+        font-size: 14px;
+        border: none;
+        outline: none;
+        color: white;
+        padding: 6px 10px;
+        background-color: transparent;
+        font-family: inherit; /* Important for vertical align on mobile phones */
+        margin: 0; /* Important for vertical align on mobile phones */
+      }
+      /* Dropdown content (hidden by default) */
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: inherit;
+        min-width: 80px;
+        box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+      /* Links inside the dropdown */
+      .dropdown-content a {
+        float: none;
+        color: black;
+        padding: 6px 10px;
+        text-decoration: none;
+        display: block;
+        text-align: left;
+      }
+      /* Show the dropdown menu on hover */
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
     </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <script src="https://www.axter.com/js/jquery-3.7.1.min.js"></script>
+    <script src="https://www.axter.com/js/jquery.prompt.js"></script>
+    <link rel="stylesheet" href="https://www.axter.com/js/jquery.prompt.css" />
     <script>
-      var GqlFromParam = false;
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      console.log(urlParams);
-      var GraphQl_URL = "http://localhost:9999/graphql";
-      if (urlParams.get("GQL") != null && urlParams.get("GQL") === "")
+      var apiKey = ""; // For Stash installations with a password setup, populate this variable with the apiKey found in Stash->Settings->Security->[API Key];   	----- Or pass in the apiKey at the URL command line. Example: advance_options.html?apiKey=12345G4igiJdgssdgiwqInh5cCI6IkprewJ9hgdsfhgfdhd&GQL=http://localhost:9999/graphql
+      var GraphQl_URL = "http://localhost:9999/graphql"; // For Stash installations with non-standard ports or URL's, populate this variable with actual URL;   	----- Or pass in the URL at the command line using GQL param. Example: advance_options.html?GQL=http://localhost:9900/graphql
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("apiKey") != null && urlParams.get("apiKey") !== "")
+        apiKey = urlParams.get("apiKey");
+      if (urlParams.get("GQL") != null && urlParams.get("GQL") !== "")
         GraphQl_URL = urlParams.get("GQL");
-      GqlFromParam = true;
+      console.log(urlParams);
       console.log("GQL = " + GraphQl_URL);
+      console.log("Key = " + apiKey);
 
-      function RunPluginDupFileManager(Mode, Param = 0, Async = false) {
+      function RunPluginDupFileManager(
+        Mode,
+        Param = 0,
+        Async = false,
+        TagOnlyScenes = false
+      ) {
         $("html").addClass("wait");
         $("body").css("cursor", "progress");
+        if (TagOnlyScenes) Param += ":TagOnlyScenes";
         console.log(
           "GraphQl_URL = " +
             GraphQl_URL +
@@ -71,6 +122,14 @@
             "; Param = " +
             Param
         );
+        if (apiKey !== "") {
+          console.log("Using apiKey = " + apiKey);
+          $.ajaxSetup({
+            beforeSend: function (xhr) {
+              xhr.setRequestHeader("apiKey", apiKey);
+            },
+          });
+        }
         $.ajax({
           method: "POST",
           url: GraphQl_URL,
@@ -86,7 +145,54 @@
             },
           }),
           success: function (result) {
-            console.log(result);
+            $("html").removeClass("wait");
+            $("body").css("cursor", "default");
+            if (result.startsWith('{"errors"')) {
+              console.log("Ajax FAILED with result = " + result);
+              if (result.indexOf('{"runPluginOperation":null}') > 0)
+                alert(
+                  "Stash RunPluginOperation failed with possible source code error.\nCheck Stash logging for details.\n\nResults = " +
+                    result
+                );
+              else
+                alert(
+                  "Stash RunPluginOperation failed with result = " + result
+                );
+              return;
+            }
+            console.log("Ajax success with result = " + result);
+            if (
+              Mode === "tag_duplicates_task" ||
+              Mode === "create_duplicate_report_task"
+            ) {
+              if (result.indexOf('"Report complete"') == -1)
+                alert(
+                  "Stash RunPluginOperation returned unexpected results.\nNot sure if report completed successfully.\n\nResults = " +
+                    result
+                );
+              else
+                $(
+                  "<p>Report complete. Click on OK to open report in browser.</p>"
+                ).confirm(function (e) {
+                  if (e.response) {
+                    var reportUrl = window.location.href;
+                    reportUrl = reportUrl.replace(
+                      "advance_options.html",
+                      "report/DuplicateTagScenes.html"
+                    );
+                    console.log("reportUrl = " + reportUrl);
+                    window.open(reportUrl, "_blank");
+                  }
+                });
+            }
+          },
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+            console.log(
+              "Ajax failed with Status: " +
+                textStatus +
+                "; Error: " +
+                errorThrown
+            );
             $("html").removeClass("wait");
             $("body").css("cursor", "default");
           },
@@ -101,6 +207,8 @@
           var blackliststr = "";
           var comparestr = "less than ";
           if (this.id.includes("Blacklist")) blackliststr = "in blacklist ";
+          if (this.id.includes("Graylist")) blackliststr = "in graylist ";
+          if (this.id.includes("Pinklist")) blackliststr = "in pinklist ";
           if (this.id.includes("Greater")) comparestr = "greater than ";
           else if (this.id.includes("Eq")) comparestr = "equal to ";
 
@@ -139,7 +247,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#pathToDeleteText").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#pathToDeleteText").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "sizeToDeleteLess" ||
             this.id === "sizeToDeleteGreater" ||
@@ -156,7 +269,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#sizeToDelete").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#sizeToDelete").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "durationToDeleteLess" ||
             this.id === "durationToDeleteGreater" ||
@@ -173,7 +291,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#durationToDelete").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#durationToDelete").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "commonResToDeleteLess" ||
             this.id === "commonResToDeleteEq" ||
@@ -192,7 +315,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#commonResToDelete").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#commonResToDelete").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "resolutionToDeleteLess" ||
             this.id === "resolutionToDeleteEq" ||
@@ -211,7 +339,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#resolutionToDelete").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#resolutionToDelete").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "ratingToDeleteLess" ||
             this.id === "ratingToDeleteEq" ||
@@ -245,7 +378,12 @@
                   AddedWarn
               );
             if (result)
-              RunPluginDupFileManager(this.id, $("#ratingToDelete").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#ratingToDelete").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "tagToDelete" ||
             this.id === "tagToDeleteBlacklist"
@@ -259,7 +397,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#tagToDeleteText").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#tagToDeleteText").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "titleToDelete" ||
             this.id === "titleToDeleteBlacklist"
@@ -273,7 +416,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#titleToDeleteText").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#titleToDeleteText").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "pathStrToDelete" ||
             this.id === "pathStrToDeleteBlacklist"
@@ -287,7 +435,12 @@
                   AddedWarn
               )
             )
-              RunPluginDupFileManager(this.id, $("#pathStrToDeleteText").val());
+              RunPluginDupFileManager(
+                this.id,
+                $("#pathStrToDeleteText").val(),
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "fileNotExistToDelete" ||
             this.id === "fileNotExistToDeleteBlacklist"
@@ -299,13 +452,23 @@
                   "having _DuplicateMarkForDeletion tags, and that do NOT exist in the file system?"
               )
             )
-              RunPluginDupFileManager(this.id, true);
+              RunPluginDupFileManager(
+                this.id,
+                true,
+                true,
+                $("#DupTagOnlyCheck").prop("checked")
+              );
           } else if (
             this.id === "applyCombo" ||
-            this.id === "applyComboBlacklist"
+            this.id === "applyCombo_" ||
+            this.id === "applyComboBlacklist" ||
+            this.id === "applyComboGraylist" ||
+            this.id === "applyComboPinklist"
           ) {
             var Blacklist = "";
             if (this.id === "applyComboBlacklist") Blacklist = "Blacklist";
+            else if (this.id === "applyComboGraylist") Blacklist = "Graylist";
+            else if (this.id === "applyComboPinklist") Blacklist = "Pinklist";
             var Param = "{";
             if ($("#InPathCheck").prop("checked"))
               Param +=
@@ -393,6 +556,9 @@
                 '", ';
             if ($("#fileNotExistCheck").prop("checked"))
               Param += '"' + "fileNotExistToDelete" + Blacklist + '":"true", ';
+            if ($("#tagOrFlagCombobox").val() !== "")
+              Param +=
+                '"' + $("#tagOrFlagCombobox").val() + Blacklist + '":"true", ';
             Param += "}";
             Param = Param.replace(", }", "}");
             if (Param === "{}") {
@@ -410,7 +576,7 @@
                   Param
               )
             )
-              RunPluginDupFileManager(this.id, Param);
+              RunPluginDupFileManager(this.id, Param, true);
           }
         });
       });
@@ -424,47 +590,288 @@
       <table style="color: darkgreen; background-color: powderblue">
         <tr>
           <th>
-            DupFileManager Advance
-            <b style="color: red">_DuplicateMarkForDeletion_?</b> Tagged Files
-            Menu
+            <div>
+              <b style="color: red"><i>DupFileManager</i></b>
+            </div>
+            Advance Duplicate File Deletion Menu
           </th>
           <th>Apply Multiple Options</th>
         </tr>
         <tr>
           <td>
-            <center>
-              <button
-                type="button"
-                id="tag_duplicates_task"
-                value="-1"
-                title="Create new report which tags duplicates with tag name _DuplicateMarkForDeletion using user settings for [Match Duplicate Distance]."
-              >
-                Create Duplicate Report with Tagging
-              </button>
-              <button
-                type="button"
-                id="viewreport"
-                title="View duplicate file report."
-              >
-                View Dup Report
-              </button>
-            </center>
+            <table style="border-collapse: collapse; border: none">
+              <tr>
+                <th colspan="3" style="font-size: 12px; border: none">
+                  Create report overriding user [Match Duplicate Distance] and
+                  [significantTimeDiff] settings
+                </th>
+              </tr>
+              <tr>
+                <td style="border: none">
+                  <div class="dropdown">
+                    <button
+                      type="button"
+                      id="create_duplicate_report_task"
+                      value="-1"
+                      title="Create new report WITHOUT tags using user settings for [Match Duplicate Distance]."
+                    >
+                      Create Duplicate Report <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                      <div>
+                        <button
+                          type="button"
+                          id="create_duplicate_report_task0a"
+                          value="0"
+                          title="Create report using [Match Duplicate Distance]=0 (Exact Match). NO tagging."
+                        >
+                          Create Duplicate Report [Exact Match]
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="create_duplicate_report_task1a"
+                          value="1"
+                          title="Create report using [Match Duplicate Distance]=1 (High Match). NO tagging."
+                        >
+                          Create Duplicate Report [High Match]
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="create_duplicate_report_task2a"
+                          value="2"
+                          title="Create report using [Match Duplicate Distance]=2 (Medium Match). NO tagging."
+                        >
+                          Create Duplicate Report [Medium Match]
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="create_duplicate_report_task3a"
+                          value="3"
+                          title="Create report using [Match Duplicate Distance]=3 (Low Match). NO tagging."
+                        >
+                          Create Duplicate Report [Low Match]
+                        </button>
+                      </div>
+                      <div
+                        style="
+                          height: 2px;
+                          width: 220px;
+                          border-width: 0;
+                          color: gray;
+                          background-color: gray;
+                        "
+                      >
+                        _
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="tag_duplicates_task"
+                          value="-1"
+                          title="Create new report which tags duplicates with tag name _DuplicateMarkForDeletion using user settings for [Match Duplicate Distance]."
+                        >
+                          Create Duplicate Report with Tagging (With Default
+                          Match Setting)
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="tag_duplicates_task0a"
+                          value="0"
+                          title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_0 and using [Match Duplicate Distance]=0 (Exact Match)."
+                        >
+                          Create Duplicate Tagging Report [Exact Match]
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="tag_duplicates_task1a"
+                          value="1"
+                          title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_1 and using [Match Duplicate Distance]=1 (High Match)."
+                        >
+                          Create Duplicate Tagging Report [High Match]
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="tag_duplicates_task2a"
+                          value="2"
+                          title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_2 and using [Match Duplicate Distance]=2 (Medium Match)."
+                        >
+                          Create Duplicate Tagging Report [Medium Match]
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          id="tag_duplicates_task3a"
+                          value="3"
+                          title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_3 and using [Match Duplicate Distance]=3 (Low Match)."
+                        >
+                          Create Duplicate Tagging Report [Low Match]
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td style="border: none; padding: 0 15px">
+                  <label
+                    for="significantTimeDiff"
+                    title="Significant time difference setting, where 1 equals 100% and (.9) equals 90%."
+                    >Time Difference%:</label
+                  >
+                  <input
+                    type="number"
+                    min="0.25"
+                    max="1.00"
+                    step="0.01"
+                    id="significantTimeDiff"
+                    name="significantTimeDiff"
+                    title="Significant time difference setting, where 1 equals 100% and (.9) equals 90%."
+                    value="0.90"
+                  />
+                </td>
+                <td style="border: none; padding: 0 15px">
+                  <button
+                    type="button"
+                    id="viewreport"
+                    title="View duplicate file report."
+                  >
+                    View Dup Report
+                  </button>
+                </td>
+              </tr>
+            </table>
           </td>
           <td>
-            <button
-              type="button"
-              id="applyCombo"
-              title="Apply selected multiple options to delete scenes."
-            >
-              Delete
-            </button>
-            <button
-              type="button"
-              id="applyComboBlacklist"
-              title="Apply selected multiple options to delete scenes in blacklist."
-            >
-              Delete-Blacklist
-            </button>
+            <div class="dropdown">
+              <center>
+                Multi-Options:
+                <button
+                  id="applyCombo"
+                  title="Apply selected multiple options to delete scenes."
+                >
+                  Delete <i class="fa fa-caret-down"></i>
+                </button>
+              </center>
+              <div class="dropdown-content">
+                <div>
+                  <button
+                    type="button"
+                    id="applyCombo_"
+                    title="Apply selected multiple options to delete scenes."
+                  >
+                    Delete All Candidates
+                  </button>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    id="applyComboBlacklist"
+                    title="Apply selected multiple options to delete scenes in blacklist."
+                  >
+                    Delete-Blacklist
+                  </button>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    id="applyComboGraylist"
+                    title="Apply selected multiple options to delete scenes in graylist."
+                  >
+                    Delete-Graylist
+                  </button>
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    id="applyComboPinklist"
+                    title="Apply selected multiple options to delete scenes in pinklist."
+                  >
+                    Delete-Pinklist
+                  </button>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label
+              title="When enabled, operations only apply to scenes which have the special tag _DuplicateMarkForDeletion_?"
+              for="DupTagOnlyCheck"
+              >Apply action only to scenes with
+              <b>_DuplicateMarkForDeletion_?</b> tag:</label
+            ><input
+              title="When enabled, operations only apply to scenes which have the special tag _DuplicateMarkForDeletion_?"
+              type="checkbox"
+              id="DupTagOnlyCheck"
+              name="DupTagOnlyCheck"
+              value="true"
+            />
+          </td>
+          <td>
+            <label for="tagOrFlagCombobox">TagOrFlag:</label>
+            <select id="tagOrFlagCombobox" name="tagOrFlagCombobox">
+              <option value="" selected="selected"></option>
+              <option
+                value="TagOnlyScenes"
+                title="When selected, Multi-Options operations only apply to scenes which have the special tag _DuplicateMarkForDeletion_?"
+              >
+                Dup Tag
+              </option>
+              <option
+                value="YellowFlag"
+                style="background-color: Yellow"
+                title="When selected, Multi-Options operations only apply to scenes with [Yellow] fag."
+              >
+                Yellow Flag
+              </option>
+              <option
+                value="GreenFlag"
+                style="background-color: #00ff00"
+                title="When selected, Multi-Options operations only apply to scenes with [Green] fag."
+              >
+                Green Flag
+              </option>
+              <option
+                value="OrangeFlag"
+                style="background-color: Orange"
+                title="When selected, Multi-Options operations only apply to scenes with [Orange] fag."
+              >
+                Orange Flag
+              </option>
+              <option
+                value="CyanFlag"
+                style="background-color: Cyan"
+                title="When selected, Multi-Options operations only apply to scenes with [Cyan] fag."
+              >
+                Cyan Flag
+              </option>
+              <option
+                value="PinkFlag"
+                style="background-color: Pink"
+                title="When selected, Multi-Options operations only apply to scenes with [Pink] fag."
+              >
+                Pink Flag
+              </option>
+              <option
+                value="RedFlag"
+                style="background-color: Red"
+                title="When selected, Multi-Options operations only apply to scenes with [Red] fag."
+              >
+                Red Flag
+              </option>
+            </select>
           </td>
         </tr>
         <tr>
@@ -2427,178 +2834,6 @@
             </select>
           </td>
         </tr>
-      </table>
-    </center>
-    <div id="div1"></div>
-    <br />
-
-    <center>
-      <table style="color: darkgreen; background-color: powderblue">
-        <tr>
-          <th colspan="2">
-            Create report with different
-            <b style="color: red">[Match Duplicate Distance]</b> options <br />
-            <div style="font-size: 12px">
-              Overrides user [Match Duplicate Distance] and
-              [significantTimeDiff] settings
-            </div>
-            <form
-              id="significantTimeDiffForm"
-              action="javascript:DeleteDupInPath();"
-              target="_self"
-            >
-              <label
-                for="significantTimeDiff"
-                title="Significant time difference setting, where 1 equals 100% and (.9) equals 90%."
-                >Time Difference%:</label
-              >
-              <input
-                type="number"
-                min="0.25"
-                max="1.00"
-                step="0.01"
-                id="significantTimeDiff"
-                name="significantTimeDiff"
-                title="Significant time difference setting, where 1 equals 100% and (.9) equals 90%."
-                value="0.90"
-              />
-            </form>
-          </th>
-        </tr>
-        <tr>
-          <td>
-            <table style="color: darkgreen; background-color: powderblue">
-              <tr>
-                <th
-                  title="Create report with tagging (_DuplicateMarkForDeletion_)"
-                >
-                  Create Report with Tagging
-                </th>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="tag_duplicates_task0"
-                      value="0"
-                      title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_0 and using [Match Duplicate Distance]=0 (Exact Match)."
-                    >
-                      Create Duplicate Tagging Report [Exact Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="tag_duplicates_task1"
-                      value="1"
-                      title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_1 and using [Match Duplicate Distance]=1 (High Match)."
-                    >
-                      Create Duplicate Tagging Report [High Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="tag_duplicates_task2"
-                      value="2"
-                      title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_2 and using [Match Duplicate Distance]=2 (Medium Match)."
-                    >
-                      Create Duplicate Tagging Report [Medium Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="tag_duplicates_task3"
-                      value="3"
-                      title="Create report which tags duplicates with tag name _DuplicateMarkForDeletion_3 and using [Match Duplicate Distance]=3 (Low Match)."
-                    >
-                      Create Duplicate Tagging Report [Low Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-            </table>
-          </td>
-          <td>
-            <table style="color: darkgreen; background-color: powderblue">
-              <tr>
-                <th title="Create report with NO tagging (NO Dup Tag)">
-                  Create Report without Tagging
-                </th>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="create_duplicate_report_task0"
-                      value="0"
-                      title="Create report using [Match Duplicate Distance]=0 (Exact Match). NO tagging."
-                    >
-                      Create Duplicate Report [Exact Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="create_duplicate_report_task1"
-                      value="1"
-                      title="Create report using [Match Duplicate Distance]=1 (High Match). NO tagging."
-                    >
-                      Create Duplicate Report [High Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="create_duplicate_report_task2"
-                      value="2"
-                      title="Create report using [Match Duplicate Distance]=2 (Medium Match). NO tagging."
-                    >
-                      Create Duplicate Report [Medium Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <center>
-                    <button
-                      type="button"
-                      id="create_duplicate_report_task3"
-                      value="3"
-                      title="Create report using [Match Duplicate Distance]=3 (Low Match). NO tagging."
-                    >
-                      Create Duplicate Report [Low Match]
-                    </button>
-                  </center>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
         <tr>
           <td style="font-size: 12px" colspan="2">
             <b>Details:</b>
@@ -2704,5 +2939,6 @@
         </tr>
       </table>
     </center>
+    <div id="div1"></div>
   </body>
 </html>

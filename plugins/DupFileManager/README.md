@@ -1,4 +1,4 @@
-# DupFileManager: Ver 0.1.9 (By David Maisonave)
+# DupFileManager: Ver 1.0.0 (By David Maisonave)
 
 DupFileManager is a [Stash](https://github.com/stashapp/stash) plugin which manages duplicate files in the Stash system.
 It has both **task** and **tools-UI** components.
@@ -24,15 +24,18 @@ It has both **task** and **tools-UI** components.
   - Normally when Stash searches the file name for tag names, performers, and studios, it only does so using the primary file.
 - Advance menu (for specially tagged duplicates)
   ![Screenshot 2024-11-22 145139](https://github.com/user-attachments/assets/d76646f0-c5a8-4069-ad0f-a6e5e96e7ed0)
-  - Delete only specially tagged duplicates in blacklist path.
-  - Delete duplicates with specified file path.
-  - Delete duplicates with specific string in File name.
-  - Delete duplicates with specified file size range.
-  - Delete with specified duration range.
-  - Delete with resolution range.
-  - Delete duplicates having specified tags.
-  - Delete duplicates with specified rating.
-  - Delete duplicates with any of the above combinations.
+  - Advance menu can be access from the Settings->Tools->**[DupFileManager Tools and Utilities]** menu or from the **reports**.
+    - Only access Advance Menu from the report when using Stash setup requiring a password.
+  - Here are **some** of the options available in the **Advance Menu**.
+    - Delete only specially tagged duplicates in blacklist path.
+    - Delete duplicates with specified file path.
+    - Delete duplicates with specific string in File name.
+    - Delete duplicates with specified file size range.
+    - Delete with specified duration range.
+    - Delete with resolution range.
+    - Delete duplicates having specified tags.
+    - Delete duplicates with specified rating.
+    - Delete duplicates with any of the above combinations.
 - Bottom extended portion of the Advanced Menu screen.
   - ![Screenshot 2024-11-22 232005](https://github.com/user-attachments/assets/9a0d2e9d-783b-4ea2-8fa5-3805b40af4eb)
 - Delete duplicate file task with the following options:
@@ -101,10 +104,8 @@ That's it!!!
 
 ### Future Planned Features
 
-- Currently, the report and advanced menu do not work with Stash settings requiring a password. Additional logic will be added to have them use the API Key. Planned for 1.0.0 Version.
-- Add an advanced menu that will work with non-tagged reports. It will iterated through the existing report file(s) to aplly deletions, instead of searching Stash DB for tagged files. Planned for 1.1.0 Version.
-- Greylist deletion option will be added to the advanced menu. Planned for 1.0.5 Version.
-- Add advanced menu directly to the Settings->Tools menu. Planned for 1.5.0 Version.
-- Add report directly to the Settings->Tools menu. Planned for 1.5.0 Version.
-- Remove all flags from all scenes option. Planned for 1.0.5 Version.
-- Transfer option settings **[Disable Complete Confirmation]** and **[Disable Delete Confirmation]** when paginating. Planned for 1.0.5 Version.
+- Add logic to merge performers and galaries seperatly from tag merging on report. Planned for 1.5.0 Version.
+- Add code to report to make it when the report updates the screen (due to tag merging), it stays in the same row position. Planned for 1.5.0 Version.
+- Add logic to merge group metadata when selecting merge option on report. Planned for 2.0.0 Version.
+- Add advanced menu directly to the Settings->Tools menu. Planned for 2.0.0 Version.
+- Add report directly to the Settings->Tools menu. Planned for 2.0.0 Version.

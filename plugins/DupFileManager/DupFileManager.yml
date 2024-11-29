@@ -1,6 +1,6 @@
 name: DupFileManager
 description: Manages duplicate files.
-version: 0.1.9
+version: 1.0.0
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/DupFileManager
 ui:
   javascript:
@@ -34,6 +34,10 @@ settings:
     displayName: Black List
     description: Least preferential paths; Determine primary deletion candidates. E.g. C:\Downloads,C:\DelMe-3rd,C:\DelMe-2nd,C:\DeleteMeFirst
     type: STRING
+  zxPinklist:
+    displayName: Pink List
+    description: An [Advance Duplicate File Deletion Menu] option for deletion using paths. E.g. C:\SomeRandomDir,E:\DelPath2
+    type: STRING
   zyMaxDupToProcess:
     displayName: Max Dup Process
     description: (Default=0) Maximum number of duplicates to process. If 0, infinity.
@@ -65,6 +69,10 @@ settings:
   zzTracing:
     displayName: Tracing
     description: Enable tracing and debug so-as to add additional tracing and debug logging in Stash\plugins\DupFileManager\DupFileManager.log
+    type: BOOLEAN
+  zzdryRun:
+    displayName: Dry Run
+    description: Enable to run script in [Dry Run] mode. In dry run mode, files are NOT deleted, and only logging is performed. Use the logging to determine if deletion will occur as expected.
     type: BOOLEAN
 exec:
   - python
