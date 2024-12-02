@@ -6,4 +6,4 @@ ui:
   requires:
     - CommunityScriptsUILibrary
   javascript:
-    - scenesPageRememberStates.js
+    - scenePageRememberStates.js
