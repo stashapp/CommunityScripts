@@ -16,7 +16,7 @@
     const defaultOrder = [
       "Scenes",
       "Images",
-      "Movies",
+      "Groups",
       "Markers",
       "Galleries",
       "Performers",
@@ -600,7 +600,7 @@
                     var navMenuItems = [
                       { name: "Scenes", key: "scenes" },
                       { name: "Images", key: "images" },
-                      { name: "Movies", key: "movies" },
+                      { name: "Groups", key: "groups" },
                       { name: "Markers", key: "scenes/markers" },
                       { name: "Galleries", key: "galleries" },
                       { name: "Performers", key: "performers" },
@@ -718,8 +718,8 @@
     "stash:page:scene",
     "stash:page:images",
     "stash:page:image",
-    "stash:page:movies",
-    "stash:page:movie",
+    "stash:page:groups",
+    "stash:page:group",
     "stash:page:markers",
     "stash:page:galleries",
     "stash:page:performers",

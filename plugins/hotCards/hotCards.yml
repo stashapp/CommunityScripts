@@ -1,16 +1,16 @@
 name: Hot Cards
 description: Adds custom styling to card elements that match a Tag ID or a Rating Threshold.
-version: 1.1.9
+version: 1.2.1
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
 # requires: CommunityScriptsUILibrary
 ui:
   requires:
     - CommunityScriptsUILibrary
   javascript:
+    - utils/configurationHandler.js
     - utils/helpers.js
     - utils/fetchInterceptor.js
     - utils/stashHandler.js
-    - utils/registerPathChangeListener.js
     - hotCards.js
   css:
     - hotCards.css
@@ -35,8 +35,8 @@ settings:
     displayName: Enable for images
     description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
-  movies:
-    displayName: Enable for movies
+  groups:
+    displayName: Enable for groups
     description: "Empty to enable, 'd' to disable. Customize: [criterion]_[value]_[style]_[grad-opts]_[hover-opts]_[card-opts]. See docs."
     type: STRING
   galleries:

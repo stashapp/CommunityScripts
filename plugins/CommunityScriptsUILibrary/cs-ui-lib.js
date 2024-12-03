@@ -55,6 +55,35 @@
   };
 
   /**
+   * Set configuration of a plugin in the server via GraphQL
+   * @param {string} pluginId - The ID of the plugin as it is registered in the server
+   * @param {*} values - The configuration object with the values you want to save in the server
+   * @returns {Object} - The configuration object of the plugin as it is stored in the server after update
+   *
+   * @example
+   *    // fetch config from the server
+   *    const config = await getConfiguration('CommunityScriptsUIPlugin', defaultConfig);
+   *    // config = { theme: 'dark' }
+   *    // update the config based on user input
+   *    // config = { theme: 'light' }
+   *    // save config in the server
+   *    await setConfiguration('CommunityScriptsUIPlugin', config);
+   * }
+   */
+  const setConfiguration = async (pluginId, values) => {
+    const query = `mutation ConfigurePlugin($pluginId: ID!, $input: Map!) { configurePlugin(plugin_id: $pluginId, input: $input) }`;
+    const queryBody = {
+      query: query,
+      variables: {
+        pluginId: pluginId,
+        input: values,
+      },
+    };
+    const response = await csLib.callGQL({ ...queryBody });
+    return response.configurePlugin;
+  };
+
+  /**
    * Waits for an element to be available in the DOM and runs the callback function once it is
    * @param {string} selector - The CSS selector of the element to wait for
    * @param {function} callback - The function to be called once the element is available (with the element as an argument)
@@ -105,6 +134,7 @@
     baseURL,
     callGQL,
     getConfiguration,
+    setConfiguration,
     waitForElement,
     PathElementListener,
   };

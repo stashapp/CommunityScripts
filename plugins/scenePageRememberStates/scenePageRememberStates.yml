@@ -1,0 +1,9 @@
+name: Scene Page Remember States
+description: Uses local storage to remember the state of the scene page detail panel nav bar and activate it on page load. Remembers collapse state of the divider.
+url:
+version: 0.2
+ui:
+  requires:
+    - CommunityScriptsUILibrary
+  javascript:
+    - scenePageRememberStates.js
