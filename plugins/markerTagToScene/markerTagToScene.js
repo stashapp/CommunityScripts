@@ -78,7 +78,7 @@ function processMarker(marker, shouldHandleAllTags) {
 }
 
 function main() {
-  log.Info(JSON.stringify(input));
+  //log.Info(JSON.stringify(input));
   if (input.Args.mode == "processMarkers") {
     var allTags = shouldHandleAllTags();
     log.Trace("Mode is processMarkers, allTags is " + allTags);
@@ -105,7 +105,7 @@ function main() {
     }
     log.Progress("Finished processing markers");
   } else if (input.Args.mode == "hook") {
-    log.Info("Mode is hook");
+    log.Debug("Mode is hook");
     processMarker(input.Args.hookContext.input, shouldHandleAllTags());
   } else {
     log.Error("Unknown mode");
