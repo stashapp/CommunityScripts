@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FansDB Submission Helper
 // @author      mmenanno, DogmaDragon
-// @version     0.8.4
+// @version     0.8.5
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/FansDB/docs/main/docs/assets/images/favicon.png
 // @namespace   FansDB-Submission-Helper
