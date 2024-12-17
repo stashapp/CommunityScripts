@@ -302,6 +302,10 @@ const urlPatterns = [
     site: "Fansoda",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?fansone\.co\/[^?]+)/,
+    site: "FansOne",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?fanspicy\.com\/[^?]+)/,
     site: "Fanspicy",
   },
@@ -385,6 +389,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?jvid\.com\/[^?]+)/,
     site: "JVID",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?keendom\.co\/[^?]+)/,
+    site: "keendom",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?kick\.com\/[^?]+)/,
