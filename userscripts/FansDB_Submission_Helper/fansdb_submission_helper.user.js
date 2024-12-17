@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FansDB Submission Helper
 // @author      mmenanno, DogmaDragon
-// @version     0.8.4
+// @version     0.8.5
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/FansDB/docs/main/docs/assets/images/favicon.png
 // @namespace   FansDB-Submission-Helper
@@ -302,6 +302,10 @@ const urlPatterns = [
     site: "Fansoda",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?fansone\.co\/[^?]+)/,
+    site: "FansOne",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?fanspicy\.com\/[^?]+)/,
     site: "Fanspicy",
   },
@@ -385,6 +389,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?jvid\.com\/[^?]+)/,
     site: "JVID",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?keendom\.co\/[^?]+)/,
+    site: "keendom",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?kick\.com\/[^?]+)/,
