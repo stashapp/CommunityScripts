@@ -108,4 +108,8 @@ yarn run format-py
 
 ## Deprecation
 
-To be formalized.
+unmaintained/ incompatible/ broken (plugins/scripts/userscripts) will be moved to the archive folder if no maintainers step up to take over development
+
+A 14-day notice and associated issue will be created before "archival". Archived plugins will be removed from the index automatically
+
+Maintainers will need to commit and/or demonstrate meaningful effort to maintain the code.
