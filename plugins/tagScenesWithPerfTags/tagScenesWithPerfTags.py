@@ -63,8 +63,10 @@ if "mode" in json_input["args"]:
 elif "hookContext" in json_input["args"]:
     id = json_input["args"]["hookContext"]["id"]
     if (
-        json_input["args"]["hookContext"]["type"] == "Scene.Update.Post"
-        or "Scene.Create.Post"
+        (
+            json_input["args"]["hookContext"]["type"] == "Scene.Update.Post"
+                or "Scene.Create.Post"
+        ) and len(json_input["args"]["hookContext"]["inputFields"]) > 2
     ):
         scene = stash.find_scene(id)
         processScene(scene)
