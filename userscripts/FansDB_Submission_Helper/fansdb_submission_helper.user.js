@@ -487,7 +487,7 @@ const urlPatterns = [
     site: "myfans",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?myfreecams\.com\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?profiles\.myfreecams\.com\/[^?]+)/,
     site: "MyFreeCams",
   },
   {
