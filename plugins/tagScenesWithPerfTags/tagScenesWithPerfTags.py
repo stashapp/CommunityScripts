@@ -36,23 +36,37 @@ def processAll():
 def processScene(scene):
     tags = []
     performersIds = []
-    for perf in scene["performers"]:
-        performersIds.append(perf["id"])
-    performers = []
-    for perfId in performersIds:
-        performers.append(stash.find_performer(perfId))
-    for perf in performers:
-        for tag in perf["tags"]:
-            tags.append(tag["id"])
-    stash.update_scenes({"ids": scene["id"], "tag_ids": {"mode": "ADD", "ids": tags}})
-    tags = []
-    performersIds = []
-    performers = []
+    should_tag = True
+    if settings["excludeSceneWithTag"] != "":
+        for tag in scene["tags"]:
+            if tag["name"] == settings["excludeSceneWithTag"]:
+                should_tag = False
+                break
+
+    if should_tag:
+        for perf in scene["performers"]:
+            performersIds.append(perf["id"])
+        performers = []
+        for perfId in performersIds:
+            performers.append(stash.find_performer(perfId))
+        for perf in performers:
+            for tag in perf["tags"]:
+                tags.append(tag["id"])
+        stash.update_scenes({"ids": scene["id"], "tag_ids": {"mode": "ADD", "ids": tags}})
+        tags = []
+        performersIds = []
+        performers = []
 
 
 json_input = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
+config = stash.get_configuration()
+settings = {
+    "excludeSceneWithTag": "",
+}
+if "tagScenesWithPerfTags" in config["plugins"]:
+    settings.update(config["plugins"]["tagScenesWithPerfTags"])
 
 if "mode" in json_input["args"]:
     PLUGIN_ARGS = json_input["args"]["mode"]
