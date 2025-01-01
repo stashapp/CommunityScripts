@@ -1,16 +1,15 @@
-import csv
 import os
 import zipfile
-from stashapi.stashapp import StashInterface
+from stashapi.stashapp import StashInterface, StashVersion
 import stashapi.log as log
 import config
+import cv2
 
-tagid_mappings = {}
-tagname_mappings = {}
-max_gaps = {}
-min_durations = {}
-required_durations = {}
-tag_thresholds = {}
+tagid_cache = {}
+
+ai_tag_ids_cache = set()
+stash_version = None
+end_seconds_support = False
 
 def initialize(connection):
     global stash
@@ -19,6 +18,9 @@ def initialize(connection):
     global ai_base_tag_id
     global ai_tagged_tag_id
     global vr_tag_id
+    global end_seconds_support
+    global stash_version
+    global ai_incorrect_tag_id
 
     # Initialize the Stash API
     stash = StashInterface(connection)
@@ -28,6 +30,7 @@ def initialize(connection):
     tagme_tag_id = stash.find_tag(config.tagme_tag_name, create=True)["id"]
     ai_base_tag_id = stash.find_tag(config.ai_base_tag_name, create=True)["id"]
     ai_tagged_tag_id = stash.find_tag(config.aitagged_tag_name, create=True)["id"]
+    ai_incorrect_tag_id = stash.find_tag("AI_Incorrect", create=True)["id"]
     vr_tag_name = stash.get_configuration()["ui"].get("vrTag", None)
     if not vr_tag_name:
         log.warning("No VR tag found in configuration")
@@ -35,35 +38,41 @@ def initialize(connection):
     else:
         vr_tag_id = stash.find_tag(vr_tag_name)["id"]
 
-    try:
-        parse_csv("tag_mappings.csv")
-    except Exception as e:
-        log.error(f"Failed to parse tag_mappings.csv: {e}")
+    stash_version = get_stash_version()
+    end_second_support_beyond = StashVersion("v0.27.2")
+    end_seconds_support = stash_version > end_second_support_beyond
+
+def get_stash_version():
+    return stash.stash_version()
+
 
 # ----------------- Tag Methods -----------------
 
+def get_tag_ids(tag_names, create=False):
+        return [get_tag_id(tag_name, create) for tag_name in tag_names]
 
-tag_categories = ["actions", "bodyparts", "bdsm", "clothing", "describingperson", "environment", "describingbody", "describingimage", "describingscene", "sextoys"]
+def get_tag_id(tag_name, create=False):
+    if tag_name not in tagid_cache:
+        stashtag = stash.find_tag(tag_name)
+        if stashtag:
+            tagid_cache[tag_name] = stashtag["id"]
+            return stashtag["id"]
+        else:
+            if not create:
+                return None
+            tag = stash.create_tag({"name":tag_name, "ignore_auto_tag": True, "parent_ids":[ai_base_tag_id]})['id']
+            tagid_cache[tag_name] = tag
+            ai_tag_ids_cache.add(tag)
+            return tag
+    return tagid_cache.get(tag_name)
 
-def get_all_tags_from_server_result(result):
-    alltags = []
-    for category in tag_categories:
-        alltags.extend(result.get(category, []))
-    return alltags
-
-def get_tag_ids(tag_names):
-    return [get_tag_id(tag_name) for tag_name in tag_names]
-
-def get_tag_id(tag_name):
-    if tag_name not in tagid_mappings:
-        return stash.find_tag(tag_name)["id"]
-    return tagid_mappings.get(tag_name)
-
-def get_tag_threshold(tag_name):
-    return tag_thresholds.get(tag_name, 0.5)
-
-def is_ai_tag(tag_name):
-    return tag_name in tagname_mappings
+def get_ai_tags():
+    if len(ai_tag_ids_cache) == 0:
+        ai_tags = [item['id'] for item in stash.find_tags(f={"parents": {"value":1410, "modifier":"INCLUDES"}}, fragment="id")]
+        ai_tag_ids_cache.update(ai_tags)
+    else :
+        ai_tags = list(ai_tag_ids_cache)
+    return ai_tags
 
 def is_scene_tagged(tags):
     for tag in tags:
@@ -85,8 +94,22 @@ def get_tagme_images():
 def add_error_images(image_ids):
     stash.update_images({"ids": image_ids, "tag_ids": {"ids": [aierroed_tag_id], "mode": "ADD"}})
 
+def get_incorrect_images():
+    return stash.find_images(f={"tags": {"value":ai_incorrect_tag_id, "modifier":"INCLUDES"}}, fragment="id files {path}")
+
 def remove_tagme_tags_from_images(image_ids):
     stash.update_images({"ids": image_ids, "tag_ids": {"ids": [tagme_tag_id], "mode": "REMOVE"}})
+
+def remove_incorrect_tag_from_images(image_ids):
+    stash.update_images({"ids": image_ids, "tag_ids": {"ids": [ai_incorrect_tag_id], "mode": "REMOVE"}})
+
+def remove_ai_tags_from_images(image_ids, remove_tagme=True, remove_errored=True):
+    ai_tags = get_ai_tags()
+    if remove_tagme:
+        ai_tags.append(tagme_tag_id)
+    if remove_errored:
+        ai_tags.append(aierroed_tag_id)
+    stash.update_images({"ids": image_ids, "tag_ids": {"ids": ai_tags, "mode": "REMOVE"}})
 
 def add_tags_to_image(image_id, tag_ids):
     stash.update_images({"ids": [image_id], "tag_ids": {"ids": tag_ids, "mode": "ADD"}})
@@ -137,10 +160,12 @@ def add_tags_to_video(video_id, tag_ids, add_tagged=True):
         tag_ids.append(ai_tagged_tag_id)
     stash.update_scenes({"ids": [video_id], "tag_ids": {"ids": tag_ids, "mode": "ADD"}})
 
-def remove_ai_tags_from_video(video_id, remove_tagme=True):
-    ai_tags = list(tagid_mappings.values())
+def remove_ai_tags_from_video(video_id, remove_tagme=True, remove_errored=True):
+    ai_tags = get_ai_tags()
     if remove_tagme:
         ai_tags.append(tagme_tag_id)
+    if remove_errored:
+        ai_tags.append(aierroed_tag_id)
     stash.update_scenes({"ids": [video_id], "tag_ids": {"ids": ai_tags, "mode": "REMOVE"}})
 
 def get_tagme_scenes():
@@ -152,77 +177,94 @@ def add_error_scene(scene_id):
 def remove_tagme_tag_from_scene(scene_id):
     stash.update_scenes({"ids": [scene_id], "tag_ids": {"ids": [tagme_tag_id], "mode": "REMOVE"}})
 
-def get_required_duration(tag_name, scene_duration):
-    if not required_durations:
-        log.error("Tag mappings not initialized")
-    required_duration_value = str(required_durations.get(tag_name))
-    required_duration_value = required_duration_value.replace(" ", "").lower()
-
-    if required_duration_value.endswith("s"):
-        # If the value ends with 's', remove 's' and convert to float
-        return float(required_duration_value[:-1])
-    elif required_duration_value.endswith("%"):
-        # If the value ends with '%', remove '%' and calculate the percentage of scene_duration
-        percentage = float(required_duration_value[:-1])
-        return (percentage / 100) * scene_duration
-    elif "." in required_duration_value and 0 <= float(required_duration_value) <= 1:
-        # If the value is a proportion, calculate the proportion of scene_duration
-        proportion = float(required_duration_value)
-        return proportion * scene_duration
-    else:
-        # If the value is a straight number, convert to float
-        return float(required_duration_value)
-
 # ----------------- Marker Methods -----------------
 
-def is_ai_marker_supported(tag_name):
-    return tag_name in min_durations
+def add_markers_to_video_from_dict(video_id, tag_timespans_dict):
+    for _, tag_timespan_dict in tag_timespans_dict.items():
+        for tag_name, time_frames in tag_timespan_dict.items():
+            tag_id = get_tag_id(tag_name, create=True)
+            add_markers_to_video(video_id, tag_id, tag_name, time_frames)
 
-def get_min_duration(tag_name):
-    return min_durations.get(tag_name)
 
-def get_max_gap(tag_name):
-    return max_gaps.get(tag_name, 0)
+def get_incorrect_markers():
+    if end_seconds_support:
+        return stash.find_scene_markers({"tags": {"value":ai_incorrect_tag_id, "modifier":"INCLUDES"}}, fragment="id scene {id files{path}} primary_tag {id, name} seconds end_seconds")
+    else:
+        return stash.find_scene_markers({"tags": {"value":ai_incorrect_tag_id, "modifier":"INCLUDES"}}, fragment="id scene {id files{path}} primary_tag {id, name} seconds")
 
 def add_markers_to_video(video_id, tag_id, tag_name, time_frames):
     for time_frame in time_frames:
-        stash.create_scene_marker({"scene_id": video_id, "primary_tag_id":tag_id, "tag_ids": [tag_id], "seconds": time_frame.start, "title":tagname_mappings[tag_name]})
+        if end_seconds_support:
+            stash.create_scene_marker({"scene_id": video_id, "primary_tag_id":tag_id, "tag_ids": [tag_id], "seconds": time_frame.start, "end_seconds": time_frame.end, "title":tag_name})
+        else:
+            stash.create_scene_marker({"scene_id": video_id, "primary_tag_id":tag_id, "tag_ids": [tag_id], "seconds": time_frame.start, "title":tag_name})
+
+def get_scene_markers(video_id):
+    return stash.get_scene_markers(video_id, fragment="id primary_tag {id} seconds end_seconds")
+
+def write_scene_marker_to_file(marker, scene_file, output_folder):
+    start = marker.get("seconds", None)
+    end = marker.get("end_seconds", None)
+    try:
+        cap = cv2.VideoCapture(scene_file)
+        if not cap.isOpened():
+            log.error(f"Failed to open video {scene_file}")
+            return
+        
+        timestamps = []
+        if end is None:
+            timestamps.append(start)
+        else:
+            duration = end - start
+            if duration > 4 and duration < 30:
+                timestamps.append(start + 4)
+            elif duration >= 30 and duration < 60:
+                timestamps.append(start + 4)
+                timestamps.append(start + 20)
+            elif duration >= 60 and duration < 120:
+                timestamps.append(start + 4)
+                timestamps.append(start + 20)
+                timestamps.append(start + 50)
+            elif duration >= 120:
+                timestamps.append(start + 4)
+                timestamps.append(start + 20)
+                timestamps.append(start + 50)
+                timestamps.append(start + 100)
+
+        for timestamp in timestamps:
+            cap.set(cv2.CAP_PROP_POS_MSEC, timestamp * 1000)
+            ret, frame = cap.read()
+            if not ret:
+                log.error(f"Failed to read frame at {timestamp} seconds from {scene_file}")
+                return
+            output_path = os.path.join(output_folder, f"{marker.get('id')}_{timestamp}.jpg")
+            cv2.imwrite(output_path, frame)
+    except Exception as e:
+        log.error(f"Failed to write scene marker to file: {e}")
+
+def delete_markers(markers):
+    for scene_marker in markers:
+        stash.destroy_scene_marker(scene_marker["id"])
+
+def get_scene_markers_by_tag(video_id, error_if_no_end_seconds=True):
+    scene_markers = stash.get_scene_markers(video_id, fragment="id primary_tag {name} seconds end_seconds")
+    scene_markers_by_tag = {}
+    for scene_marker in scene_markers:
+        tag_name = scene_marker.get("primary_tag").get("name")
+        if tag_name not in scene_markers_by_tag:
+            scene_markers_by_tag[tag_name] = []
+        if error_if_no_end_seconds and scene_marker.get("end_seconds", None) is None:
+            raise ValueError(f"Scene marker {scene_marker.get('id')} has no end_seconds")
+        scene_markers_by_tag[tag_name].append(scene_marker)
+    return scene_markers_by_tag
+
+def remove_incorrect_tag_from_markers(markers):
+    for marker in markers:
+        stash.update_scene_marker({"id": marker["id"], "tag_ids": []})
 
 def remove_ai_markers_from_video(video_id):
-    ai_tags = set(tagid_mappings.values())
+    ai_tags = set(get_ai_tags())
     scene_markers = stash.get_scene_markers(video_id, fragment="id primary_tag {id}")
     for scene_marker in scene_markers:
         if scene_marker.get("primary_tag").get("id") in ai_tags:
             stash.destroy_scene_marker(scene_marker.get("id"))
-
-# ----------------- Helpers -----------------
-
-def parse_csv(file_path):
-    global tagid_mappings
-    global tagname_mappings
-    global max_gaps
-    global min_durations
-    global required_durations
-    global tag_thresholds
-
-    with open(file_path, mode='r') as infile:
-        reader = csv.DictReader(infile)
-        for row in reader:
-            server_tag = row.get('ServerTag')
-            stash_tag = row.get('StashTag')
-            min_duration = float(row.get('MinMarkerDuration', -1)) #float(row['MinDuration']) 
-            max_gap = float(row.get('MaxGap', 0)) #float(row['MaxGap'])
-            required_duration = row.get('RequiredDuration', "200%")
-            tag_threshold = float(row.get('TagThreshold', 0.5))
-
-            tag = stash.find_tag(stash_tag)
-            if not tag:
-                tag = stash.create_tag({"name":stash_tag, "ignore_auto_tag": True, "parent_ids":[ai_base_tag_id]})
-            
-            tagid_mappings[server_tag] = tag["id"]
-            tagname_mappings[server_tag] = stash_tag
-            if min_duration != -1:
-                min_durations[server_tag] = min_duration
-                max_gaps[server_tag] = max_gap
-            required_durations[server_tag] = required_duration
-            tag_thresholds[server_tag] = tag_threshold
