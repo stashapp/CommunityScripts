@@ -9,7 +9,7 @@ ui:
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/fetchInterceptor.js
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/stashHandler.js
     - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/registerPathChangeListener.js
-    - https://cdn.jsdelivr.net/gh/HandyRandyx/stash-plugins@main/utils/waitForClass.js
+    - https://cdn.jsdelivr.net/gh/cj12312021/stash-plugins@main/utils/waitForClass.js
     - cjCardTweaks.js
 settings:
   addBannerDimension:
