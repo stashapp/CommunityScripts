@@ -40,6 +40,12 @@ try:
     except ModuleNotFoundError:
         install('pydantic')
         toRaise = True
+
+    try:
+        import cv2
+    except ModuleNotFoundError:
+        install('opencv-python')
+        toRaise = True
         
     if toRaise:
         raise Exception("Installed required packages, please retry the task.")
@@ -53,11 +59,6 @@ try:
     import ai_server
     import utility
     from datetime import datetime
-    try:
-        import cv2
-    except ModuleNotFoundError:
-        install('opencv-python')
-        toRaise = True
 except:
     log.error("Attempted to install required packages, please retry the task.")
     log.error(f"Stack trace {traceback.format_exc()}")
@@ -238,7 +239,7 @@ async def __tag_images(images):
                     else:
                         tags_list = []
                         for _, tags in result.items():
-                            stashtag_ids = media_handler.get_tag_ids(tags)
+                            stashtag_ids = media_handler.get_tag_ids(tags, create=True)
                             stashtag_ids.append(media_handler.ai_tagged_tag_id)
                             tags_list.extend(stashtag_ids)
                         media_handler.add_tags_to_image(id, tags_list)
