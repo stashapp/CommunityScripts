@@ -23,3 +23,11 @@ tasks:
     description: Find Optimal Marker Settings based on a video that has manually tuned markers and has been processed by the AI previously. Only 1 video should have AI_TagMe before running.
     defaultArgs:
       mode: find_marker_settings
+  - name: Collect Incorrect Markers and Images
+    description: Collects data from markers and images that were AI Tagged but were manually marked with AI_Incorrect due to the AI making a mistake. This will collect the data and output as a file which can be sent to Skier to improve the AI.
+    defaultArgs:
+      mode: collect_incorrect_markers
+  - name: Find Marker Settings
+    description: Find Optimal Marker Settings based on a video that has manually tuned markers and has been processed by the AI previously. Only 1 video should have AI_TagMe before running.
+    defaultArgs:
+      mode: find_marker_settings
