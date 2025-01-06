@@ -3,7 +3,7 @@ import zipfile
 from stashapi.stashapp import StashInterface, StashVersion
 import stashapi.log as log
 import config
-import cv2
+import imageio
 
 tagid_cache = {}
 
@@ -39,7 +39,7 @@ def initialize(connection):
         vr_tag_id = stash.find_tag(vr_tag_name)["id"]
 
     stash_version = get_stash_version()
-    end_second_support_beyond = StashVersion("v0.27.2")
+    end_second_support_beyond = StashVersion("v0.27.2-76648")
     end_seconds_support = stash_version > end_second_support_beyond
 
 def get_stash_version():
@@ -68,7 +68,7 @@ def get_tag_id(tag_name, create=False):
 
 def get_ai_tags():
     if len(ai_tag_ids_cache) == 0:
-        ai_tags = [item['id'] for item in stash.find_tags(f={"parents": {"value":1410, "modifier":"INCLUDES"}}, fragment="id")]
+        ai_tags = [item['id'] for item in stash.find_tags(f={"parents": {"value":ai_base_tag_id, "modifier":"INCLUDES"}}, fragment="id")]
         ai_tag_ids_cache.update(ai_tags)
     else :
         ai_tags = list(ai_tag_ids_cache)
@@ -203,25 +203,29 @@ def get_scene_markers(video_id):
     return stash.get_scene_markers(video_id, fragment="id primary_tag {id} seconds end_seconds")
 
 def write_scene_marker_to_file(marker, scene_file, output_folder):
+
     start = marker.get("seconds", None)
     end = marker.get("end_seconds", None)
     try:
-        cap = cv2.VideoCapture(scene_file)
-        if not cap.isOpened():
-            log.error(f"Failed to open video {scene_file}")
+        reader = imageio.get_reader(scene_file, "ffmpeg")
+        meta = reader.get_meta_data()
+        fps = meta.get("fps", 30)  # default fallback
+
+        if start is None:
+            log.error("No start time provided.")
             return
-        
+
         timestamps = []
         if end is None:
             timestamps.append(start)
         else:
             duration = end - start
-            if duration > 4 and duration < 30:
+            if 4 < duration < 30:
                 timestamps.append(start + 4)
-            elif duration >= 30 and duration < 60:
+            elif 30 <= duration < 60:
                 timestamps.append(start + 4)
                 timestamps.append(start + 20)
-            elif duration >= 60 and duration < 120:
+            elif 60 <= duration < 120:
                 timestamps.append(start + 4)
                 timestamps.append(start + 20)
                 timestamps.append(start + 50)
@@ -232,15 +236,17 @@ def write_scene_marker_to_file(marker, scene_file, output_folder):
                 timestamps.append(start + 100)
 
         for timestamp in timestamps:
-            cap.set(cv2.CAP_PROP_POS_MSEC, timestamp * 1000)
-            ret, frame = cap.read()
-            if not ret:
-                log.error(f"Failed to read frame at {timestamp} seconds from {scene_file}")
+            frame_idx = int(timestamp * fps)
+            try:
+                frame = reader.get_data(frame_idx)
+                output_path = os.path.join(output_folder, f"{marker.get('id')}_{timestamp}.jpg")
+                imageio.imwrite(output_path, frame)
+            except Exception as e:
+                log.error(f"Failed to extract frame at {timestamp}s: {e}")
                 return
-            output_path = os.path.join(output_folder, f"{marker.get('id')}_{timestamp}.jpg")
-            cv2.imwrite(output_path, frame)
+
     except Exception as e:
-        log.error(f"Failed to write scene marker to file: {e}")
+        log.error(f"Failed to process video {scene_file} with imageio-ffmpeg: {e}")
 
 def delete_markers(markers):
     for scene_marker in markers:

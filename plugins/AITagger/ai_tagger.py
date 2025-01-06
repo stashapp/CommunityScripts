@@ -42,9 +42,10 @@ try:
         toRaise = True
 
     try:
-        import cv2
+        import imageio
     except ModuleNotFoundError:
-        install('opencv-python')
+        install('imageio[ffmpeg]')
+        
         toRaise = True
         
     if toRaise:
@@ -65,6 +66,7 @@ except:
     sys.exit(1)
     raise
         
+log.debug("Python instance is running at: " + sys.executable)
 # ----------------- Variable Definitions -----------------
 
 semaphore = None
