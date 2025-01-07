@@ -2,3 +2,4 @@ stashapp-tools
 aiohttp
 asyncio
 pydantic
+imageio[ffmpeg]
