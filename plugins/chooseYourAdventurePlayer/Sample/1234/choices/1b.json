@@ -1,0 +1,17 @@
+{
+  "id": "1b",
+  "type": null,
+  "title": "Bad Choice",
+  "skipto": null,
+  "choices": [
+    {
+      "description": null,
+      "id": "1b-e",
+      "type": "exit",
+      "photo": "TBD"
+    }
+  ],
+  "resource": {
+    "resolved_content": "Scene1b.mp4"
+  },
+}
