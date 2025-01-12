@@ -108,8 +108,8 @@ yarn run format-py
 
 ## Deprecation
 
-unmaintained/ incompatible/ broken (plugins/scripts/userscripts) will be moved to the archive folder if no maintainers step up to take over development
+14-day notice and associated issue with the appropriate label will be created once plugins, themes, userscripts and other utility scripts are marked for deprecation to allow time for someone to take over the development.
 
-A 14-day notice and associated issue will be created before "archival". Archived plugins will be removed from the index automatically
+After the 14 days, if nobody takes up the development they will be moved to the [archive](./archive) directory. This will automatically remove plugins from the CommunityScripts source index.
 
-Maintainers will need to commit and/or demonstrate meaningful effort to maintain the code.
+Maintainers are expected to show commitment and demonstrate meaningful effort to maintain the code.
