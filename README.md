@@ -108,4 +108,8 @@ yarn run format-py
 
 ## Deprecation
 
-To be formalized.
+14-day notice and associated issue with the appropriate label will be created once plugins, themes, userscripts and other utility scripts are marked for deprecation to allow time for someone to take over the development.
+
+After the 14 days, if nobody takes up the development they will be moved to the [archive](./archive) directory. This will automatically remove plugins from the CommunityScripts source index.
+
+Maintainers are expected to show commitment and demonstrate meaningful effort to maintain the code.
