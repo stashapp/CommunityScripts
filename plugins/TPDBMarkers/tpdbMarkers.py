@@ -38,7 +38,7 @@ def processScene(scene):
                         log.info("Saving markers")
                         mp.import_scene_markers(stash, markers, scene["id"], 15)
                     # skip if there is already a movie linked
-                    if settings["createMovieFromScene"] and len(scene["movies"]) ==0:
+                    if settings["createMovieFromScene"] and len(scene.get("movies", [])) == 0:
                         movies=[]
                         for m in data["movies"]:
                            movie=processMovie(m)
