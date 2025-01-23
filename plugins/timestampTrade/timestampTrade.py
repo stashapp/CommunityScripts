@@ -211,7 +211,7 @@ def processSceneTimestamTrade(s):
                                                   }
                                               }
                                             }"""
-                                        res = stash.callGQL(scrapers_graphql)
+                                        res = stash.call_GQL(scrapers_graphql)
                                         for r in res["listScrapers"]:
                                             if r["movie"]["urls"]:
                                                 for url in r["movie"]["urls"]:
@@ -1340,7 +1340,7 @@ if "timestampTrade" in config["plugins"]:
 
 
 # check the schema version for features in the dev release
-res = stash.callGQL("{systemStatus {databaseSchema databasePath}}")
+res = stash.call_GQL("{systemStatus {databaseSchema databasePath}}")
 settings["schema"] = res["systemStatus"]["databaseSchema"]
 settings["funscript_dbpath"] = (
     Path(res["systemStatus"]["databasePath"]).parent / "funscript_index.sqlite"

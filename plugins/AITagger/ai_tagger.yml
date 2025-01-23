@@ -1,6 +1,6 @@
 name: AI Tagger
-description: Tag videos and Images with Locally hosted AI using Skier's Patreon AI models
-version: 1.8
+description: Tag videos and Images with Locally hosted AI using Skier's Free and Patreon AI models
+version: 2.2
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/AITagger
 exec:
   - python
@@ -15,3 +15,11 @@ tasks:
     description: Run AI Tagger on scenes with AI_TagMe tag
     defaultArgs:
       mode: tag_scenes
+  - name: Collect Incorrect Markers and Images
+    description: Collects data from markers and images that were AI Tagged but were manually marked with AI_Incorrect due to the AI making a mistake. This will collect the data and output as a file which can be sent to Skier to improve the AI.
+    defaultArgs:
+      mode: collect_incorrect_markers
+  - name: Find Marker Settings
+    description: Find Optimal Marker Settings based on a video that has manually tuned markers and has been processed by the AI previously. Only 1 video should have AI_TagMe before running.
+    defaultArgs:
+      mode: find_marker_settings

@@ -5,10 +5,12 @@ IMAGE_THRESHOLD = 0.5
 API_BASE_URL = 'http://localhost:8000'
 IMAGE_REQUEST_BATCH_SIZE = 320
 CONCURRENT_TASK_LIMIT = 10
-SERVER_TIMEOUT = 2700
+SERVER_TIMEOUT = 3700
 AI_VIDEO_THRESHOLD = 0.3
 
 temp_image_dir = "./temp_images"
+output_data_dir = "./output_data"
+delete_incorrect_markers = True
 ai_base_tag_name = "AI"
 tagme_tag_name = "AI_TagMe"
 updateme_tag_name = "AI_UpdateMe"
