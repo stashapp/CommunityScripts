@@ -1,27 +1,20 @@
 name: RenameFile
 description: Renames video (scene) file names when the user edits the [Title] field located in the scene [Edit] tab.
-version: 0.4.6
+version: 0.5.6
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/RenameFile
+ui:
+  css:
+  - renamefile.css
+  javascript:
+  - renamefile.js
 settings:
-  performerAppend:
-    displayName: Append Performers
-    description: Enable to append performers name to file name when renaming a file. Requires performers to be included in [Key Fields] list, which by default it is included.
-    type: BOOLEAN
-  studioAppend:
-    displayName: Append Studio
-    description: Enable to append studio name to file name when renaming a file. Requires studio to be included in [Key Fields] list, which by default it is included.
-    type: BOOLEAN
-  tagAppend:
-    displayName: Append Tags
-    description: Enable to append tag names to file name when renaming a file. Requires tags to be included in [Key Fields] list, which by default it is included.
+  yRenameEvenIfTitleEmpty:
+    displayName: Empty Title Rename
+    description: If enable, rename files even if TITLE field is empty.
     type: BOOLEAN
   z_keyFIeldsIncludeInFileName: # Prefixing z_ to variable names so that the GUI will place these fields after above fields (alphabatically listed)
     displayName: Include Existing Key Field
     description: Enable to append performer, tags, studios, & galleries even if name already exists in the original file name.
-    type: BOOLEAN
-  zafileRenameViaMove:
-    displayName: Move Instead of Rename
-    description: Enable to move file instead of rename file. (Not recommended for Windows OS)
     type: BOOLEAN
   zfieldKeyList:
     displayName: Key Fields
@@ -37,7 +30,7 @@ settings:
     type: STRING
   zzdebugTracing:
     displayName: Debug Tracing
-    description: (Default=false) [***For Advanced Users***] Enable debug tracing. When enabled, additional tracing logging is added to Stash\plugins\RenameFile\renamefile.log
+    description: Enable debug tracing so-as to add additional debug logging in Stash\plugins\RenameFile\renamefile.log
     type: BOOLEAN
   zzdryRun:
     displayName: Dry Run
