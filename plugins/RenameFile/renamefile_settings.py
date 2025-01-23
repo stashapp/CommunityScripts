@@ -38,7 +38,7 @@ config = {
         "date": '',      
     },
     # Add tags to exclude from RenameFile.
-    "excludeTags": ["DuplicateMarkForDeletion", "DuplicateMarkForSwap", "DuplicateWhitelistFile","_DuplicateMarkForDeletion","_DuplicateMarkForSwap", "_DuplicateWhitelistFile"],
+    "excludeTags": ["DuplicateMarkForDeletion", "DuplicateMarkForSwap", "DuplicateWhitelistFile","_DuplicateMarkForDeletion","_DuplicateMarkForSwap", "_DuplicateWhitelistFile","ExcludeDuplicateMarkForDeletion", "_ExcludeDuplicateMarkForDeletion"],
     # Add path(s) to exclude from RenameFile. Example Usage: r"/path/to/exclude1"  When entering multiple paths, use space. Example: r"/path_1_to/exclude" r"/someOtherPath2Exclude" r"/yetAnotherPath"
     "pathToExclude": "",
     # Define a whitelist of allowed tags or EMPTY to allow all tags. Example Usage: "tag1", "tag2", "tag3"
@@ -47,4 +47,26 @@ config = {
     "if_notitle_use_org_filename": True, # Warning: Do not recommend setting this to False.
     # Current Stash DB schema only allows maximum base file name length to be 255
     "max_filename_length": 255,
+    # Exclude tags with ignore_auto_tag set to True
+    "excludeIgnoreAutoTags": True,
+    # Enable to append performers name to file name when renaming a file. Requires performers to be included in [Key Fields] list, which by default it is included.
+    "performerAppendEnable": True,
+    # Enable to append studio name to file name when renaming a file. Requires studio to be included in [Key Fields] list, which by default it is included.
+    "studioAppendEnable": True,
+    # Enable to append tag names to file name when renaming a file. Requires tags to be included in [Key Fields] list, which by default it is included.
+    "tagAppendEnable": True,
+    # Enable to move file instead of rename file. (Not recommended for Windows OS)
+    "fileRenameViaMove": False,
+    
+    # handleExe is for Windows only.
+    # In Windows, a file can't be renamed if the file is opened by another process.
+    # In other words, if a file is being played by Stash or any other video player, the RenameFile plugin
+    # will get an access denied error when trying to rename the file.
+    # As a workaround, the 'handleExe' field can be populated with the full path to handle.exe or handle64.exe.
+    # This executable can be downloaded from the following link:
+    # https://learn.microsoft.com/en-us/sysinternals/downloads/handle
+    # RenameFile can use the Handle.exe program to close all opened file handles by all processes before renaming the file.
+    #
+    # Warning: This feature can cause the process playing the video to crash.
+    "handleExe": r"C:\Sysinternals\handle64.exe", # https://learn.microsoft.com/en-us/sysinternals/downloads/handle
 }

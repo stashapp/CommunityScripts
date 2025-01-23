@@ -1,7 +1,10 @@
 name: FileMonitor
 description: Monitors the Stash library folders, and updates Stash if any changes occurs in the Stash library paths.
-version: 0.9.0
+version: 1.0.3
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
+ui:
+  javascript:
+    - filemonitor.js
 settings:
   recursiveDisabled:
     displayName: No Recursive
@@ -40,3 +43,15 @@ tasks:
     description: Run [Library Monitor] as a plugin (*Not recommended*)
     defaultArgs:
       mode: start_library_monitor
+  - name: Synchronize Library Tag
+    description: Tag (_NoLongerPartOfLibrary) scenes from database with paths no longer in Stash Library.
+    defaultArgs:
+      mode: sync_library_tag
+  - name: Synchronize Library Clean
+    description: Remove scenes from database with paths no longer in Stash Library.
+    defaultArgs:
+      mode: sync_library_remove
+  - name: Clear Sync Tags
+    description: Clear tag _NoLongerPartOfLibrary. Remove this tag from all files.
+    defaultArgs:
+      mode: clear_sync_tags_task
