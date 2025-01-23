@@ -4,7 +4,7 @@ version: 1.0.3
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
 ui:
   javascript:
-  - filemonitor.js
+    - filemonitor.js
 settings:
   recursiveDisabled:
     displayName: No Recursive

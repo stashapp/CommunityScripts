@@ -4,9 +4,9 @@ version: 0.5.6
 url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/RenameFile
 ui:
   css:
-  - renamefile.css
+    - renamefile.css
   javascript:
-  - renamefile.js
+    - renamefile.js
 settings:
   yRenameEvenIfTitleEmpty:
     displayName: Empty Title Rename

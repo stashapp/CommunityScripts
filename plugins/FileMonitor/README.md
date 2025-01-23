@@ -10,6 +10,7 @@ FileMonitor is a [Stash](https://github.com/stashapp/stash) plugin with the foll
 From the GUI, FileMonitor can be started as a service or as a plugin. The recommended method is to start it as a service. When started as a service, it will jump on the Task Queue momentarily, and then disappear as it starts running in the background.
 
 - To start monitoring file changes, go to **Stash->Settings->Task->[Plugin Tasks]->FileMonitor**, and click on the [Start Library Monitor Service] button.
+
   - ![FileMonitorService](https://github.com/user-attachments/assets/b12aeca9-37a8-447f-90da-26e9440735ad)
   - **Important Note**: At first, it will show up as a plugin in the Task Queue momentarily. It will then disappear from the Task Queue and run in the background as a service.
   - To check running status of FileMonitor, use the Settings->Tools->FileMonitor option.
@@ -21,10 +22,6 @@ From the GUI, FileMonitor can be started as a service or as a plugin. The recomm
   - When FileMonitor is not running, the icon has an **X**.
   - ![Screenshot 2024-11-29 074154](https://github.com/user-attachments/assets/e8b117fa-9842-40b2-91d4-182c8b4cd528)
   - However, this icon is not very practical, since the user still has to go to the Settings->Tools->FileMonitor page to force it to update the icon.
-
-
-
-
 
 - To stop FileMonitor click on [Stop Library Monitor] button.
 - The **[Monitor as a Plugin]** option is mainly available for backwards compatibility and for test purposes.
@@ -189,33 +186,44 @@ Please use the following link to report FileMonitor Feature Request:[FileMonitor
 Please do **NOT** use the feature request to include any problems associated with errors. Instead use the bug report for error issues.
 
 ## Docker
+
 ### Single Stash Docker Installation
+
 **Note:** This section is for users who have a single instance of Stash Docker installed, and do NOT have Stash installed on the host machine.
+
 - FileMonitor requires watchdog module in order to work. Although the watchdog module loads and runs on Docker, it fails to function because Docker fails to report file changes.
 - FileMonitor can work with Docker Stash setup if it's executed externally on the host OS. To do this, start FileMonitor on the command line and pass the Stash URL and docker YML file. (**--url** and **--docker**)
 - Example1:
+
 ```
 python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppData\Local\Docker\wsl\Stash27.2\docker-compose.yml"
 ```
+
 - Example2: (with ApiKey)
   - If Stash Docker is configured with a password, an ApiKey is needed, and has to be passed on the command line (**--apikey**).
+
 ```
 python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppData\Local\Docker\wsl\Stash27.2\docker-compose.yml" --apikey "zNDU0MDk3N30.4nZVLk3xikjJZfZ0JTPA_Fic8JveycCI6IkpXVCJ9.eyJ1aWQiOiJheHRlJhbGciOiJIUzI1NiIsInR5I6IkFQSUtleSIsImlhdCI6MTcFx3DZe5U21ZDcC3c"
 ```
+
 - The **docker-compose.yml** file should be located in the folder associated with the Docker Stash container, and it list the mapped paths which FileMonitor uses to determine the host path which is mapped to the Docker path.
 - For more information, see [Using FileMonitor as a script](https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor#Using-FileMonitor-as-a-script)
 - For more information on creating a Docker Stash setup, see (https://github.com/David-Maisonave/Axter-Stash/tree/main/Docker)
+
 ### Multiple Stash Docker Configuration
+
 **Note:** This section applies to users who have multiple Stash Docker instances running, and also have Stash installed and running on the host machine.
+
 - FileMonitor can be configured to run on the host machine, and update all the Stash Docker instances when an associated file change occurs. To activate this option change the filemonitor_config.py file by setting the **dockers** field with the information associated with each Stash Docker instance.
 - There are three examples that are commented out in the **dockers** field, which users can easily modify to configure for their particular Stash Docker instances.
 - The following is the uncommented example from the **filemonitor_config.py** file.
+
 ```Python
     # Docker notification from host machine
     "dockers": [
         # A simple basic example with only one bind mount path.
         {"GQL":"http://localhost:9995", "apiKey":"", "bindMounts":[{r"C:\Video":"/mnt/Video"}]},
-        
+
         # Example having 8 bind mount paths.
         {"GQL":"http://localhost:9997", "apiKey":"", "bindMounts":[
                 {r"C:\Users\admin3\AppData\Local\Docker\wsl\ManyMnt\data":"/data"},
@@ -228,7 +236,7 @@ python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppD
                 {r"Z:\Temp":"/external7"},
             ]
         },
-        
+
         # Example using the apiKey for a password configured Stash installation.
         {"GQL":"http://localhost:9994", "apiKey":"eyJhb3676zgdUzI1NiIsInR5cCI6IwfXVCJ9.ewJ1aWQiOiJheHRlweIsInN1YiI6IkFQSUtleSIsImlhdewrweczNDU0MDk3N30.4nZVLk3xikjJZfZ0JTPA_Fic8JvFx3DZe5U21Zasdag", "bindMounts":[
                 {r"C:\Users\admin3\AppData\Local\Docker\wsl\MyStashContainer\data":"/data"},
@@ -238,6 +246,7 @@ python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppD
         },
     ],
 ```
+
 - Each Stash Docker instance requires three fields, which are case sensitive.
   - **GQL**: This is the Stash URL which is used by the host machine to access the particular Stash Docker instance. Note: Do **NOT** include graphql in the URL.
   - **apiKey**: This is a required field, but the value can be empty if the Stash instances doesn't require a password.
@@ -254,7 +263,9 @@ python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppD
       - ./generated:/generated
 
 ### Stash Docker Installer
+
 If you need help installing Stash Docker, use the Stash Docker installer in the following link: (https://github.com/David-Maisonave/Axter-Stash/tree/main/Docker)
 
 ## Future Planned Features or Fixes
+
 - Have the FileMonitor running status ICON update the icon without having to go to the Settings->Tools->FileMonitor page. Planned for version 1.2.0.
