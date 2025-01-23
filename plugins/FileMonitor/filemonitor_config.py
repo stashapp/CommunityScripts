@@ -21,9 +21,11 @@ config = {
         
         # The following tasks are scheduled weekly
         # Optional field for task "Scan", "Auto Tag", and "Clean" is 'paths'. For detail usage, see examples #A3: in filemonitor_task_examples.py
-        {"task" : "Scan",                   "weekday" : "saturday",   "time" : "03:00"}, # Library -> [Scan] (Weekly) (Every saturday at 3AM)
-        {"task" : "Auto Tag",               "weekday" : "saturday",   "time" : "03:30"}, # Auto Tag -> [Auto Tag] (Weekly) (Every saturday at 3:30AM)
-        {"task" : "Generate",               "weekday" : "saturday",   "time" : "04:00"}, # Generated Content-> [Generate] (Every saturday at 4AM)
+        {"task" : "Backup",                 "weekday" : "saturday",   "time" : "01:00"}, # Backup -> [Backup] (Weekly) (Every saturday at 1AM)
+        {"task" : "Scan",                   "weekday" : "saturday",   "time" : "02:30"}, # Library -> [Scan] (Weekly) (Every saturday at 2:30AM)
+        {"task" : "Auto Tag",               "weekday" : "saturday",   "time" : "03:00"}, # Auto Tag -> [Auto Tag] (Weekly) (Every saturday at 3AM)
+        {"task" : "Generate",               "weekday" : "saturday",   "time" : "03:30"}, # Generated Content-> [Generate] (Every saturday at 3:30AM)
+        {"task" : "Generate Phashes",       "weekday" : "saturday",   "time" : "04:00"}, # [Generate Phashes] (Every saturday at 4AM)
         {"task" : "Clean",                  "weekday" : "saturday",   "time" : "04:30"}, # Maintenance -> [Clean] (Every saturday at 4:30AM)
         {"task" : "Clean Generated Files",  "weekday" : "saturday",   "time" : "05:00"}, # Maintenance -> [Clean Generated Files] (Every saturday at 5AM)
         {"task" : "Optimise Database",      "weekday" : "saturday",   "time" : "05:30"}, # Maintenance -> [Optimise Database] (Every saturday at 5:30AM)
@@ -42,7 +44,7 @@ config = {
                 # 4 = 4th specified weekday of the month.
         # The Backup task is scheduled monthly
         # Optional field for task "Backup" is maxBackup. For detail usage, see example #A5 in filemonitor_task_examples.py
-        {"task" : "Backup",                 "weekday" : "sunday",  "time" : "01:00", "monthly" : 2}, # Backup -> [Backup] 2nd sunday of the month at 1AM (01:00)        
+        # {"task" : "Backup",                 "weekday" : "saturday",  "time" : "01:00", "monthly" : 2}, # Backup -> [Backup] 2nd sunday of the month at 1AM (01:00)        
         
         # The [CheckStashIsRunning] task checks if Stash is running. If not running, it will start up stash. 
         # This task only works if FileMonitor is started as a service or in command line mode.
@@ -63,6 +65,8 @@ config = {
     "runCleanAfterDelete": False,
     # Enable to run metadata_generate (Generate Content) after metadata scan.
     "runGenerateContent": False,
+    # Tag name when tagging files that are no longer in Stash Library paths.
+    "NotInLibraryTagName" : "_NoLongerPartOfLibrary",
     
     # When populated (comma separated list [lower-case]), only scan for changes for specified file extension
     "fileExtTypes" : "", # Example: "mp4,mpg,mpeg,m2ts,wmv,avi,m4v,flv,mov,asf,mkv,divx,webm,ts,mp2t"
@@ -85,6 +89,32 @@ config = {
     "createSpecFileToExit": True,
     # Enable to delete special file immediately after it's created in stop process.
     "deleteSpecFileInStop": False,
+    # Docker notification from host machine
+    "dockers": [ # Example Stash Docker configurations. For more details see https://github.com/David-Maisonave/Axter-Stash/blob/main/plugins/FileMonitor#Multiple-Stash-Docker-Configuration
+        # # A simple basic example with only one bind mount path.
+        # {"GQL":"http://localhost:9995", "apiKey":"", "bindMounts":[{r"C:\Video":"/mnt/Video"}]},
+        
+        # # Example having 8 bind mount paths.
+        # {"GQL":"http://localhost:9997", "apiKey":"", "bindMounts":[
+                # {r"C:\Users\admin3\AppData\Local\Docker\wsl\ManyMnt\data":"/data"},
+                # {r"C:\Users\admin3\Videos":"/external"},
+                # {r"C:\Users\admin3\Pictures":"/external2"},
+                # {r"C:\Users\admin3\Downloads":"/external3"},
+                # {r"E:\Downloads":"/external4"},
+                # {r"E:\Celeb":"/external5"},
+                # {r"F:\Hentai":"/external6"},
+                # {r"Z:\Temp":"/external7"},
+            # ]
+        # },
+        
+        # # Example using the apiKey for a password configured Stash installation.
+        # {"GQL":"http://localhost:9994", "apiKey":"eyJhb3676zgdUzI1NiIsInR5cCI6IwfXVCJ9.ewJ1aWQiOiJheHRlweIsInN1YiI6IkFQSUtleSIsImlhdewrweczNDU0MDk3N30.4nZVLk3xikjJZfZ0JTPA_Fic8JvFx3DZe5U21Zasdag", "bindMounts":[
+                # {r"C:\Users\admin3\AppData\Local\Docker\wsl\MyStashContainer\data":"/data"},
+                # {r"C:\Vid":"/mnt/Vid"},
+                # {r"C:\Users\admin3\Downloads":"/mnt/Downloads"},
+            # ]
+        # },
+    ],
     
     # Below are place holders for **possible** future features.
     # !!! Not yet implemented !!!

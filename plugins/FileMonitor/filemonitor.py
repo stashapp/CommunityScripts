@@ -3,15 +3,22 @@
 # Get the latest developers version from following link: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor
 # Note: To call this script outside of Stash, pass argument --url and the Stash URL.
 #       Example:    python filemonitor.py --url http://localhost:9999
+try:
+    import ModulesValidate
+    ModulesValidate.modulesInstalled(["stashapp-tools", "watchdog", "schedule", "requests"], silent=True)
+except Exception as e:
+    import traceback, sys
+    tb = traceback.format_exc()
+    print(f"ModulesValidate Exception. Error: {e}\nTraceBack={tb}", file=sys.stderr)
 import os, sys, time, pathlib, argparse, platform, traceback, logging
 from StashPluginHelper import StashPluginHelper
-import watchdog  # pip install watchdog  # https://pythonhosted.org/watchdog/
-from watchdog.observers import Observer # This is also needed for event attributes
+from StashPluginHelper import taskQueue
 from threading import Lock, Condition
 from multiprocessing import shared_memory
 from filemonitor_config import config
 from filemonitor_task_examples import task_examples
 from filemonitor_self_unit_test import self_unit_test
+from datetime import datetime
 
 config['task_scheduler'] = config['task_scheduler'] + task_examples['task_scheduler']
 if self_unit_test['selfUnitTest_repeat']:
@@ -25,11 +32,14 @@ STOP_RUNNING_SIG = 32
 parser = argparse.ArgumentParser()
 parser.add_argument('--url', '-u', dest='stash_url', type=str, help='Add Stash URL')
 parser.add_argument('--trace', '-t', dest='trace', action='store_true', help='Enables debug trace mode.')
-parser.add_argument('--stop', '-s', dest='stop', action='store_true', help='Stop (kill) a running FileMonitor task.')
+parser.add_argument('--stop', '-s', dest='stop', action='store_true', help='Stop a running FileMonitor task.')
+parser.add_argument('--kill_que', '-k', dest='kill_job_task_que', type=str, help='Kill job on Task Queue while running in service mode (command line mode).')
 parser.add_argument('--restart', '-r', dest='restart', action='store_true', help='Restart FileMonitor.')
 parser.add_argument('--silent', '--quit', '-q', dest='quit', action='store_true', help='Run in silent mode. No output to console or stderr. Use this when running from pythonw.exe')
 parser.add_argument('--apikey', '-a', dest='apikey', type=str, help='API Key')
+parser.add_argument('--docker', '-d', dest='docker', type=str, help='Docker compose YML file.')
 parse_args = parser.parse_args()
+
 
 logToErrSet = 0
 logToNormSet = 0
@@ -54,8 +64,20 @@ stash = StashPluginHelper(
         maxbytes=5*1024*1024,
         apiKey=parse_args.apikey
         )
-stash.Status(logLevel=logging.DEBUG)
+
+doJsonReturnModeTypes = ["getFileMonitorRunningStatus", "start_library_monitor_service_json", "stop_library_monitor_json"]
+doJsonReturn = False
+doJsonReturnFileMonitorStatus = False
+if len(sys.argv) < 2 and stash.PLUGIN_TASK_NAME in doJsonReturnModeTypes:
+    doJsonReturn = True
+    doJsonReturnFileMonitorStatus = True
+    stash.log_to_norm = stash.LogTo.FILE
+    if stash.PLUGIN_TASK_NAME.endswith("_json"):
+        stash.PLUGIN_TASK_NAME = stash.PLUGIN_TASK_NAME[:-5]
+
+stash.status(logLevel=logging.DEBUG)
 stash.Log(f"\nStarting (__file__={__file__}) (stash.CALLED_AS_STASH_PLUGIN={stash.CALLED_AS_STASH_PLUGIN}) (stash.DEBUG_TRACING={stash.DEBUG_TRACING}) (stash.DRY_RUN={stash.DRY_RUN}) (stash.PLUGIN_TASK_NAME={stash.PLUGIN_TASK_NAME})************************************************")
+stash.Trace(f"stash.JSON_INPUT={stash.JSON_INPUT}")
 
 exitMsg = "Change success!!"
 mutex = Lock()
@@ -63,6 +85,7 @@ signal = Condition(mutex)
 shouldUpdate = False
 
 SHAREDMEMORY_NAME = "DavidMaisonaveAxter_FileMonitor" # Unique name for shared memory
+SHAREDMEMORY_SIZE = 4
 RECURSIVE = stash.pluginSettings["recursiveDisabled"] == False
 SCAN_MODIFIED = stash.pluginConfig["scanModified"]
 RUN_CLEAN_AFTER_DELETE = stash.pluginConfig["runCleanAfterDelete"]
@@ -84,8 +107,89 @@ if CREATE_SPECIAL_FILE_TO_EXIT and os.path.isfile(SPECIAL_FILE_NAME):
 
 fileExtTypes = stash.pluginConfig['fileExtTypes'].split(",") if stash.pluginConfig['fileExtTypes'] != "" else []
 includePathChanges = stash.pluginConfig['includePathChanges'] if len(stash.pluginConfig['includePathChanges']) > 0 else stash.STASH_PATHS
+includePathChanges = includePathChanges[:] # Make a copy of the list, and not a reference
+hostIncludePathChanges = includePathChanges[:]
 excludePathChanges = stash.pluginConfig['excludePathChanges']
 turnOnSchedulerDeleteDup = stash.pluginSettings['turnOnSchedulerDeleteDup']
+NotInLibraryTagName = stash.pluginConfig['NotInLibraryTagName']
+
+filemonitor_config_dev_file = f"{stash.PLUGINS_PATH}{os.sep}FileMonitor{os.sep}filemonitor_config_dev.py"
+if os.path.exists(filemonitor_config_dev_file):
+    stash.Log(f"Getting {filemonitor_config_dev_file} configuration settings.")
+    from filemonitor_config_dev import config_dev
+    config['dockers'] = config_dev['dockers']
+    
+dockerMapVolumes = {}
+dockerReverseMapVolumes = {}
+dockerObservedPaths = {}
+if not parse_args.docker == None and len(parse_args.docker) > 0:
+    if stash.IS_DOCKER:
+        stash.Error("You are running this script from within Docker. This is NOT supported.  Run this script in the host machine instead. Performing early exit due to unsupported action.")
+        sys.exit(50) # ERROR_NOT_SUPPORTED: The request is not supported.
+    stash.Log(f"Docker compose YML file = {parse_args.docker}")
+    ModulesValidate.modulesInstalled(["pyyaml"], silent=True)
+    import yaml
+    dockerStashPath = pathlib.Path(parse_args.docker).resolve().parent
+    with open(parse_args.docker, "r", encoding='utf-8-sig') as stream:
+        try:
+            data_loaded = yaml.safe_load(stream)
+            for service in data_loaded['services']:
+                for volume in data_loaded['services'][service]['volumes']:
+                    volSplit = volume.replace(":ro", "").split(":/")
+                    hostPath = volSplit[0]
+                    # Do not scan Stash interanl working folders
+                    if volSplit[1] == "root/.stash" or volSplit[1] == "metadata" or volSplit[1] == "cache" or volSplit[1] == "blobs" or volSplit[1] == "generated":
+                        continue
+                    if volSplit[0].startswith("./../../"):
+                        dockerStashParentPath = pathlib.Path(dockerStashPath).resolve().parent
+                        hostPath = f"{pathlib.Path(dockerStashParentPath).resolve().parent}{hostPath[8:]}"
+                    elif volSplit[0].startswith("./../"):
+                        hostPath = f"{pathlib.Path(dockerStashPath).resolve().parent}{hostPath[5:]}"
+                    elif volSplit[0].startswith("./"):
+                        hostPath = f"{dockerStashPath}{hostPath[1:]}"
+                    elif volSplit[0].startswith("/"):
+                        continue
+                    dockerMapVolumes[hostPath] = f"/{volSplit[1]}"
+                    dockerReverseMapVolumes[f"/{volSplit[1]}"] = hostPath
+            for hostPath in dockerMapVolumes:
+                stash.Log(f"Host-Path = {hostPath}, Docker-Path = {dockerMapVolumes[hostPath]}")
+        except yaml.YAMLError as e:
+            import traceback
+            tb = traceback.format_exc()
+            stash.Error(f"Exception while parsing Docker file {parse_args.docker}; Error: {e}\nTraceBack={tb}")
+
+if stash.IS_DOCKER and stash.PLUGIN_TASK_NAME != "stop_library_monitor" and not parse_args.stop and stash.PLUGIN_TASK_NAME != "getFileMonitorRunningStatus":
+    stash.Error("You are running this script from within Docker. This is NOT supported.  Run this script in the host machine instead.")
+    stash.Warn("For more information on running FileMonitor on host machine see following link:\n https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor#Docker")
+    stash.Warn("Performing early exit because FileMonitor has to run on the host machine, and can NOT run on Docker directly.")
+    sys.exit(10) # ERROR_BAD_ENVIRONMENT: The environment is incorrect.
+    # Alternate error:  sys.exit(160) # ERROR_BAD_ARGUMENTS: One or more arguments are not correct.
+
+dockerStashes = {}
+for docker in stash.pluginConfig['dockers']:
+    stash.Log(f"Adding monitoring to Docker Stash {docker['GQL']}")
+    dockerStashes[docker['GQL']] = StashPluginHelper(
+            stash_url=docker['GQL'],
+            debugTracing=parse_args.trace,
+            settings=settings,
+            config=config,
+            logToErrSet=logToErrSet,
+            logToNormSet=8,
+            maxbytes=5*1024*1024,
+            apiKey=docker['apiKey']
+            )
+    for bindMount in docker['bindMounts']:
+        for key in bindMount:
+            if len(key) == 0:
+                continue
+            # Do not scan Stash interanl working folders
+            if bindMount[key] == "/root/.stash" or bindMount[key] == "/metadata" or bindMount[key] == "/cache" or bindMount[key] == "/blobs" or bindMount[key] == "/generated":
+                continue
+            stash.Log(f"Adding monitoring for host path '{key}' which is Docker mount path '{bindMount[key]}' for Stash {docker['GQL']}")
+            includePathChanges += [key]
+stash.Log(f"This Stash instance GQL = {stash.STASH_URL}")
+# for path in includePathChanges:
+    # stash.Log(f"[post] includePathChange = {path}")
 
 if stash.DRY_RUN:
     stash.Log("Dry run mode is enabled.")
@@ -93,34 +197,52 @@ stash.Trace(f"(SCAN_MODIFIED={SCAN_MODIFIED}) (SCAN_ON_ANY_EVENT={SCAN_ON_ANY_EV
 
 StartFileMonitorAsAPluginTaskName = "Monitor as a Plugin"
 StartFileMonitorAsAServiceTaskName = "Start Library Monitor Service"
+
 StartFileMonitorAsAPluginTaskID = "start_library_monitor"
 StartFileMonitorAsAServiceTaskID = "start_library_monitor_service"
+StopFileMonitorAsAPluginTaskID = "stop_library_monitor"
+SYNC_LIBRARY_REMOVE = "sync_library_remove"
+SYNC_LIBRARY_TAG = "sync_library_tag"
+CLEAR_SYNC_LIBRARY_TAG = "clear_sync_tags_task"
 
 FileMonitorPluginIsOnTaskQue =  stash.CALLED_AS_STASH_PLUGIN
 StopLibraryMonitorWaitingInTaskQueue = False
 JobIdInTheQue = 0
-def isJobWaitingToRun():
+JobIdOf_StartAsAServiceTask = None
+def isJobWaitingToRun(getJobIdOf_StartAsAServiceTask = False):
     global StopLibraryMonitorWaitingInTaskQueue
     global JobIdInTheQue
+    global JobIdOf_StartAsAServiceTask
     global FileMonitorPluginIsOnTaskQue
     FileMonitorPluginIsOnTaskQue = False
     jobIsWaiting = False
     taskQue = stash.job_queue()
+    if taskQue == None:
+        return jobIsWaiting
     for jobDetails in taskQue:
         stash.Trace(f"(Job ID({jobDetails['id']})={jobDetails})")
-        if jobDetails['status'] == "READY":
-            if jobDetails['description'] == "Running plugin task: Stop Library Monitor":
-                StopLibraryMonitorWaitingInTaskQueue = True
-            JobIdInTheQue = jobDetails['id']
-            jobIsWaiting = True
-        elif jobDetails['status'] == "RUNNING" and jobDetails['description'].find(StartFileMonitorAsAPluginTaskName) > -1:
-            FileMonitorPluginIsOnTaskQue = True  
+        if getJobIdOf_StartAsAServiceTask:
+            if jobDetails['status'] == "RUNNING" and jobDetails['description'].find(StartFileMonitorAsAServiceTaskName) > -1:
+                JobIdOf_StartAsAServiceTask = jobDetails['id']
+                stash.Trace(f"Found current running task '{jobDetails['description']}' with Job ID {JobIdOf_StartAsAServiceTask}")
+                return True
+        else:
+            if jobDetails['status'] == "READY":
+                if jobDetails['description'] == "Running plugin task: Stop Library Monitor":
+                    StopLibraryMonitorWaitingInTaskQueue = True
+                JobIdInTheQue = jobDetails['id']
+                jobIsWaiting = True
+            elif jobDetails['status'] == "RUNNING" and jobDetails['description'].find(StartFileMonitorAsAPluginTaskName) > -1:
+                FileMonitorPluginIsOnTaskQue = True  
     JobIdInTheQue = 0
     return jobIsWaiting
 
-if stash.CALLED_AS_STASH_PLUGIN and stash.PLUGIN_TASK_NAME == StartFileMonitorAsAPluginTaskID:
+if stash.PLUGIN_TASK_NAME == StartFileMonitorAsAPluginTaskID:
     stash.Trace(f"isJobWaitingToRun() = {isJobWaitingToRun()})")
-        
+elif stash.PLUGIN_TASK_NAME == StartFileMonitorAsAServiceTaskID:
+    stash.Trace(f"isJobWaitingToRun() = {isJobWaitingToRun(True)})")
+
+
 class StashScheduler: # Stash Scheduler
     def __init__(self):
         import schedule # pip install schedule  # https://github.com/dbader/schedule
@@ -224,16 +346,24 @@ class StashScheduler: # Stash Scheduler
         
         result = None
         if task['task'] == "Clean":
+            result = self.jobIdOutput(stash.metadata_clean(dry_run=stash.DRY_RUN))
+        elif task['task'] == "Clean Path":
             result = self.jobIdOutput(stash.metadata_clean(paths=targetPaths, dry_run=stash.DRY_RUN))
         elif task['task'] == "Clean Generated Files":
             result = self.jobIdOutput(stash.metadata_clean_generated())
         elif task['task'] == "Generate":
             result = self.jobIdOutput(stash.metadata_generate())
+        elif task['task'] == "Generate Phashes":
+            result = self.jobIdOutput(stash.metadata_generate({"phashes": True}))
         elif task['task'] == "Backup":
             result = self.jobIdOutput(self.runBackupTask(task))
         elif task['task'] == "Scan":
+            result = self.jobIdOutput(stash.metadata_scan())
+        elif task['task'] == "Scan Path":
             result = self.jobIdOutput(stash.metadata_scan(paths=targetPaths))
         elif task['task'] == "Auto Tag":
+            result = self.jobIdOutput(stash.metadata_autotag())
+        elif task['task'] == "Auto Tag Path":
             result = self.jobIdOutput(stash.metadata_autotag(paths=targetPaths))
         elif task['task'] == "Optimise Database":
             result = self.jobIdOutput(stash.optimise_database())
@@ -261,6 +391,11 @@ class StashScheduler: # Stash Scheduler
             if 'msg' in task and task['msg'] != "":
                 Msg = task['msg']
             result = stash.TraceOnce(Msg)
+        elif task['task'] == "DebugOnce":
+            Msg = "Scheduled DebugOnce."
+            if 'msg' in task and task['msg'] != "":
+                Msg = task['msg']
+            result = stash.DebugOnce(Msg)
         elif task['task'] == "CheckStashIsRunning":
             result = self.checkStashIsRunning(task)
         elif task['task'] == "python":
@@ -292,7 +427,7 @@ class StashScheduler: # Stash Scheduler
             if 'args' in task and len(task['args']) > 0:
                 args = args + [task['args']]
             stash.Log(f"Executing command arguments {args}.")
-            return f"Execute process PID = {stash.ExecuteProcess(args)}"
+            return f"Execute process PID = {stash.executeProcess(args)}"
         else:
             stash.Error(f"Can not run task '{task['task']}', because it's missing 'command' field.")
         return None
@@ -307,7 +442,7 @@ class StashScheduler: # Stash Scheduler
             detached = True
             if 'detach' in task:
                 detached = task['detach']
-            return f"Python process PID = {stash.ExecutePythonScript(args, ExecDetach=detached)}"
+            return f"Python process PID = {stash.executePythonScript(args, ExecDetach=detached)}"
         else:
             stash.Error(f"Can not run task '{task['task']}', because it's missing 'script' field.")
         return None
@@ -345,8 +480,8 @@ class StashScheduler: # Stash Scheduler
                     taskMode = task['taskMode']
                 if ('taskQue' in task and task['taskQue'] == False) or taskName == None:
                     stash.Log(f"Running plugin task pluginID={task['task']}, task mode = {taskMode}. {validDirMsg}")
-                    # Asynchronous threading logic to call run_plugin, because it's a blocking call.
-                    stash.run_plugin(plugin_id=task['task'], task_mode=taskMode, asyn=True)
+                    # Asynchronous threading logic to call runPlugin, because it's a blocking call.
+                    stash.runPlugin(plugin_id=task['task'], task_mode=taskMode, asyn=True)
                     return None
                 else:
                     stash.Trace(f"Adding to Task Queue plugin task pluginID={task['task']}, task name = {taskName}. {validDirMsg}")
@@ -362,11 +497,11 @@ class StashScheduler: # Stash Scheduler
         except:
             pass
             stash.Error("Failed to get response from Stash.")
-            if platform.system() == "Windows":
+            if stash.IS_WINDOWS:
                 execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-win.exe"
-            elif platform.system() == "Darwin": # MacOS
+            elif stash.IS_MAC_OS:
                 execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep} stash-macos "
-            elif platform.system().lower().startswith("linux"):
+            elif stash.IS_LINUX:
                 # ToDo: Need to verify this method will work for (stash-linux-arm32v6, stash-linux-arm32v7, and stash-linux-arm64v8)
                 if platform.system().lower().find("32v6") > -1:
                     execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-linux-arm32v6"
@@ -376,7 +511,7 @@ class StashScheduler: # Stash Scheduler
                     execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-linux-arm64v8"
                 else:
                     execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-linux"
-            elif platform.system().lower().startswith("freebsd"):
+            elif stash.IS_FREEBSD:
                 execPath = f"{pathlib.Path(stash.PLUGINS_PATH).resolve().parent}{os.sep}stash-freebsd"
             elif 'command' not in task or task['command'] == "":
                 stash.Error("Can not start Stash, because failed to determine platform OS. As a workaround, add 'command' field to this task.")
@@ -391,7 +526,7 @@ class StashScheduler: # Stash Scheduler
                 else:
                     stash.Error("Could not start Stash, because could not find executable Stash file '{execPath}'")
                     return None
-            result = f"Execute process PID = {stash.ExecuteProcess(args)}"
+            result = f"Execute process PID = {stash.executeProcess(args)}"
             time.sleep(sleepAfterStart)
             if "RunAfter" in task and len(task['RunAfter']) > 0:
                 for runAfterTask in task['RunAfter']:
@@ -456,12 +591,14 @@ lastScanJob = {
 JOB_ENDED_STATUSES = ["FINISHED", "CANCELLED"]
 
 def start_library_monitor():
+    from watchdog.observers import Observer # This is also needed for event attributes
+    import watchdog  # pip install watchdog  # https://pythonhosted.org/watchdog/
     global shouldUpdate
     global TargetPaths
     global lastScanJob
     try:
         # Create shared memory buffer which can be used as singleton logic or to get a signal to quit task from external script
-        shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=True, size=4)
+        shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=True, size=SHAREDMEMORY_SIZE)
     except:
         stash.Error(f"Could not open shared memory map ({SHAREDMEMORY_NAME}). Change File Monitor must be running. Can not run multiple instance of Change File Monitor. Stop FileMonitor before trying to start it again.")
         return
@@ -559,8 +696,24 @@ def start_library_monitor():
     
     # Iterate through includePathChanges
     for path in includePathChanges:
-        observer.schedule(event_handler, path, recursive=RECURSIVE)
-        stash.Log(f"Observing {path}")
+        pathToObserve = path
+        if not parse_args.docker == None and len(parse_args.docker) > 0:
+            if not pathToObserve.startswith("/"):
+                pathToObserve = f"/{pathToObserve}"
+            stash.Debug(f"Converting Docker path '{pathToObserve}' to Host-path; original-path={path}")
+            if pathToObserve in dockerReverseMapVolumes:
+                pathToObserve = dockerReverseMapVolumes[pathToObserve]
+            for dockerPath in dockerReverseMapVolumes:
+                if pathToObserve.startswith(f"{dockerPath}/"):
+                    pathToObserve = pathToObserve.replace(f"{dockerPath}/", f"{dockerReverseMapVolumes[dockerPath]}/")
+                    break
+            pathToObserve = pathToObserve.replace('/', os.sep)
+            dockerObservedPaths[f"{pathToObserve}{os.sep}"] = path
+        stash.Log(f"Observing {pathToObserve}")
+        if not os.path.exists(pathToObserve):
+            stash.Error(f"Skipping path '{pathToObserve}' because it does not exist!!!")
+            continue
+        observer.schedule(event_handler, pathToObserve, recursive=RECURSIVE)
     observer.schedule(event_handler, SPECIAL_FILE_DIR, recursive=RECURSIVE)
     stash.Trace(f"Observing FileMonitor path {SPECIAL_FILE_DIR}")
     observer.start()
@@ -592,9 +745,9 @@ def start_library_monitor():
                             if lastScanJob['timeOutDelayProcess'] > MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS:
                                 lastScanJob['timeOutDelayProcess'] = MAX_TIMEOUT_FOR_DELAY_PATH_PROCESS
                         timeOutInSeconds = lastScanJob['timeOutDelayProcess']
-                        stash.LogOnce(f"Awaiting file change-trigger, with a short timeout ({timeOutInSeconds} seconds), because of active delay path processing.")
+                        stash.Log(f"Awaiting file change-trigger, with a short timeout ({timeOutInSeconds} seconds), because of active delay path processing.")
                     else:
-                        stash.LogOnce(f"Waiting for a file change-trigger. Timeout = {timeOutInSeconds} seconds.")
+                        stash.Log(f"Waiting for a file change-trigger. Timeout = {timeOutInSeconds} seconds.")
                     signal.wait(timeout=timeOutInSeconds)
                     if lastScanJob['DelayedProcessTargetPaths'] != []:
                         stash.TraceOnce(f"Processing delay scan for path(s) {lastScanJob['DelayedProcessTargetPaths']}")
@@ -613,18 +766,19 @@ def start_library_monitor():
                     if TargetPath == SPECIAL_FILE_NAME:
                         if os.path.isfile(SPECIAL_FILE_NAME):
                             shm_buffer[0] = STOP_RUNNING_SIG
-                            stash.Log(f"[SpFl]Detected trigger file to kill FileMonitor. {SPECIAL_FILE_NAME}", printTo = stash.LOG_TO_FILE + stash.LOG_TO_CONSOLE + stash.LOG_TO_STASH)
+                            stash.Log(f"[SpFl]Detected trigger file to kill FileMonitor. {SPECIAL_FILE_NAME}", printTo = stash.LogTo.FILE + stash.LogTo.CONSOLE + stash.LogTo.STASH)
                         else:
                             stash.Trace(f"[SpFl]Did not find file {SPECIAL_FILE_NAME}.")
                 
                 # Make sure special file does not exist, incase change was missed.
                 if CREATE_SPECIAL_FILE_TO_EXIT and os.path.isfile(SPECIAL_FILE_NAME) and shm_buffer[0] == CONTINUE_RUNNING_SIG:
                     shm_buffer[0] = STOP_RUNNING_SIG
-                    stash.Log(f"[SpFl]Detected trigger file to kill FileMonitor. {SPECIAL_FILE_NAME}", printTo = stash.LOG_TO_FILE + stash.LOG_TO_CONSOLE + stash.LOG_TO_STASH)
+                    stash.Log(f"[SpFl]Detected trigger file to kill FileMonitor. {SPECIAL_FILE_NAME}", printTo = stash.LogTo.FILE + stash.LogTo.CONSOLE + stash.LogTo.STASH)
                 TargetPaths = []
                 TmpTargetPaths = list(set(TmpTargetPaths))
             if TmpTargetPaths != [] or lastScanJob['DelayedProcessTargetPaths'] != []:
-                stash.Log(f"Triggering Stash scan for path(s) {TmpTargetPaths}")
+                # ToDo: Add check to see if Docker Map path
+                stash.Log(f"Triggering Stash scan for path(s) {TmpTargetPaths} and/or {lastScanJob['DelayedProcessTargetPaths']}")
                 if lastScanJob['DelayedProcessTargetPaths'] != [] or len(TmpTargetPaths) > 1 or TmpTargetPaths[0] != SPECIAL_FILE_DIR:
                     if not stash.DRY_RUN:
                         if lastScanJob['id'] > -1:
@@ -657,11 +811,35 @@ def start_library_monitor():
                                             lastScanJob['DelayedProcessTargetPaths'].append(path)
                                 stash.Trace(f"lastScanJob['DelayedProcessTargetPaths'] = {lastScanJob['DelayedProcessTargetPaths']}")
                         if lastScanJob['id'] == -1:
-                            stash.Trace(f"Calling metadata_scan for paths '{TmpTargetPaths}'")
-                            lastScanJob['id'] = int(stash.metadata_scan(paths=TmpTargetPaths))
-                            lastScanJob['TargetPaths'] = TmpTargetPaths
-                            lastScanJob['timeAddedToTaskQueue'] = time.time()
-                            stash.Trace(f"metadata_scan JobId = {lastScanJob['id']}, Start-Time = {lastScanJob['timeAddedToTaskQueue']}, paths = {lastScanJob['TargetPaths']}")
+                            taskqueue = taskQueue(stash.job_queue())
+                            if taskqueue.tooManyScanOnTaskQueue(7):
+                                stash.Log(f"[metadata_scan] Skipping updating Stash for paths '{TmpTargetPaths}', because too many scans on Task Queue.")
+                            else:
+                                if not parse_args.docker == None and len(parse_args.docker) > 0:
+                                    CpyTmpTargetPaths = list(set(TmpTargetPaths))
+                                    TmpTargetPaths = []
+                                    for CpyTmpTargetPath in CpyTmpTargetPaths:
+                                        for key in dockerObservedPaths:
+                                            if CpyTmpTargetPath.startswith(key):
+                                                HostTmpTargetPath = CpyTmpTargetPath
+                                                CpyTmpTargetPath = f"{dockerObservedPaths[key]}/{CpyTmpTargetPath[len(key):]}"
+                                                stash.Log(f"Converted Host-Path {HostTmpTargetPath} to Docker-Path {CpyTmpTargetPath}")
+                                                TmpTargetPaths += [CpyTmpTargetPath]
+                                                break
+                                if len(stash.pluginConfig['dockers']) > 0:
+                                    for TmpTargetPath in TmpTargetPaths:
+                                        for docker in stash.pluginConfig['dockers']:
+                                            for bindMount in docker['bindMounts']:
+                                                for key in bindMount:
+                                                    if TmpTargetPath.startswith(key):
+                                                        stash.Log(f"Sending notification to Stash Docker {docker['GQL']} for file system change in path '{bindMount[key]}' which is host path {key}.")
+                                                        dockerStashes[docker['GQL']].Log(f"File system change in path '{bindMount[key]}' which is host path {key}.")
+                                                        dockerStashes[docker['GQL']].metadata_scan(paths=bindMount[key])
+                                stash.Trace(f"[metadata_scan] Calling metadata_scan for paths '{TmpTargetPaths}'")
+                                lastScanJob['id'] = int(stash.metadata_scan(paths=TmpTargetPaths))
+                                lastScanJob['TargetPaths'] = TmpTargetPaths
+                                lastScanJob['timeAddedToTaskQueue'] = time.time()
+                                stash.Trace(f"metadata_scan JobId = {lastScanJob['id']}, Start-Time = {lastScanJob['timeAddedToTaskQueue']}, paths = {lastScanJob['TargetPaths']}")
                     if RUN_CLEAN_AFTER_DELETE and RunCleanMetadata:
                         stash.metadata_clean(paths=TmpTargetPaths, dry_run=stash.DRY_RUN)
                     if RUN_GENERATE_CONTENT:
@@ -698,7 +876,7 @@ def stop_library_monitor():
             os.remove(SPECIAL_FILE_NAME)
     stash.Trace("Opening shared memory map.")
     try:
-        shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=4)
+        shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
     except:
         # If FileMonitor is running as plugin, then it's expected behavior that SharedMemory will not be available.
         stash.Trace(f"Could not open shared memory map ({SHAREDMEMORY_NAME}). Change File Monitor must not be running.")
@@ -710,11 +888,13 @@ def stop_library_monitor():
     stash.Trace(f"Shared memory map opended, and flag set to {shm_buffer[0]}")
     shm_a.close()
     shm_a.unlink()  # Call unlink only once to release the shared memory
+    if doJsonReturnFileMonitorStatus:
+        sys.stdout.write("{" + f"{stash.PLUGIN_TASK_NAME} : 'complete', FileMonitorStatus:'NOT running', IS_DOCKER:'{stash.IS_DOCKER}'" + "}")
 
 def start_library_monitor_service():
     # First check if FileMonitor is already running
     try:
-        shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=4)
+        shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
         shm_a.close()
         shm_a.unlink()
         stash.Error("FileMonitor is already running. Need to stop FileMonitor before trying to start it again.")
@@ -723,33 +903,150 @@ def start_library_monitor_service():
         pass
         stash.Trace("FileMonitor is not running, so it's safe to start it as a service.")
     args = [f"{pathlib.Path(__file__).resolve().parent}{os.sep}filemonitor.py", '--url', f"{stash.STASH_URL}"]
+    if JobIdOf_StartAsAServiceTask != None:
+        args += ["-k", JobIdOf_StartAsAServiceTask]
     if stash.API_KEY:
-        args = args + ["-a", stash.API_KEY]
-    stash.ExecutePythonScript(args)
-
-if parse_args.stop or parse_args.restart or stash.PLUGIN_TASK_NAME == "stop_library_monitor":
-    stop_library_monitor()
-    if parse_args.restart:
+        args += ["-a", stash.API_KEY]
+    results = stash.executePythonScript(args)
+    stash.Trace(f"executePythonScript results='{results}'")
+    if doJsonReturnFileMonitorStatus:
         time.sleep(5)
-        stash.run_plugin_task(plugin_id=stash.PLUGIN_ID, task_name=StartFileMonitorAsAPluginTaskName)
-        stash.Trace(f"Restart FileMonitor EXIT")
+        sys.stdout.write("{" + f"{stash.PLUGIN_TASK_NAME} : 'complete', FileMonitorStatus:'RUNNING', IS_DOCKER:'{stash.IS_DOCKER}'" + "}")
+
+def synchronize_library(removeScene=False):
+    stash.startSpinningProcessBar()
+    scenes = stash.find_scenes(fragment='id tags {id name} files {path}')
+    qtyResults = len(scenes)
+    Qty = 0
+    stash.Log(f"count = {qtyResults}")
+    stash.stopSpinningProcessBar()
+    sceneIDs = stash.find_scenes(fragment='id files {path}')
+    for scene in scenes:
+        Qty += 1
+        stash.progressBar(Qty, qtyResults)
+        scenePartOfLibrary = False
+        for path in stash.STASH_PATHS:
+            if scene['files'][0]['path'].startswith(path):
+                scenePartOfLibrary = True
+                break
+        if scenePartOfLibrary == False:
+            stash.Log(f"Scene ID={scene['id']}; path={scene['files'][0]['path']} not part of Stash Library")
+            if removeScene:
+                stash.destroy_scene(scene['id'])
+                stash.Log(f"Removed Scene ID={scene['id']}; path={scene['files'][0]['path']}")
+            else:
+                stash.addTag(scene, NotInLibraryTagName, ignoreAutoTag=True)
+                stash.Trace(f"Tagged ({NotInLibraryTagName}) Scene ID={scene['id']}; path={scene['files'][0]['path']}")
+
+def manageTagggedScenes(clearTag=True):
+    tagId = stash.find_tags(q=NotInLibraryTagName)
+    if len(tagId) > 0 and 'id' in tagId[0]:
+        tagId = tagId[0]['id']
     else:
-        stash.Trace(f"Stop FileMonitor EXIT")
-elif stash.PLUGIN_TASK_NAME == StartFileMonitorAsAServiceTaskID:
-    start_library_monitor_service()
-    stash.Trace(f"{StartFileMonitorAsAServiceTaskID} EXIT")
-elif stash.PLUGIN_TASK_NAME == StartFileMonitorAsAPluginTaskID:
-    start_library_monitor()
-    stash.Trace(f"{StartFileMonitorAsAPluginTaskID} EXIT")
-elif not stash.CALLED_AS_STASH_PLUGIN:
+        stash.Warn(f"Could not find tag ID for tag '{NotInLibraryTagName}'.")
+        return
+    QtyDup = 0
+    QtyRemoved = 0
+    QtyClearedTags = 0
+    QtyFailedQuery = 0
+    stash.Trace("#########################################################################")
+    stash.startSpinningProcessBar()
+    stash.Trace(f"Calling find_scenes with tagId={tagId}")
+    sceneIDs = stash.find_scenes(f={"tags": {"value":tagId, "modifier":"INCLUDES"}}, fragment='id')
+    stash.stopSpinningProcessBar()
+    qtyResults = len(sceneIDs)
+    stash.Trace(f"Found {qtyResults} scenes with tag ({NotInLibraryTagName}): sceneIDs = {sceneIDs}")
+    for sceneID in sceneIDs:
+        # stash.Trace(f"Getting scene data for scene ID {sceneID['id']}.")
+        QtyDup += 1
+        prgs = QtyDup / qtyResults
+        stash.progressBar(QtyDup, qtyResults)
+        scene = stash.find_scene(sceneID['id'])
+        if scene == None or len(scene) == 0:
+            stash.Warn(f"Could not get scene data for scene ID {sceneID['id']}.")
+            QtyFailedQuery += 1
+            continue
+        # stash.Trace(f"scene={scene}")
+        if clearTag:
+            tags = [int(item['id']) for item in scene["tags"] if item['id'] != tagId]
+            stash.TraceOnce(f"tagId={tagId}, len={len(tags)}, tags = {tags}")
+            dataDict = {'id' : scene['id']}
+            dataDict.update({'tag_ids' : tags})
+            stash.Log(f"Updating scene with {dataDict}")
+            stash.update_scene(dataDict)
+            # stash.removeTag(scene, NotInLibraryTagName)
+            QtyClearedTags += 1            
+        else:
+            stash.destroy_scene(scene['id'])
+            stash.Log(f"Removed Scene ID={scene['id']}; path={scene['files'][0]['path']}")
+            QtyRemoved += 1
+    stash.Log(f"QtyDup={QtyDup}, QtyClearedTags={QtyClearedTags}, QtyRemoved={QtyRemoved}, QtyFailedQuery={QtyFailedQuery}")
+
+runTypeID=0
+runTypeName=["NothingToDo", "stop_library_monitor", "StartFileMonitorAsAServiceTaskID", "StartFileMonitorAsAPluginTaskID", "CommandLineStartLibMonitor"]
+
+def getFileMonitorRunningStatus():
+    FileMonitorStatus = "NOT running"
     try:
+        shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
+        shm_a.close()
+        shm_a.unlink()
+        FileMonitorStatus = "RUNNING"
+        stash.Log("FileMonitor is running...")
+    except:
+        pass
+        stash.Log("FileMonitor is NOT running!!!")
+    stash.Log(f"{stash.PLUGIN_TASK_NAME} complete")
+    sys.stdout.write("{" + f"{stash.PLUGIN_TASK_NAME} : 'complete', FileMonitorStatus:'{FileMonitorStatus}', IS_DOCKER:'{stash.IS_DOCKER}'" + "}")
+
+try:
+    if parse_args.stop or parse_args.restart or stash.PLUGIN_TASK_NAME == "stop_library_monitor":
+        runTypeID=1
+        stop_library_monitor()
+        if parse_args.restart:
+            time.sleep(5)
+            stash.run_plugin_task(plugin_id=stash.PLUGIN_ID, task_name=StartFileMonitorAsAPluginTaskName)
+            stash.Trace(f"Restart FileMonitor EXIT")
+        else:
+            stash.Trace(f"Stop FileMonitor EXIT")
+    elif stash.PLUGIN_TASK_NAME == StartFileMonitorAsAServiceTaskID:
+        runTypeID=2
+        start_library_monitor_service()
+        stash.Trace(f"{StartFileMonitorAsAServiceTaskID} transitioning to service mode.")
+    elif stash.PLUGIN_TASK_NAME == StartFileMonitorAsAPluginTaskID:
+        runTypeID=3
+        start_library_monitor()
+        stash.Trace(f"{StartFileMonitorAsAPluginTaskID} EXIT")
+    elif stash.PLUGIN_TASK_NAME == SYNC_LIBRARY_REMOVE:
+        runTypeID=5
+        synchronize_library(removeScene=tRUE)
+        stash.Trace(f"{SYNC_LIBRARY_REMOVE} EXIT")
+    elif stash.PLUGIN_TASK_NAME == SYNC_LIBRARY_TAG:
+        runTypeID=6
+        synchronize_library()
+        stash.Trace(f"{SYNC_LIBRARY_TAG} EXIT")
+    elif stash.PLUGIN_TASK_NAME == CLEAR_SYNC_LIBRARY_TAG:
+        runTypeID=7
+        manageTagggedScenes()
+        stash.Trace(f"{CLEAR_SYNC_LIBRARY_TAG} EXIT")
+    elif stash.PLUGIN_TASK_NAME == "getFileMonitorRunningStatus":
+        getFileMonitorRunningStatus()
+        stash.Debug(f"{stash.PLUGIN_TASK_NAME} EXIT")
+    elif not stash.CALLED_AS_STASH_PLUGIN:
+        runTypeID=4
+        if parse_args.kill_job_task_que != None and parse_args.kill_job_task_que != "":
+            # Removing the job from the Task Queue is really only needed for Linux, but it should be OK to do in general.
+            stash.Log(f"Removing job ID {parse_args.kill_job_task_que} from the Task Queue, because transitioning to service mode.")
+            stash.stop_job(parse_args.kill_job_task_que)
         start_library_monitor()
         stash.Trace("Command line FileMonitor EXIT")
-    except Exception as e:
-        tb = traceback.format_exc()
-        stash.Error(f"Exception while running FileMonitor from the command line. Error: {e}\nTraceBack={tb}")
-        stash.log.exception('Got exception on main handler')
-else:
-    stash.Log(f"Nothing to do!!! (stash.PLUGIN_TASK_NAME={stash.PLUGIN_TASK_NAME})")
-
+    else:
+        stash.Log(f"Nothing to do!!! (stash.PLUGIN_TASK_NAME={stash.PLUGIN_TASK_NAME})")
+except Exception as e:
+    tb = traceback.format_exc()
+    stash.Error(f"Exception while running FileMonitor. runType='{runTypeName[runTypeID]}'; Error: {e}\nTraceBack={tb}")
+    if doJsonReturn:
+        sys.stdout.write("{" + f"Exception : '{e}; See log file for TraceBack' " + "}")
 stash.Trace("\n*********************************\nEXITING   ***********************\n*********************************")
+
+# ToDo: Add option to add path to library if path not included when calling metadata_scan

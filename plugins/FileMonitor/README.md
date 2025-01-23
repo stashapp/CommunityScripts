@@ -1,4 +1,4 @@
-# FileMonitor: Ver 0.9.0 (By David Maisonave)
+# FileMonitor: Ver 1.0.3 (By David Maisonave)
 
 FileMonitor is a [Stash](https://github.com/stashapp/stash) plugin with the following two main features:
 
@@ -11,7 +11,21 @@ From the GUI, FileMonitor can be started as a service or as a plugin. The recomm
 
 - To start monitoring file changes, go to **Stash->Settings->Task->[Plugin Tasks]->FileMonitor**, and click on the [Start Library Monitor Service] button.
   - ![FileMonitorService](https://github.com/user-attachments/assets/b12aeca9-37a8-447f-90da-26e9440735ad)
-  - **Important Note**: At first, this will show up as a plugin in the Task Queue momentarily. It will then disappear from the Task Queue and run in the background as a service.
+  - **Important Note**: At first, it will show up as a plugin in the Task Queue momentarily. It will then disappear from the Task Queue and run in the background as a service.
+  - To check running status of FileMonitor, use the Settings->Tools->FileMonitor option.
+  - ![Screenshot 2024-11-29 071301](https://github.com/user-attachments/assets/640c34f4-228d-4a85-aba8-69626c3ac850)
+    - If FileMonitor is running, it'll display the following screen:
+    - ![Screenshot 2024-11-29 071836](https://github.com/user-attachments/assets/28ac9de3-c41a-46cd-8cda-7751fb3e50bb)
+  - There's also an icon that gets displayed on the top right corner of the Stash page. When FileMonitor is running this icon has a checkmark on it.
+  - ![Screenshot 2024-11-29 073833](https://github.com/user-attachments/assets/397615f1-871f-4c1c-ac6e-6b517233e734)
+  - When FileMonitor is not running, the icon has an **X**.
+  - ![Screenshot 2024-11-29 074154](https://github.com/user-attachments/assets/e8b117fa-9842-40b2-91d4-182c8b4cd528)
+  - However, this icon is not very practical, since the user still has to go to the Settings->Tools->FileMonitor page to force it to update the icon.
+
+
+
+
+
 - To stop FileMonitor click on [Stop Library Monitor] button.
 - The **[Monitor as a Plugin]** option is mainly available for backwards compatibility and for test purposes.
 
@@ -37,10 +51,10 @@ To enable the scheduler go to **Stash->Settings->Plugins->Plugins->FileMonitor**
   - Auto Tag -> [Auto Tag] (Daily)
   - Maintenance -> [Clean] (every 2 days)
   - Maintenance -> [Clean Generated Files] (every 2 days)
-  - Maintenance -> [Optimise Database] (Daily)
+  - Maintenance -> [Optimize Database] (Daily)
   - Generated Content-> [Generate] (Every Sunday at 7AM)
   - Library -> [Scan] (Weekly) (Every Sunday at 3AM)
-  - Backup -> [Backup] 2nd sunday of the month at 1AM
+  - Backup -> [Backup] 2nd Sunday of the month at 1AM
 - The example tasks are disabled by default because they either have a zero frequency value or the time field is set to **DISABLED**.
 
 To configure the schedule or to add new task, edit the **task_scheduler** section in the **filemonitor_config.py** file.
@@ -92,7 +106,7 @@ To configure the schedule or to add new task, edit the **task_scheduler** sectio
     - The **validateDir** field can be used to define the plugin sub directory, which is checked to see if it exist before running the task.
     - **taskName** field is used to name the task to call for the associated plugin. It can not be used with "taskQue":False
     - **taskQue** field is used to call the plugin without using the Task Queue. I.E. "taskQue":False. When this field is set to False, the taskName field can NOT be used. Instead use taskMode to identify the task to call.
-    - **taskMode** field is used in order to run the plugin without using the Task Queue. The plugin runs immediatly. Be careful not to confuse taskMode with taskName. Look in the plugin \*.yml file under the **tasks** section where it defines both the task-name and the task-mode.
+    - **taskMode** field is used in order to run the plugin without using the Task Queue. The plugin runs immediately. Be careful not to confuse taskMode with taskName. Look in the plugin \*.yml file under the **tasks** section where it defines both the task-name and the task-mode.
 - Task can be scheduled to run monthly, weekly, hourly, and by minutes.
 - The scheduler list uses two types of syntax. One is **weekday** based, and the other is **frequency** based.
 
@@ -142,9 +156,12 @@ To configure the schedule or to add new task, edit the **task_scheduler** sectio
 - pip install -r requirements.txt
 - Or manually install each requirement:
   - `pip install stashapp-tools --upgrade`
-  - `pip install pyYAML`
+  - `pip install requests`
   - `pip install watchdog`
   - `pip install schedule`
+  - `pip install pyyaml`
+
+Note: pyyaml is only needed for a Docker setup.
 
 ## Installation
 
@@ -170,3 +187,74 @@ Please use the following link to report FileMonitor bugs:
 Please use the following link to report FileMonitor Feature Request:[FileMonitor Feature Reques](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Enhancement&projects=&template=feature_request_plugin.yml&title=%F0%9F%92%A1%EF%B8%8F%5BEnhancement%5D%3A%5BFileMonitor%5D+Your_Short_title)
 
 Please do **NOT** use the feature request to include any problems associated with errors. Instead use the bug report for error issues.
+
+## Docker
+### Single Stash Docker Installation
+**Note:** This section is for users who have a single instance of Stash Docker installed, and do NOT have Stash installed on the host machine.
+- FileMonitor requires watchdog module in order to work. Although the watchdog module loads and runs on Docker, it fails to function because Docker fails to report file changes.
+- FileMonitor can work with Docker Stash setup if it's executed externally on the host OS. To do this, start FileMonitor on the command line and pass the Stash URL and docker YML file. (**--url** and **--docker**)
+- Example1:
+```
+python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppData\Local\Docker\wsl\Stash27.2\docker-compose.yml"
+```
+- Example2: (with ApiKey)
+  - If Stash Docker is configured with a password, an ApiKey is needed, and has to be passed on the command line (**--apikey**).
+```
+python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppData\Local\Docker\wsl\Stash27.2\docker-compose.yml" --apikey "zNDU0MDk3N30.4nZVLk3xikjJZfZ0JTPA_Fic8JveycCI6IkpXVCJ9.eyJ1aWQiOiJheHRlJhbGciOiJIUzI1NiIsInR5I6IkFQSUtleSIsImlhdCI6MTcFx3DZe5U21ZDcC3c"
+```
+- The **docker-compose.yml** file should be located in the folder associated with the Docker Stash container, and it list the mapped paths which FileMonitor uses to determine the host path which is mapped to the Docker path.
+- For more information, see [Using FileMonitor as a script](https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/FileMonitor#Using-FileMonitor-as-a-script)
+- For more information on creating a Docker Stash setup, see (https://github.com/David-Maisonave/Axter-Stash/tree/main/Docker)
+### Multiple Stash Docker Configuration
+**Note:** This section applies to users who have multiple Stash Docker instances running, and also have Stash installed and running on the host machine.
+- FileMonitor can be configured to run on the host machine, and update all the Stash Docker instances when an associated file change occurs. To activate this option change the filemonitor_config.py file by setting the **dockers** field with the information associated with each Stash Docker instance.
+- There are three examples that are commented out in the **dockers** field, which users can easily modify to configure for their particular Stash Docker instances.
+- The following is the uncommented example from the **filemonitor_config.py** file.
+```Python
+    # Docker notification from host machine
+    "dockers": [
+        # A simple basic example with only one bind mount path.
+        {"GQL":"http://localhost:9995", "apiKey":"", "bindMounts":[{r"C:\Video":"/mnt/Video"}]},
+        
+        # Example having 8 bind mount paths.
+        {"GQL":"http://localhost:9997", "apiKey":"", "bindMounts":[
+                {r"C:\Users\admin3\AppData\Local\Docker\wsl\ManyMnt\data":"/data"},
+                {r"C:\Users\admin3\Videos":"/external"},
+                {r"C:\Users\admin3\Pictures":"/external2"},
+                {r"C:\Users\admin3\Downloads":"/external3"},
+                {r"E:\Downloads":"/external4"},
+                {r"E:\Celeb":"/external5"},
+                {r"F:\Hentai":"/external6"},
+                {r"Z:\Temp":"/external7"},
+            ]
+        },
+        
+        # Example using the apiKey for a password configured Stash installation.
+        {"GQL":"http://localhost:9994", "apiKey":"eyJhb3676zgdUzI1NiIsInR5cCI6IwfXVCJ9.ewJ1aWQiOiJheHRlweIsInN1YiI6IkFQSUtleSIsImlhdewrweczNDU0MDk3N30.4nZVLk3xikjJZfZ0JTPA_Fic8JvFx3DZe5U21Zasdag", "bindMounts":[
+                {r"C:\Users\admin3\AppData\Local\Docker\wsl\MyStashContainer\data":"/data"},
+                {r"C:\Vid":"/mnt/Vid"},
+                {r"C:\Users\admin3\Downloads":"/mnt/Downloads"},
+            ]
+        },
+    ],
+```
+- Each Stash Docker instance requires three fields, which are case sensitive.
+  - **GQL**: This is the Stash URL which is used by the host machine to access the particular Stash Docker instance. Note: Do **NOT** include graphql in the URL.
+  - **apiKey**: This is a required field, but the value can be empty if the Stash instances doesn't require a password.
+  - **bindMounts**: At least one bind mount path must be specified.
+    - The first string defines the host path (**C:\Video**), and the second string defines the Docker mount path (**/mnt/Video**). These paths are listed on Docker-Desktop under Containers->ContainerName->[Bind Mounts] tab.
+      - The host path must be a fully qualified host local path. It can **not** be a relative path **(./../Videos)** and it can **not** be a URL with a local network domain name **(\\\\MyComputerName\\SharedPath\\MyFolder)**.
+      - If the host path contains a backslash, start the string with an r. Example: **r"C:\Vid"**
+    - If any of the below mount paths are included, they will be ignored because they could trigger a feedback loop.
+      - /etc/localtime:/etc/localtime:ro
+      - ./config:/root/.stash
+      - ./metadata:/metadata
+      - ./cache:/cache
+      - ./blobs:/blobs
+      - ./generated:/generated
+
+### Stash Docker Installer
+If you need help installing Stash Docker, use the Stash Docker installer in the following link: (https://github.com/David-Maisonave/Axter-Stash/tree/main/Docker)
+
+## Future Planned Features or Fixes
+- Have the FileMonitor running status ICON update the icon without having to go to the Settings->Tools->FileMonitor page. Planned for version 1.2.0.
