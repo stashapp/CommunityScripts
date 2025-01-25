@@ -1,2 +1,2 @@
 requests
-stashapp-tools
+stashapp-tools == v0.2.55
