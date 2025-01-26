@@ -248,7 +248,7 @@
     console.log(key, path);
     const styleSheet = document.createElement("link");
     const serverURL =
-      window.Location.origin +
+      window.location.origin +
         document.querySelector("base")?.getAttribute("href") ?? "/";
     styleSheet.setAttribute(
       "href",
