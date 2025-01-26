@@ -2,16 +2,16 @@
 A plugin to adapt Choose Your Own Adventure Games to the Stash VideoJS player.
 
 ## Setup
-The plugin provides various settings, but only the `Game tag`, `Resource path`, and `Scene directory path` settings are required for it to work. 
+The plugin provides various settings, but only the `Access tokem`, `Game tag`, `Resource path`, and `Scene directory path` settings are required for it to work. Note that this repo does not provide relevant JS and CSS files to run this plugin. To acquire these files, reach out to `_cj13` in the discord channel and provide your GitHub username, and you will be given access to the [BackerScripts](https://github.com/cj12312021/BackerScripts) repo.
 
-### Access tokem (Required)
-This plugin exists as an additional perk for our backers. So an access token is required for idenitfy users which necesary access. If you are a backers of the project feel free to reach out to me on our Discord channel with your Github account name in order to obtain the necesary access. Once your Github account has the necesary permissions, you will need to generate fine-grained personal access token with read-only access to `Contents` (See: [Creating a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token)). The generated access token is what you will provide here.
+### Access token (Required)
+This plugin exists as an additional perk for our backers. So, an access token is required to identify users with access. If you are a backer of the project, feel free to reach out to me on our Discord channel with your GitHub account name in order to obtain the necessary access. Once your Github account has the permissions required, you will need to generate a fine-grained personal access token with read-only access to `Contents` (See: [Creating a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token)). The generated access token is what you will provide here.
 
 ### Game tag (Required)
 This is the name of the tag created to indicate that the selected game clip is the starting video for the game. (I would recommend setting your default filters up to hide other related videos that are not the starting video)
 
 ### Resource path (Required)
-This is the path where the non-video game resources would live. For example, the path to the `Sample` directory would be the `Resource path`, which contains one game with the id `1234`. Each game within this directory is expected to have a choices directory with all the necessary JSON files as well as an `images` directory with all the relevant images for the game. You can configure assets directly in this plugin if you want. I would just recommend against it to prevent your game files from being deleted if you ever uninstalled this plugin from the Stash plugin page. I would recommend setting up a custom-served folder for your Stash; see: [Custom served folders](https://docs.stashapp.cc/in-app-manual/configuration/#custom-served-folders). Also see the provided `Sample` directory for examples of what the revelant files should contain.
+This is the path where the non-video game resources would live. For example, the path to the `Sample` directory would be the `Resource path`, which contains one game with the id `1234`. Each game within this directory is expected to have a choices directory with all the necessary JSON files as well as an `images` directory with all the relevant images for the game. You can configure assets directly in this plugin if you want. I would just recommend against it to prevent your game files from being deleted if you ever uninstalled this plugin from the Stash plugin page. I would recommend setting up a custom-served folder for your Stash; see: [Custom served folders](https://docs.stashapp.cc/in-app-manual/configuration/#custom-served-folders). Also, see the provided `Sample` directory for examples of what the relevant files should contain.
 
 ### Scene directory path (Required)
 This is the path within your Stash library directories where your game scenes are stored. For example, the path to the `Sample` directory would be the `Scene directory path`, which contains one game with the id `1234`. In your case, the videos do not have to live under a videos directory within the `1234` directory.
@@ -20,7 +20,7 @@ This is the path within your Stash library directories where your game scenes ar
 This section covers things to know when creating the choice JSON files.
 
 ### Start Choice
-Every game should contain a `0.json` file which is the starting file for these games. See the vaious properties of these files are cover in the sample. See the comments more info about the purpose the properties servce:
+Every game should contain a `0.json` file, which is the starting file for these games. See the various properties of these files in the snippet below:
 
 ```
 {
@@ -72,7 +72,7 @@ Every game should contain a `0.json` file which is the starting file for these g
 ```
 
 ### Multi Scene Choices
-Mutlple scenes can be provided within a choice. To do this you would use the `fragments` property. This properties will effectively replace the `resource` property which can onlu contain one scene. Each fragment can include an action with is intended to be a shorter clip related to the fragement that the user can click as many times as they would like to repeat the an action. For more info on how these can be used, see the example file below:
+Multiple scenes can be provided within a choice. To do this, you would use the `fragments` property. This property will effectively replace the `resource` property, which can only contain one scene. Each fragment can include an action which is intended to be a shorter clip related to the fragment that the user can click as many times as they would like to repeat the action. For more info on how these can be used, see the example file below:
 
 ```
 {
@@ -152,5 +152,5 @@ Mutlple scenes can be provided within a choice. To do this you would use the `fr
 
 ### End Choice
 Similar to the start choice, each scene will contain an end choice. The choice will conclude the game. The choices are will either be of type `exit`, or `end`. 
-- The `exit` type is effectively a fail choice leting the user no they have failed the game. When a user encounter this, they will be given an option to go back and choose a different choice, or simply restart the game.
-- The `end` type is the success choice letting the user know they have concluded the game as "intended". Once a user hits this screen they can decided to replay the game from the start, or exit the game.
+The `exit` type is effectively a fail choice, letting the user know they have failed the game. When a user encounters this, they will be given an option to go back and choose a different choice or simply restart the game.
+The `end` type is the success choice, letting the user know they have concluded the game as "intended". Once a user hits this screen, they can decide to replay the game from the start or exit it.
