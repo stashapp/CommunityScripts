@@ -9,3 +9,6 @@
 ### 1.0.3
 - Added start and stop FileMonitor button to Tools-UI FileMonitor Status
 - Fixed bug associated with starting FileMonitor service with no jobs waiting.
+### 1.0.4
+- Added ping Docker GQL check before attempting to monitor Stash Dockers
+- Uploaded missing filemonitor.js to CommunityScripts

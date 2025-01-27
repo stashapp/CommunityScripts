@@ -4,3 +4,5 @@
 - Improved performance by having code get all required scene details in one call to stash.
 - To remove UI clutter, move rarely used options (performerAppendEnable, studioAppendEnable, tagAppendEnable, & fileRenameViaMove) to renamefile_settings.py
 - Change options (performerAppendEnable, studioAppendEnable, tagAppendEnable) to default to True (enabled)
+### 0.5.7
+- Uploaded missing renamefile.js and renamefile.css files to CommunityScripts
