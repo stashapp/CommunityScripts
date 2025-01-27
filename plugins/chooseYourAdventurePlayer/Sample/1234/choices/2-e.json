@@ -1,7 +1,7 @@
 {
-  "id": "1b-e",
-  "type": "exit",
-  "title": "Bad Choice",
+  "id": "2-e",
+  "type": "end",
+  "title": "",
   "skipto": null,
   "choices": null,
   "resource": {
