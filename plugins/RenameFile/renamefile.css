@@ -1,9 +1,9 @@
 .renamefile {
-    color: unset;
-    &:hover {
-        text-decoration: unset;
-    }
-    &:active {
-        color: white;
-    }
+  color: unset;
+  &:hover {
+    text-decoration: unset;
+  }
+  &:active {
+    color: white;
+  }
 }
