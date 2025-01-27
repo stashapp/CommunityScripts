@@ -7,7 +7,7 @@
       "id": "frag-a",
       "photo": {
         "id": "frag-a_photo",
-        "content": "frag-a.jpg",
+        "content": "frag-a.jpg"
       },
       "video": {
         "id": "frag-a_video",
@@ -24,7 +24,7 @@
             "id": "frag-a-action-a_video",
             "resolved_content": "Scene2A-1.mp4"
           },
-          "title": "TBD",
+          "title": "TBD"
         },
         {
           "id": "frag-a-action-b",
@@ -36,10 +36,10 @@
             "id": "frag-a-action-b_video",
             "resolved_content": "Scene2A-1.mp4"
           },
-          "title": "TBD",
+          "title": "TBD"
         }
       ],
-      "title": "TBD",
+      "title": "TBD"
     },
     {
       "id": "frag-b",
@@ -68,5 +68,5 @@
   "resource": {
     "id": "empty",
     "resolved_content": null
-  },
+  }
 }
