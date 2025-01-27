@@ -167,6 +167,9 @@ if stash.IS_DOCKER and stash.PLUGIN_TASK_NAME != "stop_library_monitor" and not 
 
 dockerStashes = {}
 for docker in stash.pluginConfig['dockers']:
+    if stash.pingGql(docker['GQL']) == False:
+        stash.Warn(f"Skipping monitoring Docker Stash {docker['GQL']} because ping failed.")
+        continue
     stash.Log(f"Adding monitoring to Docker Stash {docker['GQL']}")
     dockerStashes[docker['GQL']] = StashPluginHelper(
             stash_url=docker['GQL'],

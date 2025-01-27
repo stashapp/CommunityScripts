@@ -1,4 +1,4 @@
-# FileMonitor: Ver 1.0.3 (By David Maisonave)
+# FileMonitor: Ver 1.0.4 (By David Maisonave)
 
 FileMonitor is a [Stash](https://github.com/stashapp/stash) plugin with the following two main features:
 

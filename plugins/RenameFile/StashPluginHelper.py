@@ -17,7 +17,7 @@
         # Sets CALLED_AS_STASH_PLUGIN to True if it's able to read from STDIN_READ
 from stashapi.stashapp import StashInterface
 from logging.handlers import RotatingFileHandler
-import re, inspect, sys, os, pathlib, logging, json, platform, subprocess, traceback, time
+import re, inspect, sys, os, pathlib, logging, json, platform, subprocess, traceback, time, socket
 import concurrent.futures
 from stashapi.stash_types import PhashDistance
 from enum import Enum, IntEnum
@@ -849,6 +849,26 @@ class StashPluginHelper(StashInterface):
             if 'rows_affected' in results and results['rows_affected'] == 1:
                 return True
         return False
+
+    def pingGql(self, Gql,timeout=2, doTraceLog=False):
+        try:
+            hostAndPort = Gql.split(':')
+            host = hostAndPort[1][2:]
+            port = int(hostAndPort[2])
+            if host == "localhost":
+                host = "127.0.0.1"
+            self.Debug(f"Checking connection Gql {Gql}; host {host}; port {port}.")
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(timeout)
+                s.connect((host, port))
+                return True
+        except Exception as e:
+            if doTraceLog:
+                tb = traceback.format_exc()
+                self.Error(f"pingGql failed for Stash GQL {Gql} Error: {e}\nTraceBack={tb}")
+            else:
+                self.Error(f"pingGql failed for Stash GQL {Gql}")
+            return False    
     
     # This only works if filename has not changed. If file name has changed, call renameFileNameInDB first.
     def updateFileScene(self, fullFilePath):
