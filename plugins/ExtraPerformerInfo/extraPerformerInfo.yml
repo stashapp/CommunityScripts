@@ -28,8 +28,6 @@ settings:
     description: Add other info such as birth place, ethnic group and Occupation to custom fields
     type: BOOLEAN
 
-
-
 hooks:
   - name: Process performer
     description: Process wikidata or other api url

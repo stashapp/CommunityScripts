@@ -86,14 +86,14 @@ def processWikidata(performer,performer_update,url):
     log.debug('about to fetch wikidata url: %s' % (api_url,))
     wd=request_wd.get(api_url)
     if wd.status_code==200:
-        log.debug(wd.json().keys())
+#        log.debug(wd.json().keys())
         data=wd.json()['entities'][wikidata_id]
         if settings['wikidatExtraUrls']:
             urls=[]
             for claim,urlstring in wikidata_property_urls.items():
                 if claim in data['claims']:
                     for c in data['claims'][claim]:
-                        log.debug(claim)
+#                        log.debug(claim)
                         url = urlstring % (c['mainsnak']['datavalue']['value'],)
                         if url not in performer['urls']:
                             urls.append(url)
@@ -116,7 +116,7 @@ def processWikidata(performer,performer_update,url):
             for prop in ['P166','P1411']:
                 if prop in data['claims']:
                     for c in data['claims'][prop]:
-                        log.debug(c)
+#                        log.debug(c)
 
                         award = {}
                         award_id = c['mainsnak']['datavalue']['value']['id']
@@ -126,7 +126,7 @@ def processWikidata(performer,performer_update,url):
                         if 'qualifiers' in c:
                             for q,qv in c['qualifiers'].items():
                                 # point in time
-                                log.debug('q=%s qv=%s'% (q,qv,))
+#                                log.debug('q=%s qv=%s'% (q,qv,))
                                 if q=='P585':
                                     if len(qv)> 0:
                                         award['time']=qv[0]['datavalue']['value']['time'][1:5]
@@ -164,7 +164,7 @@ def processWikidata(performer,performer_update,url):
                 if claim in data['claims']:
                     claim_values=[]
                     for c in data['claims'][claim]:
-                        log.debug(c)
+#                        log.debug(c)
                         claim_values.append(getWDPPropertyLabel(c['mainsnak']['datavalue']['value']['id']))
                     if len(claim_values)> 0:
                         if 'custom_fields' not in performer_update:
@@ -178,7 +178,7 @@ def processWikidata(performer,performer_update,url):
 def processPerformer(performer):
 
     performer_update={'id':performer['id'],'update':False,"tag_names":[]}
-    log.debug(performer)
+#    log.debug(performer)
     for u in performer['urls']:
         if u.startswith('https://www.wikidata.org') and settings['processWikidata']:
             processWikidata(performer,performer_update,u)
@@ -192,8 +192,10 @@ def processPerformer(performer):
                 performer_update['tag_ids'].append(tt['id'])
         performer_update.pop('tag_names')
 
-
-
+        if settings['schema'] <  71:
+            log.info('your version of stash does not support custom fields, a new version of stash should be released soon')
+            # other features will still work for other versions
+            performer_update.pop('custom_fields')
         log.info('updating performer: %s' %  (performer_update,))
         stash.update_performer(performer_update)
 
@@ -240,7 +242,7 @@ log.info("config: %s " % (settings,))
 
 if "mode" in json_input["args"]:
     PLUGIN_ARGS = json_input["args"]["mode"]
-    log.debug(json_input)
+#    log.debug(json_input)
     if "processAll" == PLUGIN_ARGS:
         if "performer_id" in json_input["args"]:
             performer=stash.find_performer(json_input["args"]["performer_id"])
