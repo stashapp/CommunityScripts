@@ -10,7 +10,7 @@
     {
       "choice_id": "TBD",
       "title": "TBD",
-      "picture": "TBD.png"
+      "picture": "poster-1.png"
     }
   ],
   "skipto": "2",
@@ -19,13 +19,13 @@
       "description": "Good Choice",
       "id": "1a",
       "type": "",
-      "photo": "TBD"
+      "photo": "good.jpg"
     },
     {
       "description": "Bad Choice",
       "id": "1b",
       "type": "",
-      "photo": "TBD"
+      "photo": "bad.jpg"
     }
   ],
   "resource": {
