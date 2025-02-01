@@ -1,0 +1,17 @@
+{
+  "id": "1a",
+  "type": null,
+  "title": "Good Choice",
+  "skipto": "2",
+  "choices": [
+    {
+      "description": null,
+      "id": "2",
+      "type": null,
+      "photo": "TBD"
+    }
+  ],
+  "resource": {
+    "resolved_content": "Scene1a.mp4"
+  }
+}
