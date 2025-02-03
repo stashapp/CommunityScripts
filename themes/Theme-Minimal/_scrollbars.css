@@ -1,0 +1,25 @@
+body ::-webkit-scrollbar {
+  -webkit-appearance: auto;
+  height: auto !important;
+  width: auto !important;
+}
+
+body ::-webkit-scrollbar-track {
+  background: unset;
+  border-radius: unset;
+}
+
+body ::-webkit-scrollbar-thumb {
+  background: unset;
+  border-radius: unset;
+  cursor: unset;
+  transition: unset;
+}
+
+body ::-webkit-scrollbar-thumb:window-inactive {
+  background: unset;
+}
+
+body ::-webkit-scrollbar-thumb:hover {
+  background: unset;
+}

@@ -1,0 +1,13 @@
+.modal-header {
+  background-color: var(--primary-2);
+  border-bottom: unset;
+}
+
+.modal-body {
+  background-color: var(--primary-2);
+}
+
+.modal-footer {
+  background-color: var(--primary-2);
+  border-top: unset;
+}
