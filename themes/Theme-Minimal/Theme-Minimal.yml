@@ -1,6 +1,6 @@
 name: Theme - Minimal
 description: Minimal Theme for Stash
-version: 0.1
+version: 0.1.1
 ui:
   css:
     - index.css
@@ -8,7 +8,6 @@ ui:
     - _scrollbars.css
     - scenes.css
     - shared.css
-    - minimal-custom.css
     - settings.css
     - player.css
     - inputs.css
