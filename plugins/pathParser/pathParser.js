@@ -322,6 +322,7 @@ function testRule(pattern, parts) {
   }
 
   var matchedParts = [];
+  var subMatches;
   for (var i = 0; i < pattern.length; i++) {
     if ((subMatches = testPattern(pattern[i], parts[i])) == null) {
       return null;
