@@ -653,7 +653,7 @@ function tryGetTag(tag) {
 
   var result = gql.Do(query, variables);
   if (!result.findTags || result.findTags.count == 0) {
-    return;
+    return null;
   }
 
   return result.findTags.tags[0].id;
