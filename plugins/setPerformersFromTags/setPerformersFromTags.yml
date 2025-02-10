@@ -1,0 +1,20 @@
+name: Set Performers From Tags
+description: Automatically sets performers in scenes and images based on tags.
+version: 1.0.0
+url: https://github.com/Torrafox/stash-plugin-set-performers-from-tags
+exec:
+  - setPerformersFromTags.js
+interface: js
+errLog: info
+tasks:
+  - name: Auto Set Performers From Tags
+    description: Scans all scenes and images, matches performer names and aliases against scene/image tags, and updates them with the correct performers if necessary. May take a long time on large libraries.
+
+hooks:
+  - name: Auto Set Performers From Tags Hook
+    description: Automatically sets performers when a scene or image is created or updated.
+    triggeredBy:
+      - Scene.Create.Post
+      - Scene.Update.Post
+      - Image.Create.Post
+      - Image.Update.Post
