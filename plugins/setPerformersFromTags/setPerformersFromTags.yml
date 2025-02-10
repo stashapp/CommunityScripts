@@ -1,7 +1,7 @@
 name: Set Performers From Tags
 description: Automatically sets performers in scenes and images based on tags.
 version: 1.0.0
-url: https://github.com/Torrafox/stash-plugin-set-performers-from-tags
+url: https://github.com/Torrafox/stash-community-scripts/tree/main/plugins/setPerformersFromTags
 exec:
   - setPerformersFromTags.js
 interface: js
