@@ -78,33 +78,7 @@ To install/run a script follow the install instructions listed in individual REA
 
 ## Contributing
 
-### Formatting
-
-Formatting is enforced on all files. Follow this setup guide:
-
-1. **[Yarn](https://yarnpkg.com/en/docs/install)** and **its dependencies** must be installed to run the formatting tools.
-    ```sh
-    yarn install --frozen-lockfile
-    ```
-
-2. **Python dependencies** must also be installed to format `py` files.
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-#### Formatting non-`py` files
-
-```sh
-yarn run format
-```
-
-#### Formatting `py` files
-
-`py` files are formatted using [`black`](https://pypi.org/project/black/).
-
-```sh
-yarn run format-py
-```
+Submit a PR to add your plugin, theme, userscript and other utility script to the repository. 
 
 ## Deprecation
 
