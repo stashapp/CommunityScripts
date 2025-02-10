@@ -1,12 +1,5 @@
 {
   "name": "community-scripts",
   "description": "This repository contains plugin and utility scripts created by the Stash community and hosted on the official GitHub repo.",
-  "license": "AGPL-3.0-only",
-  "scripts": {
-    "format": "prettier --write .",
-    "format-py": "black --exclude=\"3rd party\" ."
-  },
-  "devDependencies": {
-    "prettier": "^3.2.5"
-  }
+  "license": "AGPL-3.0-only"
 }
