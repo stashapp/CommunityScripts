@@ -49,6 +49,26 @@ All the following functions are exposed under `window.csLib` and `csLib`
    */
 ```
 
+## setConfiguration
+```js
+/**
+   * Set configuration of a plugin in the server via GraphQL
+   * @param {string} pluginId - The ID of the plugin as it is registered in the server
+   * @param {*} values - The configuration object with the values you want to save in the server
+   * @returns {Object} - The configuration object of the plugin as it is stored in the server after update
+   *
+   * @example
+   *    // fetch config from the server
+   *    const config = await getConfiguration('CommunityScriptsUIPlugin', defaultConfig);
+   *    // config = { theme: 'dark' }
+   *    // update the config based on user input
+   *    // config = { theme: 'light' }
+   *    // save config in the server
+   *    await setConfiguration('CommunityScriptsUIPlugin', config);
+   * }
+   */
+```
+
 ## waitForElement
 ```js
   /**

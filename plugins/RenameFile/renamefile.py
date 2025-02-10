@@ -2,11 +2,22 @@
 # By David Maisonave (aka Axter) Jul-2024 (https://www.axter.com/)
 # Get the latest developers version from following link: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/RenameFile
 # Based on source code from  https://github.com/Serechops/Serechops-Stash/tree/main/plugins/Renamer
-import os, sys, shutil, json, requests, hashlib, pathlib, logging
+
+# To automatically install missing modules, uncomment the following lines of code.
+# try:
+    # import ModulesValidate
+    # ModulesValidate.modulesInstalled(["stashapp-tools", "requests"])
+# except Exception as e:
+    # import traceback, sys
+    # tb = traceback.format_exc()
+    # print(f"ModulesValidate Exception. Error: {e}\nTraceBack={tb}", file=sys.stderr)
+    
+import os, sys, shutil, json, hashlib, pathlib, logging, time, traceback
 from pathlib import Path
 import stashapi.log as log # Importing stashapi.log as log for critical events ONLY
 from stashapi.stashapp import StashInterface
 from StashPluginHelper import StashPluginHelper
+from StashPluginHelper import taskQueue
 from renamefile_settings import config # Import settings from renamefile_settings.py
 
 # **********************************************************************
@@ -25,16 +36,14 @@ QUERY_ALL_SCENES = """
 # **********************************************************************
 # Global variables          --------------------------------------------
 inputToUpdateScenePost = False
+doNothing = False
 exitMsg = "Change success!!"
 
 # **********************************************************************
 # ----------------------------------------------------------------------
 settings = {
-    "performerAppend": False,
-    "studioAppend": False,
-    "tagAppend": False,
+    "yRenameEvenIfTitleEmpty": False,
     "z_keyFIeldsIncludeInFileName": False,
-    "zafileRenameViaMove": False,
     "zfieldKeyList": DEFAULT_FIELD_KEY_LIST,
     "zmaximumTagKeys": 12,
     "zseparators": DEFAULT_SEPERATOR,
@@ -46,21 +55,31 @@ stash = StashPluginHelper(
         config=config,
         maxbytes=10*1024*1024,
         )
-stash.Status(logLevel=logging.DEBUG)
+# stash.status(logLevel=logging.DEBUG)
 if stash.PLUGIN_ID in stash.PLUGIN_CONFIGURATION:
     stash.pluginSettings.update(stash.PLUGIN_CONFIGURATION[stash.PLUGIN_ID])
+if stash.IS_DOCKER:
+    stash.log_to_wrn_set = stash.LogTo.STASH + stash.LogTo.FILE
 # ----------------------------------------------------------------------
 WRAPPER_STYLES = config["wrapper_styles"]
 POSTFIX_STYLES = config["postfix_styles"]
+
+renameEvenIfTitleEmpty = stash.pluginSettings["yRenameEvenIfTitleEmpty"]
 
 # Extract dry_run setting from settings
 dry_run = stash.pluginSettings["zzdryRun"]
 dry_run_prefix = ''
 try:
-    if stash.JSON_INPUT['args']['hookContext']['input']: inputToUpdateScenePost = True # This avoids calling rename logic twice
+    stash.Trace(f"hookContext={stash.JSON_INPUT['args']['hookContext']}")
+    if stash.JSON_INPUT['args']['hookContext']['input']:
+        if stash.JSON_INPUT['args']['hookContext']['input'] == None:
+            doNothing = True
+            stash.Log("input = None")
+        else:
+            inputToUpdateScenePost = True # This avoids calling rename logic twice
 except:
     pass
-stash.Trace("settings: %s " % (stash.pluginSettings,))
+    stash.Warn("Exception thrown")
 
 if dry_run:
     stash.Log("Dry run mode is enabled.")
@@ -69,34 +88,42 @@ max_tag_keys = stash.pluginSettings["zmaximumTagKeys"] if stash.pluginSettings["
 # ToDo: Add split logic here to slpit possible string array into an array
 exclude_paths = config["pathToExclude"]
 exclude_paths = exclude_paths.split()
-stash.Trace(f"(exclude_paths={exclude_paths})")
+if len(exclude_paths) > 0:
+    stash.Trace(f"(exclude_paths={exclude_paths})")
 excluded_tags = config["excludeTags"]
 # Extract tag whitelist from settings
 tag_whitelist = config["tagWhitelist"]
 if not tag_whitelist:
     tag_whitelist = ""
-stash.Trace(f"(tag_whitelist={tag_whitelist})")
+if len(tag_whitelist) > 0:
+    stash.Trace(f"(tag_whitelist={tag_whitelist})")
+handleExe = stash.pluginConfig['handleExe']
+openedfile = None
+if handleExe != None and handleExe != "" and os.path.isfile(handleExe):
+    # ModulesValidate.modulesInstalled(["psutil"], silent=True)
+    from openedFile import openedFile
+    openedfile = openedFile(handleExe, stash)
 
 endpointHost = stash.JSON_INPUT['server_connection']['Host']
 if endpointHost == "0.0.0.0":
     endpointHost = "localhost"
 endpoint = f"{stash.JSON_INPUT['server_connection']['Scheme']}://{endpointHost}:{stash.JSON_INPUT['server_connection']['Port']}/graphql"
 
-stash.Trace(f"(endpoint={endpoint})")
-move_files = stash.pluginSettings["zafileRenameViaMove"]
+# stash.Trace(f"(endpoint={endpoint})")
+move_files = stash.Setting("fileRenameViaMove")
 fieldKeyList = stash.pluginSettings["zfieldKeyList"] # Default Field Key List with the desired order
 if not fieldKeyList or fieldKeyList == "":
     fieldKeyList = DEFAULT_FIELD_KEY_LIST
 fieldKeyList = fieldKeyList.replace(" ", "")
 fieldKeyList = fieldKeyList.replace(";", ",")
 fieldKeyList = fieldKeyList.split(",")
-stash.Trace(f"(fieldKeyList={fieldKeyList})")
+# stash.Trace(f"(fieldKeyList={fieldKeyList})")
 separator = stash.pluginSettings["zseparators"]
 # ----------------------------------------------------------------------
 # **********************************************************************
 
 double_separator = separator + separator
-stash.Trace(f"(WRAPPER_STYLES={WRAPPER_STYLES}) (POSTFIX_STYLES={POSTFIX_STYLES})")
+# stash.Trace(f"(WRAPPER_STYLES={WRAPPER_STYLES}) (POSTFIX_STYLES={POSTFIX_STYLES})")
 
 # Function to replace illegal characters in filenames
 def replace_illegal_characters(filename):
@@ -112,13 +139,56 @@ def should_exclude_path(scene_details):
             return True
     return False
 
+include_keyField_if_in_name = stash.pluginSettings["z_keyFIeldsIncludeInFileName"]
+excludeIgnoreAutoTags = config["excludeIgnoreAutoTags"]
+
+def getPerformers(scene, title):
+    title = title.lower()
+    results = ""
+    for performer in scene['performers']:
+        name = performer['name']
+        stash.Trace(f"performer = {name}")
+        if not include_keyField_if_in_name:
+            if name.lower() in title:
+                stash.Trace(f"Skipping performer name '{name}' because already in title: '{title}'")
+                continue
+        results += f"{name}, "
+    return results.strip(", ")
+
+def getGalleries(scene, title):
+    results = ""
+    for gallery in scene['galleries']:
+        name = gallery = stash.find_gallery(gallery['id'])['title']
+        stash.Trace(f"gallery = {name}")
+        if not include_keyField_if_in_name:
+            if name.lower() in title:
+                stash.Trace(f"Skipping gallery name '{name}' because already in title: '{title}'")
+                continue
+        results += f"{name}, "
+    return results.strip(", ")
+
+def getTags(scene, title):
+    title = title.lower()
+    results = ""
+    for tag in scene['tags']:
+        name = tag['name']
+        stash.Trace(f"tag = {name}")
+        if excludeIgnoreAutoTags == True and tag['ignore_auto_tag'] == True:
+            stash.Trace(f"Skipping tag name '{name}' because ignore_auto_tag is True.")
+            continue
+        if not include_keyField_if_in_name:
+            if name.lower() in title:
+                stash.Trace(f"Skipping tag name '{name}' because already in title: '{title}'")
+                continue
+        results += f"{name}, "
+    return results.strip(", ")
+
 # Function to form the new filename based on scene details and user settings
 def form_filename(original_file_stem, scene_details):  
     filename_parts = []
     tag_keys_added = 0
     default_title = ''
     if_notitle_use_org_filename = config["if_notitle_use_org_filename"]
-    include_keyField_if_in_name = stash.pluginSettings["z_keyFIeldsIncludeInFileName"]
     if if_notitle_use_org_filename:
         default_title = original_file_stem
     # ...................
@@ -152,21 +222,26 @@ def form_filename(original_file_stem, scene_details):
             stash.Log(f"Skipping tag not in whitelist: {tag_name}")
         stash.Trace(f"(tag_keys_added={tag_keys_added})")
     
+    stash.Trace(f"scene_details = {scene_details}")
+    
     for key in fieldKeyList:
         if key == 'studio':
-            if stash.pluginSettings["studioAppend"]:
-                studio_name = scene_details.get('studio', {})
+            if stash.Setting("studioAppendEnable"):
+                studio = scene_details.get('studio')
+                if studio != None:
+                    studio_name = studio.get('name')
+                else:
+                    studio_name = None
                 stash.Trace(f"(studio_name={studio_name})")
                 if studio_name:
-                    studio_name = scene_details.get('studio', {}).get('name', '')
-                    stash.Trace(f"(studio_name={studio_name})")
-                    if studio_name:
-                        studio_name += POSTFIX_STYLES.get('studio')
-                        if include_keyField_if_in_name or studio_name.lower() not in title.lower():
-                            if WRAPPER_STYLES.get('studio'):
-                                filename_parts.append(f"{WRAPPER_STYLES['studio'][0]}{studio_name}{WRAPPER_STYLES['studio'][1]}")
-                            else:
-                                filename_parts.append(studio_name)
+                    studio_name += POSTFIX_STYLES.get('studio')
+                    if include_keyField_if_in_name or studio_name.lower() not in title.lower():
+                        if WRAPPER_STYLES.get('studio'):
+                            filename_parts.append(f"{WRAPPER_STYLES['studio'][0]}{studio_name}{WRAPPER_STYLES['studio'][1]}")
+                        else:
+                            filename_parts.append(studio_name)
+            else:
+                stash.Trace("Skipping studio because of user setting studioAppend disabled.")
         elif key == 'title':
             if title:  # This value has already been fetch in start of function because it needs to be defined before tags and performers
                 title += POSTFIX_STYLES.get('title')
@@ -175,19 +250,17 @@ def form_filename(original_file_stem, scene_details):
                 else:
                     filename_parts.append(title)
         elif key == 'performers':
-            if stash.pluginSettings["performerAppend"]:
-                performers = '-'.join([performer.get('name', '') for performer in scene_details.get('performers', [])])
-                if performers:
+            if stash.Setting("performerAppendEnable"):
+                performers = getPerformers(scene_details, title)
+                if performers != "":
                     performers += POSTFIX_STYLES.get('performers')
-                    stash.Trace(f"(include_keyField_if_in_name={include_keyField_if_in_name})")
-                    if include_keyField_if_in_name or performers.lower() not in title.lower():
-                        stash.Trace(f"(performers={performers})")
-                        if WRAPPER_STYLES.get('performers'):
-                            filename_parts.append(f"{WRAPPER_STYLES['performers'][0]}{performers}{WRAPPER_STYLES['performers'][1]}")
-                        else:
-                            filename_parts.append(performers)
+                    stash.Trace(f"(performers={performers})")
+                    if WRAPPER_STYLES.get('performers'):
+                        filename_parts.append(f"{WRAPPER_STYLES['performers'][0]}{performers}{WRAPPER_STYLES['performers'][1]}")
+                    else:
+                        filename_parts.append(performers)
         elif key == 'date':
-            scene_date = scene_details.get('date', '')
+            scene_date = scene_details.get('date')
             if scene_date:
                 scene_date += POSTFIX_STYLES.get('date')
                 if WRAPPER_STYLES.get('date'):
@@ -195,8 +268,10 @@ def form_filename(original_file_stem, scene_details):
                 if scene_date not in title:
                     filename_parts.append(scene_date)
         elif key == 'resolution':
-            width = str(scene_details.get('files', [{}])[0].get('width', ''))  # Convert width to string
-            height = str(scene_details.get('files', [{}])[0].get('height', ''))  # Convert height to string
+            # width = str(scene_details.get('files', [{}])[0].get('width', ''))  # Convert width to string
+            # height = str(scene_details.get('files', [{}])[0].get('height', ''))  # Convert height to string
+            width = str(scene_details['files'][0]['width'])
+            height = str(scene_details['files'][0]['height'])
             if width and height:
                 resolution = width + POSTFIX_STYLES.get('width_height_seperator') + height + POSTFIX_STYLES.get('resolution')
                 if WRAPPER_STYLES.get('resolution'):
@@ -204,7 +279,7 @@ def form_filename(original_file_stem, scene_details):
                 if resolution not in title:
                     filename_parts.append(resolution)
         elif key == 'width':
-            width = str(scene_details.get('files', [{}])[0].get('width', ''))  # Convert width to string
+            width = str(scene_details['files'][0]['width'])
             if width:
                 width += POSTFIX_STYLES.get('width')
                 if WRAPPER_STYLES.get('width'):
@@ -212,7 +287,7 @@ def form_filename(original_file_stem, scene_details):
                 if width not in title:
                     filename_parts.append(width)
         elif key == 'height':
-            height = str(scene_details.get('files', [{}])[0].get('height', ''))  # Convert height to string
+            height = str(scene_details['files'][0]['height'])
             if height:
                 height += POSTFIX_STYLES.get('height')
                 if WRAPPER_STYLES.get('height'):
@@ -220,7 +295,7 @@ def form_filename(original_file_stem, scene_details):
                 if height not in title:
                     filename_parts.append(height)
         elif key == 'video_codec':
-            video_codec = scene_details.get('files', [{}])[0].get('video_codec', '').upper()  # Convert to uppercase
+            video_codec = scene_details['files'][0]['video_codec'].upper()  # Convert to uppercase
             if video_codec:
                 video_codec += POSTFIX_STYLES.get('video_codec')
                 if WRAPPER_STYLES.get('video_codec'):
@@ -228,7 +303,7 @@ def form_filename(original_file_stem, scene_details):
                 if video_codec not in title:
                     filename_parts.append(video_codec)
         elif key == 'frame_rate':
-            frame_rate = str(scene_details.get('files', [{}])[0].get('frame_rate', '')) + 'FPS'  # Convert to string and append ' FPS'
+            frame_rate = str(scene_details['files'][0]['frame_rate']) + 'FPS'  # Convert to string and append ' FPS'
             if frame_rate:
                 frame_rate += POSTFIX_STYLES.get('frame_rate')
                 if WRAPPER_STYLES.get('frame_rate'):
@@ -236,24 +311,24 @@ def form_filename(original_file_stem, scene_details):
                 if frame_rate not in title:
                     filename_parts.append(frame_rate)
         elif key == 'galleries':
-            galleries = [gallery.get('title', '') for gallery in scene_details.get('galleries', [])]
-            for gallery_name in galleries:
-                stash.Trace(f"(include_keyField_if_in_name={include_keyField_if_in_name}) (gallery_name={gallery_name})")
-                if include_keyField_if_in_name or gallery_name.lower() not in title.lower():
-                    gallery_name += POSTFIX_STYLES.get('galleries')
-                    if WRAPPER_STYLES.get('galleries'):
-                        filename_parts.append(f"{WRAPPER_STYLES['galleries'][0]}{gallery_name}{WRAPPER_STYLES['galleries'][1]}")
-                    else:
-                        filename_parts.append(gallery_name)
-                    stash.Trace(f"(gallery_name={gallery_name})")
+            galleries = getGalleries(scene_details, title)
+            if galleries != "":
+                galleries += POSTFIX_STYLES.get('galleries')
+                if WRAPPER_STYLES.get('galleries'):
+                    filename_parts.append(f"{WRAPPER_STYLES['galleries'][0]}{galleries}{WRAPPER_STYLES['galleries'][1]}")
+                else:
+                    filename_parts.append(galleries)
+                stash.Trace(f"(galleries={galleries})")
         elif key == 'tags':
-            if stash.pluginSettings["tagAppend"]:
-                tags = [tag.get('name', '') for tag in scene_details.get('tags', [])]
-                for tag_name in tags:
-                    stash.Trace(f"(include_keyField_if_in_name={include_keyField_if_in_name}) (tag_name={tag_name})")
-                    if include_keyField_if_in_name or tag_name.lower() not in title.lower():
-                        add_tag(tag_name + POSTFIX_STYLES.get('tag'))
-                        stash.Trace(f"(tag_name={tag_name})")
+            if stash.Setting("tagAppendEnable"):
+                tags = getTags(scene_details, title)
+                if tags != "":
+                    tags += POSTFIX_STYLES.get('tag')
+                    if WRAPPER_STYLES.get('tag'):
+                        filename_parts.append(f"{WRAPPER_STYLES['tag'][0]}{tags}{WRAPPER_STYLES['tag'][1]}")
+                    else:
+                        filename_parts.append(tags)
+                    stash.Trace(f"(tags={tags})")
     
     stash.Trace(f"(filename_parts={filename_parts})")
     new_filename = separator.join(filename_parts).replace(double_separator, separator)
@@ -268,13 +343,34 @@ def form_filename(original_file_stem, scene_details):
 
 def rename_scene(scene_id):  
     global exitMsg
-    scene_details = stash.find_scene(scene_id)
-    stash.Trace(f"(scene_details1={scene_details})")
+    POST_SCAN_DELAY = 3
+    fragment = 'id title performers {name} tags {id name ignore_auto_tag} studio {name} galleries {id} files {id path width height video_codec frame_rate} date'
+    scene_details = stash.find_scene(scene_id, fragment)
+    stash.Trace(f"(scene_details={scene_details})")
     if not scene_details:
         stash.Error(f"Scene with ID {scene_id} not found.")
         return None
+    taskqueue = taskQueue(stash.job_queue())
     original_file_path = scene_details['files'][0]['path']
     original_parent_directory = Path(original_file_path).parent
+    maxScanCountDefault = 5
+    maxScanCountForUpdate = 10
+    if scene_details['title'] == None or scene_details['title'] == "":
+        if renameEvenIfTitleEmpty == False:
+            stash.Log("Nothing to do because title is empty.")
+            return None
+        stash.Warn("Title is empty.")
+        maxScanCountDefault = 1
+        maxScanCountForUpdate = 1
+    if not os.path.isfile(original_file_path) and not taskqueue.clearDupTagsJobOnTaskQueue() and not taskqueue.deleteTaggedScenesJobOnTaskQueue() and not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault):
+        stash.Warn(f"[metadata_scan] Have to rescan scene ID {scene_id}, because Stash library path '{original_file_path}' does not exist. Scanning path: {original_parent_directory.resolve().as_posix()}")
+        stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
+        time.sleep(POST_SCAN_DELAY) # After a scan, need a few seconds delay before fetching data.
+        scene_details = stash.find_scene(scene_id)
+        original_file_path = scene_details['files'][0]['path']
+    if not os.path.isfile(original_file_path):
+        stash.Error(f"Can not rename file because path {original_file_path} doesn't exist.")
+        return None
     stash.Trace(f"(original_file_path={original_file_path})")
     # Check if the scene's path matches any of the excluded paths
     if exclude_paths and any(Path(original_file_path).match(exclude_path) for exclude_path in exclude_paths):
@@ -293,31 +389,82 @@ def rename_scene(scene_id):
         new_filename = truncated_filename + '_' + hash_suffix + Path(original_file_path).suffix
     newFilenameWithExt  = new_filename + Path(original_file_path).suffix
     new_file_path       = f"{original_parent_directory}{os.sep}{new_filename}{Path(original_file_name).suffix}"
-    stash.Trace(f"(original_file_name={original_file_name})(new_file_path={new_file_path})")
+    stash.Trace(f"(original_file_name={original_file_name}) (newFilenameWithExt={newFilenameWithExt})(new_file_path={new_file_path}) (FileID={scene_details['files'][0]['id']})")
     if original_file_name == newFilenameWithExt or original_file_name == new_filename:
         stash.Log(f"Nothing to do, because new file name matches original file name: (newFilenameWithExt={newFilenameWithExt})")
         return None
     targetDidExist = True if os.path.isfile(new_file_path) else False
     try:
+        if openedfile != None:
+            results = openedfile.closeFile(original_file_path)
+            if results != None:
+                stash.Warn(f"Had to close '{original_file_path}', because it was opened by following pids:{results['pids']}")
         if move_files:
             if not dry_run:
                 shutil.move(original_file_path, new_file_path)
             exitMsg = f"{dry_run_prefix}Moved file to '{new_file_path}' from '{original_file_path}'"
         else:
+            stash.Trace(f"Rename('{original_file_path}', '{new_file_path}')")
             if not dry_run:
                 os.rename(original_file_path, new_file_path)
             exitMsg = f"{dry_run_prefix}Renamed file to '{new_file_path}' from '{original_file_path}'"
     except OSError as e:
-        exitMsg = f"Failed to move/rename file: From {original_file_path} to {new_file_path}. Error: {e}"
+        exitMsg = f"Failed to move/rename file: From {original_file_path} to {new_file_path}; targetDidExist={targetDidExist}. Error: {e}"
         stash.Error(exitMsg)
-        if not targetDidExist and os.path.isfile(new_file_path):
+        if not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault):
+            stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
+            stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
+        if targetDidExist:
+            raise
+        if os.path.isfile(new_file_path):
             if os.path.isfile(original_file_path):
                 os.remove(original_file_path)
             pass
         else:
+            # ToDo: Add delay rename here
             raise
     
-    stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
+    if stash.renameFileNameInDB(scene_details['files'][0]['id'], original_file_name, newFilenameWithExt):
+        stash.Trace("DB rename success")
+    elif not taskqueue.tooManyScanOnTaskQueue(maxScanCountForUpdate):
+        stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
+        stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
+        time.sleep(POST_SCAN_DELAY) # After a scan, need a few seconds delay before fetching data.
+        scene_details = stash.find_scene(scene_id)
+        if new_file_path != scene_details['files'][0]['path'] and not targetDidExist and not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault):
+            stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
+            stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
+            time.sleep(POST_SCAN_DELAY) # After a scan, need a few seconds delay before fetching data.
+            scene_details = stash.find_scene(scene_id)
+            if new_file_path != scene_details['files'][0]['path']:
+                if not os.path.isfile(new_file_path):
+                    stash.Error(f"Failed to rename file from {scene_details['files'][0]['path']} to {new_file_path}.")
+                elif os.path.isfile(scene_details['files'][0]['path']):
+                    stash.Warn(f"Failed to rename file from {scene_details['files'][0]['path']} to {new_file_path}. Old file still exist. Will attempt delay deletion.")
+                    for i in range(1, 5*60):
+                        time.sleep(60)
+                        if not os.path.isfile(new_file_path):
+                            stash.Error(f"Not deleting old file name {original_file_path} because new file name (new_file_path) does NOT exist.")
+                            break
+                        os.remove(original_file_path)
+                        if not os.path.isfile(original_file_path):
+                            stash.Log(f"Deleted {original_file_path} in delay deletion after {i} minutes.")
+                            stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
+                            stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
+                            break
+                else:
+                    org_stem = Path(scene_details['files'][0]['path']).stem
+                    new_stem = Path(new_file_path).stem
+                    file_id = scene_details['files'][0]['id']
+                    stash.Warn(f"Failed to update Stash library with new name. Will try direct SQL update. org_name={org_stem}; new_name={new_stem}; file_id={file_id}")
+                    # stash.set_file_basename(file_id, new_stem)
+    else:
+        stash.Warn(f"Not performming [metadata_scan] because too many scan jobs are already on the Task Queue. Recommend running a full scan, and a clean job to make sure Stash DB is up to date.")
+        if not taskqueue.cleanJobOnTaskQueue():
+            stash.metadata_scan()
+            stash.metadata_clean()
+        if not taskqueue.cleanGeneratedJobOnTaskQueue():
+            stash.metadata_clean_generated()
     stash.Log(exitMsg)
     return new_filename 
     
@@ -326,7 +473,7 @@ def rename_files_task():
     all_scenes = scene_result['allScenes']
     if not all_scenes:
         stash.Error("No scenes found.")
-        exit()
+        sys.exit(13)
     # Find the scene with the latest updated_at timestamp
     latest_scene = max(all_scenes, key=lambda scene: scene['updated_at'])
     # Extract the ID of the latest scene
@@ -340,12 +487,18 @@ def rename_files_task():
         stash.Log("No changes were made.")
     return
 
-if stash.PLUGIN_TASK_NAME == "rename_files_task":
-    rename_files_task()
-elif inputToUpdateScenePost:
-    rename_files_task()
+try:
+    if stash.PLUGIN_TASK_NAME == "rename_files_task":
+        stash.Trace(f"PLUGIN_TASK_NAME={stash.PLUGIN_TASK_NAME}")
+        rename_files_task()
+    elif inputToUpdateScenePost:
+        rename_files_task()
+    else:
+        stash.Trace(f"Nothing to do. doNothing={doNothing}")
+except Exception as e:
+    tb = traceback.format_exc()
+    stash.Error(f"Exception while running Plugin. Error: {e}\nTraceBack={tb}")
+    # stash.log.exception('Got exception on main handler')
 
 stash.Trace("\n*********************************\nEXITING   ***********************\n*********************************")
 
-# ToDo: Wish List
-    # Add code to get tags from duplicate filenames

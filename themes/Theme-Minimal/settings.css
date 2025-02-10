@@ -1,0 +1,89 @@
+#tasks-panel .tasks-panel-queue {
+  background-color: unset !important;
+  position: unset !important;
+}
+
+.job-table.card {
+  background-color: unset;
+}
+
+#settings-menu-container {
+  padding-right: 16px;
+  .nav-pills {
+    gap: 4px;
+
+    .nav-link {
+      color: var(--primary-11) !important;
+      background-color: unset;
+      padding: 12px 16px;
+      border: 0 !important;
+      border-radius: 8px !important;
+      line-height: 1;
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        background-color: var(--primary-4) !important;
+        color: var(--primary-12) !important;
+      }
+
+      &.active {
+        background-color: var(--primary-2) !important;
+        color: var(--primary-12) !important;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+.package-manager table {
+  & > thead {
+    background-color: var(--primary-1);
+  }
+}
+
+.custom-control-input ~ .custom-control-label:before {
+  color: var(--primary-11);
+  border-color: var(--primary-5);
+  background-color: var(--primary-5);
+}
+
+.custom-control-input:checked ~ .custom-control-label:before {
+  color: var(--primary-12);
+  border-color: var(--primary-7);
+  background-color: var(--primary-7);
+}
+
+.setting-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin: 0;
+  }
+
+  &:not(:first-child) {
+    margin-top: 48px;
+  }
+
+  h1 {
+    color: var(--primary-11);
+    font-weight: normal;
+    font-size: 1.2rem;
+  }
+
+  .setting {
+    border-bottom-width: 0 !important;
+    padding: 0;
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 0;
+    }
+  }
+
+  .setting-group {
+    border-bottom: 0 !important;
+  }
+}

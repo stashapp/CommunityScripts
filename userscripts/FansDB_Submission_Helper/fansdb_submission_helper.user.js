@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FansDB Submission Helper
 // @author      mmenanno, DogmaDragon
-// @version     0.8.3
+// @version     0.8.7
 // @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
 // @icon        https://raw.githubusercontent.com/FansDB/docs/main/docs/assets/images/favicon.png
 // @namespace   FansDB-Submission-Helper
@@ -178,7 +178,7 @@ const urlPatterns = [
     site: "AdmireMe",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?allmylinks\.com\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?(?:allmylinks\.com|my\.bio)\/[^?]+)/,
     site: "AllMyLinks",
   },
   {
@@ -188,6 +188,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?apclips\.com\/[^?]+)/,
     site: "APClips",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?arsmate\.com\/[^?]+)/,
+    site: "Arsmate",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?arousetv.\.vip\/[^?]+)/,
@@ -218,6 +222,10 @@ const urlPatterns = [
     site: "Cam4",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?cameraprive\.com\/[^?]+)/,
+    site: "Camera Prive",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?campsite\.bio\/[^?]+)/,
     site: "Campsite",
   },
@@ -226,12 +234,12 @@ const urlPatterns = [
     site: "CamSoda",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?(?:.+)\.carrd\.to)/,
-    site: "Carrd",
+    pattern: /(^https?:\/\/(?:www.)?candfans\.jp\/[^?]+)/,
+    site: "CandFans",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?chaturbate\.com\/[^?]+)/,
-    site: "Chaturbate",
+    pattern: /(^https?:\/\/(?:www.)?(?:.+)\.carrd\.to)/,
+    site: "Carrd",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?chaturbate\.com\/[^?]+)/,
@@ -294,6 +302,10 @@ const urlPatterns = [
     site: "Fansoda",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?fansone\.co\/[^?]+)/,
+    site: "FansOne",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?fanspicy\.com\/[^?]+)/,
     site: "Fanspicy",
   },
@@ -312,6 +324,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?adult\.contents\.fc2\.com\/[^?]+)/,
     site: "FC2",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?fikfap\.com\/[^?]+)/,
+    site: "FikFap",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?findrow\.com\/[^?]+)/,
@@ -342,7 +358,7 @@ const urlPatterns = [
     site: "Hoo",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?hubzter\.com\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?hubzter\.(?:com|pro)\/[^?]+)/,
     site: "Hubzter",
   },
   {
@@ -375,16 +391,20 @@ const urlPatterns = [
     site: "JVID",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?keendom\.co\/[^?]+)/,
+    site: "keendom",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?kick\.com\/[^?]+)/,
     site: "Kick",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?linkin\.bio\/[^?]+)/,
-    site: "Later",
+    pattern: /(^https?:\/\/(?:www.)?kinkyclips\.com\/[^?]+)/,
+    site: "KinkyClips",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?lemmynsfw\.com\/[^?]+)/,
-    site: "LemmyNSFW",
+    pattern: /(^https?:\/\/(?:www.)?linkin\.bio\/[^?]+)/,
+    site: "Later",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?lemmynsfw\.com\/[^?]+)/,
@@ -435,8 +455,7 @@ const urlPatterns = [
     site: "MemberMe",
   },
   {
-    pattern:
-      /(^https?:\/\/(?:www.)?(?:profiles|share)\.myfreecams\.com\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?share\.myfreecams\.com\/[^?]+)/,
     site: "MFC Share",
   },
   {
@@ -464,12 +483,32 @@ const urlPatterns = [
     site: "MyDirtyHobby",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?myfans\.jp\/[^?]+)/,
+    site: "myfans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?profiles\.myfreecams\.com\/[^?]+)/,
+    site: "MyFreeCams",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?mym\.fans\/[^?]+)/,
+    site: "MYM",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?mynx\.co\/[^?]+)/,
     site: "Mynx",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?myurl\.bio\/[^?]+)/,
     site: "myurlbio",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?ohh\.bio\/[^?]+)/,
+    site: "Ohh",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?okfans\.com\/[^?]+)/,
+    site: "Okfans",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?onlyfans\.com\/[^?]+)/,
@@ -482,6 +521,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?legacy\.peach\.com\/[^?]+)/,
     site: "Peach (legacy)",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?playboy\.com\/[^?]+)/,
+    site: "Playboy Club",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?pornhub\.com\/[^?]+)/,
@@ -500,6 +543,10 @@ const urlPatterns = [
     site: "RedGIFs",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?reelme\.com\/[^?]+)/,
+    site: "ReelMe",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?revealme\.com\/[^?]+)/,
     site: "RevealMe",
   },
@@ -508,12 +555,24 @@ const urlPatterns = [
     site: "Rumble",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?scatbook\.Com\/[^?]+)/,
+    pattern: /(^https?:\/\/(?:www.)?scatbook\.com\/[^?]+)/,
     site: "Scatbook",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?sextpanther\.com\/[^?]+)/,
+    site: "SextPanther",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?sxyvip\.com\.br\/[^?]+)/,
     site: "SexyVip",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?sheer\.com\/[^?]+)/,
+    site: "Sheer",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?sinparty\.com\/[^?]+)/,
+    site: "SinParty",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?myslink\.app\/[^?]+)/,
@@ -549,12 +608,20 @@ const urlPatterns = [
     site: "StashDB",
   },
   {
-    pattern: /(^https?:\/\/(?:www.)?swag\.live\/[^?]+)/,
-    site: "SWAG",
-  },
-  {
     pattern: /(^https?:\/\/(?:www.)?stripchat\.com\/[^?]+)/,
     site: "Stripchat",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?sugarfans\.com\/[^?]+)/,
+    site: "Sugarfans",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?suicidegirls\.com\/[^?]+)/,
+    site: "SuicideGirls",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?swag\.live\/[^?]+)/,
+    site: "SWAG",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?swame\.com\/[^?]+)/,
@@ -577,6 +644,10 @@ const urlPatterns = [
     site: "TikTok",
   },
   {
+    pattern: /(^https?:\/\/(?:www.)?tolinkme\.com\/[^?]+)/,
+    site: "Tolinkme",
+  },
+  {
     pattern: /(^https?:\/\/(?:www.)?tumblr\.com\/[^?]+)/,
     site: "Tumblr",
   },
@@ -587,6 +658,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?(?:twitter|x)\.com\/[^?]+)/,
     site: "Twitter",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?umate\.me\/[^?]+)/,
+    site: "Umate",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?unlockedxx\.com\/[^?]+)/,
@@ -603,6 +678,10 @@ const urlPatterns = [
   {
     pattern: /(^https?:\/\/(?:www.)?wetspace\.com\/[^?]+)/,
     site: "WetSpace",
+  },
+  {
+    pattern: /(^https?:\/\/(?:www.)?xhamster\.com\/[^?]+)/,
+    site: "xHamster",
   },
   {
     pattern: /(^https?:\/\/(?:www.)?xhamsterlive\.com\/[^?]+)/,

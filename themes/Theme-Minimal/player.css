@@ -1,0 +1,194 @@
+.scrubber-button:not(:hover) {
+  background-color: unset !important;
+}
+
+.scene-tabs {
+  @media (max-width: 1200px) {
+    max-height: unset;
+  }
+
+  overflow-y: scroll;
+  overflow-x: unset;
+
+  & > * {
+    width: 100% !important;
+    max-width: unset !important;
+    min-width: unset !important;
+  }
+
+  .scene-subheader {
+    span {
+      font-size: 0.8rem !important;
+      font-weight: normal !important;
+      color: var(--primary-11);
+    }
+  }
+
+  .nav {
+    margin-bottom: 24px;
+    margin-top: 32px;
+    row-gap: 8px;
+    column-gap: 8px;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+
+    .nav-link {
+      text-align: center;
+      color: var(--primary-11) !important;
+      background-color: unset;
+      padding: 12px 16px;
+      border: 0 !important;
+      border-radius: 8px !important;
+      line-height: 1;
+      transition: all 0.2s ease-in-out;
+      white-space: nowrap;
+
+      &:hover {
+        background-color: var(--primary-4) !important;
+        color: var(--primary-12) !important;
+      }
+
+      &.active {
+        background-color: var(--primary-2) !important;
+        color: var(--primary-12) !important;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .tab-content {
+    max-height: unset;
+    height: unset;
+    overflow-y: unset;
+    overflow-x: unset;
+
+    .scene-details {
+      margin-bottom: 24px;
+      h6 {
+        font-weight: normal;
+        color: var(--primary-11);
+        font-size: 0.875rem;
+      }
+    }
+
+    .scene-markers-panel {
+      & > * + * {
+        margin-top: 16px;
+      }
+
+      .container {
+        max-width: unset !important;
+        padding-right: unset;
+        padding-left: unset;
+      }
+      .primary-tag {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+        gap: 16px;
+        justify-items: stretch;
+
+        .primary-card {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          max-width: unset !important;
+
+          h3 {
+            font-size: 1rem;
+            font-weight: normal;
+            color: var(--primary-11);
+          }
+
+          .primary-card-body {
+            padding: 0;
+            overflow-y: unset;
+            width: 100%;
+            min-width: unset;
+            max-height: unset !important;
+
+            color: var(--primary-11);
+
+            hr {
+              display: none;
+            }
+
+            .row {
+              margin-left: unset;
+              margin-right: unset;
+            }
+
+            button {
+              padding: unset;
+              margin: unset;
+
+              color: var(--primary-12);
+            }
+
+            .card-section {
+              padding: unset;
+              margin: unset;
+            }
+
+            & > * + * {
+              margin-top: 12px;
+            }
+            & > div {
+              padding: 8px;
+              background-color: var(--primary-2);
+              border-radius: 8px;
+            }
+          }
+        }
+      }
+    }
+
+    #scene-edit-details {
+      .form-container {
+        background-color: unset;
+        position: unset;
+        padding-left: unset !important;
+        padding-right: unset !important;
+        padding-top: unset !important;
+
+        & > * {
+          padding-left: unset !important;
+          padding-right: unset !important;
+          padding-top: unset !important;
+        }
+        /* .col-form-label, */
+        .form-label,
+        .col-12 {
+          margin-left: unset !important;
+          margin-right: unset !important;
+        }
+      }
+    }
+
+    #queue-viewer {
+      .queue-controls {
+        background-color: var(--primary-1);
+        padding: 0 12px;
+      }
+      .current {
+        background-color: var(--primary-3);
+        border-radius: 12px;
+        padding: 12px;
+      }
+    }
+  }
+}
+
+.scene-player-container {
+  max-width: unset !important;
+}
+
+.video-js {
+  border-radius: 8px;
+  overflow: hidden;
+
+  .vjs-poster {
+    background-color: var(--primary-1);
+  }
+}
