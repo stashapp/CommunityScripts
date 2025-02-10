@@ -12,7 +12,7 @@ hooks:
     triggeredBy:
       - Scene.Create.Post
 tasks:
-  - name: 'Reload tagged scenes'
+  - name: "Reload tagged scenes"
     description: Reload all scenes that have specific "marker" tag (see plugin's config.py)
     defaultArgs:
       mode: reload
