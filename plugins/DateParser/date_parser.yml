@@ -1,6 +1,6 @@
-name: Date Parser
-description: Find date in path or filename and add it
-version: 0.2
+name: Gallery Date Parser
+description: Find date in path or filename and add it to the gallery
+version: 0.2.1
 exec:
   - python
   - "{pluginDir}/date_parser.py"
