@@ -63,7 +63,7 @@ To install the userscript you will need a browser extension such as:
 
 ### Installing
 
-1. Go to [usersripts directory](https://github.com/stashapp/CommunityScripts/tree/main/userscripts).
+1. Go to [userscripts directory](https://github.com/stashapp/CommunityScripts/tree/main/userscripts).
 2. Find the usersccript you want to install.
 3. Select the `.user.js` file.
 4. Click `Raw` button. It should either autoamtically prompt your browser extension or you will need to manually copy all the content and create new userscript in the extension yourself.  
