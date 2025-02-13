@@ -3,8 +3,14 @@ name: Validate Plugins
 on:
   push:
     branches: [main]
+    paths:
+      - 'plugins/**'
+      - 'themes/**'
   pull_request:
     branches: [main]
+    paths:
+      - 'plugins/**'
+      - 'themes/**'
 
 jobs:
   validate:
