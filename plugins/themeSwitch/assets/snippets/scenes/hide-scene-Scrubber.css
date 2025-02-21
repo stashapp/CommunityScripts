@@ -1,0 +1,5 @@
+/* [Scenes tab] Hide the scene scrubber and max out the player's height */
+
+.scrubber-wrapper {
+  display: none;
+}

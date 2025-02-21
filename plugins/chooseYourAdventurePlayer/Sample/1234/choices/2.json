@@ -1,0 +1,72 @@
+{
+  "id": "2",
+  "type": null,
+  "title": "Action choice",
+  "fragments": [
+    {
+      "id": "frag-a",
+      "photo": {
+        "id": "frag-a_photo",
+        "content": "frag-a.jpg"
+      },
+      "video": {
+        "id": "frag-a_video",
+        "resolved_content": "Scene2A.mp4"
+      },
+      "actions": [
+        {
+          "id": "frag-a-action-a",
+          "photo": {
+            "id": "frag-a-action-a_photo",
+            "content": "frag-a-action-a.jpg"
+          },
+          "video": {
+            "id": "frag-a-action-a_video",
+            "resolved_content": "Scene2A-1.mp4"
+          },
+          "title": "TBD"
+        },
+        {
+          "id": "frag-a-action-b",
+          "photo": {
+            "id": "frag-a-action-b_photo",
+            "content": "frag-a-action-b.jpg"
+          },
+          "video": {
+            "id": "frag-a-action-b_video",
+            "resolved_content": "Scene2A-1.mp4"
+          },
+          "title": "TBD"
+        }
+      ],
+      "title": "TBD"
+    },
+    {
+      "id": "frag-b",
+      "photo": {
+        "id": "frag-b_photo",
+        "content": "frag-b.jpg"
+      },
+      "video": {
+        "id": "frag-b_video",
+        "resolved_content": "Scene2B.mp4"
+      },
+      "actions": null,
+      "title": "TBA",
+      "subtitles": "Scene3-08"
+    }
+  ],
+  "skipto": null,
+  "choices": [
+    {
+      "description": null,
+      "id": "2-e",
+      "type": "end",
+      "photo": "TBD"
+    }
+  ],
+  "resource": {
+    "id": "empty",
+    "resolved_content": null
+  }
+}

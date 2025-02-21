@@ -1,6 +1,6 @@
 name: Timestamp Trade
 description: Sync Markers with timestamp.trade, a new database for sharing markers.
-version: 0.4
+version: 0.8
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
@@ -19,6 +19,41 @@ settings:
     displayName: Add extra urls if they exist on timestamp.trade
     description: Extra urls can be submitted to timestamp.trade, add them to the scene if they exist
     type: BOOLEAN
+  disableSceneMarkersHook:
+    displayName: Disable the Scene Markers hook
+    type: BOOLEAN
+  disableGalleryLookupHook:
+    displayName: Disable the Gallery Lookup hook
+    type: BOOLEAN
+  addTimestampTradeUrl:
+    displayName: Add timestamp.trade url
+    type: BOOLEAN
+  createMarkers:
+    displayName: Add markers from timestamp.trade
+    type: BOOLEAN
+  path:
+    displayName: Download parent folder
+    description: Download location for files, note this should be in a different folder to stash and in a folder covered by stash. You may need to create a new library path to cover this directory.
+    type: STRING
+  addTsTradeTag:
+    displayName: Add the [Timestamp] tag to created markers.
+    type: BOOLEAN
+  addTsTradeTitle:
+    displayName: Add "TsTrade" to the start of generated marker titles.
+    type: BOOLEAN
+  excludedMarkerWords:
+    displayName: Exclude markers containing these words
+    description: Comma separated list of words to exclude
+    type: STRING
+  matchFunscripts:
+    displayName: Match funscripts
+    type: BOOLEAN
+  overwriteMarkers:
+    displayName: Overwrite Markers
+    type: BOOLEAN
+  mergeMarkers:
+    displayName: Merge Markers
+    type: BOOLEAN
 
 hooks:
   - name: Add Marker to Scene
@@ -29,7 +64,10 @@ hooks:
     description: Look up gallery metadata from timestamp.trade
     triggeredBy:
       - Gallery.Create.Post
-
+  - name: image add
+    description: Add images
+    triggeredBy:
+      - Image.Create.Post
 tasks:
   - name: "Submit"
     description: Submit markers to timestamp.trade
@@ -39,10 +77,26 @@ tasks:
     description: Submit movie information to timestamp.trade
     defaultArgs:
       mode: submitMovieScene
+  - name: "Submit Scenes with eroscripts.com url"
+    description: Submit scenes with a eroscripts.com forum post
+    defaultArgs:
+      mode: submitEroscriptScene
+  - name: "Submit Scenes with a funscript"
+    description: Submit scenes with a funscript
+    defaultArgs:
+      mode: submitInteractiveScene
   - name: "Sync"
     description: Get markers for all scenes with a stashid
     defaultArgs:
       mode: processScene
+  - name: "Re-process Scene"
+    description: reprocess scenes with a timestamp.trade url
+    defaultArgs:
+      mode: reprocessScene
+  - name: "Process All"
+    description: reprocess all scenes with any stash-box id
+    defaultArgs:
+      mode: processAll
   - name: "Submit Gallery"
     description: Submit gallery info to timestamp.trade
     defaultArgs:
@@ -51,3 +105,7 @@ tasks:
     description: get gallery info from timestamp.trade
     defaultArgs:
       mode: processGallery
+  - name: "Index Funscript "
+    description: scan for funscript files to be matched and submitted
+    defaultArgs:
+      mode: indexFunscripts

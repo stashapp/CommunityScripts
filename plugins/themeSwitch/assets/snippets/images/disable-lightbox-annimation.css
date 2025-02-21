@@ -1,0 +1,5 @@
+/* [Images tab] Disable lightbox animation */
+
+.Lightbox-carousel {
+  transition: none;
+}

@@ -1,0 +1,5 @@
+/* [Global changes] Hide the Donate button */
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}

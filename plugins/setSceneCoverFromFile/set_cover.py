@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import json
-import base64
 
 try:
     import stashapi.log as log
@@ -60,7 +59,7 @@ def handle_cover(path, file):
 
 def get_stash_paths():
     config = stash.get_configuration("general { stashes { path excludeVideo } }")
-    stashes = config["configuration"]["general"]["stashes"]
+    stashes = config["general"]["stashes"]
     return [s["path"] for s in stashes if not s["excludeVideo"]]
 
 

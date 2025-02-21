@@ -1,0 +1,8 @@
+.popover {
+  background-color: var(--primary-2);
+  border-radius: 12px;
+
+  .image-thumbnail {
+    border-radius: 4px;
+  }
+}

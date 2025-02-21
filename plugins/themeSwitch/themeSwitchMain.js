@@ -16,7 +16,7 @@
     const defaultOrder = [
       "Scenes",
       "Images",
-      "Movies",
+      "Groups",
       "Markers",
       "Galleries",
       "Performers",
@@ -244,16 +244,23 @@
     }
   }
 
-  function applyStyleToHead(key, css) {
-    const styleElement = document.createElement("style");
-    styleElement.setAttribute("type", "text/css");
-    const cssTextNode = document.createTextNode(css);
-    styleElement.id = key;
-    styleElement.appendChild(cssTextNode);
-    document.getElementsByTagName("head")[0].appendChild(styleElement);
+  function addStyleSheet(key, path) {
+    console.log(key, path);
+    const styleSheet = document.createElement("link");
+    const serverURL =
+      window.location.origin +
+        document.querySelector("base")?.getAttribute("href") ?? "/";
+    styleSheet.setAttribute(
+      "href",
+      `${serverURL}plugin/themeSwitch/assets${path}`
+    );
+    styleSheet.setAttribute("rel", "stylesheet");
+    styleSheet.setAttribute("type", "text/css");
+    styleSheet.id = key;
+    document.getElementsByTagName("head")[0].appendChild(styleSheet);
   }
 
-  function applyCSS(category, key, css, set) {
+  async function applyCSS(category, key, path, pluginId, pluginSrc) {
     if (category === "Themes") {
       // Turn Off old Theme
       let regex = /(themeSwitchPlugin-theme-.*)/;
@@ -268,8 +275,16 @@
         ) {
           setObject(storageKey, category, false);
           let element = document.getElementById(storageKey);
-          if (element) {
+          if (element && !pluginId) {
             element.remove();
+          } else {
+            const oldThemePluginId = getDataFromKey(storageKey, "pluginId");
+            if (oldThemePluginId) {
+              await enablePlugin(oldThemePluginId, false);
+              setTimeout(() => {
+                location.reload();
+              }, 1000);
+            }
           }
         }
       }
@@ -278,15 +293,25 @@
 
       if (!theme && key != "themeSwitchPlugin-theme-default") {
         setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+          addStyleSheet(key, path);
         });
       } else if (!theme && key === "themeSwitchPlugin-theme-default") {
         setObject(key, category, true);
       } else if (theme && key === "themeSwitchPlugin-theme-default") {
         setObject(key, category, true);
       } else if (theme && key !== "themeSwitchPlugin-theme-default") {
-        setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+        setObject(key, category, true).then(async () => {
+          if (pluginId) {
+            if (!(await isPluginInstalled(pluginId))) {
+              await installPlugin(pluginId, pluginSrc);
+            }
+            await enablePlugin(pluginId, true);
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          } else if (path) {
+            addStyleSheet(key, path);
+          }
         });
       }
     } else {
@@ -294,10 +319,10 @@
       const storageObject = JSON.parse(localStorage.getItem(key));
       if (!storageObject || storageObject.active === false) {
         setObject(key, category, true).then(() => {
-          applyStyleToHead(key, css);
+          addStyleSheet(key, path);
         });
       } else if (storageObject.active && !document.getElementById(key)) {
-        applyStyleToHead(key, css);
+        addStyleSheet(key, path);
       } else {
         setObject(key, category, false).then(() => {
           document.getElementById(key).remove();
@@ -329,6 +354,41 @@
         categorySpanClick.innerHTML = svgChevDN + category;
       }, 300);
     }
+  }
+
+  const getInstalledPlugins = async () =>
+    csLib
+      .callGQL({ query: `query Plugins{plugins{id}}` })
+      .then((data) => data.plugins.map((plugin) => plugin.id))
+      .catch((err) => console.error(err));
+
+  const isPluginInstalled = async (plugin) =>
+    getInstalledPlugins().then((plugins) => plugins.includes(plugin));
+
+  async function enablePlugin(plugin, state) {
+    const query =
+      "mutation SetPluginsEnabled($enabledMap: BoolMap!) { setPluginsEnabled(enabledMap: $enabledMap) }";
+    const variables = { enabledMap: {} };
+    variables.enabledMap[plugin] = state;
+    await csLib
+      .callGQL({ query, variables })
+      .catch((err) => console.error(err));
+  }
+
+  async function installPlugin(plugin, src) {
+    const query =
+      "mutation InstallPluginPackages($packages: [PackageSpecInput!]!) {installPackages(type: Plugin, packages: $packages)}";
+    const variables = {
+      packages: [
+        {
+          id: plugin,
+          sourceURL: src,
+        },
+      ],
+    };
+    await csLib
+      .callGQL({ query, variables })
+      .catch((err) => console.error(err));
   }
 
   function createBTNMenu() {
@@ -381,7 +441,7 @@
           header.className = "modal-header";
           accordion.append(header);
 
-          Object.entries(themeSwitchCSS).forEach(
+          Object.entries(window.themeSwitchCSS).forEach(
             ([category, themesInCategory], i) => {
               const categoryDiv = document.createElement("div");
               categoryDiv.className = "card";
@@ -440,7 +500,7 @@
               fieldset.className = "checkbox-switch";
 
               // Loop over themes in each category
-              Object.entries(themesInCategory).forEach(([themeId, theme]) => {
+              themesInCategory.forEach((theme) => {
                 if (category === "Navigation") {
                 } else {
                   const forRow = document.createElement("div");
@@ -463,17 +523,30 @@
                   const themeData = {
                     category: category,
                     key: theme.key,
-                    css: theme.styles,
+                    ...(theme.path
+                      ? { path: theme.path }
+                      : theme.pluginId
+                        ? {
+                            pluginId: theme.pluginId,
+                            pluginSrc: theme.pluginSrc,
+                          }
+                        : {}),
                   };
 
                   input.setAttribute("id", category + "-" + theme.key);
                   input.addEventListener(
                     "click",
-                    (function (category, key, css) {
-                      return function () {
-                        applyCSS(category, key, css);
+                    (function (themeData) {
+                      return async function () {
+                        applyCSS(
+                          themeData.category,
+                          themeData.key,
+                          themeData.path,
+                          themeData.pluginId,
+                          themeData.pluginSrc
+                        );
                       };
-                    })(themeData.category, themeData.key, themeData.css),
+                    })(themeData),
                     false
                   );
 
@@ -527,7 +600,7 @@
                     var navMenuItems = [
                       { name: "Scenes", key: "scenes" },
                       { name: "Images", key: "images" },
-                      { name: "Movies", key: "movies" },
+                      { name: "Groups", key: "groups" },
                       { name: "Markers", key: "scenes/markers" },
                       { name: "Galleries", key: "galleries" },
                       { name: "Performers", key: "performers" },
@@ -593,11 +666,11 @@
     });
   }
 
-  function returnCSS(key) {
-    for (const [, categoryThemes] of Object.entries(themeSwitchCSS)) {
-      for (const [, theme] of Object.entries(categoryThemes)) {
+  function getDataFromKey(key, field) {
+    for (const [, categoryThemes] of Object.entries(window.themeSwitchCSS)) {
+      for (const theme of categoryThemes) {
         if (key === theme.key) {
-          return theme.styles;
+          return theme[field];
         }
       }
     }
@@ -624,8 +697,7 @@
         selectedTheme = JSON.parse(localStorage.getItem(key));
         if (selectedTheme.active === true) {
           appliedThemeOtherThanDefault.push("True");
-          const css = returnCSS(key);
-          applyCSS(selectedTheme.category, key, css, true);
+          applyCSS(selectedTheme.category, key, getDataFromKey(key, "path"));
         }
       }
     }
@@ -646,8 +718,8 @@
     "stash:page:scene",
     "stash:page:images",
     "stash:page:image",
-    "stash:page:movies",
-    "stash:page:movie",
+    "stash:page:groups",
+    "stash:page:group",
     "stash:page:markers",
     "stash:page:galleries",
     "stash:page:performers",
@@ -675,10 +747,10 @@
     init();
   }
 
-  for (var i = 0; i < StashPages.length; i++) {
-    const page = StashPages[i];
-    stash.addEventListener(page, createMenuAndInit);
-  }
+  PluginApi.Event.addEventListener("stash:location", (e) =>
+    createMenuAndInit()
+  );
+  createMenuAndInit();
 
   // Reset menuCreated flag on hard refresh
   window.addEventListener("beforeunload", function () {

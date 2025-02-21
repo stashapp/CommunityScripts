@@ -4,24 +4,10 @@
 (function () {
   let cropping = false;
   let cropper = null;
-
-  try {
-    const img = document.createElement("img");
-    new Cropper(img);
-  } catch (e) {
-    console.error(
-      "Cropper not loaded - please install 4. CropperJS from CommunityScripts"
-    );
-  }
-  try {
-    stash.getVersion();
-  } catch (e) {
-    console.error(
-      "Stash not loaded - please install 1. stashUserscriptLibrary from CommunityScripts"
-    );
-  }
+  const csLib = window.csLib;
 
   function setupCropper() {
+    console.log("setupCropper");
     const cropBtnContainerId = "crop-btn-container";
     if (document.getElementById(cropBtnContainerId)) return;
     const sceneId = window.location.pathname
@@ -100,7 +86,7 @@
     cropAccept.setAttribute("id", "crop-accept");
     cropAccept.classList.add("btn", "btn-success", "mr-2");
     cropAccept.innerText = "OK";
-    cropAccept.addEventListener("click", async (evt) => {
+    cropAccept.addEventListener("click", async (e) => {
       cropping = false;
       cropStart.style.display = "inline-block";
       cropAccept.style.display = "none";
@@ -115,13 +101,9 @@
             id: sceneId,
           },
         },
-        query: `mutation SceneUpdate($input: SceneUpdateInput!) {
-                    sceneUpdate(input: $input) {
-                        id
-                    }
-                }`,
+        query: `mutation SceneUpdate($input: SceneUpdateInput!) { sceneUpdate(input: $input) { id }}`,
       };
-      await stash.callGQL(reqData);
+      await csLib.callGQL(reqData);
       reloadImg(image.src);
       cropper.destroy();
       cropperModal.close("cropAccept");
@@ -149,7 +131,5 @@
     cropBtnContainer.appendChild(cropInfo);
   }
 
-  stash.addEventListener("stash:page:scene", function () {
-    waitForElementId("scene-edit-details", setupCropper);
-  });
+  csLib.PathElementListener("/scenes/", "#scene-edit-details", setupCropper);
 })();

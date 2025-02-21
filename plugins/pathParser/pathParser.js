@@ -322,6 +322,7 @@ function testRule(pattern, parts) {
   }
 
   var matchedParts = [];
+  var subMatches;
   for (var i = 0; i < pattern.length; i++) {
     if ((subMatches = testPattern(pattern[i], parts[i])) == null) {
       return null;
@@ -653,7 +654,7 @@ function tryGetTag(tag) {
 
   var result = gql.Do(query, variables);
   if (!result.findTags || result.findTags.count == 0) {
-    return;
+    return null;
   }
 
   return result.findTags.tags[0].id;

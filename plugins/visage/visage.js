@@ -33,75 +33,67 @@
   }
 
   async function getPerformers(performer_id) {
-    const reqData = {
-      query: `{
+    const query = `{
       findPerformers( performer_filter: {stash_id_endpoint: {endpoint: "", stash_id: "${performer_id}", modifier: EQUALS}}){
         performers {
           name
           id
         }
       }
-    }`,
-    };
-    var results = await stash.callGQL(reqData);
-    return results.data.findPerformers.performers;
+    }`;
+    return await csLib
+      .callGQL({ query })
+      .then((data) => data.findPerformers.performers);
   }
 
   async function getPerformersForScene(scene_id) {
-    const reqData = {
-      query: `{
+    const query = `{
       findScene(id: "${scene_id}") {
         performers {
           id
         }
       }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    return result.data.findScene.performers.map((p) => p.id);
+    }`;
+    return await csLib
+      .callGQL({ query })
+      .then((data) => data.findScene.performers.map((p) => p.id));
   }
 
   async function getPerformersForImage(image_id) {
-    const reqData = {
-      query: `{
+    const query = `{
       findImage(id: "${image_id}") {
         performers {
           id
         }
       }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    return result.data.findImage.performers.map((p) => p.id);
+    }`;
+    return await csLib
+      .callGQL({ query })
+      .then((data) => data.findImage.performers.map((p) => p.id));
   }
 
   async function updateScene(scene_id, performer_ids) {
-    const reqData = {
-      variables: { input: { id: scene_id, performer_ids: performer_ids } },
-      query: `mutation sceneUpdate($input: SceneUpdateInput!){
+    const variables = { input: { id: scene_id, performer_ids: performer_ids } };
+    const query = `mutation sceneUpdate($input: SceneUpdateInput!){
       sceneUpdate(input: $input) {
         id
       }
-    }`,
-    };
-    return stash.callGQL(reqData);
+    }`;
+    return csLib.callGQL({ query, variables });
   }
 
   async function updateImage(image_id, performer_ids) {
-    const reqData = {
-      variables: { input: { id: image_id, performer_ids: performer_ids } },
-      query: `mutation imageUpdate($input: ImageUpdateInput!){
+    const variables = { input: { id: image_id, performer_ids: performer_ids } };
+    const query = `mutation imageUpdate($input: ImageUpdateInput!){
       imageUpdate(input: $input) {
         id
       }
-    }`,
-    };
-    return stash.callGQL(reqData);
+    }`;
+    return csLib.callGQL({ query, variables });
   }
 
   async function getStashboxEndpoint() {
-    const reqData = {
-      query: `{
+    const query = `{
       configuration {
         general {
           stashBoxes {
@@ -109,66 +101,62 @@
           }
         }
       }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    return result.data.configuration.general.stashBoxes[0].endpoint;
+    }`;
+    return await csLib
+      .callGQL({ query })
+      .then((data) => data.configuration.general.stashBoxes[0].endpoint);
   }
 
   async function getPerformerDataFromStashID(stash_id) {
-    const reqData = {
-      variables: {
-        source: {
-          stash_box_index: 0,
-        },
-        input: {
-          query: stash_id,
-        },
+    const variables = {
+      source: {
+        stash_box_index: 0,
       },
-      query: `query ScrapeSinglePerformer($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {
-        scrapeSinglePerformer(source: $source, input: $input) {
-            name
-            disambiguation
-            gender
-            url
-            twitter
-            instagram
-            birthdate
-            ethnicity
-            country
-            eye_color
-            height
-            measurements
-            fake_tits
-            career_length
-            tattoos
-            piercings
-            aliases
-            images
-            details
-            death_date
-            hair_color
-            weight
-            remote_site_id
-        }
-      }`,
+      input: {
+        query: stash_id,
+      },
     };
-    var result = await stash.callGQL(reqData);
-    return result.data.scrapeSinglePerformer.filter(
+    const query = `query ScrapeSinglePerformer($source: ScraperSourceInput!, $input: ScrapeSinglePerformerInput!) {
+      scrapeSinglePerformer(source: $source, input: $input) {
+          name
+          disambiguation
+          gender
+          url
+          twitter
+          instagram
+          birthdate
+          ethnicity
+          country
+          eye_color
+          height
+          measurements
+          fake_tits
+          career_length
+          tattoos
+          piercings
+          aliases
+          images
+          details
+          death_date
+          hair_color
+          weight
+          remote_site_id
+      }
+    }`;
+    var result = await csLib.callGQL({ query, variables });
+    return result.scrapeSinglePerformer.filter(
       (p) => p.remote_site_id === stash_id
     )[0];
   }
 
   async function createPerformer(performer) {
-    const reqData = {
-      variables: { input: performer },
-      query: `mutation performerCreate($input: PerformerCreateInput!) {
-        performerCreate(input: $input){
-            id
-        }
-      }`,
-    };
-    return stash.callGQL(reqData);
+    const variables = { input: performer };
+    const query = `mutation performerCreate($input: PerformerCreateInput!) {
+      performerCreate(input: $input){
+          id
+      }
+    }`;
+    return csLib.callGQL({ query, variables });
   }
 
   function smoothload(node) {
@@ -216,23 +204,12 @@
    * @returns {Promise<string|null>} - A Promise that resolves with the sprite URL if it exists, or null if it does not.
    */
   async function getUrlSprite(scene_id) {
-    const reqData = {
-      query: `{
-      findScene(id: ${scene_id}){
-        paths{
-          sprite
-        }
-      }
-    }`,
-    };
-    var result = await stash.callGQL(reqData);
-    const url = result.data.findScene.paths["sprite"];
+    const query = `query { findScene(id: ${scene_id}){ paths{ sprite }} }`;
+    const url = await csLib
+      .callGQL({ query })
+      .then((data) => data.findScene.paths.sprite);
     const response = await fetch(url);
-    if (response.status === 404) {
-      return null;
-    } else {
-      return result.data.findScene.paths["sprite"];
-    }
+    return response.ok ? url : null;
   }
 
   function noop() {}
@@ -15315,26 +15292,22 @@
     }
   }
 
-  stash.addEventListener("stash:page:scene", function () {
-    let elms = ".ml-auto .btn-group";
-    waitForElm(elms).then(() => {
-      const e = document.querySelector(elms);
-      if (!document.querySelector("#visage")) {
-        new SearchFaces({ target: e });
-      }
-      if (!document.querySelector("#faces")) {
-        const e = document.querySelector(elms);
-        new FindFaces({ target: e });
-      }
-    });
-  });
-  stash.addEventListener("stash:page:image", function () {
-    let elms = ".ml-auto .btn-group";
-    waitForElm(elms).then(() => {
-      if (!document.querySelector("#visage")) {
-        const e = document.querySelector(elms);
-        new SearchFaces({ target: e });
-      }
-    });
-  });
+  function addSceneButtons(elem) {
+    if (!document.querySelector("#visage")) new SearchFaces({ target: elem });
+    if (!document.querySelector("#faces")) new FindFaces({ target: elem });
+  }
+  function addImageButtons(elem) {
+    if (!document.querySelector("#visage")) new SearchFaces({ target: elem });
+  }
+  // v25 and v24 compatibility
+  csLib.PathElementListener(
+    "/scenes/",
+    ".scene-toolbar-group .btn-group, .ml-auto .btn-group",
+    addSceneButtons
+  );
+  csLib.PathElementListener(
+    "/images/",
+    ".image-toolbar-group .btn-group, .ml-auto .btn-group",
+    addImageButtons
+  );
 })();

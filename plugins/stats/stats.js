@@ -15,145 +15,191 @@
     statEl.appendChild(statHeading);
   }
 
-  async function createSceneStashIDPct(row) {
-    const reqData = {
-      variables: {
-        scene_filter: {
-          stash_id_endpoint: {
-            modifier: "NOT_NULL",
-          },
-        },
-      },
-      query:
-        "query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {\n  findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {\n    count\n  }\n}",
-    };
-    const stashIdCount = (await stash.callGQL(reqData)).data.findScenes.count;
+  // *** filter ***
+  // filter for * without StashID
+  const noStashIDFilter = { stash_id_endpoint: { modifier: "NOT_NULL" } };
+  // filter for missing image
+  const noImageFilter = { is_missing: "image" };
 
-    const reqData2 = {
-      variables: {
-        scene_filter: {},
-      },
-      query:
-        "query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {\n  findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {\n    count\n  }\n}",
-    };
-    const totalCount = (await stash.callGQL(reqData2)).data.findScenes.count;
+  // *** fetch helpers ***
+  // fetch performers with filter
+  async function findPerformers(filter) {
+    const query = `query ($filter: PerformerFilterType) { findPerformers(performer_filter: $filter) { count } }`;
+    return await csLib
+      .callGQL({ query, variables: { filter } })
+      .then((data) => data.findPerformers.count);
+  }
+
+  // fetch scenes with filter
+  async function findScenes(filter) {
+    const query = `query ($filter: SceneFilterType) { findScenes(scene_filter: $filter) { count }}`;
+    return await csLib
+      .callGQL({ query, variables: { filter } })
+      .then((data) => data.findScenes.count);
+  }
+
+  // fetch studios with filter
+  async function findStudios(filter) {
+    const query = `query ($filter: StudioFilterType) { findStudios(studio_filter: $filter) { count }}`;
+    return await csLib
+      .callGQL({ query, variables: { filter } })
+      .then((data) => data.findStudios.count);
+  }
+
+  // fetch tags with filter
+  async function findTags(filter) {
+    const query = `query ($filter: TagFilterType) { findTags(tag_filter: $filter) { count }}`;
+    return await csLib
+      .callGQL({ query, variables: { filter } })
+      .then((data) => data.findTags.count);
+  }
+
+  // fetch movies with filter
+  async function findMovies(filter) {
+    const query = `query ($filter: MovieFilterType) { findMovies(movie_filter: $filter) { count }}`;
+    return await csLib
+      .callGQL({ query, variables: { filter } })
+      .then((data) => data.findMovies.count);
+  }
+
+  // percentage helper
+  const percentage = (portion, total) =>
+    (total > 0 ? (portion / total) * 100 : 0).toFixed(2) + "%";
+
+  // *** actual stats fetching ***
+  // performer of scenes with any StashID
+  async function createSceneStashIDPct(row) {
+    const stashIdCount = await findScenes(noStashIDFilter);
+    const totalCount = await findScenes();
 
     createStatElement(
       row,
-      ((stashIdCount / totalCount) * 100).toFixed(2) + "%",
+      percentage(stashIdCount, totalCount),
       "Scene StashIDs"
     );
   }
 
+  // percentage of performers with any StashID
   async function createPerformerStashIDPct(row) {
-    const reqData = {
-      variables: {
-        performer_filter: {
-          stash_id_endpoint: {
-            modifier: "NOT_NULL",
-          },
-        },
-      },
-      query:
-        "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}",
-    };
-    const stashIdCount = (await stash.callGQL(reqData)).data.findPerformers
-      .count;
-
-    const reqData2 = {
-      variables: {
-        performer_filter: {},
-      },
-      query:
-        "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}",
-    };
-    const totalCount = (await stash.callGQL(reqData2)).data.findPerformers
-      .count;
+    const stashIdCount = await findPerformers(noStashIDFilter);
+    const totalCount = await findPerformers();
 
     createStatElement(
       row,
-      ((stashIdCount / totalCount) * 100).toFixed(2) + "%",
+      percentage(stashIdCount, totalCount),
       "Performer StashIDs"
     );
   }
 
+  // percentage of studios with any StashID
   async function createStudioStashIDPct(row) {
-    const reqData = {
-      variables: {
-        studio_filter: {
-          stash_id_endpoint: {
-            modifier: "NOT_NULL",
-          },
-        },
-      },
-      query:
-        "query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType) {\n  findStudios(filter: $filter, studio_filter: $studio_filter) {\n    count\n  }\n}",
-    };
-    const stashIdCount = (await stash.callGQL(reqData)).data.findStudios.count;
-
-    const reqData2 = {
-      variables: {
-        scene_filter: {},
-      },
-      query:
-        "query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType) {\n  findStudios(filter: $filter, studio_filter: $studio_filter) {\n    count\n  }\n}",
-    };
-    const totalCount = (await stash.callGQL(reqData2)).data.findStudios.count;
+    const stashIdCount = await findStudios(noStashIDFilter);
+    const totalCount = await findStudios();
 
     createStatElement(
       row,
-      ((stashIdCount / totalCount) * 100).toFixed(2) + "%",
+      percentage(stashIdCount, totalCount),
       "Studio StashIDs"
     );
   }
 
+  // number of favourite performers
   async function createPerformerFavorites(row) {
-    const reqData = {
-      variables: {
-        performer_filter: {
-          filter_favorites: true,
-        },
-      },
-      query:
-        "query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {\n  findPerformers(filter: $filter, performer_filter: $performer_filter) {\n    count\n  }\n}",
-    };
-    const perfCount = (await stash.callGQL(reqData)).data.findPerformers.count;
+    const filter = { filter_favorites: true };
+    const perfCount = await findPerformers(filter);
 
     createStatElement(row, perfCount, "Favorite Performers");
   }
 
+  // number of markers
   async function createMarkersStat(row) {
-    const reqData = {
-      variables: {
-        scene_marker_filter: {},
-      },
-      query:
-        "query FindSceneMarkers($filter: FindFilterType, $scene_marker_filter: SceneMarkerFilterType) {\n  findSceneMarkers(filter: $filter, scene_marker_filter: $scene_marker_filter) {\n    count\n  }\n}",
-    };
-    const totalCount = (await stash.callGQL(reqData)).data.findSceneMarkers
-      .count;
+    const query = `query { findSceneMarkers { count }}`;
+    const totalCount = (await csLib.callGQL({ query })).findSceneMarkers.count;
 
     createStatElement(row, totalCount, "Markers");
   }
 
-  stash.addEventListener("stash:page:stats", function () {
-    waitForElementByXpath(
-      "//div[contains(@class, 'container-fluid')]/div[@class='mt-5']",
-      function (xpath, el) {
-        if (!document.getElementById("custom-stats-row")) {
-          const changelog = el.querySelector("div.changelog");
-          const row = document.createElement("div");
-          row.setAttribute("id", "custom-stats-row");
-          row.classList.add("col", "col-sm-8", "m-sm-auto", "row", "stats");
-          el.insertBefore(row, changelog);
+  // second row stats
+  // tags with images
+  async function createTagHasImage(row) {
+    const missingImgCount = await findTags(noImageFilter);
+    const totalCount = await findTags();
+    const hasImgCount = totalCount - missingImgCount;
 
-          createSceneStashIDPct(row);
-          createStudioStashIDPct(row);
-          createPerformerStashIDPct(row);
-          createPerformerFavorites(row);
-          createMarkersStat(row);
-        }
-      }
+    createStatElement(row, percentage(hasImgCount, totalCount), "Tag Images");
+  }
+
+  // studios with images
+  async function createStudioHasimage(row) {
+    const missingImgCount = await findStudios(noImageFilter);
+    const totalCount = await findStudios();
+    const hasImgCount = totalCount - missingImgCount;
+
+    createStatElement(
+      row,
+      percentage(hasImgCount, totalCount),
+      "Studio Images"
     );
-  });
+  }
+
+  // performers with images
+  async function createPerformerHasImage(row) {
+    const missingImgCount = await findPerformers(noImageFilter);
+    const totalCount = await findPerformers();
+    const hasImgCount = totalCount - missingImgCount;
+
+    createStatElement(
+      row,
+      percentage(hasImgCount, totalCount),
+      "Performer Images"
+    );
+  }
+
+  // movies with cover images
+  async function createMovieHasCover(row) {
+    const filter = { is_missing: "front_image" };
+    const missingImgCount = await findMovies(filter);
+    const totalCount = await findMovies();
+    const hasImgCount = totalCount - missingImgCount;
+
+    createStatElement(row, percentage(hasImgCount, totalCount), "Movie Covers");
+  }
+
+  // scenes over WEB_HD (540p)
+  async function createSceneOverWebHD(row) {
+    const filter = {
+      resolution: { modifier: "GREATER_THAN", value: "WEB_HD" },
+    };
+    const sceneCount = await findScenes(filter);
+    const totalCount = await findScenes();
+
+    createStatElement(row, percentage(sceneCount, totalCount), "Scenes HD");
+  }
+
+  csLib.PathElementListener(
+    "/stats",
+    "div.container-fluid div.mt-5",
+    setupStats
+  );
+  async function setupStats(el) {
+    if (document.querySelector(".custom-stats-row")) return;
+    const changelog = el.querySelector("div.changelog");
+    const rowOne = document.createElement("div");
+    rowOne.classList = "custom-stats-row col col-sm-8 m-sm-auto row stats";
+    el.insertBefore(rowOne, changelog);
+    const rowTwo = rowOne.cloneNode();
+    el.insertBefore(rowTwo, changelog);
+    // row one
+    await createSceneStashIDPct(rowOne);
+    await createStudioStashIDPct(rowOne);
+    await createPerformerStashIDPct(rowOne);
+    await createPerformerFavorites(rowOne);
+    await createMarkersStat(rowOne);
+    // row two
+    await createTagHasImage(rowTwo);
+    await createStudioHasimage(rowTwo);
+    await createPerformerHasImage(rowTwo);
+    await createMovieHasCover(rowTwo);
+    await createSceneOverWebHD(rowTwo);
+  }
 })();
