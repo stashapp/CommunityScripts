@@ -46,8 +46,3 @@ Category|Plugin Name|Description|Minimum Stash version
 --------|-----------|-----------|---------------------
 Kodi|[Kodi Helper](scripts/kodi-helper)|Generates `nfo` and `strm` for use with Kodi.|v0.7
 Maintenance|[Stash Sqlite Renamer](scripts/Sqlite_Renamer)|Renames your files using stash's metadata.|v0.7
-
-## Custom Javascripts
-Category|Plugin Name|Description|Minimum Stash version
---------|-----------|-----------|---------------------
-Scene Player|[SceneCardVideoPlayer](/scripts/SceneCardVideoPlayer)|Create a "Play" button for each scene in the list.|v0.18
