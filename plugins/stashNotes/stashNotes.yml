@@ -1,0 +1,6 @@
+name: Stash Notes
+description: Adds a button to the navigation bar which opens a small window for writing notes to your browser's local storage.
+version: 1.0
+ui:
+  javascript:
+    - stashNotes.js

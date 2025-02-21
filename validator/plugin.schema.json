@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "plugin",
+  "title": "Stash Plugin",
+  "description": "A stash plugin config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "title": "Plugin name",
+      "description": "The name of the plugin.",
+      "type": "string"
+    },
+    "description": {
+      "title": "Plugin description",
+      "description": "Short description of the plugin.",
+      "type": ["string", "null"]
+    },
+    "version": {
+      "title": "Plugin version",
+      "description": "Format: x.y.z where x y and z are integers.",
+      "type": ["string", "integer", "number"],
+      "pattern": "^\\d+(\\.\\d+)?(\\.\\d+)?$"
+    },
+    "url": {
+      "title": "Url",
+      "description": "Optional url",
+      "type": ["string", "null"]
+    },
+    "ui": {
+      "title": "Plugin UI",
+      "description": "Optional files needed to render plugin specific UI",
+      "$ref": "#/definitions/UIConfig"
+    },
+    "exec": {
+      "title": "Command to run the plugin",
+      "description": "For external plugin tasks, the exec field is a list with the first element being the binary that will be executed, and the subsequent elements are the arguments passed. The execution process will search the path for the binary, then will attempt to find the program in the same directory as the plugin configuration file. The exe extension is not necessary on Windows systems.\n\nFor embedded plugins, the exec field is a list with the first element being the path to the Javascript file that will be executed. It is expected that the path to the Javascript file is relative to the directory of the plugin configuration file.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "interface": {
+      "title": "Plugin interface",
+      "description": "For external plugin tasks, the interface field must be set to one of the following values: rpc, raw\n\nFor embedded plugins, the interface field must be set to one of the following values: js\n\nThe interface field defaults to raw if not provided.",
+      "type": "string",
+      "enum": ["js", "raw", "rpc"],
+      "default": "raw"
+    },
+    "errLog": {
+      "title": "Log level",
+      "description": "Tells stash what the default log level should be when the plugin outputs to stderr without encoding a log level. It defaults to the error level if no provided. This field is not necessary if the plugin outputs logging with the appropriate encoding.",
+      "type": "string",
+      "enum": ["trace", "debug", "info", "warning", "error"],
+      "default": "raw"
+    },
+    "hooks": {
+      "title": "Hooks configuration",
+      "description": "Array of individual hook configurations.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/HookConfig"
+      }
+    },
+    "tasks": {
+      "title": "Tasks configuration",
+      "description": "Array of individual tasks configurations.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TaskConfig"
+      }
+    },
+    "settings": {
+      "title": "Plugin settings",
+      "description": "The settings defined for this plugin.",
+      "$ref": "#/definitions/SettingConfig"
+    }
+  },
+  "definitions": {
+    "UIConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": ["css"]
+        },
+        {
+          "required": ["javascript"]
+        }
+      ],
+      "properties": {
+        "css": {
+          "title": "CSS files",
+          "description": "Optional list of CSS files to include in the UI",
+          "items": {
+            "description": "Path to CSS file"
+          },
+          "$ref": "#/definitions/StringList"
+        },
+        "javascript": {
+          "title": "Javascript files",
+          "description": "Optional list of Javascript files to include in the UI",
+          "items": {
+            "description": "Path to Javascript file"
+          },
+          "$ref": "#/definitions/StringList"
+        },
+        "requires": {
+          "title": "Required plugins",
+          "description": "Optional list of plugin IDs to load prior to this plugin.",
+          "items": {
+            "description": "Required plugin ID"
+          },
+          "$ref": "#/definitions/StringList"
+        },
+        "assets": {
+          "title": "Assets",
+          "description": "Optional map of assets.",
+          "type": "object",
+          "patternProperties": {
+            "": {
+              "type": "string",
+              "title": "Asset location",
+              "description": "Asset location on the file system as pair of values urlPrefix: fsLocation."
+            }
+          }
+        },
+        "csp": {
+          "title": "Content-security policy overrides",
+          "description": "Optional map of policy directives",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "script-src": {
+              "$ref": "#/definitions/CspDirective"
+            },
+            "style-src": {
+              "$ref": "#/definitions/CspDirective"
+            },
+            "connect-src": {
+              "$ref": "#/definitions/CspDirective"
+            }
+          },
+          "patternProperties": {
+            "": {
+              "$ref": "#/definitions/CspDirective"
+            }
+          }
+        },
+        "settings": {
+          "title": "UI plugin settings",
+          "description": "Map of setting names to be displayed in the plugins page in the UI.",
+          "$ref": "#/definitions/SettingConfig"
+        }
+      }
+    },
+    "HookConfig": {
+      "type": "object",
+      "required": ["name", "triggeredBy"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Hook name"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Optional description for this hook"
+        },
+        "triggeredBy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TriggerType"
+          }
+        },
+        "defaultArgs": {
+          "description": "Default arguments",
+          "type": "object",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "TriggerType": {
+      "type": "string",
+      "pattern": "^(Scene|SceneMarker|Image|Gallery|GalleryChapter|Movie|Performer|Studio|Tag)\\.(Create|Update|Destroy|Merge)\\.Post$",
+      "enum": [
+        "Scene.Create.Post",
+        "Scene.Update.Post",
+        "Scene.Destroy.Post",
+        "Scene.Merge.Post",
+        "SceneMarker.Create.Post",
+        "SceneMarker.Update.Post",
+        "SceneMarker.Destroy.Post",
+        "SceneMarker.Merge.Post",
+        "Image.Create.Post",
+        "Image.Update.Post",
+        "Image.Destroy.Post",
+        "Image.Merge.Post",
+        "Gallery.Create.Post",
+        "Gallery.Update.Post",
+        "Gallery.Destroy.Post",
+        "Gallery.Merge.Post",
+        "GalleryChapter.Create.Post",
+        "GalleryChapter.Update.Post",
+        "GalleryChapter.Destroy.Post",
+        "Movie.Create.Post",
+        "Movie.Update.Post",
+        "Movie.Destroy.Post",
+        "Movie.Merge.Post",
+        "Performer.Create.Post",
+        "Performer.Update.Post",
+        "Performer.Destroy.Post",
+        "Performer.Merge.Post",
+        "Studio.Create.Post",
+        "Studio.Update.Post",
+        "Studio.Destroy.Post",
+        "Studio.Merge.Post",
+        "Tag.Create.Post",
+        "Tag.Update.Post",
+        "Tag.Destroy.Post",
+        "Tag.Merge.Post"
+      ]
+    },
+    "TaskConfig": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Task name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional description for this task"
+        },
+        "defaultArgs": {
+          "description": "Default arguments",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "execArgs": {
+          "description": "Default arguments",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SettingConfig": {
+      "type": "object",
+      "patternProperties": {
+        "": {
+          "type": "object",
+          "description": "Internal name",
+          "required": ["displayName", "type"],
+          "properties": {
+            "displayName": {
+              "type": "string",
+              "description": "Name to display in the UI"
+            },
+            "description": {
+              "type": ["string", "null"],
+              "description": "Optional description for this setting"
+            },
+            "type": {
+              "type": "string",
+              "description": "Type of the attribute to show in the UI. It can be one of BOOLEAN, NUMBER, STRING",
+              "enum": ["BOOLEAN", "NUMBER", "STRING"]
+            }
+          }
+        }
+      }
+    },
+    "StringList": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "CspDirective": {
+      "description": "Policy directive",
+      "type": ["array", "null"],
+      "items": {
+        "type": "string",
+        "description": "Allowed domain",
+        "examples": [
+          "self",
+          "http://alloweddomain.com",
+          "example.com",
+          "*.example.com"
+        ]
+      }
+    }
+  }
+}

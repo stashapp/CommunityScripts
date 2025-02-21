@@ -1,0 +1,30 @@
+name: renamerOnUpdate
+description: Rename/move filename based on a template.
+url: https://github.com/stashapp/CommunityScripts
+version: 2.5.0
+exec:
+  - python
+  - "{pluginDir}/renamerOnUpdate.py"
+interface: raw
+hooks:
+  - name: hook_rename
+    description: Rename/move file when you update a scene.
+    triggeredBy:
+      - Scene.Update.Post
+tasks:
+  - name: "Disable"
+    description: Disable the hook
+    defaultArgs:
+      mode: disable
+  - name: "Enable"
+    description: Enable the hook
+    defaultArgs:
+      mode: enable
+  - name: "Dryrun"
+    description: Enable/disable dry-run
+    defaultArgs:
+      mode: dryrun
+  - name: "Rename scenes"
+    description: Rename all your scenes based on your config.
+    defaultArgs:
+      mode: bulk

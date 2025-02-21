@@ -1,0 +1,13 @@
+name: Funscript Markers
+description: Create markers if there is a funscript with "chapters" included in the metadata of the script
+version: 0.1
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/funscriptMarkers.py"
+interface: raw
+tasks:
+  - name: "Re-process All"
+    description: Look at funscript files and see if there are chapters in the metadata
+    defaultArgs:
+      mode: processAll

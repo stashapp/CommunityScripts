@@ -1,0 +1,12 @@
+#pkgignore
+#ImportList is a dictionary
+#that matches an xml Attribute from ComicInfo.xml to the according value in stash (using the graphql naming)
+#Fields that refer to different types of media are resolved by name and created if necessary (tags, studio, performers)
+#Fields that can contain multiple values (tags, performers) will be expected as a comma separated string, like
+#<Genre>Outdoor, Blonde</Genre>
+ImportList:
+  Genre: tags
+  Title: title
+  Writer: studio
+  Year: date
+  Summary: details

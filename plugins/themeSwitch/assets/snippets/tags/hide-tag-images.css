@@ -1,0 +1,21 @@
+/* Author: Echoman */
+/* [Tags Images] Hides The tag images in Tags view and HR */
+.tag-card-image {
+  display: none !important;
+}
+
+.tag-card > hr {
+  display: none !important;
+}
+
+.card {
+  padding: 10px !important;
+}
+
+.card-popovers {
+  margin-bottom: 0px !important;
+}
+
+.tag-card {
+  padding: 0px !important;
+}

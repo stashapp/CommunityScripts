@@ -1,0 +1,11 @@
+/* [Studios tab] Show more item per row - Author hijack_hornet */
+:not(.recommendation-row .studio-card).studio-card {
+  width: 15%;
+}
+:not(.recommendation-row .studio-card-image).studio-card-image {
+  width: 100%;
+}
+.studio-card h5 {
+  text-align: center !important;
+  display: block;
+}

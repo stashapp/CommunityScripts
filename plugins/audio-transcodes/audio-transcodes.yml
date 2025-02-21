@@ -1,0 +1,18 @@
+name: audio-transcodes
+description: Generate a transcode video from an audio file
+version: 0.1
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/audio-transcodes.py"
+interface: raw
+hooks:
+  - name: process audio
+    description: transcode audio files on scan
+    triggeredBy:
+      - Scene.Create.Post
+tasks:
+  - name: "Process All"
+    description: transcode audio to video on all audio files
+    defaultArgs:
+      mode: processScenes

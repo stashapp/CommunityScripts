@@ -1,0 +1,6 @@
+name: CommunityScriptsUILibrary
+description: CommunityScripts UI helper library
+version: 1.0.0
+ui:
+  javascript:
+    - cs-ui-lib.js

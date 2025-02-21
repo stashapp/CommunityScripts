@@ -9,7 +9,7 @@ interface: js
 hooks:
   - name: Add Configured Data on Scan
     description: Adds configured tags/performers/studio on Task->Scan creation.
-    triggeredBy: 
+    triggeredBy:
       - Scene.Create.Post
       - Gallery.Create.Post
       - Image.Create.Post

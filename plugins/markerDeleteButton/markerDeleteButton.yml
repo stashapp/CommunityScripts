@@ -1,0 +1,11 @@
+name: Marker Delete Button
+# requires: CommunityScriptsUILibrary
+description: Adds a delete button to entries on the Markers page and on the Scene page.
+version: 0.2
+ui:
+  requires:
+    - CommunityScriptsUILibrary
+  javascript:
+    - markerDeleteButton.js
+  css:
+    - markerDeleteButton.css

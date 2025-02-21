@@ -1,0 +1,154 @@
+/*Tag layout changes - Author hijack_hornet */
+.tag-card {
+  width: 16rem;
+  padding: 0;
+}
+
+.tag-card .card-section {
+  height: 2.5rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0000007a;
+  line-height: none;
+}
+.tag-card .card-section .TruncatedText {
+  -webkit-line-clamp: 1 !important;
+}
+.tag-card h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  line-height: normal;
+}
+.tag-card hr,
+.tag-description {
+  display: none;
+}
+.tag-card .btn-group {
+  position: absolute;
+  width: 100%;
+  bottom: 2.5rem;
+  margin-bottom: 0;
+  opacity: 0;
+  transition: ease 0.2s;
+}
+.tag-card .btn-group:hover {
+  opacity: 1;
+  transition: ease 0.2s;
+  background: #0000007a;
+}
+
+.tag-card-image {
+  object-fit: cover;
+  object-position: center;
+}
+
+.zoom-0 .tag-card-image {
+  max-height: none;
+  height: 16rem;
+  width: 12rem;
+}
+
+.zoom-1 .tag-card-image {
+  max-height: none;
+  height: 20rem;
+  width: 15rem;
+}
+
+.zoom-2 .tag-card-image {
+  max-height: none;
+  height: 24rem;
+  width: 18rem;
+}
+
+.zoom-3 .tag-card-image {
+  max-height: none;
+  height: 28rem;
+  width: 21rem;
+}
+
+.zoom-0.tag-card,
+.zoom-1.tag-card,
+.zoom-2.tag-card,
+.zoom-3.tag-card {
+  width: initial;
+}
+
+.tag-card .card-section > a {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: block;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 7px 14px 0px 14px;
+}
+.tag-card .card-section .tag-sub-tags {
+  position: relative;
+  margin-top: 2rem;
+  z-index: 1;
+}
+.tag-sub-tags {
+  font-size: 0;
+}
+.tag-parent-tags {
+  display: none;
+}
+/*Tag subtag exploration snipset*/
+.tag-card .card-section > a {
+  cursor: default;
+  pointer-events: none;
+}
+.tag-card .card-section > hr {
+  margin-top: 2rem;
+}
+.tag-card .card-section .tag-sub-tags {
+  position: absolute !important;
+  margin-top: 0 !important;
+  width: 100%;
+  height: 100%;
+  display: block;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: 0;
+}
+.tag-sub-tags::before {
+  content: "";
+  display: block;
+  background: url("https://img.icons8.com/material-outlined/24/137cbd/connection-status-off.png")
+    no-repeat;
+  background-size: 1.5rem 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  float: right;
+  margin: 0.5rem 0.5rem 0 0;
+}
+.tag-sub-tags > a {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tag-card .btn-group a {
+  z-index: 10;
+}
+.tag-sub-tags {
+  font-size: 0;
+}
+.tag-parent-tags {
+  display: none;
+}

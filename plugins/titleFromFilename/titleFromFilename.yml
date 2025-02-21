@@ -1,0 +1,13 @@
+name: titleFromFilename
+description: Set a scene's title from it's filename
+url: https://github.com/stashapp/CommunityScripts
+version: 1.2
+exec:
+  - python
+  - "{pluginDir}/titleFromFilename.py"
+interface: raw
+hooks:
+  - name: hook_set_title_from_filename
+    description: Set the title of the scene to it's filename
+    triggeredBy:
+      - Scene.Create.Post

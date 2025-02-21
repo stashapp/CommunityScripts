@@ -1,6 +1,6 @@
-name: Set Scene Cover 
-description: Searchs Stash for Scenes with a cover image in the same folder and sets the cover image in stash to that image
-version: 0.3
+name: Set Scene Cover
+description: searches Stash for Scenes with a cover image in the same folder and sets the cover image in stash to that image
+version: 0.4
 url: https://github.com/stg-annon/CommunityScripts/tree/main/plugins/setSceneCoverFromFile
 exec:
   - python
@@ -8,7 +8,7 @@ exec:
 interface: raw
 tasks:
   - name: Scan
-    description: searchs stash dirs for cover images and logs results
+    description: searches stash dirs for cover images and logs results
     defaultArgs:
       mode: scan
   - name: Set Cover

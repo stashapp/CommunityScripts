@@ -1,0 +1,92 @@
+/* Black Hole Theme by BViking78 v2.0 */
+/* STASH GENERAL */
+/* Set Background to Black & Optional Custom Image */
+body {
+  background: black url("") no-repeat fixed center;
+  background-size: contain;
+}
+
+/* Change Top Nav Bar Colors */
+.bg-dark {
+  background-color: #000000 !important;
+}
+
+/* Set Red Border on Button on Hover */
+.btn-primary.btn:hover {
+  border: 1px solid red;
+}
+
+/* Set Background to Transparent for Tags/Performers Popups*/
+.fade.hover-popover-content {
+  background: transparent;
+}
+
+/* Zoom Performers image when Hover*/
+.hover-popover-content {
+  max-width: initial;
+}
+.image-thumbnail:hover {
+  height: 100%;
+}
+
+/* Set Opacity Studio Logo to 100% */
+.scene-studio-overlay {
+  opacity: 100%;
+}
+
+/* Making Checkbox Slightly Bigger */
+.grid-card .card-check {
+  top: 0.9rem;
+  width: 1.75rem;
+}
+
+/* Center Titles on Cards */
+.grid-card a .card-section-title {
+  text-align: center;
+}
+
+/* Setting Background on Cards to Black and Borders to "Stash Grey" */
+.card {
+  background-color: black;
+  border: 1px solid #30404d;
+}
+
+/* STASH MAIN PAGE*/
+/* Change Card Header Color */
+.card-header {
+  background: black;
+  border: 1px solid white;
+}
+/* Change Markdown Color */
+.card-body {
+  background: black;
+  border: 1px solid white;
+}
+
+/* SCENE PAGE */
+/* Hide the scene scrubber */
+.scrubber-wrapper {
+  display: none;
+}
+
+/* Setting Row "Scrape With" Background to Black */
+#scene-edit-details .edit-buttons-container {
+  background-color: black;
+}
+
+/* Setting Other Rows Background to Black */
+div.react-select__control {
+  background-color: black;
+}
+
+/* SETTING */
+/* Setting Text Input Border to White */
+.input-control,
+.text-input {
+  border: 1px solid white;
+}
+
+/* Setting Background on Task Queue to Black */
+#tasks-panel .tasks-panel-queue {
+  background-color: black;
+}

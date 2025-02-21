@@ -1,0 +1,12 @@
+name: Scene Cover Cropper
+description: Crop Scene Cover Images
+# requires: CommunityScriptsUILibrary
+version: 1.0
+ui:
+  requires:
+    - CommunityScriptsUILibrary
+  css:
+    - https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css
+  javascript:
+    - https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js
+    - sceneCoverCropper.js

@@ -1,0 +1,50 @@
+name: Deploy repository to Github Pages
+
+on:
+  push:
+    branches: [main, stable]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v2
+        with:
+          path: main
+          ref: main
+          fetch-depth: "0"
+      - run: |
+          cd main
+          ./build_site.sh ../_site/stable
+      - name: Checkout dev
+        uses: actions/checkout@v2
+        with:
+          path: dev
+          # change this ref to whatever dev branch/tag we need when necessary
+          ref: main
+          fetch-depth: "0"
+      - run: |
+          cd dev
+          ../main/build_site.sh ../_site/develop
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
