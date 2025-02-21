@@ -1,9 +1,9 @@
 name: Extended Stats
-# requires: StashUserscriptLibrary
+# requires: CommunityScriptsUILibrary
 description: Adds new stats to the stats page
-version: 1.0
+version: 1.1
 ui:
-  requires: 
-  - StashUserscriptLibrary
+  requires:
+    - CommunityScriptsUILibrary
   javascript:
-  - stats.js
+    - stats.js

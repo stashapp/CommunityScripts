@@ -1,0 +1,69 @@
+/* Author: Qx#1573 */
+/* [Tags changes] changes the layout of tag cards on tags page and hover */
+.tag-parent-tags,
+.tag-sub-tags {
+  display: none;
+}
+.tag-card.zoom-0.grid-card.card div.card-section div.card-popovers.btn-group {
+  margin-top: 1em;
+}
+.tag-card.zoom-0.grid-card.card
+  div.thumbnail-section
+  a.tag-card-header
+  img.tag-card-image {
+  object-fit: cover;
+}
+.tag-card.zoom-0.grid-card.card div.card-section hr {
+  display: none;
+}
+
+.tag-card.zoom-0.grid-card.card {
+  padding: 0;
+  width: 300px;
+  height: 180px;
+}
+
+.tag-card.zoom-0.grid-card.card div.card-section {
+  position: absolute;
+  text-shadow: 2px 2px 2px #000;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  height: 3em;
+  overflow: hidden;
+  transition: 0.8s ease-in-out;
+}
+
+.tag-card.zoom-0.grid-card.card div.card-section a {
+  text-decoration: none;
+}
+
+.tag-card.zoom-0.grid-card.card div.card-section:hover {
+  height: 22em;
+}
+
+.tag-card.zoom-0.grid-card.card
+  div.card-section
+  a
+  h5.card-section-title.flex-aligned
+  div.TruncatedText {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 300px;
+  overflow: hidden;
+  display: block;
+}
+
+.tag-card.zoom-0.grid-card.card
+  div.card-section
+  div.TruncatedText.tag-description {
+  position: relative;
+  top: 0.5em;
+  -webkit-text-stroke-width: 1px;
+  font-size: 16px;
+}
+
+.tag-card .card-popovers .btn {
+  text-shadow: 1px 1px 1px #000;
+  stroke: black;
+  stroke-width: 15;
+}

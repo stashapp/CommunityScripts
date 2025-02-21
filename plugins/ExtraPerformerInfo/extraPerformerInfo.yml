@@ -1,0 +1,40 @@
+name: Extra Performer Info
+description: Add extra tags for VR and other ues
+version: 0.1
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/extraPerformerInfo.py"
+interface: raw
+settings:
+  processWikidata:
+    displayName: process wikidata.org urls
+    description: Enabling fetching info from wikidata
+    type: BOOLEAN
+  wikidatExtraUrls:
+    displayName: Extra Urls
+    description: Add extra porn related urls
+    type: BOOLEAN
+  awards:
+    displayName: Add award info
+    description: Add award info to custom fields if this has been added to wikidata
+    type: BOOLEAN
+  createTag:
+    displayName: Add tags to performers
+    description: Add [Award Winner], [Award Nominated] tags to performers
+    type: BOOLEAN
+  otherInfo:
+    displayName: Add misc other info to custom fields
+    description: Add other info such as birth place, ethnic group and Occupation to custom fields
+    type: BOOLEAN
+
+hooks:
+  - name: Process performer
+    description: Process wikidata or other api url
+    triggeredBy:
+      - Performer.Update.Post
+tasks:
+  - name: Process all
+    description: Process all scenes and add extra tags if configured
+    defaultArgs:
+      mode: processAll

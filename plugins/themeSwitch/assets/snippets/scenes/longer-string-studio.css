@@ -1,0 +1,8 @@
+/* [Scenes tab] Allow for longer string when displaying "Studio as Text" on scene thumbnails */
+
+.scene-studio-overlay {
+  font-weight: 600 !important;
+  opacity: 1 !important;
+  width: 60% !important;
+  text-overflow: ellipsis !important;
+}

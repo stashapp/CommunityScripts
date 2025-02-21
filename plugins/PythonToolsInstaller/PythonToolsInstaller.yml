@@ -1,0 +1,13 @@
+name: "Python Tools Installer"
+description: Download stashapp-tools for DockerEnv
+version: 0.1.2
+url: https://github.com/tooliload/StashAppCommunityScripts/tree/main/plugins/PythonToolsInstaller
+exec:
+  - python
+  - "{pluginDir}/PythonToolsInstaller.py"
+interface: raw
+tasks:
+  - name: "Install"
+    description: Install Python Module stashapi-tools
+    defaultArgs:
+      mode: process_py_stashapi_tools

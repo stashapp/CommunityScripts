@@ -1,0 +1,34 @@
+{
+  "id": "0",
+  "type": null,
+  "title": "Game Start",
+  "map": {
+    "title": "Demo",
+    "description": "Your are viewing a demo of the Choose Your Adventure Player"
+  },
+  "mapItem": [
+    {
+      "choice_id": "TBD",
+      "title": "TBD",
+      "picture": "poster-1.png"
+    }
+  ],
+  "skipto": "2",
+  "choices": [
+    {
+      "description": "Good Choice",
+      "id": "1a",
+      "type": "",
+      "photo": "good.jpg"
+    },
+    {
+      "description": "Bad Choice",
+      "id": "1b",
+      "type": "",
+      "photo": "bad.jpg"
+    }
+  ],
+  "resource": {
+    "resolved_content": "Scene0.mp4"
+  }
+}

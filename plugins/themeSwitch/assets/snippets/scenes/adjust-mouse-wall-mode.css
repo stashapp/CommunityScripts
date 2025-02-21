@@ -1,0 +1,11 @@
+/* [Scenes tab] Adjust the mouse over behaviour in wall mode */
+
+@media (min-width: 576px) {
+  .wall-item:hover::before {
+    opacity: 0;
+  }
+
+  .wall-item:hover .wall-item-container {
+    transform: scale(1.5);
+  }
+}

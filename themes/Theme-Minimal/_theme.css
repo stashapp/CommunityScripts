@@ -1,0 +1,158 @@
+@font-face {
+  font-family: "Outfit";
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/Outfit-VariableFont_wght.woff2") format("woff2");
+}
+
+.light,
+.light-theme {
+  /* Radix-UI Colors: mauve */
+  --primary-1: #fdfcfd;
+  --primary-2: #faf9fb;
+  --primary-3: #f2eff3;
+  --primary-4: #eae7ec;
+  --primary-5: #e3dfe6;
+  --primary-6: #dbd8e0;
+  --primary-7: #d0cdd7;
+  --primary-8: #bcbac7;
+  --primary-9: #8e8c99;
+  --primary-10: #84828e;
+  --primary-11: #65636d;
+  --primary-12: #211f26;
+  --primary-a1: #55005503;
+  --primary-a2: #2b005506;
+  --primary-a3: #30004010;
+  --primary-a4: #20003618;
+  --primary-a5: #20003820;
+  --primary-a6: #14003527;
+  --primary-a7: #10003332;
+  --primary-a8: #08003145;
+  --primary-a9: #05001d73;
+  --primary-a10: #0500197d;
+  --primary-a11: #0400119c;
+  --primary-a12: #020008e0;
+
+  /* Radix-UI Colors: green */
+  --success-1: #fbfefc;
+  --success-2: #f4fbf6;
+  --success-3: #e6f6eb;
+  --success-4: #d6f1df;
+  --success-5: #c4e8d1;
+  --success-6: #adddc0;
+  --success-7: #8eceaa;
+  --success-8: #5bb98b;
+  --success-9: #30a46c;
+  --success-10: #2b9a66;
+  --success-11: #218358;
+  --success-12: #193b2d;
+
+  /* Radix-UI Colors: red */
+  --danger-1: #fffcfc;
+  --danger-2: #fff7f7;
+  --danger-3: #feebec;
+  --danger-4: #ffdbdc;
+  --danger-5: #ffcdce;
+  --danger-6: #fdbdbe;
+  --danger-7: #f4a9aa;
+  --danger-8: #eb8e90;
+  --danger-9: #e5484d;
+  --danger-10: #dc3e42;
+  --danger-11: #ce2c31;
+  --danger-12: #641723;
+}
+
+:root,
+.dark,
+.dark-theme {
+  /* Radix-UI Colors: mauve dark */
+  --primary-1: #121113;
+  --primary-2: #1a191b;
+  --primary-3: #232225;
+  --primary-4: #2b292d;
+  --primary-5: #323035;
+  --primary-6: #3c393f;
+  --primary-7: #49474e;
+  --primary-8: #625f69;
+  --primary-9: #6f6d78;
+  --primary-10: #7c7a85;
+  --primary-11: #b5b2bc;
+  --primary-12: #eeeef0;
+  --primary-a1: #00000000;
+  --primary-a2: #f5f4f609;
+  --primary-a3: #ebeaf814;
+  --primary-a4: #eee5f81d;
+  --primary-a5: #efe6fe25;
+  --primary-a6: #f1e6fd30;
+  --primary-a7: #eee9ff40;
+  --primary-a8: #eee7ff5d;
+  --primary-a9: #eae6fd6e;
+  --primary-a10: #ece9fd7c;
+  --primary-a11: #f5f1ffb7;
+  --primary-a12: #fdfdffef;
+
+  /* Radix-UI Colors: green dark */
+  --success-1: #0e1512;
+  --success-2: #121b17;
+  --success-3: #132d21;
+  --success-4: #113b29;
+  --success-5: #174933;
+  --success-6: #20573e;
+  --success-7: #28684a;
+  --success-8: #2f7c57;
+  --success-9: #30a46c;
+  --success-10: #33b074;
+  --success-11: #3dd68c;
+  --success-12: #b1f1cb;
+
+  /* Radix-UI Colors: red dark */
+  --danger-1: #191111;
+  --danger-2: #201314;
+  --danger-3: #3b1219;
+  --danger-4: #500f1c;
+  --danger-5: #611623;
+  --danger-6: #72232d;
+  --danger-7: #8c333a;
+  --danger-8: #b54548;
+  --danger-9: #e5484d;
+  --danger-10: #ec5d5e;
+  --danger-11: #ff9592;
+  --danger-12: #ffd1d9;
+
+  --rating-1-background: rgba(94, 28, 22, 0.5); /* tomato */
+  --rating-2-background: rgba(86, 40, 0, 0.5); /* orange */
+  --rating-3-background: rgba(77, 48, 0, 0.5); /* amber */
+  --rating-4-background: rgba(67, 53, 0, 0.5); /* yellow */
+  --rating-5-background: rgba(51, 68, 35, 0.5); /* lime */
+
+  --black-a1: rgba(0, 0, 0, 0.05);
+  --black-a2: rgba(0, 0, 0, 0.1);
+  --black-a3: rgba(0, 0, 0, 0.15);
+  --black-a4: rgba(0, 0, 0, 0.2);
+  --black-a5: rgba(0, 0, 0, 0.3);
+  --black-a6: rgba(0, 0, 0, 0.4);
+  --black-a7: rgba(0, 0, 0, 0.5);
+  --black-a8: rgba(0, 0, 0, 0.6);
+  --black-a9: rgba(0, 0, 0, 0.7);
+  --black-a10: rgba(0, 0, 0, 0.8);
+  --black-a11: rgba(0, 0, 0, 0.9);
+  --black-a12: rgba(0, 0, 0, 0.95);
+
+  --text-3xs: 0.5rem; /* 8px */
+  --text-2xs: 0.625rem; /* 10px */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+  --text-6xl: 3.75rem; /* 60px */
+  --text-7xl: 4.5rem; /* 72px */
+  --text-8xl: 6rem; /* 96px */
+  --text-9xl: 8rem; /* 128px */
+
+  --nav-bar-height: 4rem;
+}

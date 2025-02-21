@@ -1,0 +1,67 @@
+.scene-card__date {
+  color: #bfccd6;
+  font-size: 0.85em;
+}
+
+.scene-card__performer {
+  display: inline-block;
+  font-weight: 500;
+  margin-right: 0.5em;
+}
+.scene-card__performer a {
+  color: #137cbd;
+}
+
+.scene-card__performers,
+.scene-card__tags {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+.scene-card__performers:hover,
+.scene-card__tags:hover {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.scene-card__tags .tag-item {
+  margin-left: 0;
+}
+
+.scene-performer-popover .image-thumbnail {
+  margin: 1em;
+}
+
+/* Dashed border */
+hr.dashed {
+  border-top: 3px dashed #bbb;
+}
+
+/* Dotted border */
+hr.dotted {
+  border-top: 3px dotted #bbb;
+}
+
+/* Solid border */
+hr.solid {
+  border-top: 3px solid #bbb;
+}
+
+/* Rounded border */
+hr.rounded {
+  border-top: 8px solid #bbb;
+  border-radius: 5px;
+}
+
+h3.under_construction {
+  color: red;
+  background-color: yellow;
+}
+
+h3.submenu {
+  color: Tomato;
+  background-color: rgba(100, 100, 100);
+}
+
+/*# sourceMappingURL=DupFileManager.css.map */

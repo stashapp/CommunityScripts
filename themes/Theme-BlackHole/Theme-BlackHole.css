@@ -2,13 +2,13 @@
 /* STASH GENERAL */
 /* Set Background to Black & Optional Custom Image */
 body {
-	background: black url("") no-repeat fixed center;
-	background-size: contain;
+  background: black url("") no-repeat fixed center;
+  background-size: contain;
 }
 
 /* Change Top Nav Bar Colors */
 .bg-dark {
-    background-color: #000000!important;
+  background-color: #000000 !important;
 }
 
 /* Set Red Border on Button on Hover */
@@ -31,24 +31,24 @@ body {
 
 /* Set Opacity Studio Logo to 100% */
 .scene-studio-overlay {
-	opacity: 100%;
+  opacity: 100%;
 }
 
 /* Making Checkbox Slightly Bigger */
 .grid-card .card-check {
-	top: 0.9rem;
-	width: 1.75rem;
+  top: 0.9rem;
+  width: 1.75rem;
 }
 
 /* Center Titles on Cards */
 .grid-card a .card-section-title {
-	text-align: center;
+  text-align: center;
 }
 
 /* Setting Background on Cards to Black and Borders to "Stash Grey" */
 .card {
-	background-color: black;
-	border: 1px solid #30404d;
+  background-color: black;
+  border: 1px solid #30404d;
 }
 
 /* STASH MAIN PAGE*/
@@ -71,21 +71,22 @@ body {
 
 /* Setting Row "Scrape With" Background to Black */
 #scene-edit-details .edit-buttons-container {
-    background-color: black;
+  background-color: black;
 }
 
 /* Setting Other Rows Background to Black */
 div.react-select__control {
-    background-color: black;
+  background-color: black;
 }
 
 /* SETTING */
 /* Setting Text Input Border to White */
-.input-control, .text-input {
-	border: 1px solid white;
+.input-control,
+.text-input {
+  border: 1px solid white;
 }
 
 /* Setting Background on Task Queue to Black */
 #tasks-panel .tasks-panel-queue {
-    background-color: black;
+  background-color: black;
 }

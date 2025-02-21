@@ -1,0 +1,60 @@
+name: Misc Tags
+description: Add extra tags for VR and other ues
+version: 0.4
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/miscTags.py"
+interface: raw
+settings:
+  addStashVRCompanionTags:
+    displayName: Add tags for stash-vr-companion
+    description: Add tags useful for stash-vr-companion, export_deovr, DOME, SBS, VR based on filename string
+    type: BOOLEAN
+  addVRTags:
+    displayName: Add VR related tags
+    description: Add projection based tags 180°, 200°, VR
+    type: BOOLEAN
+  addSoloTags:
+    displayName: Add solo tags
+    description: if there is the "solo" tag and 1 performer add the "Solo Female" tag
+    type: BOOLEAN
+  addThreesomeTags:
+    displayName: Add threesome (xxx)
+    description: if there is the "threesome" tag with 3 tagged performers add a group makeup tag eg Threesome (BGG)
+    type: BOOLEAN
+  addFoursomeTags:
+    displayName: Add Foursome (XXXX)
+    description: if there is the "foursome" tag with 4 tagged performers add a group makeup tag eg Threesome (BGG)
+    type: BOOLEAN
+  addFivesomeTags:
+    displayName: Add Fivesome (xxxxx) tags
+    description: if there is the "fivesome" tag with 5 tagged performers add a group makeup tag eg Threesome (BGG)
+    type: BOOLEAN
+  addSixsomeTags:
+    displayName: Add Sixsome (XXXXXX)
+    description: if there is the "sixsome" tag with 6 tagged performers add a group makeup tag eg Threesome (BGG)
+    type: BOOLEAN
+  addSevensomeTags:
+    displayName: Add Sevensome (XXXXXXX)
+    description: if there is the "sevensome" tag with 7 tagged performers add a group makeup tag eg Threesome (BGG)
+    type: BOOLEAN
+  assumeMissingMale:
+    displayName: Assume missing male performer
+    description: For the group makeup tag assume the missing performer is male if there are unknown performers
+    type: BOOLEAN
+
+  flatStudio:
+    displayName: 2d Studio for stash-vr-companion
+    description: Comma seperated list of studio number in your instance to tag with export_devor,FLAT for use with stash-vr-companion
+    type: STRING
+hooks:
+  - name: Process Scene
+    description: Adds extra tags to scenes
+    triggeredBy:
+      - Scene.Update.Post
+tasks:
+  - name: Process all
+    description: Process all scenes and add extra tags if configured
+    defaultArgs:
+      mode: processScenes
