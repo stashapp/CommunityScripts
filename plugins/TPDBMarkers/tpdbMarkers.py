@@ -11,8 +11,15 @@ per_page = 100
 request_s = requests.Session()
 
 TPDB_ENDPOINT = "https://theporndb.net/graphql"
+SKIP_TAG = "[TPDB: Skip Marker]"
 
 def processScene(scene):
+    has_markers = len(scene["scene_markers"]) > 0
+    has_skip_tag = any([t["name"] == SKIP_TAG for t in scene["tags"]])
+    if has_markers or has_skip_tag:
+        log.debug(f"Skipping. has_markers: {has_markers}, has_skip_tag: {has_skip_tag}")
+        return
+
     for sid in scene["stash_ids"]:
         if sid["endpoint"] == TPDB_ENDPOINT:
             log.debug("Scene has a TPDB stash id, looking up %s " % (sid["stash_id"],))
@@ -55,22 +62,21 @@ def processScene(scene):
 
 def processAll():
     log.info("Getting scene count")
-    skip_sync_tag_id = stash.find_tag("[TPDB: Skip Marker]", create=True).get("id")
-    count = stash.find_scenes(
-        f={
-            "stash_id_endpoint": {
-                "endpoint": TPDB_ENDPOINT,
-                "modifier": "NOT_NULL",
-                "stash_id": "",
-            },
-            "has_markers": "false",
-            "tags": {
-                "depth": 0,
-                "excludes": [skip_sync_tag_id],
-                "modifier": "INCLUDES_ALL",
-                "value": [],
-            },
+    skip_sync_tag_id = stash.find_tag(SKIP_TAG, create=True).get("id")
+    scene_filter = {
+        "stash_id_endpoint": {
+            "endpoint": TPDB_ENDPOINT,
+            "modifier": "NOT_NULL",
+            "stash_id": "",
         },
+        "has_markers": "false",
+        "tags": {
+            "value": skip_sync_tag_id,
+            "modifier": "EXCLUDES",
+        },
+    }
+    count = stash.find_scenes(
+        f=scene_filter,
         filter={"per_page": 1},
         get_count=True,
     )[0]
@@ -86,14 +92,7 @@ def processAll():
             )
         )
         scenes = stash.find_scenes(
-            f={
-                "stash_id_endpoint": {
-                    "endpoint": TPDB_ENDPOINT,
-                    "modifier": "NOT_NULL",
-                    "stash_id": "",
-                },
-                "has_markers": "false",
-            },
+            f=scene_filter,
             filter={"page": r, "per_page": per_page},
         )
         for s in scenes:
