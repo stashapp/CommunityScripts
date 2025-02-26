@@ -30,7 +30,7 @@ def parse_date_candidate(string):
         g3 = match.group(3)
         temp = parse(g1 + " " + g2 + " " + g3)
         if temp:
-            result =temp.strftime("%Y-%m-%d")
+            result = temp.strftime("%Y-%m-%d")
     return result
 
 
