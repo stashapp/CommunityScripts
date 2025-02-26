@@ -22,15 +22,19 @@ def main():
         find_date_for_galleries()
 
 
+def parse_date_candidate(string):
+    for match in pattern.finditer(string):
+        g1 = match.group(1)
+        g2 = match.group(2)
+        g3 = match.group(3)
+        temp = parse(g1 + " " + g2 + " " + g3)
+        if temp:
+            return temp.strftime("%Y-%m-%d")
+
+
 def find_date_for_galleries():
 
-    galleries = stash.find_galleries(
-        f={
-            "is_missing": "date",
-            "path": {"modifier": "MATCHES_REGEX", "value": ".zip$"},
-            "file_count": {"modifier": "EQUALS", "value": 1},
-        }
-    )
+    galleries = stash.find_galleries(f={"is_missing": "date"})
 
     total = len(galleries)
 
@@ -39,14 +43,17 @@ def find_date_for_galleries():
     for i, gallery in enumerate(galleries):
         log.progress(i / total)
         acceptableDate = None
+        
         for file in gallery.get("files", []):
-            for match in pattern.finditer(file["path"]):
-                g1 = match.group(1)
-                g2 = match.group(2)
-                g3 = match.group(3)
-                temp = parse(g1 + " " + g2 + " " + g3)
-                if temp:
-                    acceptableDate = temp.strftime("%Y-%m-%d")
+            if candidate := parse_date_candidate(file["path"]):
+                acceptableDate = candidate
+        
+        if "folder" in gallery and gallery["folder"]:
+            if "path" in gallery["folder"] and gallery["folder"]["path"]:
+                pass
+                if candidate := parse_date_candidate(gallery["folder"]["path"]):
+                    acceptableDate = candidate
+        
         if acceptableDate:
             log.info(
                 "Gallery ID ("
