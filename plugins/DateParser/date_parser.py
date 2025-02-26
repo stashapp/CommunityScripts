@@ -23,13 +23,15 @@ def main():
 
 
 def parse_date_candidate(string):
+    result = None
     for match in pattern.finditer(string):
         g1 = match.group(1)
         g2 = match.group(2)
         g3 = match.group(3)
         temp = parse(g1 + " " + g2 + " " + g3)
         if temp:
-            return temp.strftime("%Y-%m-%d")
+            result =temp.strftime("%Y-%m-%d")
+    return result
 
 
 def find_date_for_galleries():
