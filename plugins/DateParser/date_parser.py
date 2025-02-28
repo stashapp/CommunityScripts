@@ -52,7 +52,6 @@ def find_date_for_galleries():
         
         if "folder" in gallery and gallery["folder"]:
             if "path" in gallery["folder"] and gallery["folder"]["path"]:
-                pass
                 if candidate := parse_date_candidate(gallery["folder"]["path"]):
                     acceptableDate = candidate
         
