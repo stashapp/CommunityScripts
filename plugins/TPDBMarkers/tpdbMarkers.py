@@ -106,7 +106,7 @@ def processMovie(m):
     log.debug(m)
     log.debug(m.keys())
     # check if the movie exists with the url, then match to the scene
-    sm = stash.find_movies(
+    sm = stash.find_groups(
       f={
         "url": {
           "modifier": "EQUALS",
@@ -118,7 +118,7 @@ def processMovie(m):
     if len(sm) >0:
         return sm[0]
     # find the movie by name
-    sm=stash.find_movies(q=m['title'])
+    sm=stash.find_groups(q=m['title'])
     for mov in sm:
         if mov['name']==m['title']:
           return mov
