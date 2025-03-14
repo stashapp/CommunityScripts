@@ -7,8 +7,8 @@ ui:
   requires:
     - CommunityScriptsUILibrary
   javascript:
-    - themeSwitchMain.js
     - themeSwitchCSS.js
+    - themeSwitchMain.js
   css:
     - themeSwtichDefault.css
   assets:
