@@ -1,6 +1,10 @@
 (async () => {
-  while (!window.stash) {
+  while (!window.csLib) {
     await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  function waitForElementClass(selector, callback) {
+    csLib.waitForElement(`.${selector}`, callback);
   }
 
   const svgChevDN =

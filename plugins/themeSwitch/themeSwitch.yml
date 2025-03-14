@@ -2,13 +2,13 @@ name: Theme Switch
 description: Theme and CSS script manager located in main menu bar top right.
 # requires: CommunityScriptsUILibrary
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/themeSwitch
-version: 2.1
+version: 2.1.1
 ui:
   requires:
     - CommunityScriptsUILibrary
   javascript:
-    - themeSwitchMain.js
     - themeSwitchCSS.js
+    - themeSwitchMain.js
   css:
     - themeSwtichDefault.css
   assets:
