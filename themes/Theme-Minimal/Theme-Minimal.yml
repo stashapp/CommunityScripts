@@ -16,6 +16,7 @@ ui:
     - markers-wall.css
     - popover.css
     - studio.css
+    - navbar.css
   assets:
     /: ./assets
   javascript:

@@ -1,0 +1,67 @@
+.top-nav {
+  height: var(--nav-bar-height);
+  background-color: var(--primary-1) !important;
+  position: sticky;
+
+  .btn {
+    font-size: var(--text-sm);
+    color: var(--primary-11);
+    padding-top: 0.5cap !important;
+    padding-bottom: 0.5cap !important;
+    transition: color 0.2s ease-in-out;
+
+    &.active,
+    &:active {
+      color: var(--primary-12);
+      background-color: unset !important;
+      svg {
+        color: var(--primary-12);
+      }
+    }
+
+    &:hover {
+      color: var(--primary-12);
+      svg {
+        color: var(--primary-11);
+      }
+    }
+
+    svg {
+      transition: color 0.2s ease-in-out;
+      margin-left: 0.5ch;
+      margin-right: 1ch;
+      color: var(--primary-9);
+    }
+  }
+
+  .navbar-brand {
+    font-size: inherit;
+  }
+
+  .navbar-collapse {
+    background-color: var(--primary-1) !important;
+  }
+}
+
+.main {
+  padding-top: 12px;
+}
+
+.navbar-toggler {
+  color: unset;
+  padding: 0.5em 0;
+  text-align: center;
+  width: 3em;
+}
+
+.navbar-buttons .btn {
+  align-items: center;
+  display: flex;
+}
+
+.nav-link {
+  padding: 0;
+  svg {
+    color: var(--primary-11);
+  }
+}
