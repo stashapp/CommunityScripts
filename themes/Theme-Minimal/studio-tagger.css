@@ -1,0 +1,20 @@
+.StudioTagger {
+  .StudioTagger-studio {
+    background-color: unset;
+    .studio-card {
+      border-radius: 1rem;
+      img {
+        background-color: unset;
+      }
+    }
+    .StudioTagger-details {
+      margin-top: 1rem;
+
+      .StudioTagger-header {
+        h2 {
+          font-size: var(--text-xl);
+        }
+      }
+    }
+  }
+}

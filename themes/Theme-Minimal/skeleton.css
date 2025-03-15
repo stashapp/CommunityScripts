@@ -1,0 +1,10 @@
+.skeleton-card {
+  background-color: var(--primary-3);
+}
+
+.scene-skeleton {
+  max-height: unset;
+  min-height: unset;
+  height: 16rem;
+  border-radius: 1rem;
+}
