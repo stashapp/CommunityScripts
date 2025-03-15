@@ -23,3 +23,4 @@ For intended experience:
 - Restyled and refactored the navbar for improved usability and aesthetics.
 - Restyled all the scene card information overlays to enhance clarity and visual appeal.
 - Fixed the scene card selector to ensure proper functionality.
+- Fixed scene auto play.
