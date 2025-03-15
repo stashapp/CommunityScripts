@@ -110,8 +110,8 @@ button.btn.favorite-button {
   transition: opacity 0.5s;
 
   &.not-favorite {
-    color: rgba(191, 204, 214, 0.5);
-    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    color: 191, 204, 214, 0.5;
+    filter: drop-shadow(0 0 2px 0, 0, 0, 0.9);
 
     &.hide-not-favorite {
       opacity: 0;
@@ -120,7 +120,7 @@ button.btn.favorite-button {
 
   &.favorite {
     color: #ff7373;
-    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+    filter: drop-shadow(0 0 2px 0, 0, 0, 0.9);
   }
 
   &:hover,
@@ -136,7 +136,7 @@ button.btn.favorite-button {
   border-radius: 5px;
 
   &:hover {
-    background: rgba(138, 155, 168, 0.15);
+    background: 138, 155, 168, 0.15;
     color: #f5f8fa;
   }
 
@@ -320,7 +320,7 @@ div.react-datepicker {
     }
 
     &:hover {
-      background: rgba(138, 155, 168, 0.15);
+      background: 138, 155, 168, 0.15;
     }
   }
 
@@ -329,7 +329,7 @@ div.react-datepicker {
     color: var(--primary-12);
 
     ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
-      background-color: rgba(138, 155, 168, 0.15);
+      background-color: 138, 155, 168, 0.15;
     }
   }
 
@@ -375,4 +375,32 @@ div.react-datepicker {
       background-color: #8a9ba826;
     }
   }
+}
+
+/* sliders */
+input[type="range"]::-moz-range-track {
+  background: var(--primary-5);
+}
+input[type="range"]::-moz-range-thumb {
+  border-radius: 50%;
+  background: var(--primary-10);
+  border: 1px solid var(--primary-10);
+}
+
+input[type="range"]:active::-moz-range-track,
+input[type="range"]:focus::-moz-range-track {
+  background: var(--primary-5);
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--primary-5);
+}
+input[type="range"]:active::-webkit-slider-runnable-track,
+input[type="range"]:focus::-webkit-slider-runnable-track {
+  background: var(--primary-5);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  border-radius: 50%;
+  background: var(--primary-10);
+  border: 1px solid var(--primary-10);
 }
