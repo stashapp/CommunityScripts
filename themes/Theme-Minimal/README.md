@@ -17,6 +17,10 @@ For intended experience:
 
 ## Changelog
 
+### Version 0.2.1 - 2025-03-15
+
+- Fix content offset from nav-bar.
+
 ### Version 0.2 - 2025-03-15
 
 - Themed the tagger view for a more cohesive look.
