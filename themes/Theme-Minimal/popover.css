@@ -5,4 +5,9 @@
   .image-thumbnail {
     border-radius: 4px;
   }
+
+  .arrow::after,
+  .arrow::before {
+    border-bottom-color: var(--primary-2);
+  }
 }
