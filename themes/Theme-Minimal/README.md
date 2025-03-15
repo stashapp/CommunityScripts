@@ -20,9 +20,10 @@ For intended experience:
 ### Version 0.2.2 - 2025-03-15
 
 - Theme popover arrow.
-- Center stats.
 - Theme card size slider.
 - Theme studio tagger.
+- Theme skeleton.
+- Center stats.
 
 ### Version 0.2.1 - 2025-03-15
 
