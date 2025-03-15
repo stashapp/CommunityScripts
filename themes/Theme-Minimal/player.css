@@ -180,6 +180,10 @@
   }
 }
 
+.scene-divider button {
+  color: rgba(var(--primary-1));
+}
+
 .scene-player-container {
   max-width: unset !important;
 }
