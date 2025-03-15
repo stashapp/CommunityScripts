@@ -83,7 +83,6 @@
       /* opacity: 1; */
       transition: opacity 0.5s;
 
-      
       a {
         text-transform: uppercase;
         color: inherit;
@@ -103,31 +102,51 @@
 
       &.rating-5 {
         background-color: transparent;
-        background-image: linear-gradient(to right, var(--rating-5-background), rgba(102, 136, 70, 0.75));
+        background-image: linear-gradient(
+          to right,
+          var(--rating-5-background),
+          rgba(102, 136, 70, 0.75)
+        );
         border-color: rgba(153, 204, 105, 0.25);
       }
 
       &.rating-4 {
         background-color: transparent;
-        background-image: linear-gradient(to right, var(--rating-4-background), rgba(134, 106, 0, 0.75));
+        background-image: linear-gradient(
+          to right,
+          var(--rating-4-background),
+          rgba(134, 106, 0, 0.75)
+        );
         border-color: rgba(201, 159, 0, 0.25);
       }
 
       &.rating-3 {
         background-color: transparent;
-        background-image: linear-gradient(to right, var(--rating-3-background), rgba(154, 96, 0, 0.75));
+        background-image: linear-gradient(
+          to right,
+          var(--rating-3-background),
+          rgba(154, 96, 0, 0.75)
+        );
         border-color: rgba(231, 144, 0, 0.25);
       }
 
       &.rating-2 {
         background-color: transparent;
-        background-image: linear-gradient(to right, var(--rating-2-background), rgba(172, 80, 0, 0.75));
+        background-image: linear-gradient(
+          to right,
+          var(--rating-2-background),
+          rgba(172, 80, 0, 0.75)
+        );
         border-color: rgba(255, 120, 0, 0.25);
       }
 
       &.rating-1 {
         background-color: transparent;
-        background-image: linear-gradient(to right, var(--rating-1-background), rgba(188, 56, 44, 0.75));
+        background-image: linear-gradient(
+          to right,
+          var(--rating-1-background),
+          rgba(188, 56, 44, 0.75)
+        );
         border-color: rgba(255, 84, 66, 0.25);
       }
     }
@@ -150,19 +169,10 @@
 
     .preview-scrubber {
       .hover-scrubber {
-        height: 100%;
-
-        .hover-scrubber-area {
-          height: 100%;
-        }
-
         .hover-scrubber-indicator {
-          height: 4px;
+          background-color: unset;
           .hover-scrubber-indicator-marker {
             background-color: var(--primary-a10);
-            backdrop-filter: blur(10px);
-            border-radius: 0 4px 0 0;
-            height: 4px;
           }
         }
       }
