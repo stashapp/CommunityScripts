@@ -1,6 +1,7 @@
 .stats {
+  margin: 0 auto !important;
   flex-direction: column;
-  max-width: 60ch;
+  max-width: 40ch;
   margin-bottom: 32px !important;
 
   .stats-element {
