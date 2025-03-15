@@ -1,5 +1,7 @@
 .top-nav {
-  height: var(--nav-bar-height);
+  padding-top: 1cap;
+  padding-bottom: 1cap;
+  margin-bottom: 1cap;
   background-color: var(--primary-1) !important;
   position: sticky;
 
@@ -41,10 +43,6 @@
   .navbar-collapse {
     background-color: var(--primary-1) !important;
   }
-}
-
-.main {
-  padding-top: 12px;
 }
 
 .navbar-toggler {
