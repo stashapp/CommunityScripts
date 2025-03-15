@@ -17,6 +17,11 @@ For intended experience:
 
 ## Changelog
 
+### Version 0.2.2 - 2025-03-15
+
+- Theme popover arrow.
+- Center stats.
+
 ### Version 0.2.1 - 2025-03-15
 
 - Fix content offset from nav-bar.
