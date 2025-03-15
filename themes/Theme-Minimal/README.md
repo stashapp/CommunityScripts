@@ -22,6 +22,7 @@ For intended experience:
 - Theme popover arrow.
 - Center stats.
 - Theme card size slider.
+- Theme studio tagger.
 
 ### Version 0.2.1 - 2025-03-15
 

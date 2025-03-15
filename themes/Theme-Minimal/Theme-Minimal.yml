@@ -17,6 +17,7 @@ ui:
     - popover.css
     - studio.css
     - nav-bar.css
+    - studio-tagger.css
   assets:
     /: ./assets
   javascript:
