@@ -377,6 +377,12 @@ div.react-datepicker {
   }
 }
 
+.input-group-text {
+  background-color: var(--primary-2);
+  color: var(--primary-11);
+  border: unset;
+}
+
 /* sliders */
 input[type="range"]::-moz-range-track {
   background: var(--primary-5);

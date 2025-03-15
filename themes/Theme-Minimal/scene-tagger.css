@@ -1,0 +1,14 @@
+.tagger-container {
+  .search-item {
+    background-color: unset;
+
+    .search-result {
+      padding: 1.25rem;
+      border-radius: 1rem;
+    }
+
+    .selected-result {
+      background-color: var(--primary-2);
+    }
+  }
+}

@@ -22,6 +22,7 @@ For intended experience:
 - Theme popover arrow.
 - Theme card size slider.
 - Theme studio tagger.
+- Theme scene tagger search result.
 - Theme skeleton.
 - Center stats.
 

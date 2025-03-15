@@ -18,6 +18,7 @@ ui:
     - studio.css
     - nav-bar.css
     - studio-tagger.css
+    - scene-tagger.css
     - skeleton.css
   assets:
     /: ./assets
