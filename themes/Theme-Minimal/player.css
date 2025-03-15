@@ -37,7 +37,7 @@
       text-align: center;
       color: var(--primary-11) !important;
       background-color: unset;
-      padding: 12px 16px;
+      padding: 12px 1rem;
       border: 0 !important;
       border-radius: 8px !important;
       line-height: 1;
@@ -74,7 +74,7 @@
 
     .scene-markers-panel {
       & > * + * {
-        margin-top: 16px;
+        margin-top: 1rem;
       }
 
       .container {
@@ -83,10 +83,10 @@
         padding-left: unset;
       }
       .primary-tag {
-        margin-top: 16px;
+        margin-top: 1rem;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-        gap: 16px;
+        gap: 1rem;
         justify-items: stretch;
 
         .primary-card {
@@ -194,5 +194,10 @@
 
   .vjs-poster {
     background-color: var(--primary-1);
+  }
+
+  .vjs-vtt-thumbnail-display {
+    border: unset;
+    border-radius: 0.8rem;
   }
 }
