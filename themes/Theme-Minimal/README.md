@@ -17,6 +17,10 @@ For intended experience:
 
 ## Changelog
 
+### Version 0.3.X - 2025-03-15
+
+- Rework performer page.
+
 ### Version 0.2.2 - 2025-03-15
 
 - Theme popover arrow.
