@@ -1,8 +1,8 @@
 # Minimal Theme
 
-I've tried to create a theme that brings content to the front while reducing mental load from UI clutter. It simplifies everything—less color, fewer distractions, more focus. The goal is clarity: a clean, minimal design that keeps what matters in view.
+A theme that brings content to the front.
 
-It's still rough around the edges and very much a work in progress. Feedback is welcome!
+It's still rough around the edges. Feedback is welcome.
 
 For intended experience:
 
@@ -17,9 +17,9 @@ For intended experience:
 
 ## Changelog
 
-### Version 0.3.X - 2025-03-15
+### Version 0.2.3 - 2025-03-20
 
-- Rework performer page.
+- Fix studio image in scene view.
 
 ### Version 0.2.2 - 2025-03-15
 

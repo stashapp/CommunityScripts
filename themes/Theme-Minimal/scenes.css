@@ -60,30 +60,54 @@
     .overlay-duration {
       height: auto;
 
-      margin: 8px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      line-height: 1;
-
-      font-size: var(--text-2xs);
-      font-weight: normal;
-      color: var(--primary-12);
-      background-color: var(--black-a6);
+      background-color: var(--black-a7);
       backdrop-filter: blur(10px);
 
-      opacity: unset;
+      border-radius: 0.8rem;
+      margin: 6px;
+      padding: 6px 8px;
 
+      opacity: unset;
+    }
+
+    .studio-overlay:not(:has(> a > img)), /* With Image */
+    .rating-banner,
+    .overlay-resolution,
+    .overlay-duration {
+      line-height: 1;
+      font-size: var(--text-2xs);
+      font-weight: normal;
       letter-spacing: 0.05ch;
+      color: var(--primary-12);
     }
 
     .studio-overlay {
+      --image-size: 4rem;
       right: 0;
       top: 0;
 
       height: unset;
-      max-width: unset;
-      /* opacity: 1; */
       transition: opacity 0.5s;
+
+      a:has(> img) {
+        display: block;
+        line-height: 0;
+        padding: 0;
+
+        img {
+          margin: 0.1rem;
+          height: auto;
+          max-height: var(--image-size);
+          min-height: unset;
+
+          width: 100%;
+          max-width: var(--image-size);
+          min-width: unset;
+
+          object-fit: contain;
+          object-position: center;
+        }
+      }
 
       a {
         text-transform: uppercase;
@@ -313,6 +337,3 @@
     }
   }
 }
-
-
-
