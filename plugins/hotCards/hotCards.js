@@ -7,6 +7,8 @@ const CRITERIA = { tag: "t", rating: "r", disabled: "d" };
 const STYLES = {
   default: getDefaultStylePreset(),
   hot: getHotStylePreset(),
+  bronze: getBronzeStylePreset(),
+  silver: getSilverStylePreset(),
   gold: getGoldStylePreset(),
   holo: getHoloStylePreset(),
 };
@@ -776,6 +778,46 @@ function getHotStylePreset() {
     ],
     "20s linear infinite"
   ); // 'blur(2.0rem)'
+}
+
+function getBronzeStylePreset() {
+    return createCardStyle(
+        "#7f4f28",
+        "6s ease-in-out infinite",
+        "linear",
+        "45deg",
+        [
+            "hsl(30, 20%, 40%)",
+            "hsl(40, 25%, 30%)",
+            "hsl(35, 20%, 25%)",
+            "hsl(40, 35%, 40%)",
+            "hsl(20, 35%, 20%)",
+            "hsl(25, 20%, 35%)",
+            "hsl(15, 30%, 45%)",
+            "hsl(10, 35%, 25%)"
+          ],
+        "8s ease-in-out infinite"
+    );
+}
+
+function getSilverStylePreset() {
+    return createCardStyle(
+      "#c0c0c0",
+      "6s ease-in-out infinite",
+      "linear",
+      "45deg",
+      [
+        "hsl(200, 5%, 80%)",
+        "hsl(200, 8%, 65%)",
+        "hsl(200, 10%, 55%)",
+        "hsl(200, 8%, 72%)",
+        "hsl(200, 10%, 40%)",
+        "hsl(200, 5%, 58%)",
+        "hsl(200, 3%, 85%)",
+        "hsl(200, 5%, 48%)"
+      ],
+      "8s ease-in-out infinite"
+    );
 }
 
 function getGoldStylePreset() {
