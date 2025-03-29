@@ -1,0 +1,19 @@
+name: Video Chapter Markers
+description: Create markers from chapter information embedded in video files
+version: 1.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/videoChapterMarkers
+exec:
+  - python
+  - "{pluginDir}/videoChapterMarkers.py"
+interface: raw
+tasks:
+  - name: "Process All Videos"
+    description: Extract chapters from all video files without existing markers and create Stash markers
+    defaultArgs:
+      mode: processAll
+
+hooks:
+  - name: Create Markers on Scene Update
+    description: Extract chapters and create markers when a scene is updated
+    triggeredBy:
+      - Scene.Update.Post
