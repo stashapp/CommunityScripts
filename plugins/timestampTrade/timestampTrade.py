@@ -57,6 +57,11 @@ def processSceneTimestamTrade(s):
                                 "tags": [],
                                 "title": m["name"],
                             }
+
+                            # Add end time if setting is enabled and data is available
+                            if settings.get("useMarkerEndTimes", False) and "end_time" in m and m["end_time"]:
+                                marker["end_seconds"] = m["end_time"] / 1000
+                                
                             if settings["addTsTradeTag"]:
                                 marker["tags"].append(int(getTag("[Timestamp]")))
 
