@@ -1,0 +1,63 @@
+# 3rd party
+/3rd party/StashPlexAgent.bundle/     @Darklyter
+
+# plugins
+/plugins/AITagger/                    @skier233
+/plugins/AdulttimeInteractiveDL/      @tooliload
+/plugins/CommunityScriptsUILibrary/   @feederbox826
+# /plugins/DateParser
+/plugins/DupFileManager/              @David-Maisonave
+/plugins/ExtraPerformerInfo/          @Tweeticoats
+/plugins/FileMonitor/                 @David-Maisonave
+/plugins/PythonToolsInstaller/        @tooliload
+/plugins/RenameFile/                  @David-Maisonave
+/plugins/TPDBMarkers/                 @Tweeticoats
+/plugins/VideoScrollWheel/            @WeedLordVegeta420
+/plugins/audio-transcodes/            @Tweeticoats
+/plugins/chooseYourAdventurePlayer/   @cj12312021
+/plugins/cjCardTweaks/                @cj12312021
+# /plugins/comicInfoExtractor
+/plugins/defaultDataForPath/          @TheSinfulKing
+/plugins/discordPresence/             @NotForMyCV
+/plugins/dupeMarker/                  @feederbox826
+# /plugins/filenameParser
+/plugins/funscriptMarkers/            @Tweeticoats
+/plugins/hotCards/                    @HandyRandyx
+/plugins/markerDeleteButton/          @WeedLordVegeta420
+/plugins/markerTagToScene/            @WithoutPants
+/plugins/miscTags/                    @Tweeticoats
+/plugins/nfoSceneParser/              @Gykes
+/plugins/pathParser/                  @ImJustMatt
+/plugins/qxSceneCard/                 @QxxxGit
+/plugins/sceneCoverCropper            @feederbox826
+/plugins/scenePageRememberStates/     @Elkorol
+/plugins/setPerformersFromTags/       @Torrafox
+# /plugins/stashAI
+/plugins/stashAppAndroidTvCompanion/  @damontecres
+/plugins/stashNotes/                  @QxxxGit
+/plugins/stashRealbooru/              @cc1234
+/plugins/stashdb-performer-gallery/   @Tweeticoats
+# /plugins/stats superceded
+/plugins/tagScenesWithPerfTags/       @Dankonite
+/plugins/themeSwitch/                 @elkorol
+/plugins/timestampTrade/              @Tweeticoats
+# /plugins/titleFromFilename 
+/plugins/videoChapterMarkers/         @qxzg
+# /plugins/visage
+
+# themes
+# /themes/Theme-BlackHole BViking78
+/themes/Theme-ColorPalette/   @wql219
+/themes/Theme-Minimal/        @deuulc
+/themes/Theme-ModernDark/     @cj12312021
+/themes/Theme-NeonDark/       @Dankonite
+# /themes/Theme-Night/ unknown author
+# /themes/Theme-Plex/ Fidelio
+# /themes/Theme-PornHub/ ronilaukkarinen 
+# /themes/Theme-Pulsar Fonzie 
+# /themes/Theme-PulsarLight/ Fonzie 
+/themes/Theme-RoundedYellow   @Written2001
+
+# userscripts
+# /userscripts/StashDB_Submission_Helper/   @mmenanno
+# /userscripts/FansDB_Submission_Helper/    @mmenanno
