@@ -17,7 +17,7 @@ For intended experience:
 
 ## Changelog
 
-### Version 0.2.3 - 2025-03-20
+### Version 0.2.3 - 2025-04-05
 
 - Fix studio image in scene view.
 

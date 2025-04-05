@@ -209,5 +209,5 @@ option {
 }
 
 div.react-select__menu-portal {
-  z-index: 2;
+  z-index: 1050;
 }
