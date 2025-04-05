@@ -20,6 +20,7 @@ For intended experience:
 ### Version 0.2.3 - 2025-04-05
 
 - Fix studio image in scene view.
+- Update performer/studio page.
 
 ### Version 0.2.2 - 2025-03-15
 
