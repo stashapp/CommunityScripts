@@ -11,8 +11,6 @@
     color: unset;
     text-decoration: none;
     font-size: var(--text-lg);
-    /* demo */
-    /* filter: blur(3px); */
   }
 
   .card-controls {
@@ -47,7 +45,7 @@
 
   .thumbnail-section {
     background-color: var(--primary-3);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
 
     .scene-card-preview {
@@ -62,23 +60,17 @@
 
       background-color: var(--black-a7);
       backdrop-filter: blur(10px);
+      color: var(--primary-12);
+      opacity: unset;
 
-      border-radius: 0.8rem;
+      border-radius: 8px;
       margin: 6px;
       padding: 6px 8px;
 
-      opacity: unset;
-    }
-
-    .studio-overlay:not(:has(> a > img)), /* With Image */
-    .rating-banner,
-    .overlay-resolution,
-    .overlay-duration {
       line-height: 1;
       font-size: var(--text-2xs);
       font-weight: normal;
       letter-spacing: 0.05ch;
-      color: var(--primary-12);
     }
 
     .studio-overlay {
@@ -88,6 +80,20 @@
 
       height: unset;
       transition: opacity 0.5s;
+
+      a {
+        display: block;
+        text-transform: uppercase;
+        color: inherit;
+        text-shadow: none;
+        text-decoration: none;
+        letter-spacing: inherit;
+
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        width: 100%;
+        overflow: hidden;
+      }
 
       a:has(> img) {
         display: block;
@@ -107,14 +113,6 @@
           object-fit: contain;
           object-position: center;
         }
-      }
-
-      a {
-        text-transform: uppercase;
-        color: inherit;
-        text-shadow: none;
-        text-decoration: none;
-        letter-spacing: inherit;
       }
     }
 
