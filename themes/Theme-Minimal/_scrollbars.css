@@ -2,11 +2,15 @@ body ::-webkit-scrollbar {
   -webkit-appearance: auto;
   height: auto !important;
   width: auto !important;
+  scrollbar-width: thin;
+  color: unset;
 }
 
 body ::-webkit-scrollbar-track {
   background: unset;
   border-radius: unset;
+  scrollbar-width: thin;
+  color: unset;
 }
 
 body ::-webkit-scrollbar-thumb {
@@ -14,12 +18,18 @@ body ::-webkit-scrollbar-thumb {
   border-radius: unset;
   cursor: unset;
   transition: unset;
+  scrollbar-width: thin;
+  color: unset;
 }
 
 body ::-webkit-scrollbar-thumb:window-inactive {
   background: unset;
+  scrollbar-width: thin;
+  color: unset;
 }
 
 body ::-webkit-scrollbar-thumb:hover {
   background: unset;
+  scrollbar-width: thin;
+  color: unset;
 }

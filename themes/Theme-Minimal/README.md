@@ -1,8 +1,8 @@
 # Minimal Theme
 
-I've tried to create a theme that brings content to the front while reducing mental load from UI clutter. It simplifies everything—less color, fewer distractions, more focus. The goal is clarity: a clean, minimal design that keeps what matters in view.
+A theme that brings content to the front.
 
-It's still rough around the edges and very much a work in progress. Feedback is welcome!
+It's still rough around the edges. Feedback is welcome.
 
 For intended experience:
 
@@ -16,6 +16,11 @@ For intended experience:
 <img width="1792" alt="stash--minimal-theme-v0 1--scenes" src="https://github.com/user-attachments/assets/05d45f6e-7fb7-4ed8-b2af-5a153bdb3611" />
 
 ## Changelog
+
+### Version 0.2.3 - 2025-04-05
+
+- Fix studio image in scene view.
+- Update performer/studio page.
 
 ### Version 0.2.2 - 2025-03-15
 

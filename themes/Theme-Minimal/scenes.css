@@ -11,8 +11,6 @@
     color: unset;
     text-decoration: none;
     font-size: var(--text-lg);
-    /* demo */
-    /* filter: blur(3px); */
   }
 
   .card-controls {
@@ -47,7 +45,7 @@
 
   .thumbnail-section {
     background-color: var(--primary-3);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
 
     .scene-card-preview {
@@ -60,37 +58,61 @@
     .overlay-duration {
       height: auto;
 
-      margin: 8px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      line-height: 1;
-
-      font-size: var(--text-2xs);
-      font-weight: normal;
-      color: var(--primary-12);
-      background-color: var(--black-a6);
+      background-color: var(--black-a7);
       backdrop-filter: blur(10px);
-
+      color: var(--primary-12);
       opacity: unset;
 
+      border-radius: 8px;
+      margin: 6px;
+      padding: 6px 8px;
+
+      line-height: 1;
+      font-size: var(--text-2xs);
+      font-weight: normal;
       letter-spacing: 0.05ch;
     }
 
     .studio-overlay {
+      --image-size: 4rem;
       right: 0;
       top: 0;
 
       height: unset;
-      max-width: unset;
-      /* opacity: 1; */
       transition: opacity 0.5s;
 
       a {
+        display: block;
         text-transform: uppercase;
         color: inherit;
         text-shadow: none;
         text-decoration: none;
         letter-spacing: inherit;
+
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      a:has(> img) {
+        display: block;
+        line-height: 0;
+        padding: 0;
+
+        img {
+          margin: 0.1rem;
+          height: auto;
+          max-height: var(--image-size);
+          min-height: unset;
+
+          width: 100%;
+          max-width: var(--image-size);
+          min-width: unset;
+
+          object-fit: contain;
+          object-position: center;
+        }
       }
     }
 
@@ -313,6 +335,3 @@
     }
   }
 }
-
-
-
