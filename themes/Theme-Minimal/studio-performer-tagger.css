@@ -1,0 +1,59 @@
+.StudioTagger,
+.PerformerTagger {
+  .StudioTagger-studio,
+  .PerformerTagger-performer {
+    background-color: unset;
+    .studio-card,
+    .performer-card {
+      border-radius: 12px;
+      img {
+        background-color: unset;
+      }
+    }
+    .StudioTagger-details,
+    .PerformerTagger-details {
+      margin-top: 1rem;
+
+      .StudioTagger-header,
+      .PerformerTagger-header {
+        h2 {
+          font-size: var(--text-xl);
+        }
+      }
+
+      .text-left h5 {
+        color: var(--primary-11);
+        font-weight: unset;
+        font-size: var(--text-xs);
+      }
+
+      .PerformerTagger-performer-search {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+        gap: 24px;
+        button.PerformerTagger-performer-search-item {
+          flex: unset;
+          max-width: unset;
+          width: min-content;
+          border-radius: 8px;
+
+          padding: 12px;
+          align-items: flex-start;
+          gap: 12px;
+
+          img.PerformerTagger-thumb {
+            height: 80px;
+            border-radius: 6px;
+            margin-right: 0;
+          }
+
+          span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+        }
+      }
+    }
+  }
+}

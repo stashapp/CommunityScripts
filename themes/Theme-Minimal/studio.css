@@ -100,3 +100,45 @@
     }
   }
 }
+
+.PerformerScrapeModal-list {
+  .search-item {
+    background-color: unset;
+    transition: background-color 0.3s ease-in;
+    border-radius: 16px;
+    padding: 8px;
+
+    &:hover {
+      background-color: var(--primary-3);
+    }
+
+    .performer-result {
+      .row {
+        gap: 12px;
+
+        .scene-image-container {
+          img.scene-image {
+            border-radius: 12px;
+            padding-left: unset !important;
+
+            max-height: unset;
+            max-width: unset;
+            min-width: unset;
+            width: 14rem;
+            object-fit: contain;
+          }
+        }
+
+        .performer-name {
+          font-size: var(--text-lg);
+          font-weight: 500;
+        }
+
+        .performer-details {
+          font-size: var(--text-base);
+          font-weight: unset;
+        }
+      }
+    }
+  }
+}

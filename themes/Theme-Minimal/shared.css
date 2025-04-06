@@ -97,8 +97,20 @@
 /* tags */
 
 .tag-item {
-  background-color: var(--primary-4);
+  background-color: var(--black-a7);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 6px 10px;
+
   color: var(--primary-12);
+  font-size: var(--text-2xs);
+  font-family: unset;
+  font-weight: 500;
+
+  .btn-secondary {
+    color: var(--primary-12);
+    opacity: 1;
+  }
 }
 
 .badge-secondary {

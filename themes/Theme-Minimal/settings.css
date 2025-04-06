@@ -41,18 +41,6 @@
   }
 }
 
-.custom-control-input ~ .custom-control-label:before {
-  color: var(--primary-11);
-  border-color: var(--primary-5);
-  background-color: var(--primary-5);
-}
-
-.custom-control-input:checked ~ .custom-control-label:before {
-  color: var(--primary-12);
-  border-color: var(--primary-7);
-  background-color: var(--primary-7);
-}
-
 .setting-section {
   display: flex;
   flex-direction: column;
