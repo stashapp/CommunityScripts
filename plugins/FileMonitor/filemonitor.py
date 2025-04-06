@@ -1022,7 +1022,7 @@ try:
         stash.Trace(f"{StartFileMonitorAsAPluginTaskID} EXIT")
     elif stash.PLUGIN_TASK_NAME == SYNC_LIBRARY_REMOVE:
         runTypeID=5
-        synchronize_library(removeScene=tRUE)
+        synchronize_library(removeScene=True)
         stash.Trace(f"{SYNC_LIBRARY_REMOVE} EXIT")
     elif stash.PLUGIN_TASK_NAME == SYNC_LIBRARY_TAG:
         runTypeID=6
