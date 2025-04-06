@@ -1,6 +1,6 @@
 name: Theme - Minimal
 description: Minimal Theme for Stash
-version: 0.2.3
+version: 0.2.4
 ui:
   css:
     - index.css
@@ -17,8 +17,8 @@ ui:
     - popover.css
     - studio.css
     - nav-bar.css
-    - studio-tagger.css
     - scene-tagger.css
+    - studio-performer-tagger.css
     - skeleton.css
   assets:
     /: ./assets

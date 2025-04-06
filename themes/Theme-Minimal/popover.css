@@ -9,5 +9,6 @@
   .arrow::after,
   .arrow::before {
     border-bottom-color: var(--primary-2);
+    border-top-color: var(--primary-2);
   }
 }

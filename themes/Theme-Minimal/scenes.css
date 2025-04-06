@@ -11,6 +11,8 @@
     color: unset;
     text-decoration: none;
     font-size: var(--text-lg);
+    /* demo */
+    /* filter: blur(3px); */
   }
 
   .card-controls {
@@ -91,8 +93,8 @@
 
         white-space: nowrap;
         text-overflow: ellipsis;
-        width: 100%;
         overflow: hidden;
+        width: 100%;
       }
 
       a:has(> img) {
