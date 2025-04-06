@@ -22,3 +22,7 @@
 
 - Added ping Docker GQL check before attempting to monitor Stash Dockers
 - Uploaded missing filemonitor.js to CommunityScripts
+
+### 1.0.5
+
+- Fixed bug associated with library cleaning
