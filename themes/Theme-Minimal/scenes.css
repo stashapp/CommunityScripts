@@ -7,6 +7,13 @@
   padding: 20px;
   margin: 8px;
 
+  border-radius: 10px;
+
+  transition: background-color 0.5s ease-out;
+  &:hover {
+    background-color: var(--primary-2);
+  }
+
   a .card-section-title {
     color: unset;
     text-decoration: none;
@@ -44,9 +51,16 @@
   }
 
   .thumbnail-section {
-    background-color: var(--primary-3);
     border-radius: 12px;
     overflow: hidden;
+
+    a.tag-card-header {
+      img {
+        border-radius: 12px;
+        overflow: hidden;
+        width: unset;
+      }
+    }
 
     .scene-card-preview {
       margin-bottom: 0;
@@ -212,21 +226,26 @@
   }
 
   .card-section {
+    margin-bottom: 0;
+    padding: 1rem 0.75rem 0 0.75rem;
     .card-section-title {
       font-size: var(--text-base);
       color: var(--primary-12);
     }
 
-    .scene-card__details {
+    .scene-card__details,
+    .studio-card__details,
+    .tag-parent-tags,
+    .scene-marker-card__details,
+    .tag-sub-tags,
+    .tag-description {
       min-height: 0;
       margin-bottom: 0;
       height: auto;
 
-      .scene-card__date {
-        font-size: var(--text-xs);
-        color: var(--primary-11);
-        line-height: 1;
-      }
+      font-size: var(--text-xs);
+      color: var(--primary-11);
+      line-height: 1.5;
 
       .scene-card__description {
         display: none;
@@ -243,6 +262,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: start;
+    margin-top: 10px;
     margin-bottom: 10px;
 
     .btn {
@@ -252,17 +272,6 @@
       font-size: var(--text-xs);
     }
   }
-}
-
-.video-section {
-  position: relative;
-  border-radius: 1rem;
-  overflow: hidden;
-}
-
-.card-section {
-  margin-bottom: 0;
-  padding: 1rem 0.75rem 0 0.75rem;
 }
 
 .scene-table {

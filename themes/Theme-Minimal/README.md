@@ -17,6 +17,18 @@ For intended experience:
 
 ## Changelog
 
+### Version 0.2.5 - 2025-04-06
+
+- Theme tag card view.
+- Rework studio/tag card backgrounds.
+
+### Version 0.2.4 - 2025-04-06
+
+- Increase contrast for settings toggles
+- Fix popover arrow theming
+- Theme performer scraper
+- Theme player vtt preview and markers
+
 ### Version 0.2.3 - 2025-04-05
 
 - Fix studio image in scene view.

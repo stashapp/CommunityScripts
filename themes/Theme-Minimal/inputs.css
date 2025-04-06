@@ -383,9 +383,70 @@ div.react-datepicker {
   border: unset;
 }
 
+/* ios toggle */
+/* :before is background pill */
+.custom-control-input ~ .custom-control-label:before {
+  /* color: var(--primary-11); */
+  border-color: var(--primary-6);
+  background-color: var(--primary-6);
+}
+.custom-control-input:checked ~ .custom-control-label:before {
+  /* color: var(--primary-12); */
+  border-color: var(--primary-6);
+  background-color: var(--primary-6);
+}
+/* due to hierarchy parent can disabled checked child*/
+.custom-switch
+  .custom-control-input:disabled:checked
+  ~ .custom-control-label:before {
+  border-color: var(--primary-6);
+  background-color: var(--primary-6);
+}
+
+/* :after is moving cirle */
+.custom-switch .custom-control-input ~ .custom-control-label:after {
+  /* color: var(--primary-11); */
+  /* border-color: var(--primary-4); */
+  background-color: var(--primary-2);
+
+  box-shadow: 0 0 15px 2px rgba(255, 255, 255, 0);
+  transition: all 0.3s ease-out, box-shadow 1s ease-out;
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label:after {
+  /* color: var(--primary-12); */
+  /* border-color: var(--primary-7); */
+  background-color: var(--primary-12);
+  box-shadow: 0 0 20px 2px rgba(255, 255, 255, 0.5);
+  animation-delay: 0.5s;
+}
+
+/* scene/studio filter buttons */
+.filtered-list-toolbar.btn-toolbar,
+.pagination {
+  .btn {
+    border-left: 0;
+    border-right: 0;
+  }
+  .btn-secondary {
+    &.active {
+      color: var(--primary-12);
+      background-color: unset;
+      svg {
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+      }
+    }
+    color: var(--primary-11);
+  }
+}
+
+.filter-container.text-muted.paginationIndex.center-text {
+  color: var(--primary-10) !important;
+  font-size: var(--text-xs);
+}
+
 /* sliders */
 input[type="range"]::-moz-range-track {
-  background: var(--primary-5);
+  background: var(--primary-4);
 }
 input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
@@ -395,18 +456,32 @@ input[type="range"]::-moz-range-thumb {
 
 input[type="range"]:active::-moz-range-track,
 input[type="range"]:focus::-moz-range-track {
-  background: var(--primary-5);
+  background: var(--primary-4);
 }
 input[type="range"]::-webkit-slider-runnable-track {
-  background: var(--primary-5);
+  background: var(--primary-4);
 }
 input[type="range"]:active::-webkit-slider-runnable-track,
 input[type="range"]:focus::-webkit-slider-runnable-track {
-  background: var(--primary-5);
+  background: var(--primary-4);
 }
 
 input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--primary-10);
   border: 1px solid var(--primary-10);
+}
+
+/* player side-bar */
+.organized-button {
+  transition: filter, color ease-in 0.5;
+  &.organized {
+    color: var(--primary-12);
+    svg {
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+    }
+  }
+  &.not-organized {
+    color: var(--primary-10);
+  }
 }
