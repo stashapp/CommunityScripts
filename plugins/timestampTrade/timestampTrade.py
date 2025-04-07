@@ -51,12 +51,19 @@ def processSceneTimestamTrade(s):
                         previous = {"title": "", "seconds": -1}
                         for m in data["markers"]:
 
+
                             marker = {
                                 "seconds": m["start_time"] / 1000,
                                 "primary_tag": None,
                                 "tags": [],
                                 "title": m["name"],
                             }
+
+                            # Add end time if setting is enabled and data is available
+                            if settings.get("useMarkerEndTimes", False) and "end_time" in m and m["end_time"]:
+                                marker["end_seconds"] = m["end_time"] / 1000
+                                log.debug(f"Added end time: {marker['end_seconds']} seconds for marker '{marker['title']}'")
+
                             if settings["addTsTradeTag"]:
                                 marker["tags"].append(int(getTag("[Timestamp]")))
 
@@ -567,7 +574,7 @@ def submitScene(query):
     }
     movies{
         scene_index
-    	movie{
+        movie{
         name
         url
         date
@@ -613,6 +620,7 @@ def submitScene(query):
            scene_markers{
                title
                seconds
+               end_seconds
                primary_tag{
                   name
                }
@@ -661,7 +669,7 @@ def submitScene(query):
         }
         groups{
             scene_index
-        	group{
+                group{
             name
             urls
             date
@@ -710,6 +718,24 @@ def submitScene(query):
                             "md5": row[4],
                         }
                     )
+            # Process markers to include end_seconds
+            processed_markers = []
+            for marker in s["scene_markers"]:
+                processed_marker = {
+                    "title": marker["title"],
+                    "start_time": marker["seconds"] * 1000,  # Convert to milliseconds
+                    "tag_name": marker["primary_tag"]["name"]
+                }
+
+                # Include end time if available
+                if "end_seconds" in marker and marker["end_seconds"]:
+                    processed_marker["end_time"] = marker["end_seconds"] * 1000  # Convert to milliseconds
+                    log.debug(f"Including end time: {processed_marker['end_time']} ms for marker '{marker['title']}'")
+
+                processed_markers.append(processed_marker)
+
+            # Add processed markers to submission data
+            s["markers"] = processed_markers
             s.pop("id")
             log.debug(s)
             request_s.post("https://timestamp.trade/submit-stash", json=s)
@@ -1517,3 +1543,4 @@ elif "hookContext" in json_input["args"]:
     if _type == "Image.Create.Post":
         img = stash.find_image(image_in=_id)
         processImages(img)
+        
