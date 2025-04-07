@@ -17,6 +17,10 @@ For intended experience:
 
 ## Changelog
 
+### Version 0.2.7 - 2025-04-07
+- Theme studio rating for real.
+- Remove card hover.
+
 ### Version 0.2.6 - 2025-04-06
 
 - Theme studio rating.
