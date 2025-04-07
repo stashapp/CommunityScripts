@@ -85,6 +85,13 @@
           "https://stashapp.github.io/CommunityScripts/stable/index.yml",
         key: "themeSwitchPlugin-theme-roundedYellow",
       },
+      {
+        displayName: "Minimal",
+        pluginId: "Theme-Minimal",
+        pluginSrc:
+          "https://stashapp.github.io/CommunityScripts/stable/index.yml",
+        key: "themeSwitchPlugin-theme-minimal",
+      },
     ],
     Global: [
       {
