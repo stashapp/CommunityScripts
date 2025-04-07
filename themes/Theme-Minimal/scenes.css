@@ -4,15 +4,10 @@
   background: none;
   box-shadow: none;
   border: none;
-  padding: 20px;
+
   margin: 8px;
 
   border-radius: 10px;
-
-  transition: background-color 0.5s ease-out;
-  &:hover {
-    background-color: var(--primary-2);
-  }
 
   a .card-section-title {
     color: unset;
