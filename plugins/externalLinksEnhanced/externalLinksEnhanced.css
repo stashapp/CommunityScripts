@@ -1,0 +1,37 @@
+.external-links-button .btn.link {
+  width: 36px;
+}
+.external-links-button .btn.link img {
+  width: 100%;
+  height: 100%;
+}
+.external-links-button .btn.link.youtube {
+  color: red;
+}
+.external-links-button .btn.link.facebook {
+  color: #1877f2;
+}
+.external-links-button .btn.link.patreon {
+  color: #f96854;
+}
+.external-links-button .btn.link.reddit {
+  color: #ff4500;
+}
+.external-links-button .btn.link.telegram {
+  color: #0088cc;
+}
+.external-links-button .btn.link.tiktok {
+  color: white;
+}
+.external-links-button .btn.link.tumblr {
+  color: #4c75a3;
+}
+.external-links-button .btn.link.twitch {
+  color: #784ec7;
+}
+.external-links-button .btn.link.twitter {
+  color: #1da1f2;
+}
+.external-links-button .btn.link.vk {
+  color: #4c75a3;
+}
