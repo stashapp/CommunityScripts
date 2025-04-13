@@ -1,6 +1,6 @@
 name: External Links Enhanced
 description: Adds additional icons for external links.
-version: 1.0
+version: 1.1
 ui:
     javascript:
         - externalLinksEnhanced.js
