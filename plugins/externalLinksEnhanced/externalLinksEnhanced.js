@@ -138,6 +138,11 @@
     const [definitions, setDefinitions] = React.useState(
       LinkDefinitions_default
     );
+    React.useEffect(() => {
+      setUrlSpecs([]);
+      setDefinitions(LinkDefinitions_default);
+      setLoading(true);
+    }, [urls]);
     const updateDefinitions = React.useCallback(
       (definition) => {
         setDefinitions(
