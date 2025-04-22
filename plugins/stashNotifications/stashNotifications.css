@@ -1,0 +1,28 @@
+.navbar-buttons .notification-btn-container {
+  position: relative;
+  display: inline-block;
+  margin-top: 3px;
+}
+.navbar-buttons .notification-btn-container .dropdown-menu-end {
+  right: 0 !important;
+  left: auto !important;
+  width: 300px;
+  max-width: 300px;
+  white-space: normal;
+  word-break: break-word;
+}
+.navbar-buttons .notification-btn-container .dropdown-menu-end a.dropdown-item {
+  white-space: normal;
+}
+.navbar-buttons .notification-btn-container .notification-btn {
+  max-width: 45px;
+}
+.navbar-buttons .notification-btn-container .notification-btn .notification-badge {
+  position: relative;
+  right: 10px;
+  top: -10px !important;
+}
+
+.stash-notification-modal h5 {
+  margin-top: 0.5em;
+}
