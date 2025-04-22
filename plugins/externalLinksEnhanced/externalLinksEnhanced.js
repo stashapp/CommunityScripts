@@ -6,6 +6,7 @@
   var { faLink } = libraries.FontAwesomeSolid;
   var {
     faFacebook,
+    faImdb,
     faInstagram,
     faPatreon,
     faReddit,
@@ -15,6 +16,7 @@
     faTwitch,
     faTwitter,
     faVk,
+    faWordpress,
     faYoutube
   } = libraries.FontAwesomeBrands;
   var customAssetPath = "./plugin/externalLinksEnhanced/assets/custom";
@@ -26,6 +28,11 @@
       name: "facebook",
       icon: faFacebook,
       addresses: ["facebook.com"]
+    },
+    {
+      name: "imdb",
+      icon: faImdb,
+      addresses: ["imdb.com"]
     },
     {
       name: "instagram",
@@ -74,6 +81,12 @@
       addresses: ["vk.com"]
     },
     {
+      name: "wordpress",
+      icon: faWordpress,
+      addresses: ["wordpress.com"],
+      regex: "^https?\\://(.+)wordpress.com/"
+    },
+    {
       name: "youtube",
       icon: faYoutube,
       addresses: ["youtube.com"]
@@ -89,7 +102,9 @@
   // src/utils/svg.ts
   var loadSvgIcon = async (file) => {
     try {
-      const svg = await fetch(`${customAssetPath}/${file}`).then((response) => response.text()).then((str) => {
+      const svg = await fetch(`${customAssetPath}/${file}`, {
+        cache: "no-store"
+      }).then((response) => response.text()).then((str) => {
         const domParser = new DOMParser();
         const doc = domParser.parseFromString(str, "image/svg+xml");
         const svgElement = doc.querySelector("svg");
@@ -121,7 +136,7 @@
   // src/utils/json.ts
   var getCustomDefinitions = async () => {
     try {
-      const json = await fetch(customDefinitionsPath).then((response) => response.json()).then((data) => data);
+      const json = await fetch(customDefinitionsPath, { cache: "no-store" }).then((response) => response.json()).then((data) => data);
       return json;
     } catch (e) {
       console.error(`Error loading custom definitions: ${e}`);
