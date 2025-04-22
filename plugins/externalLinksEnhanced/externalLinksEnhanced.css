@@ -5,11 +5,11 @@
   width: 100%;
   height: 100%;
 }
-.external-links-button .btn.link.youtube {
-  color: red;
-}
 .external-links-button .btn.link.facebook {
   color: #1877f2;
+}
+.external-links-button .btn.link.imdb {
+  color: #f5c518;
 }
 .external-links-button .btn.link.patreon {
   color: #f96854;
@@ -34,4 +34,10 @@
 }
 .external-links-button .btn.link.vk {
   color: #4c75a3;
+}
+.external-links-button .btn.link.wordpress {
+  color: gray;
+}
+.external-links-button .btn.link.youtube {
+  color: red;
 }

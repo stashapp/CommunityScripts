@@ -6,8 +6,11 @@ Plugin that adds additional icons for external links.
 
 The following sites are supported out of the box:
 
+* Bluesky (bsky.app) ~~ as custom icon
 * Facebook (facebook.com)
+* IMDB (imdb.com)
 * Instagram (instagram.com)
+* OnlyFans (onlyfans.com) ~~ as custom icon
 * Patreon (patreon.com)
 * Reddit (reddit.com)
 * Telegram (telegram.com | t.me)
@@ -16,6 +19,7 @@ The following sites are supported out of the box:
 * Twitch (twitch.tv)
 * Twitter (twitter.com | x.com)
 * VK (vk.com)
+* Wordpress (wordpress.com)
 * YouTube (youtube.com)
 
 Want more icons? It's pretty simple to add your own; however, it's recommended to request an icon to be added the CommunityScripts repository. When you install the plugin from the CommunityScripts repository, it will come bundled with icons that the community has contributed.

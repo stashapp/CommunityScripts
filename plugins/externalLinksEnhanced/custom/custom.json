@@ -1,5 +1,11 @@
 [
     {
+		"name": "bluesky",
+		"icon": "bluesky.svg",
+		"addresses": ["bsky.app"],
+		"regex": "^https?:\/\/(?:www\\.)?bsky.app\/profile\/(.*?)\/"
+	},
+    {
         "name": "onlyfans",
         "icon": "onlyfans.svg",
         "addresses": ["onlyfans.com"]
