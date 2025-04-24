@@ -379,32 +379,32 @@ def processSceneTimestamTrade(s):
                             log.debug(s.keys())
                             for fs in data["funscripts"]:
                                 log.debug(fs["md5"])
-                                conn = db_migrations()
-                                cur = conn.cursor()
-                                res = cur.execute(
-                                    "select id,filename,scene_id from script_index where md5=?",
-                                    (fs["md5"],),
-                                )
-                                for row in res.fetchall():
-                                    if len(s["files"]) > 0:
-                                        log.debug(
-                                            "found matching funscript, copying funscript"
-                                        )
-                                        scriptfile_source = Path(row[1])
-                                        video_file = Path(s["files"][0]["path"])
-                                        scriptfile_destination = video_file.parent / (
-                                            video_file.stem + ".funscript"
-                                        )
-                                        log.info(
-                                            "copying funscript %s, to destination %s,"
-                                            % (
-                                                scriptfile_source,
-                                                scriptfile_destination,
-                                            )
-                                        )
-                                        shutil.copyfile(
-                                            scriptfile_source, scriptfile_destination
-                                        )
+                                with db_migrations() as conn:
+                                  cur = conn.cursor()
+                                  res = cur.execute(
+                                      "select id,filename,scene_id from script_index where md5=?",
+                                      (fs["md5"],),
+                                  )
+                                  for row in res.fetchall():
+                                      if len(s["files"]) > 0:
+                                          log.debug(
+                                              "found matching funscript, copying funscript"
+                                          )
+                                          scriptfile_source = Path(row[1])
+                                          video_file = Path(s["files"][0]["path"])
+                                          scriptfile_destination = video_file.parent / (
+                                              video_file.stem + ".funscript"
+                                          )
+                                          log.info(
+                                              "copying funscript %s, to destination %s,"
+                                              % (
+                                                  scriptfile_source,
+                                                  scriptfile_destination,
+                                              )
+                                          )
+                                          shutil.copyfile(
+                                              scriptfile_source, scriptfile_destination
+                                          )
 
                     if needs_update:
                         log.debug("updating scene: %s" % (new_scene,))
@@ -696,20 +696,20 @@ def submitScene(query):
             if settings["submitFunscriptHash"]:
                 log.debug(s)
                 s["funscriptHashes"] = []
-                conn = db_migrations()
-                cur = conn.cursor()
-                res = cur.execute(
-                    "select id,filename,metadata,scene_id,md5 from script_index where scene_id=?",
-                    (s["id"],),
-                )
-                for row in res.fetchall():
-                    s["funscriptHashes"].append(
-                        {
-                            "filename": str(Path(row[1]).name),
-                            "metadata": json.loads(row[2]),
-                            "md5": row[4],
-                        }
-                    )
+               with db_migrations() as conn:
+                  cur = conn.cursor()
+                  res = cur.execute(
+                      "select id,filename,metadata,scene_id,md5 from script_index where scene_id=?",
+                      (s["id"],),
+                  )
+                  for row in res.fetchall():
+                      s["funscriptHashes"].append(
+                          {
+                              "filename": str(Path(row[1]).name),
+                              "metadata": json.loads(row[2]),
+                              "md5": row[4],
+                          }
+                      )
             s.pop("id")
             log.debug(s)
             request_s.post("https://timestamp.trade/submit-stash", json=s)
@@ -1230,60 +1230,60 @@ def db_migrations():
 
 
 def funscript_index(path):
-    conn = db_migrations()
-    cur = conn.cursor()
-    for file in path.glob("**/*.funscript"):
-        log.info("indexing script file %s" % (file,))
-        with open(file, "rb") as f:
-            data = f.read()
-            hash = hashlib.md5(data).hexdigest()
-            log.debug(hash)
-            d = json.loads(data)
-            metadata = {}
-            if "metadata" in d:
-                metadata = d["metadata"]
-            res = cur.execute(
-                "select count(*) from script_index where filename=? ",
-                (str(file.resolve()),),
-            )
-            if res.fetchone()[0] == 0:
-                cur.execute(
-                    "insert into script_index (filename,metadata,md5)values (?,?,?)",
-                    (str(file.resolve()), json.dumps(metadata), hash),
-                )
-                conn.commit()
-    res = cur.execute("select count(*) from script_index ")
-    funscript_count = res.fetchone()[0]
-    log.info(
-        "finished indexing funscripts, %s scripts indexed, matching to scenes"
-        % (funscript_count,)
-    )
-    res = cur.execute(
-        "select id,filename,scene_id from script_index where scene_id is null;"
-    )
-    for row in res.fetchall():
-        id = row[0]
-        filename = row[1]
-        scenes = stash.find_scenes(
-            f={"path": {"modifier": "INCLUDES", "value": Path(filename).stem}},
-            fragment="id\nfiles{basename}",
-        )
-        i = 0
-        for s in scenes:
-
-            for f in s["files"]:
-                if Path(filename).stem == Path(f["basename"]).stem:
-                    log.info(
-                        "matching scene %s to script %s"
-                        % (
-                            s["id"],
-                            filename,
-                        )
-                    )
-                    cur.execute(
-                        "update script_index set scene_id=? where id=?", (s["id"], id)
-                    )
-            conn.commit()
+    with db_migrations() as conn:
+      cur = conn.cursor()
+      for file in path.glob("**/*.funscript"):
+          log.info("indexing script file %s" % (file,))
+          with open(file, "rb") as f:
+              data = f.read()
+              hash = hashlib.md5(data).hexdigest()
+              log.debug(hash)
+              d = json.loads(data)
+              metadata = {}
+              if "metadata" in d:
+                  metadata = d["metadata"]
+              res = cur.execute(
+                  "select count(*) from script_index where filename=? ",
+                  (str(file.resolve()),),
+              )
+              if res.fetchone()[0] == 0:
+                  cur.execute(
+                      "insert into script_index (filename,metadata,md5)values (?,?,?)",
+                      (str(file.resolve()), json.dumps(metadata), hash),
+                  )
+                  conn.commit()
+      res = cur.execute("select count(*) from script_index ")
+      funscript_count = res.fetchone()[0]
+      log.info(
+          "finished indexing funscripts, %s scripts indexed, matching to scenes"
+          % (funscript_count,)
+      )
+      res = cur.execute(
+          "select id,filename,scene_id from script_index where scene_id is null;"
+      )
+      for row in res.fetchall():
+          id = row[0]
+          filename = row[1]
+          scenes = stash.find_scenes(
+              f={"path": {"modifier": "INCLUDES", "value": Path(filename).stem}},
+              fragment="id\nfiles{basename}",
+          )
+          i = 0
+          for s in scenes:
+  
+              for f in s["files"]:
+                  if Path(filename).stem == Path(f["basename"]).stem:
+                      log.info(
+                          "matching scene %s to script %s"
+                          % (
+                              s["id"],
+                              filename,
+                          )
+                      )
+                      cur.execute(
+                          "update script_index set scene_id=? where id=?", (s["id"], id)
+                      )
+              conn.commit()
 
 
 def excluded_marker_tag(marker):
