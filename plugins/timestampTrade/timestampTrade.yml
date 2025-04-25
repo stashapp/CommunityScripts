@@ -54,6 +54,10 @@ settings:
   mergeMarkers:
     displayName: Merge Markers
     type: BOOLEAN
+  useMarkerEndTimes:
+    displayName: Use marker end times
+    description: When available, import end times for markers from timestamp.trade
+    type: BOOLEAN
 
 hooks:
   - name: Add Marker to Scene
