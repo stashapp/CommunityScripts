@@ -693,27 +693,32 @@ def submitScene(query):
         )
         for s in scenes:
             log.debug("submitting scene: " + str(s))
+            
             if settings["submitFunscriptHash"]:
                 log.debug(s)
                 s["funscriptHashes"] = []
-               with db_migrations() as conn:
-                  cur = conn.cursor()
-                  res = cur.execute(
-                      "select id,filename,metadata,scene_id,md5 from script_index where scene_id=?",
-                      (s["id"],),
-                  )
-                  for row in res.fetchall():
-                      s["funscriptHashes"].append(
-                          {
-                              "filename": str(Path(row[1]).name),
-                              "metadata": json.loads(row[2]),
-                              "md5": row[4],
-                          }
-                      )
+                
+                with db_migrations() as conn:
+                    cur = conn.cursor()
+                    res = cur.execute(
+                        "select id, filename, metadata, scene_id, md5 from script_index where scene_id=?",
+                        (s["id"],),
+                    )
+                    
+                    for row in res.fetchall():
+                        s["funscriptHashes"].append(
+                            {
+                                "filename": str(Path(row[1]).name),
+                                "metadata": json.loads(row[2]),
+                                "md5": row[4],
+                            }
+                        )
+            
             s.pop("id")
             log.debug(s)
             request_s.post("https://timestamp.trade/submit-stash", json=s)
-            i = i + 1
+            
+            i += 1
             log.progress((i / count))
             time.sleep(0.5)
 
