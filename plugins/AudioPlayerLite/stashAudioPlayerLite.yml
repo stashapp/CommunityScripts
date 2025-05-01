@@ -1,0 +1,8 @@
+name: StashAudioPlayerLite
+description: This plugin identifies files with no video codec and plays them as audio.
+version: 0.1
+ui:
+    javascript:
+        - stashAudioPlayerLite.js
+    css:
+        - stashAudioPlayerLite.css
