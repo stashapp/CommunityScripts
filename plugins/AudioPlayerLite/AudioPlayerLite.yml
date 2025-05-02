@@ -3,6 +3,6 @@ description: This plugin identifies files with no video codec and plays them as 
 version: 0.1
 ui:
     javascript:
-        - stashAudioPlayerLite.js
+        - AudioPlayerLite.js
     css:
-        - stashAudioPlayerLite.css
+        - AudioPlayerLite.css

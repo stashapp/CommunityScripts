@@ -1,13 +1,13 @@
-name: StashAudioPlayer
+name: AudioPlayer
 description: Add an audio-only toggle button and support for audio files in the Stash player through hls transcoder.
 version: 0.3
 ui:
     requires:
         - CommunityScriptsUILibrary
     javascript:
-        - stashAudioPlayer.js
+        - AudioPlayer.js
     css:
-        - stashAudioPlayer.css
+        - AudioPlayer.css
 
 settings:
     audioExtensions:

@@ -5,7 +5,7 @@
     const { waitForElement, PathElementListener, getConfiguration, callGQL, baseURL } = window.csLib
 
     const defaultConfig = { audioExtensions: "mp3, m4a", useTag: false }
-    const config = await getConfiguration("stashAudioPlayer", defaultConfig)
+    const config = await getConfiguration("AudioPlayer", defaultConfig)
     const pluginConfig = {
         ...defaultConfig,
         ...config,
