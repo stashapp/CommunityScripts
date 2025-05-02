@@ -1,0 +1,39 @@
+/* Stash Audio Player */
+.VideoPlayer.audio .scrubber-wrapper,
+.VideoPlayer.audio .vjs-big-play-button,
+.VideoPlayer.audio .vjs-big-button-group,
+.VideoPlayer.audio .vjs-loading-spinner,
+.VideoPlayer.audio .vjs-skip-button {
+    display: none !important;
+}
+.VideoPlayer.audio .vjs-control-bar {
+    display: flex !important;
+    opacity: 100 !important;
+}
+.VideoPlayer.audio .vjs-seek-button {
+    display: block !important;
+}
+.VideoPlayer.audio .video-js {
+    background-color: #202b33 !important;
+    width: 100%;
+}
+.VideoPlayer.audio #VideoJsPlayer_html5_api {
+    display: none !important;
+}
+.VideoPlayer.audio .video-wrapper {
+    height: 7rem !important;
+    overflow: visible;
+}
+.VideoPlayer.audio > .vjs-poster {
+    height: 56.25vw !important;
+    position: relative !important;
+}
+#audioToggle.enabled {
+    color: #48aff0;
+}
+#audioToggle:hover {
+    color: #fff;
+}
+#audioToggle {
+    color: rgba(191,204,214,.5);
+}
