@@ -1,0 +1,35 @@
+name: Bulk Image Scrape
+description: Apply an image scraper to all images
+version: 0.1
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/bulkImageScrape.py"
+interface: raw
+
+settings:
+  ScraperID:
+    displayName: The Scraper ID of the image scraper to use (for example SHALookup)
+    type: STRING
+  SkipTags:
+    displayName: List of tags to skip (comma separated)
+    type: STRING
+  CreateMissingPerformers:
+    displayName: Create missing performers from scrape result
+    type: BOOLEAN
+  CreateMissingStudios:
+    displayName: Create missing studios from scrape result
+    type: BOOLEAN
+  CreateMissingMovies:
+    displayName: Create missing movies/groups from scrape result
+    type: BOOLEAN
+  MergeExistingTags:
+    displayName: Merge existing tags with the scraped tags (default is to overwrite)
+    type: BOOLEAN
+  ExcludeOrganized:
+    displayName: Exclude images that are set as organized (default is to include)
+    type: BOOLEAN
+  
+tasks:
+  - name: "Bulk Image Scrape"
+    description: Apply an image scraper to all images
