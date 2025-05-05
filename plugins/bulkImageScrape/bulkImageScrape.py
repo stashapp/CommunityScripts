@@ -257,8 +257,8 @@ for i, image in enumerate(images, start=1):
     scrape: dict | list[dict] | None = scrape_image(stash, image["id"], scraper_id)
     valid: bool = scrape_is_valid(scrape)
     if not valid:
-        log.error(
-            f"Scraper returned invalid result for image {image['id']} with scraper {scraper_id}"
+        log.debug(
+            f"Scraper returned invalid/empty result for image {image['id']} with scraper {scraper_id} - skipping"
         )
         continue
 
