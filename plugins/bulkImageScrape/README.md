@@ -4,7 +4,7 @@ Apply any image scraper to all of your images
 
 ## Install
 
-After you installed the plugin, make sure you have the latest version of stashapi installed by running `pip install -r <path to your stash>/plugins/community/bulkImageScraper/requirements.txt`
+After you installed the plugin, make sure you have the latest version of stashapi installed by running `pip install -r <path to your stash>/plugins/community/bulkImageScrape/requirements.txt`.
 
 ## Config
 
