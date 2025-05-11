@@ -1,0 +1,21 @@
+name: e621_tagger
+description: Finding images and videos on e621 and tagging them.
+version: 0.1
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/e621_tagger.py"
+
+interface: raw
+
+settings:
+  SkipTags:
+    displayName: List of tags to skip (comma separated). Default - e621_tagged
+    type: STRING
+  ExcludeOrganized:
+    displayName: Exclude images that are set as organized (default is to include)
+    type: BOOLEAN
+
+tasks:
+  - name: "Tag everything"
+    description: "Tag everything (Warning: can take a while)"
