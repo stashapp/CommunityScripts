@@ -1,3 +1,4 @@
+import hashlib
 import re
 import sys
 import json
@@ -172,13 +173,34 @@ def scrape_image(client: StashInterface, image_id: str) -> None:
     file_data = image["visual_files"][0]
     filename = file_data["basename"]
     filename_md5 = filename.split('.')[0]
+    final_md5 = None
 
-    if not re.match(r"^[a-f0-9]{32}$", filename_md5):
-        log.info(f"file name is not md5: {filename}");
-        return
+    # First try filename-based MD5
+    if re.match(r"^[a-f0-9]{32}$", filename_md5):
+        final_md5 = filename_md5
+        log.info(f"Using filename MD5: {final_md5}")
+    else:
+        # Fallback to content-based MD5
+        try:
+            file_path = file_data["path"]
+            log.info(f"Generating MD5 from file content: {file_path}")
+            
+            md5_hash = hashlib.md5()
+            with open(file_path, "rb") as f:
+                # Read file in 64kb chunks for memory efficiency
+                for chunk in iter(lambda: f.read(65536), b""):
+                    md5_hash.update(chunk)
+            
+            final_md5 = md5_hash.hexdigest()
+            log.info(f"Generated content MD5: {final_md5}")
+        except Exception as e:
+            log.error(f"Failed to generate MD5: {str(e)}")
+            return
 
-    process_e621_post(client, image_id, filename_md5)
-
+    if final_md5:
+        process_e621_post(client, image_id, final_md5)
+    else:
+        log.warning("No valid MD5 available for processing")
 
 # Plugin setup and execution
 # In the main execution block:
