@@ -77,8 +77,14 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
     tag_ids = [e621_tag["id"]]
     for category in ["general", "species", "character", "artist", "copyright"]:
         for tag in post_data.get("tags", {}).get(category, []):
-            stash_tag = get_or_create_tag(stash, tag)
-            tag_ids.append(stash_tag["id"])
+            # Clean and validate tag
+            clean_tag = tag.strip()
+            if not clean_tag:
+                continue
+            
+            stash_tag = get_or_create_tag(stash, clean_tag)
+            if stash_tag:
+                tag_ids.append(stash_tag["id"])
 
     # Process studio
     studio_id = None
@@ -102,12 +108,20 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
             "studio_id": studio_id,
             "performer_ids": performer_ids
         })
+
+        log.info("Image updated: ${image_id}")
     except Exception as e:
         log.error(f"Update failed: {str(e)}")
 
 
 def get_or_create_tag(stash: StashInterface, tag_name: str) -> dict:
     """Find or create tag with hierarchy handling"""
+    # Validate tag name
+    tag_name = tag_name.strip()
+    if not tag_name:
+        log.error("Attempted to create tag with empty name")
+        return None
+
     existing = stash.find_tags(f={"name": {"value": tag_name, "modifier": "EQUALS"}})
     if existing:
         return existing[0]
@@ -115,18 +129,27 @@ def get_or_create_tag(stash: StashInterface, tag_name: str) -> dict:
     parts = tag_name.split(":")
     parent_id = None
     for i in range(len(parts)):
-        current_name = ":".join(parts[:i+1])
+        current_name = ":".join(parts[:i+1]).strip()
+        if not current_name:
+            continue
+            
         existing = stash.find_tags(f={"name": {"value": current_name, "modifier": "EQUALS"}})
         if not existing:
             create_data = {"name": current_name}
             if parent_id:
                 create_data["parent_ids"] = [parent_id]
-            new_tag = stash.create_tag(create_data)
-            parent_id = new_tag["id"]
+            try:
+                new_tag = stash.create_tag(create_data)
+                if not new_tag:
+                    log.error(f"Failed to create tag: {current_name}")
+                    return None
+                parent_id = new_tag["id"]
+            except Exception as e:
+                log.error(f"Error creating tag {current_name}: {str(e)}")
+                return None
         else:
             parent_id = existing[0]["id"]
     return {"id": parent_id}
-
 
 def get_or_create_studio(stash: StashInterface, name: str) -> dict:
     """Find or create studio"""
@@ -151,27 +174,42 @@ def scrape_image(client: StashInterface, image_id: str) -> None:
     filename_md5 = filename.split('.')[0]
 
     if not re.match(r"^[a-f0-9]{32}$", filename_md5):
+        log.info(f"file name is not md5: {filename}");
         return
 
     process_e621_post(client, image_id, filename_md5)
 
 
 # Plugin setup and execution
+# In the main execution block:
 if __name__ == "__main__":
     json_input = json.loads(sys.stdin.read())
     stash = StashInterface(json_input["server_connection"])
 
     config = stash.get_configuration().get("plugins", {})
     settings = {
-        "SkipTags": "",
+        "SkipTags": "e621_tagged",  # Add automatic filtering
         "ExcludeOrganized": False
     }
-    settings.update(config.get("BulkImageScrape", {}))
+    settings.update(config.get("e621_tagger", {}))
 
+    log.info(settings)
+
+    # Get e621_tagged ID for filtering
+    e621_tag = get_or_create_tag(stash, "e621_tagged")
+
+    # Existing tags + automatic e621_tagged exclusion
     skip_tags = [t.strip() for t in settings["SkipTags"].split(",") if t.strip()]
+    skip_tags.append(e621_tag["id"])  # Filter by ID instead of name
+
     images = get_all_images(stash, skip_tags, settings["ExcludeOrganized"])
 
+    # Rest of the loop remains the same
     for i, image in enumerate(images, 1):
-        time.sleep(0.5)
+        image_tag_names = [tag["name"] for tag in image.get("tags", [])]
+        if any(tag in image_tag_names for tag in skip_tags):
+            log.info(f"Skipping image {image['id']} - contains skip tag")
+            continue
+
         log.progress(i/len(images))
         scrape_image(stash, image["id"])
