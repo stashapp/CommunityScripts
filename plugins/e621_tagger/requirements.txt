@@ -1,0 +1,3 @@
+requests
+# stashapi has to be installed from source until stashapp-tools is updated to include the latest version
+stashapi @ git+https://github.com/stg-annon/stashapi.git
