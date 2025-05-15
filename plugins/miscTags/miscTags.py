@@ -9,7 +9,7 @@ per_page = 100
 skip_tag = "[MiscTags: Skip]"
 
 # Defaults if nothing has changed in the stash ui
-settings = {"addStashVrCompanionTags": False,
+settings = {"addStashVRCompanionTags": False,
             "addVRTags": False,
             "addSoloTags": True,
             "addThreesomeTags": True,
@@ -53,7 +53,7 @@ def processScene(scene):
     if tags_cache[skip_tag] not in [x["id"] for x in scene["tags"]]:
         tags = []
         update = False
-        if settings["addStashVrCompanionTags"]:
+        if settings["addStashVRCompanionTags"]:
             processStashVRCompanionTags(scene, tags)
             log.debug(tags)
         if settings["addVRTags"]:
