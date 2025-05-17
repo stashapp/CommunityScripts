@@ -54,6 +54,10 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
     if any(tag["name"] == "e621_tagged" for tag in image.get("tags", [])):
         return
 
+
+    if any(tag["name"] == "e621_tag_failed" for tag in image.get("tags", [])):
+        return
+
     try:
         time.sleep(2)  # Rate limiting
         response = requests.get(
@@ -64,7 +68,18 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
         response.raise_for_status()
         post_data = response.json().get("post", {})
     except Exception as e:
-        log.error(f"e621 API error: {str(e)}")
+        log.error(f"Marking as failed. e621 API error: {str(e)}")
+        e621_tag_failed_tag = get_or_create_tag(stash, "e621_tag_failed")
+        image_tags_on_e621_fail_ids = [e621_tag_failed_tag["id"]]
+
+        for tag in image.get("tags"):
+            image_tags_on_e621_fail_ids.append(tag["id"])
+       
+        stash.update_image({
+            "id": image_id,
+            "tag_ids": list(set(image_tags_on_e621_fail_ids))
+        })
+
         return
 
     if not post_data:
@@ -104,6 +119,7 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
     try:
         stash.update_image({
             "id": image_id,
+            "organized": True,
             "urls": [post_url],
             "tag_ids": list(set(tag_ids)),
             "studio_id": studio_id,
@@ -113,6 +129,7 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
         log.info("Image updated: ${image_id}")
     except Exception as e:
         log.error(f"Update failed: {str(e)}")
+
 
 
 def get_or_create_tag(stash: StashInterface, tag_name: str) -> dict:
@@ -205,12 +222,13 @@ def scrape_image(client: StashInterface, image_id: str) -> None:
 # Plugin setup and execution
 # In the main execution block:
 if __name__ == "__main__":
+    log.info("Starting tagger...")
     json_input = json.loads(sys.stdin.read())
     stash = StashInterface(json_input["server_connection"])
 
     config = stash.get_configuration().get("plugins", {})
     settings = {
-        "SkipTags": "e621_tagged",  # Add automatic filtering
+        "SkipTags": "e621_tagged, e621_tag_failed",  # Add automatic filtering
         "ExcludeOrganized": False
     }
     settings.update(config.get("e621_tagger", {}))
@@ -218,13 +236,17 @@ if __name__ == "__main__":
     log.info(settings)
 
     # Get e621_tagged ID for filtering
-    e621_tag = get_or_create_tag(stash, "e621_tagged")
+    e621_tagged_tag = get_or_create_tag(stash, "e621_tagged")
+    e621_tag_failed_tag = get_or_create_tag(stash, "e621_tag_failed")
 
     # Existing tags + automatic e621_tagged exclusion
     skip_tags = [t.strip() for t in settings["SkipTags"].split(",") if t.strip()]
-    skip_tags.append(e621_tag["id"])  # Filter by ID instead of name
+    skip_tags.append(e621_tagged_tag["id"])  # Filter by ID instead of name
+    skip_tags.append(e621_tag_failed_tag["id"])  # Filter by ID instead of name
 
+    log.info("Getting images...")
     images = get_all_images(stash, skip_tags, settings["ExcludeOrganized"])
+    log.info(f"Got ${str(len(images))} images");
 
     # Rest of the loop remains the same
     for i, image in enumerate(images, 1):
