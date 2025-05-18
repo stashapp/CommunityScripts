@@ -1,5 +1,7 @@
 # Hot Cards
 
+https://discourse.stashapp.cc/t/hot-cards/1380
+
 Hot Cards is a Stash CommunityScript plugin designed to enhance your visual experience by applying custom styling to card elements based on a Tag ID or a Rating Threshold. This plugin is perfect for highlighting certain performers or scenes and making sure you don't forget them!
 
 ## Features

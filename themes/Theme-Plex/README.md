@@ -1,3 +1,7 @@
+# Plex
+
+https://discourse.stashapp.cc/t/plex/1426
+
 ![plex theme logo](https://user-images.githubusercontent.com/63812189/79496351-dddbf780-7fda-11ea-9e68-46d0eeb4e92f.png)
 
 ![plex theme preview](https://user-images.githubusercontent.com/1358708/178891502-c71e4278-0378-4154-91a6-07e1a8eaa1df.png)

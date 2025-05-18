@@ -1,5 +1,7 @@
 # Kodi helper
 
+https://discourse.stashapp.cc/t/kodi-helper/1477/1
+
 ## Features
 
 Kodi helper generates files that can be imported with Kodi, to integrate your stash metadata into your Kodi system.

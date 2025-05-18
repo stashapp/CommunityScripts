@@ -1,3 +1,7 @@
+# Dupe Marker Detector
+
+https://discourse.stashapp.cc/t/dupe-marker-detector/1375
+
 Marks duplicate markers with a tag: `[Marker: Duplicate]`
 
 Tasks -> Search for duplicate markers

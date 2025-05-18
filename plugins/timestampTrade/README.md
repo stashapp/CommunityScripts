@@ -1,4 +1,7 @@
 # timestampTrade 
+
+https://discourse.stashapp.cc/t/timestamp-trade/1415
+
 I've created the api https://timestamp.trade to sync markers between stash instances and xbvr.
 This sits along side other metadata databases like stashdb while we wait for the feature to be added there.
 

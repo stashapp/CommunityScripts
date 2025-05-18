@@ -1,5 +1,7 @@
+# titleFromFilename
 
-#  titleFromFilename
+https://discourse.stashapp.cc/t/titlefromfilename/1519
+
 Sets a scene's title
 
 ## Requirements

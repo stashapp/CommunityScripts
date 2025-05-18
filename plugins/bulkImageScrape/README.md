@@ -1,5 +1,7 @@
 # Bulk Image Scraper
 
+https://discourse.stashapp.cc/t/bulk-image-scrape/1339
+
 Apply any image scraper to all of your images 
 
 ## Install

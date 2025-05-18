@@ -1,5 +1,7 @@
 # Addtional Files Deleter
 
+ https://discourse.stashapp.cc/t/addtional-files-deleter/1337
+
 This is a plugin that will scan your Stash for either scenes or images where the file count is above 1. It will then skip over the primary file for each scene or image object and delete these extra files. Usually scene that contain multiple files are identical Phash matches (Unless you have manually merged unidentical Phashed files). Image objects that contain multiple files are grouped together under identical checksums, not Phashes. (You can't manually merge images as of yet.)
 
 ## Usage

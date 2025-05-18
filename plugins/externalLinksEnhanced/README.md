@@ -1,5 +1,7 @@
 # External Links Enhanced
 
+https://discourse.stashapp.cc/t/external-links-enhanced/584
+
 Plugin that adds additional icons for external links.
 
 ## Supported Links
