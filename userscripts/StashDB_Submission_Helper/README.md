@@ -1,5 +1,7 @@
 # StashDB Submission Helper
 
+https://discourse.stashapp.cc/t/stashdb-submission-helper/1417
+
 - Adds button to add all unmatched aliases to performer
 - Adds button to add all unmatched urls to performer
 - Adds button to add all unmatched measurements to performer (if they match expected formats)

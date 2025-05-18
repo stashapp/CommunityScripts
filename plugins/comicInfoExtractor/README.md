@@ -1,4 +1,7 @@
 # Comic Archive Metadata Extractor
+
+https://discourse.stashapp.cc/t/comic-info-extractor/1372
+
 Follows the Comicrack Standard for saving Comic Metadata in .cbz files by reading the ComicInfo.xml file in the archive and writing the result into the stash gallery.
 Use the config.py ImportList to define what XML names should be mapped to what.
 Currently, Bookmark and Type are recognized as chapters that are imported as well.

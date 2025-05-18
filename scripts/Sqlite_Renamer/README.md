@@ -1,4 +1,7 @@
 # SQLITE Renamer for Stash
+
+https://discourse.stashapp.cc/t/sqlite-renamer-for-stash/1476
+
 Using metadata from your database (SQLITE) to rename your file.
 
 ## :exclamation: Important :exclamation:

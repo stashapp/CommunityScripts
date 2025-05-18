@@ -1,4 +1,7 @@
 # Choose Your Own Adventure Player
+
+https://discourse.stashapp.cc/t/choose-your-own-adventure-player/1222
+
 A plugin to adapt Choose Your Own Adventure Games to the Stash VideoJS player.
 
 ## Setup

@@ -1,4 +1,7 @@
 # nfoFileParser
+
+https://discourse.stashapp.cc/t/nfosceneparser/1385
+
 Automatically and transparently populates your scenes data (during scan) based on either:
 - NFO files 
 - patterns in your file names, configured through regex. 

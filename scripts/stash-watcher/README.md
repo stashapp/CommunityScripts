@@ -1,4 +1,7 @@
 # Stash Watcher
+
+https://discourse.stashapp.cc/t/stash-watcher/1478
+
 Stash Watcher is a service that watches your Stash library directories for changes and then triggers a Metadata Scan when new files are added to those directories.  It then waits a period of time before triggering another scan to keep Stash from constantly scanning if you're making many changes.  Note that updates are watched during that window; the update is merely delayed.
 
 ## Configuration

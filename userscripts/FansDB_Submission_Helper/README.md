@@ -1,5 +1,7 @@
 # FansDB Submission Helper
 
+https://discourse.stashapp.cc/t/fansdb-submission-helper/1418
+
 > **NOTE:** Only change from [StashDB_Submission_Helper](https://github.com/stashapp/CommunityScripts/tree/main/userscripts/StashDB_Submission_Helper) is changed `@match` to fansdb.cc domain and added support for FansDB sites to match performer URLs. 
 
 - Adds button to add all unmatched aliases to performer

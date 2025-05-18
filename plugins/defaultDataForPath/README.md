@@ -1,4 +1,7 @@
 # Path Default Tags
+
+https://discourse.stashapp.cc/t/default-data-for-path/1373
+
 Define default tags/performers/studio for Scenes, Images, and Galleries by file path.
 Big thanks to @WithoutPants - I based this entire script off of yours (markerTagToScene) and learned about Stash plugins during the process :)
 
