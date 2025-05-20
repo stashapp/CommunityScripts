@@ -6,19 +6,75 @@ from stashapi.stash_types import StashItem
 from stashapi.stashapp import StashInterface
 from stashapi.scrape_parser import ScrapeParser
 
-# Quick check to make sure we have the correct version of stashapi
-if StashItem.IMAGE is None or not hasattr(StashInterface, "scrape_image"):
-    log.error(
-        "It seems you are using an older version of stashapi\n"
-        "without support for image scraping.\n"
-        "Please use the requirements.txt file to install the most recent version"
-    )
-    exit(1)
-
 
 #
 # Helper functions
 #
+
+README_URL: str = "https://github.com/stashapp/CommunityScripts/blob/main/plugins/bulkImageScrape/README.md"
+
+
+def validate_scraper(client: StashInterface, scraper_id: str) -> str:
+    """
+    Check if the requested scraper exists and is able to scrape images
+    and return the id if it does
+    """
+
+    if scraper_id == "":
+        log.error(
+            "ScraperID is empty - cannot continue\n"
+            "Please set a valid ScraperID in the plugin settings at:\n"
+            "Settings -> Plugins -> Plugins -> BulkImageScrape -> ScraperID\n"
+            f"as described in the README.md file at:\n"
+            f"{README_URL}"
+        )
+        exit(1)
+
+    scrapers: list[dict] = client.list_scrapers([StashItem.IMAGE])
+    valid_scraper_ids: list[str] = []
+
+    for scraper in scrapers:
+        if scraper["id"] == scraper_id:
+            valid_scraper_ids.append(scraper["id"])
+
+    if len(valid_scraper_ids) == 0:
+        log.error(
+            f"No valid image scraper found with id {scraper_id}\n"
+            "Please check the ScraperID is correct\n"
+            "Your selected scraper should be listed at:\n"
+            "Settings -> Metadata Providers -> Scrapers -> Image scrapers"
+            f"as described in the README.md file at:\n"
+            f"{README_URL}"
+        )
+        exit(1)
+
+    if len(valid_scraper_ids) > 1:
+        log.error(
+            f"Multiple image scrapers found with id {scraper_id}\n"
+            "Scraper ID must be unique - please fix your scraper installations\n"
+            "Check your installed scrapers at:\n"
+            "Settings -> Metadata Providers -> Installed Scrapers"
+            f"as described in the README.md file at:\n"
+            f"{README_URL}"
+        )
+        exit(1)
+
+    return valid_scraper_ids[0]
+
+
+def validate_stashapi(item: StashItem, client: StashInterface) -> None:
+    """
+    Quick check to make sure we have the correct version of stashapi installed
+    """
+    if item.IMAGE is None or not hasattr(client, "scrape_image"):
+        log.error(
+            "It seems you are using an older version of stashapi\n"
+            "without support for image scraping.\n"
+            "Please use the requirements.txt file to install the most recent version\n"
+            f"as described in the README.md file at:\n"
+            f"{README_URL}"
+        )
+        exit(1)
 
 
 def get_tag_id(client: StashInterface, tag_name: str) -> str | None:
@@ -37,21 +93,13 @@ def get_tag_id(client: StashInterface, tag_name: str) -> str | None:
     return tags[0]["id"]
 
 
-def get_scraper_id(client: StashInterface, scraper_name: str) -> str | None:
-    """
-    Get the id of a scraper by name or return None if the scraper is not found
-    """
-    scrapers: list[dict] = client.list_scrapers([StashItem.IMAGE])
-    for scraper in scrapers:
-        if scraper["name"] == scraper_name:
-            return scraper["id"]
-    return None
-
-
 def parse_skip_tags(client: StashInterface, skip_tags: str) -> list[str]:
     """
     Parse the skip tags to a list of tag ids
     """
+    if skip_tags == "" or skip_tags is None:
+        return []
+
     skip_tags = skip_tags.split(",")
     tag_ids: list[str] = []
     for tag in skip_tags:
@@ -87,9 +135,7 @@ def get_all_images(
             "depth": -1,
         }
 
-    result: list[dict] = client.find_images(f=image_filter, filter=all_results)
-
-    return result
+    return client.find_images(f=image_filter, filter=all_results)
 
 
 def scrape_image(
@@ -128,7 +174,7 @@ def scrape_is_valid(scrape_input: dict | list[dict] | None) -> bool:
             if value is not None and value != [] and value != {} and value != ""
         )
     else:
-        # something went wrong strangely wrong?
+        # something went strangely wrong?
         return False
 
 
@@ -183,6 +229,7 @@ def update_image(client: StashInterface, update: dict) -> dict | None:
 json_input: dict = json.loads(sys.stdin.read())
 FRAGMENT_SERVER: dict = json_input["server_connection"]
 stash: StashInterface = StashInterface(FRAGMENT_SERVER)
+log.info("Starting Bulk Image Scrape Plugin")
 
 config: dict = stash.get_configuration()["plugins"]
 settings: dict[str, any] = {
@@ -197,6 +244,7 @@ settings: dict[str, any] = {
 
 if "BulkImageScrape" in config:
     settings.update(config["BulkImageScrape"])
+log.info(f"settings: {settings=}")
 
 scrape_parser = ScrapeParser(
     stash,
@@ -207,36 +255,18 @@ scrape_parser = ScrapeParser(
 )
 
 #
-# Validate input settings
+# VALIDATE ENVIRONMENT
 #
 
-
-# Exit if no ScraperID is set or we cannot resolve it
-if settings["ScraperID"] == "":
-    log.error("No ScraperID set")
-    exit(1)
-
-scraper_id: None | str = get_scraper_id(stash, settings["ScraperID"])
-if scraper_id is None:
-    log.error(f"ScraperID {settings['ScraperID']} not found - cannot continue")
-    log.error("Please check the ScraperID is correct and try again")
-    exit(1)
-
-# parse the skip tags to a list of tag ids if we have any
-parsed_skip_tags: list[str] = []
-if settings["SkipTags"] != "":
-    parsed_skip_tags = parse_skip_tags(stash, settings["SkipTags"])
-    if len(parsed_skip_tags) == 0:
-        parsed_skip_tags = []
+validate_stashapi(StashItem.IMAGE, stash)
+scraper_id: str = validate_scraper(stash, settings["ScraperID"])
+parsed_skip_tags: list[str] = parse_skip_tags(stash, settings["SkipTags"])
 
 #
 # MAIN
 #
 
-log.info("Starting Bulk Image Scrape Plugin")
-log.info(f"settings: {settings=}")
 log.info("Querying images from stash")
-
 images: list[dict] = get_all_images(
     stash, parsed_skip_tags, settings["ExcludeOrganized"]
 )
@@ -246,7 +276,7 @@ if total_images == 0:
     log.info("No images found with the given filters")
     exit(0)
 else:
-    log.info(f"Found {len(images)} images")
+    log.info(f"Found {total_images} images")
 
 
 for i, image in enumerate(images, start=1):
@@ -258,7 +288,8 @@ for i, image in enumerate(images, start=1):
     valid: bool = scrape_is_valid(scrape)
     if not valid:
         log.debug(
-            f"Scraper returned invalid/empty result for image {image['id']} with scraper {scraper_id} - skipping"
+            f"Scraper returned invalid/empty result for image {image['id']} "
+            f"with scraper {scraper_id} - skipping"
         )
         continue
 
