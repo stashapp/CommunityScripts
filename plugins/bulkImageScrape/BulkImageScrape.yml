@@ -1,6 +1,6 @@
 name: Bulk Image Scrape
 description: Apply an image scraper to all images
-version: 0.2
+version: 0.3
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
