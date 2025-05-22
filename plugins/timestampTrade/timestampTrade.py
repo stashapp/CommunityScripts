@@ -257,7 +257,7 @@ def processSceneTimestamTrade(s):
                                                     if new_movie["date"] == "1-01-01":
                                                         new_movie["date"] = None
                                                     if not movie_scrape["urls"]:
-                                                        new_movie["url"] = u["url"]
+                                                        new_movie["urls"] = u["url"]
                                                     if movie_scrape["studio"]:
                                                         new_movie["studio_id"] = (
                                                             movie_scrape["studio"][
@@ -268,6 +268,8 @@ def processSceneTimestamTrade(s):
                                                         new_movie["urls"] = [
                                                             x["url"] for x in m["urls"]
                                                         ]
+                                                        if hasattr(new_movie, "url"):
+                                                            delattr(new_movie, "url")
                                                     log.debug(
                                                         "new movie: %s" % (new_movie,)
                                                     )
@@ -283,7 +285,7 @@ def processSceneTimestamTrade(s):
                                             "date": m["release_date"],
                                         }
                                         if len(m["urls"]) > 0:
-                                            new_movie["url"] = m["urls"][0]["url"]
+                                            new_movie["urls"] = m["urls"][0]["url"]
 
                                         log.debug("new movie: %s" % (new_movie,))
                                         nm = stash.create_movie(new_movie)
