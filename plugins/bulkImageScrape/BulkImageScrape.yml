@@ -1,6 +1,6 @@
 name: Bulk Image Scrape
 description: Apply an image scraper to all images
-version: 0.3
+version: 0.3.1
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
@@ -29,6 +29,9 @@ settings:
   ExcludeOrganized:
     displayName: Exclude images that are set as organized (default is to include)
     type: BOOLEAN
+  SkipEntriesNum:
+    displayName: number of entries to skip over (mostly for rerunning after an error on large collections)
+    type: NUMBER
   
 tasks:
   - name: "Bulk Image Scrape"

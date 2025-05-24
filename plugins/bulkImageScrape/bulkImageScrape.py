@@ -1,5 +1,7 @@
+from collections.abc import Generator
 import sys
 import json
+import math
 import time
 import stashapi.log as log
 from stashapi.stash_types import StashItem
@@ -109,19 +111,8 @@ def parse_skip_tags(client: StashInterface, skip_tags: str) -> list[str]:
     return tag_ids
 
 
-def get_all_images(
-    client: StashInterface, skip_tags: list[str], exclude_organized: bool
-) -> list[dict]:
-    """
-    Get all images from the stash
-    """
+def build_image_filter(skip_tags: list[str], exclude_organized: bool) -> dict:
     image_filter: dict = {}
-    all_results: dict = {
-        "page": 1,
-        "per_page": -1,
-        "sort": "created_at",
-        "direction": "ASC",
-    }
 
     if exclude_organized:
         image_filter["organized"] = False
@@ -135,7 +126,58 @@ def get_all_images(
             "depth": -1,
         }
 
-    return client.find_images(f=image_filter, filter=all_results)
+    return image_filter
+
+
+def count_all_images(
+    client: StashInterface, skip_tags: list[str], exclude_organized: bool
+) -> int:
+    """
+    count all images from the stash
+    """
+    image_filter: dict = build_image_filter(skip_tags=skip_tags, exclude_organized=exclude_organized)
+
+    all_results: dict = {
+        "page": 1,
+        "per_page": 0,
+        "sort": "created_at",
+        "direction": "ASC",
+    }
+
+    total_images, images = client.find_images(f=image_filter, filter=all_results, get_count=True)
+
+    return total_images
+
+
+def get_all_images(
+    client: StashInterface, skip_tags: list[str], exclude_organized: bool, skip_entries: int = 0
+) -> Generator[dict, None, None]:
+    """
+    Get all images from the stash
+    """
+    image_filter: dict = build_image_filter(skip_tags=skip_tags, exclude_organized=exclude_organized)
+
+    page_size = 100
+    page = 1
+    if skip_entries > 0:
+        page += math.floor(skip_entries / page_size)
+        log.info(f"skipping to result page {page} with {page_size} entries each to skip around {skip_entries}")
+
+    images = None
+    while images is None or len(images) > 0:
+        all_results: dict = {
+            "page": page,
+            "per_page": page_size,
+            "sort": "created_at",
+            "direction": "ASC",
+        }
+
+        images = client.find_images(f=image_filter, filter=all_results)
+
+        for image in images:
+            yield image
+
+        page += 1
 
 
 def scrape_image(
@@ -240,6 +282,7 @@ settings: dict[str, any] = {
     "CreateMissingTags": False,
     "MergeExistingTags": False,
     "ExcludeOrganized": False,
+    "SkipEntriesNum": 0,
 }
 
 if "BulkImageScrape" in config:
@@ -267,17 +310,19 @@ parsed_skip_tags: list[str] = parse_skip_tags(stash, settings["SkipTags"])
 #
 
 log.info("Querying images from stash")
-images: list[dict] = get_all_images(
+total_images: int = count_all_images(
     stash, parsed_skip_tags, settings["ExcludeOrganized"]
-)
+) - settings["SkipEntriesNum"]
 
-total_images: int = len(images)
 if total_images == 0:
     log.info("No images found with the given filters")
     exit(0)
 else:
     log.info(f"Found {total_images} images")
 
+images: Generator[dict, None, None] = get_all_images(
+    stash, parsed_skip_tags, settings["ExcludeOrganized"], settings["SkipEntriesNum"]
+)
 
 for i, image in enumerate(images, start=1):
     time.sleep(0.5)
