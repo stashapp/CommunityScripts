@@ -131,7 +131,7 @@ def processMovie(m):
        'synopsis': m['description'],
        'front_image': m['image'],
        'back_image': m['back_image'],
-       'url': m['url'],
+       'urls': [m['url']],
     }
     if m['site']:
         studio=stash.find_studio(m['site'],create=True)
