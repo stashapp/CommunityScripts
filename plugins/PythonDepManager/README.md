@@ -97,10 +97,10 @@ Handle multiple different requirements for imports:
 ```python
 from PythonDepManager import ensure_import
 ensure_import(
-  "requests"
-  "bs4:beautifulsoup4==4.9.3"
-  "stashapi:stashapp-tools==0.2.58"
-  "someothermodule>=0.1"
+  "requests",
+  "bs4:beautifulsoup4==4.9.3",
+  "stashapi:stashapp-tools==0.2.58",
+  "someothermodule>=0.1",
 )
 ```
 
