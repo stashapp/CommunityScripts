@@ -1,0 +1,11 @@
+.random-btn {
+    background-color: #ff0052;
+    border-color: #ff0052;
+    color: #fff;
+    margin-left: 10px;
+}
+.random-btn:hover {
+    background-color: #a10134;
+    border-color: #a10134;
+    color: #fff;
+}
