@@ -1,0 +1,12 @@
+name: PythonDepManager
+description: Manage Python dependencies for CommunityScripts
+version: 0.1.0
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/flush.py"
+interface: raw
+
+tasks:
+  - name: "Flush Dependencies"
+    description: Flush all cached dependencies
