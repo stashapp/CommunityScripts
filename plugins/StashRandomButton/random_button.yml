@@ -1,0 +1,10 @@
+name: RandomButton
+description: Adds a button to quickly switch to a random scene or image on both overview and detail pages
+version: 1.1.0
+url: https://example.com
+ui:
+  requires: []
+  javascript:
+    - random_button.js
+  css:
+    - random_button.css
