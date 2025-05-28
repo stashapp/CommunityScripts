@@ -1,5 +1,7 @@
 # Stash Random Button Plugin
 
+https://discourse.stashapp.cc/t/randombutton/1809
+
 Adds a "Random" button to the image & scenes page to quickly navigate to a random scene.
 
 ## Features
