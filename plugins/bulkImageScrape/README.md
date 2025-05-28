@@ -6,7 +6,7 @@ Apply any image scraper to all of your images
 
 ## Install
 
-After you installed the plugin, make sure you have the latest version of stashapi installed by running `pip install -r <path to your stash>/plugins/community/BulkImageScrape/requirements.txt`.
+The Plugin uses [PythonDepManager](https://github.com/stashapp/CommunityScripts/tree/main/plugins/PythonDepManager) to install requirements on it's own. `git` and `pip` must be installed for everything to work properly
 
 ## Config
 

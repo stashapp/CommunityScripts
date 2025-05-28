@@ -3,6 +3,10 @@ import sys
 import json
 import math
 import time
+
+from PythonDepManager import ensure_import
+ensure_import("stashapi@git+https://github.com/stg-annon/stashapi@f2de6fa")
+
 import stashapi.log as log
 from stashapi.stash_types import StashItem
 from stashapi.stashapp import StashInterface
