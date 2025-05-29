@@ -73,16 +73,16 @@
     if (pathname === '/images' || /^\/images\/\d+$/.test(pathname)) 
       return randomGlobal('Image', 'images', '/images/');
 
-    if (pathname === '/performers' || /^\/performers\/\d+$/.test(pathname)) 
+    if (pathname === '/performers') 
       return randomGlobal('Performer', 'performers', '/performers/');
 
-    if (pathname === '/studios' || /^\/studios\/\d+$/.test(pathname)) 
+    if (pathname === '/studios') 
       return randomGlobal('Studio', 'studios', '/studios/');
 
-    if (pathname === '/tags' || /^\/tags\/\d+$/.test(pathname)) 
+    if (pathname === '/tags') 
       return randomGlobal('Tag', 'tags', '/tags/');
 
-    if (pathname === '/groups' || /^\/groups\/\d+$/.test(pathname)) 
+    if (pathname === '/groups') 
       return randomGlobal('Group', 'groups', '/groups/');
 
     if (pathname === '/galleries') 
