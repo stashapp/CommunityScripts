@@ -105,7 +105,7 @@
     if (tagId) 
       return randomGlobal('Scene', 'scenes', '/scenes/', { tags: { value: [tagId], modifier: "INCLUDES_ALL" } });
 
-    let galleryId = getIdFromPath(/^\/galleries\/(\d+)$/); // SOLO si estamos en la página de galería
+    let galleryId = getIdFromPath(/^\/galleries\/(\d+)$/);
     if (galleryId)
       return randomGlobal('Image', 'images', '/images/', { galleries: { value: [galleryId], modifier: "INCLUDES_ALL" } });
 
