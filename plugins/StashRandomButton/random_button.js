@@ -66,7 +66,7 @@
   async function randomButtonHandler() {
     const pathname = window.location.pathname.replace(/\/$/, '');
 
-    // GLOBAL: lista y detalle (images, scenes, etc)
+    // GLOBAL
     if (pathname === '/scenes' || /^\/scenes\/\d+$/.test(pathname)) 
       return randomGlobal('Scene', 'scenes', '/scenes/');
 
@@ -88,7 +88,7 @@
     if (pathname === '/galleries') 
       return randomGlobal('Gallery', 'galleries', '/galleries/');
 
-    // --- Internos ---
+    // Intern
     let studioId = getIdFromPath(/^\/studios\/(\d+)\/scenes/);
     if (studioId) 
       return randomGlobal('Scene', 'scenes', '/scenes/', { studios: { value: [studioId], modifier: "INCLUDES_ALL" } });
