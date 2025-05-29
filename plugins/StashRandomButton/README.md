@@ -1,13 +1,23 @@
 # Stash Random Button Plugin
 
-https://discourse.stashapp.cc/t/randombutton/1809
+[Plugin thread on Discourse](https://discourse.stashapp.cc/t/randombutton/1809)
 
-Adds a "Random" button to the image & scenes page to quickly navigate to a random scene.
+Adds a "Random" button to the Stash UI, letting you instantly jump to a random scene, image, performer, studio, group, tag, or gallery—including random "internal" navigation (e.g. a random scene inside a studio).
 
 ## Features
-- Adds a "Random" button to the Stash UI.
-- Selects a random scene via GraphQL query.
+
+- Adds a "Random" button to the Stash UI navigation bar.
+- Supports random navigation for:
+  - **Scenes** (global and within performer, studio, tag, group)
+  - **Images** (global and within a gallery)
+  - **Performers** (global)
+  - **Studios** (global)
+  - **Groups** (global)
+  - **Tags** (global)
+  - **Galleries** (global)
 - Lightweight, no external dependencies.
+- Uses Stash's GraphQL API.
+- Simple, robust, and easy to maintain.
 
 ## Installation
 
@@ -30,7 +40,8 @@ Adds a "Random" button to the image & scenes page to quickly navigate to a rando
    - The button should appear on those pages.
 
 ## Usage
-Click the "Random" button in the navigation bar to jump to a random image or scene depending on the tab.
+Click the "Random" button in the navigation bar to jump to a random entity (scene, image, performer, studio, group, tag, or gallery) depending on your current page.
+  - On internal entity pages (e.g., performer, studio, group, tag, gallery), the button picks a random scene or image from inside that entity.
 
 ## Requirements
 - Stash version v0.27.2 or higher.
@@ -38,3 +49,6 @@ Click the "Random" button in the navigation bar to jump to a random image or sce
 ## Development
 - Written in JavaScript using the Stash Plugin API.
 - Edit `random-button.js` to customize and reload plugins in Stash.
+
+## Changelog
+- 2.0.0: Major upgrade! Now supports random navigation for performers, studios, groups, tags, galleries, and images (global and internal).
