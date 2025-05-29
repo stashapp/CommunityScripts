@@ -67,7 +67,7 @@
     const pathname = window.location.pathname.replace(/\/$/, '');
 
     // GLOBAL
-    if (pathname === '/scenes' || /^\/scenes\/\d+$/.test(pathname)) 
+    if (pathname === '/scenes' || pathname === '/' || pathname === '' || pathname === '/stats' || pathname === '/settings' || /^\/scenes\/\d+$/.test(pathname))  
       return randomGlobal('Scene', 'scenes', '/scenes/');
 
     if (pathname === '/images' || /^\/images\/\d+$/.test(pathname)) 
