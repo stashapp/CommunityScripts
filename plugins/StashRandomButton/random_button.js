@@ -1,182 +1,133 @@
-(function () {
+(function() {
   'use strict';
 
-  function addRandomButton() {
-    const existingButton = document.querySelector('.random-btn');
-    if (existingButton) {
-      const styles = window.getComputedStyle(existingButton);
-      return true;
+  function getIdFromPath(regex) {
+    let m = window.location.pathname.match(regex);
+    return m ? m[1] : null;
+  }
+
+  function getPlural(entity) {
+    return (entity === "Gallery") ? "Galleries"
+      : (entity === "Tag") ? "Tags"
+      : (entity === "Image") ? "Images"
+      : (entity === "Scene") ? "Scenes"
+      : (entity === "Performer") ? "Performers"
+      : (entity === "Studio") ? "Studios"
+      : (entity === "Group") ? "Groups"
+      : entity + "s";
+  }
+
+  async function randomGlobal(entity, idField, redirectPrefix, internalFilter) {
+    const realEntityPlural = getPlural(entity);
+    let filter = { per_page: 1 };
+    let variables = { filter };
+    let filterArg = "";
+    let filterVar = "";
+
+    if (internalFilter) {
+      filterArg = `, $internal_filter: ${entity}FilterType`;
+      filterVar = `, ${entity.toLowerCase()}_filter: $internal_filter`;
+      variables.internal_filter = internalFilter;
     }
 
+    const countQuery = `
+      query Find${realEntityPlural}($filter: FindFilterType${filterArg}) {
+        find${realEntityPlural}(filter: $filter${filterVar}) { count }
+      }
+    `;
+    let countResp = await fetch('/graphql', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: countQuery, variables })
+    });
+    let countData = await countResp.json();
+    if (countData.errors) { alert("Error: " + JSON.stringify(countData.errors)); return; }
+    const totalCount = countData.data[`find${realEntityPlural}`].count;
+    if (!totalCount) { alert("No results found."); return; }
+
+    const randomIndex = Math.floor(Math.random() * totalCount);
+    let itemVars = { filter: { per_page: 1, page: randomIndex + 1 } };
+    if (internalFilter) itemVars.internal_filter = internalFilter;
+    const itemQuery = `
+      query Find${realEntityPlural}($filter: FindFilterType${filterArg}) {
+        find${realEntityPlural}(filter: $filter${filterVar}) { ${idField} { id } }
+      }
+    `;
+    let itemResp = await fetch('/graphql', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: itemQuery, variables: itemVars })
+    });
+    let itemData = await itemResp.json();
+    if (itemData.errors) { alert("Error: " + JSON.stringify(itemData.errors)); return; }
+    const arr = itemData.data[`find${realEntityPlural}`][idField];
+    if (!arr || arr.length === 0) { alert("No results found."); return; }
+    window.location.href = `${redirectPrefix}${arr[0].id}`;
+  }
+
+  async function randomButtonHandler() {
+    const pathname = window.location.pathname.replace(/\/$/, '');
+
+    if (pathname === '/scenes') return randomGlobal('Scene', 'scenes', '/scenes/');
+    if (pathname === '/performers') return randomGlobal('Performer', 'performers', '/performers/');
+    if (pathname === '/groups') return randomGlobal('Group', 'groups', '/groups/');
+    if (pathname === '/studios') return randomGlobal('Studio', 'studios', '/studios/');
+    if (pathname === '/tags') return randomGlobal('Tag', 'tags', '/tags/');
+    if (pathname === '/galleries') return randomGlobal('Gallery', 'galleries', '/galleries/');
+    if (pathname === '/images') return randomGlobal('Image', 'images', '/images/');
+
+    // --- INTERN ---
+    let studioId = getIdFromPath(/^\/studios\/(\d+)\/scenes/);
+    if (studioId) return randomGlobal('Scene', 'scenes', '/scenes/', { studios: { value: [studioId], modifier: "INCLUDES_ALL" } });
+
+    let groupId = getIdFromPath(/^\/groups\/(\d+)\/scenes/);
+    if (groupId) return randomGlobal('Scene', 'scenes', '/scenes/', { groups: { value: [groupId], modifier: "INCLUDES_ALL" } });
+
+    let performerId = getIdFromPath(/^\/performers\/(\d+)\/scenes/);
+    if (performerId) return randomGlobal('Scene', 'scenes', '/scenes/', { performers: { value: [performerId], modifier: "INCLUDES_ALL" } });
+
+    let tagId = getIdFromPath(/^\/tags\/(\d+)\/scenes/);
+    if (tagId) return randomGlobal('Scene', 'scenes', '/scenes/', { tags: { value: [tagId], modifier: "INCLUDES_ALL" } });
+
+    let galleryId = getIdFromPath(/^\/galleries\/(\d+)/);
+    if (galleryId) return randomGlobal('Image', 'images', '/images/', { galleries: { value: [galleryId], modifier: "INCLUDES_ALL" } });
+
+    alert('Not supported');
+  }
+
+  function addRandomButton() {
+    if (document.querySelector('.random-btn')) return;
     const navContainer = document.querySelector('.navbar-buttons.flex-row.ml-auto.order-xl-2.navbar-nav');
-    if (!navContainer) {
-      return false;
-    }
+    if (!navContainer) return;
 
     const randomButtonContainer = document.createElement('div');
     randomButtonContainer.className = 'mr-2';
     randomButtonContainer.innerHTML = `
-    <a href="javascript:void(0)">
-      <button type="button" class="btn btn-primary random-btn" style="display: inline-block !important; visibility: visible !important;">Random</button>
-    </a>
-  `;
-    randomButtonContainer.querySelector('button').addEventListener('click', loadRandomContent);
+      <a href="javascript:void(0)">
+        <button type="button" class="btn btn-primary random-btn" style="display: inline-block !important; visibility: visible !important;">Random</button>
+      </a>
+    `;
+    randomButtonContainer.querySelector('button').addEventListener('click', randomButtonHandler);
 
-
-    if (window.location.pathname.match(/^\/(scenes|images)(?:$|\?)/)) {
-      let refButton = document.querySelector('a[href="/scenes/new"]'); 
-      if (window.location.pathname.includes('/images')) {
-        refButton = document.querySelector('a[href="/stats"]');
-      }
-      if (!refButton) {
-        refButton = navContainer.querySelector('a[href="https://opencollective.com/stashapp"]');
-      }
-      if (refButton) {
-        refButton.parentElement.insertAdjacentElement('afterend', randomButtonContainer);
-      } else {
-        navContainer.appendChild(randomButtonContainer);
-      }
-      return true;
-    }
-
-    if (window.location.pathname.match(/\/(scenes|images)\/\d+/)) {
-      const refButton = navContainer.querySelector('a[href="https://opencollective.com/stashapp"]'); 
-      if (refButton) {
-        refButton.insertAdjacentElement('afterend', randomButtonContainer);
-      } else {
-        const firstLink = navContainer.querySelector('a');
-        if (firstLink) {
-          firstLink.parentElement.insertAdjacentElement('afterend', randomButtonContainer);
-        } else {
-          navContainer.appendChild(randomButtonContainer);
-        }
-      }
-      return true;
-    }
-
-    return false;
+    navContainer.appendChild(randomButtonContainer);
   }
 
-  function getParentHierarchy(element) {
-    const hierarchy = [];
-    let current = element;
-    while (current && current !== document.body) {
-      hierarchy.push(current.tagName + (current.className ? '.' + current.className.split(' ').join('.') : ''));
-      current = current.parentElement;
-    }
-    return hierarchy.join(' > ');
-  }
-
-  async function loadRandomContent() {
-    try {
-      const isScenes = window.location.pathname.includes('/scenes');
-      const isImages = window.location.pathname.includes('/images');
-      const type = isScenes ? 'scenes' : isImages ? 'images' : 'scenes';
-
-      const countQuery = `
-        query Find${type.charAt(0).toUpperCase() + type.slice(1)}($filter: FindFilterType) {
-          find${type.charAt(0).toUpperCase() + type.slice(1)}(filter: $filter) {
-            count
-          }
-        }
-      `;
-      const countVariables = { filter: { per_page: 1 } };
-
-      const countResponse = await fetch('/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: countQuery, variables: countVariables })
-      });
-
-      const countResult = await countResponse.json();
-      if (countResult.errors) {
-        return;
-      }
-
-      const totalCount = countResult.data[`find${type.charAt(0).toUpperCase() + type.slice(1)}`].count;
-      if (totalCount === 0) {
-        return;
-      }
-
-      const randomIndex = Math.floor(Math.random() * totalCount);
-      const itemQuery = `
-        query Find${type.charAt(0).toUpperCase() + type.slice(1)}($filter: FindFilterType) {
-          find${type.charAt(0).toUpperCase() + type.slice(1)}(filter: $filter) {
-            ${type} {
-              id
-            }
-          }
-        }
-      `;
-      const itemVariables = {
-        filter: { per_page: 1, page: Math.floor(randomIndex / 1) + 1 }
-      };
-
-      const itemResponse = await fetch('/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: itemQuery, variables: itemVariables })
-      });
-
-      const itemResult = await itemResponse.json();
-      if (itemResult.errors) {
-        return;
-      }
-
-      const items = itemResult.data[`find${type.charAt(0).toUpperCase() + type.slice(1)}`][type];
-      if (items.length === 0) {
-        return;
-      }
-
-      const itemId = items[0].id;
-      window.location.href = `/${type}/${itemId}`;
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  window.addEventListener('load', () => {
-    addRandomButton();
-  });
-
+  window.addEventListener('load', () => addRandomButton());
   document.addEventListener('click', (event) => {
     const target = event.target.closest('a');
-    if (target && target.href) {
-      setTimeout(() => {
-        addRandomButton();
-      }, 1500);
-    }
+    if (target && target.href) setTimeout(() => addRandomButton(), 1500);
   });
-
-  window.addEventListener('popstate', () => {
-    setTimeout(() => {
-      addRandomButton();
-    }, 1500);
-  });
-
-  window.addEventListener('hashchange', () => {
-    setTimeout(() => {
-      addRandomButton();
-    }, 1500);
-  });
-
+  window.addEventListener('popstate', () => setTimeout(() => addRandomButton(), 1500));
+  window.addEventListener('hashchange', () => setTimeout(() => addRandomButton(), 1500));
   const navContainer = document.querySelector('.navbar-buttons.flex-row.ml-auto.order-xl-2.navbar-nav');
   if (navContainer) {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach(m => {
-      });
-      if (!document.querySelector('.random-btn')) {
-        addRandomButton();
-      }
+    const observer = new MutationObserver(() => {
+      if (!document.querySelector('.random-btn')) addRandomButton();
     });
     observer.observe(navContainer, { childList: true, subtree: true });
-  } else {
   }
-
-
   let intervalAttempts = 0;
   setInterval(() => {
     intervalAttempts++;
     addRandomButton();
   }, intervalAttempts < 60 ? 500 : 2000);
+
 })();
