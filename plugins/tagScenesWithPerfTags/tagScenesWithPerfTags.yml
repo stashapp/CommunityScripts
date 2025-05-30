@@ -1,6 +1,6 @@
 name: Tag Scenes From Performer Tags
 description: tags scenes with performer tags.
-version: 0.2.1
+version: 0.2.2
 exec:
   - python
   - "{pluginDir}/tagScenesWithPerfTags.py"
@@ -14,6 +14,10 @@ hooks:
       - Scene.Create.Post
 
 settings:
+  excludeSceneOrganized:
+    displayName: Exclude Scenes marked as organized
+    description: Do not automatically tag scenes with performer tags if the scene is marked as organized
+    type: BOOLEAN
   excludeSceneWithTag:
     displayName: Exclude Scenes with Tag from Hook
     description: Do not automatically tag scenes with performer tags if the scene has this tag

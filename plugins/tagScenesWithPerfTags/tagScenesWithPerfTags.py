@@ -42,6 +42,10 @@ def processScene(scene):
             if tag["name"] == settings["excludeSceneWithTag"]:
                 should_tag = False
                 break
+    
+    if settings['excludeSceneOrganized']:
+        if scene['organized']:
+            should_tag = False
 
     if should_tag:
         for perf in scene["performers"]:
@@ -64,6 +68,7 @@ stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()
 settings = {
     "excludeSceneWithTag": "",
+    "excludeSceneOrganized": False
 }
 if "tagScenesWithPerfTags" in config["plugins"]:
     settings.update(config["plugins"]["tagScenesWithPerfTags"])
