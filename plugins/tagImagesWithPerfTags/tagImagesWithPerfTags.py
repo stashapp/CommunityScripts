@@ -1,8 +1,15 @@
+import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import sys
 import json
 
 def processAll():
+    exclusion_marker_tag_id = None
+    if settings["excludeImageWithTag"] != "":
+        exclussion_marker_tag = stash.find_tag(settings["excludeImageWithTag"])
+        if exclussion_marker_tag is not None:
+            exclusion_marker_tag_id = exclussion_marker_tag['id']
+    
     query = {
         "tags": {
             "modifier": "NOT_NULL",
@@ -12,25 +19,50 @@ def processAll():
             "value": 0,
         },
     }
-    performersTotal = stash.find_performers(f=query, get_count=True)[0]
+    performersTotal = stash.find_performers(f=query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
     i = 0
-    tags = []
-    images = []
     while i < performersTotal:
         perf = stash.find_performers(f=query, filter={"page": i, "per_page": 1})
-        for tag in perf[0]["tags"]:
-            tags.append(tag["id"])
-        for image in perf[0]["images"]:
-            images.append(image["id"])
-        stash.update_images(
-            {
-                "ids": images,
-                "tag_ids": {"mode": "ADD", "ids": tags},
+
+        performer_tags_ids = []
+        performer_tags_names = []
+        for performer_tag in perf[0]["tags"]:
+            performer_tags_ids.append(performer_tag["id"])
+            performer_tags_names.append(performer_tag["name"])
+
+        image_query = {
+            "performers": {
+                "value": [perf[0]["id"]],
+                "modifier": "INCLUDES_ALL"
             }
-        )
+        }
+        if settings['excludeImageOrganized']:
+            image_query["organized"] = False
+        if exclusion_marker_tag_id is not None:
+             image_query["tags"] = {
+                "value": [exclusion_marker_tag_id],
+                "modifier": "EXCLUDES"
+            }
+
+        performer_image_count = stash.find_images(f=image_query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
+        
+        log.info(f"updating {performer_image_count} images of performer \"{ perf[0]['name']}\" with tags {performer_tags_names}")
+
+        performer_image_page_size = 100
+        performer_image_page = 0
+        while performer_image_page * performer_image_page_size < performer_image_count:
+            performer_images = stash.find_images(f=image_query, filter={"page": performer_image_page, "per_page": performer_image_page_size}, fragment='id')
+            performer_image_ids = [performer_image['id'] for performer_image in performer_images]
+
+            stash.update_images(
+                {
+                    "ids": performer_image_ids,
+                    "tag_ids": {"mode": "ADD", "ids": performer_tags_ids},
+                }
+            )
+            performer_image_page += 1
+        
         i = i + 1
-        tags = []
-        images = []
 
 
 def processImage(image):
