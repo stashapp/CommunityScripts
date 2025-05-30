@@ -66,29 +66,48 @@
   async function randomButtonHandler() {
     const pathname = window.location.pathname.replace(/\/$/, '');
 
-    if (pathname === '/scenes') return randomGlobal('Scene', 'scenes', '/scenes/');
-    if (pathname === '/performers') return randomGlobal('Performer', 'performers', '/performers/');
-    if (pathname === '/groups') return randomGlobal('Group', 'groups', '/groups/');
-    if (pathname === '/studios') return randomGlobal('Studio', 'studios', '/studios/');
-    if (pathname === '/tags') return randomGlobal('Tag', 'tags', '/tags/');
-    if (pathname === '/galleries') return randomGlobal('Gallery', 'galleries', '/galleries/');
-    if (pathname === '/images') return randomGlobal('Image', 'images', '/images/');
+    // GLOBAL
+    if (pathname === '/scenes' || pathname === '/' || pathname === '' || pathname === '/stats' || pathname === '/settings' || pathname === '/scenes/markers' || /^\/scenes\/\d+$/.test(pathname))  
+      return randomGlobal('Scene', 'scenes', '/scenes/');
 
-    // --- INTERN ---
+    if (pathname === '/images' || /^\/images\/\d+$/.test(pathname)) 
+      return randomGlobal('Image', 'images', '/images/');
+
+    if (pathname === '/performers') 
+      return randomGlobal('Performer', 'performers', '/performers/');
+
+    if (pathname === '/studios') 
+      return randomGlobal('Studio', 'studios', '/studios/');
+
+    if (pathname === '/tags') 
+      return randomGlobal('Tag', 'tags', '/tags/');
+
+    if (pathname === '/groups') 
+      return randomGlobal('Group', 'groups', '/groups/');
+
+    if (pathname === '/galleries') 
+      return randomGlobal('Gallery', 'galleries', '/galleries/');
+
+    // Intern
     let studioId = getIdFromPath(/^\/studios\/(\d+)\/scenes/);
-    if (studioId) return randomGlobal('Scene', 'scenes', '/scenes/', { studios: { value: [studioId], modifier: "INCLUDES_ALL" } });
+    if (studioId) 
+      return randomGlobal('Scene', 'scenes', '/scenes/', { studios: { value: [studioId], modifier: "INCLUDES_ALL" } });
 
     let groupId = getIdFromPath(/^\/groups\/(\d+)\/scenes/);
-    if (groupId) return randomGlobal('Scene', 'scenes', '/scenes/', { groups: { value: [groupId], modifier: "INCLUDES_ALL" } });
+    if (groupId) 
+      return randomGlobal('Scene', 'scenes', '/scenes/', { groups: { value: [groupId], modifier: "INCLUDES_ALL" } });
 
     let performerId = getIdFromPath(/^\/performers\/(\d+)\/scenes/);
-    if (performerId) return randomGlobal('Scene', 'scenes', '/scenes/', { performers: { value: [performerId], modifier: "INCLUDES_ALL" } });
+    if (performerId) 
+      return randomGlobal('Scene', 'scenes', '/scenes/', { performers: { value: [performerId], modifier: "INCLUDES_ALL" } });
 
     let tagId = getIdFromPath(/^\/tags\/(\d+)\/scenes/);
-    if (tagId) return randomGlobal('Scene', 'scenes', '/scenes/', { tags: { value: [tagId], modifier: "INCLUDES_ALL" } });
+    if (tagId) 
+      return randomGlobal('Scene', 'scenes', '/scenes/', { tags: { value: [tagId], modifier: "INCLUDES_ALL" } });
 
-    let galleryId = getIdFromPath(/^\/galleries\/(\d+)/);
-    if (galleryId) return randomGlobal('Image', 'images', '/images/', { galleries: { value: [galleryId], modifier: "INCLUDES_ALL" } });
+    let galleryId = getIdFromPath(/^\/galleries\/(\d+)$/);
+    if (galleryId)
+      return randomGlobal('Image', 'images', '/images/', { galleries: { value: [galleryId], modifier: "INCLUDES_ALL" } });
 
     alert('Not supported');
   }
