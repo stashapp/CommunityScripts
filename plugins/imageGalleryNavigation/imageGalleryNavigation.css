@@ -1,0 +1,38 @@
+.imageGalleryNav-NavInput {
+  -moz-appearance: textfield;
+  width: 60px;
+}
+
+.imageGalleryNav-NavInput::-webkit-outer-spin-button,
+.imageGalleryNav-NavInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.imageGalleryNav-leftButton,
+.imageGalleryNav-rightButton {
+  position: absolute;
+  top: 0;
+  bottom: 120px;
+  width: 200px;
+  background: none;
+  border: none;
+  user-select: none;
+  opacity: 0;
+  font-size: 40px;
+  font-weight: bold;
+  z-index: 999;
+}
+
+.imageGalleryNav-leftButton:hover,
+.imageGalleryNav-rightButton:hover {
+  opacity: 0.6;
+}
+
+.imageGalleryNav-leftButton {
+  left: 15px;
+}
+
+.imageGalleryNav-rightButton {
+  right: 15px;
+}
