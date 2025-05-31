@@ -4,7 +4,7 @@
 
   // Generic function to handle thumbnail preview logic for different entity types
   const handleThumbLogic = async (containerElement, entityType) => {
-    console.log(`PathElementListener triggered for /${entityType}. Found item-list-container:`, containerElement);
+    // console.log(`PathElementListener triggered for /${entityType}. Found item-list-container:`, containerElement);
 
     // Configuration for different entity types
     const config = {
@@ -36,7 +36,7 @@
 
     const currentConfig = config[entityType];
     if (!currentConfig) {
-      console.error(`Unsupported entity type: ${entityType}`);
+      // console.error(`Unsupported entity type: ${entityType}`);
       return;
     }
 
@@ -44,19 +44,19 @@
     const processCard = async (cardElement) => {
       // Check if this card has already been processed
       if (cardElement.dataset[`${entityType}CardProcessed`]) {
-        console.log(`${entityType} card already processed, skipping:`, cardElement);
+        // console.log(`${entityType} card already processed, skipping:`, cardElement);
         return;
       }
       // Mark this card as processed
       cardElement.dataset[`${entityType}CardProcessed`] = "true";
 
-      console.log(`processCard entered with element:`, cardElement);
-      console.log(`Processing ${entityType} card:`, cardElement);
+      // console.log(`processCard entered with element:`, cardElement);
+      // console.log(`Processing ${entityType} card:`, cardElement);
 
       // Find the thumbnail section
       const thumbnailSection = cardElement.querySelector('div.thumbnail-section');
       if (!thumbnailSection) {
-        console.warn(`Thumbnail section not found for ${entityType} card:`, cardElement);
+        // console.warn(`Thumbnail section not found for ${entityType} card:`, cardElement);
         return;
       }
 
@@ -64,11 +64,11 @@
       const existingImage = thumbnailSection.querySelector(`img.${entityType.slice(0, -1)}-card-image`) || thumbnailSection.querySelector('img');
 
       if (!existingImage) {
-          console.warn(`Existing image thumbnail not found for ${entityType} card:`, cardElement);
+          // console.warn(`Existing image thumbnail not found for ${entityType} card:`, cardElement);
           return;
       }
 
-      console.log("Found existing image thumbnail:", existingImage);
+      // console.log("Found existing image thumbnail:", existingImage);
 
       // Add initial styles for smooth transition
       existingImage.style.transition = 'opacity 0.3s ease-in-out'; // Added transition
@@ -78,11 +78,11 @@
       const entityId = cardElement.dataset.entityId || cardElement.querySelector(`a[href^="${currentConfig.urlPattern}"]`)?.href.match(new RegExp(`${currentConfig.urlPattern.replace('/', '\\/')}([^\\/]+)`))?.[1];
 
       if (!entityId) {
-        console.warn(`${entityType} ID not found for card:`, cardElement);
+        // console.warn(`${entityType} ID not found for card:`, cardElement);
         return;
       }
 
-      console.log(`Found ${entityType} ID:`, entityId);
+      // console.log(`Found ${entityType} ID:`, entityId);
 
       // Store state on the thumbnail section or card element
       let defaultImageUrl = null;
@@ -101,10 +101,10 @@
           const imageUrl = new URL(existingImage.src);
           if (imageUrl.searchParams.get('default') === 'true') {
               defaultImageUrl = existingImage.src;
-              console.log("Identified default thumbnail URL:", defaultImageUrl);
+              // console.log("Identified default thumbnail URL:", defaultImageUrl);
           }
       } catch (e) {
-          console.warn("Could not parse image URL to check for default param:", existingImage.src, e);
+          // console.warn("Could not parse image URL to check for default param:", existingImage.src, e);
       }
 
       // If it's a default thumbnail, immediately fetch a random scene thumbnail and replace the image src
@@ -156,20 +156,20 @@
                           const j = Math.floor(Math.random() * (i + 1));
                           [markers[i], markers[j]] = [markers[j], markers[i]]; // Swap elements
                       }
-                      console.log(`Shuffled markers for default thumbnail:`, markers);
+                      // console.log(`Shuffled markers for default thumbnail:`, markers);
 
                       // Get the preview from the first marker in the shuffled array
                       randomSceneThumbnailUrl = markers[0]?.screenshot;
 
                       if (randomSceneThumbnailUrl) {
-                          console.log(`Found random marker screenshot URL on load, replacing default:`, randomSceneThumbnailUrl);
+                          // console.log(`Found random marker screenshot URL on load, replacing default:`, randomSceneThumbnailUrl);
                           // Replace the existing image thumbnail source
                           existingImage.src = randomSceneThumbnailUrl;
                       } else {
-                          console.log(`First shuffled marker has no screenshot path.`, entityId);
+                          // console.log(`First shuffled marker has no screenshot path.`, entityId);
                       }
                   } else {
-                      console.log(`No random marker screenshot found on load for this ${entityType}, trying scenes as fallback.`, entityId);
+                      // console.log(`No random marker screenshot found on load for this ${entityType}, trying scenes as fallback.`, entityId);
                       
                       // Fallback to scenes for tags
                       const sceneFallbackQuery = `
@@ -196,20 +196,20 @@
                                   const j = Math.floor(Math.random() * (i + 1));
                                   [scenes[i], scenes[j]] = [scenes[j], scenes[i]]; // Swap elements
                               }
-                              console.log(`Shuffled fallback scenes for default thumbnail:`, scenes);
+                              // console.log(`Shuffled fallback scenes for default thumbnail:`, scenes);
 
                               // Get the screenshot from the first scene in the shuffled array
                               randomSceneThumbnailUrl = scenes[0]?.paths?.screenshot;
 
                               if (randomSceneThumbnailUrl) {
-                                  console.log(`Found random scene screenshot URL on load (fallback), replacing default:`, randomSceneThumbnailUrl);
+                                  // console.log(`Found random scene screenshot URL on load (fallback), replacing default:`, randomSceneThumbnailUrl);
                                   // Replace the existing image thumbnail source
                                   existingImage.src = randomSceneThumbnailUrl;
                               } else {
-                                  console.log(`First shuffled fallback scene has no screenshot path.`, entityId);
+                                  // console.log(`First shuffled fallback scene has no screenshot path.`, entityId);
                               }
                           } else {
-                              console.log(`No fallback scenes found for tag ${entityId}.`);
+                              // console.log(`No fallback scenes found for tag ${entityId}.`);
                           }
                       }).catch(error => {
                           console.error("Error fetching fallback scene thumbnail on load:", error);
@@ -224,35 +224,35 @@
                           const j = Math.floor(Math.random() * (i + 1));
                           [scenes[i], scenes[j]] = [scenes[j], scenes[i]]; // Swap elements
                       }
-                      console.log(`Shuffled scenes for default thumbnail:`, scenes);
+                      // console.log(`Shuffled scenes for default thumbnail:`, scenes);
 
                       // Get the screenshot from the first scene in the shuffled array
                       randomSceneThumbnailUrl = scenes[0]?.paths?.screenshot;
 
                       if (randomSceneThumbnailUrl) {
-                          console.log(`Found random scene thumbnail URL on load, replacing default:`, randomSceneThumbnailUrl);
+                          // console.log(`Found random scene thumbnail URL on load, replacing default:`, randomSceneThumbnailUrl);
                           // Replace the existing image thumbnail source
                           existingImage.src = randomSceneThumbnailUrl;
                       } else {
-                          console.log(`First shuffled scene has no screenshot path.`, entityId);
+                          // console.log(`First shuffled scene has no screenshot path.`, entityId);
                       }
                   } else {
-                      console.log(`No random scene thumbnail found on load for this ${entityType}.`, entityId);
+                      // console.log(`No random scene thumbnail found on load for this ${entityType}.`, entityId);
                   }
               }
           }).catch(error => {
-              console.error("Error fetching random scene thumbnail on load:", error);
+              // console.error("Error fetching random scene thumbnail on load:", error);
           });
       }
 
       // Add mouse enter/leave listeners to the thumbnail section
       cardElement.addEventListener('mouseenter', async () => {
-          console.log(`Mouse entered thumbnail section for ${entityType}:`, entityId);
+          // console.log(`Mouse entered thumbnail section for ${entityType}:`, entityId);
           isMouseLeaving = false; // Reset flag on mouse enter
 
           // If a video element already exists from a previous hover, remove it
           if (videoElement) {
-              console.log(`Removing existing video element on mouse enter.`, entityId);
+              // console.log(`Removing existing video element on mouse enter.`, entityId);
               if (videoElement.parentElement) {
                   videoElement.parentElement.removeChild(videoElement);
               }
@@ -262,7 +262,7 @@
           // If video URL hasn't been fetched yet and not currently fetching
           if (!previewUrls.length && !isFetching) {
               isFetching = true;
-              console.log(`Fetching preview URLs for ${entityType}:`, entityId);
+              // console.log(`Fetching preview URLs for ${entityType}:`, entityId);
               
               let query, queryName, urlPath;
               
@@ -312,7 +312,7 @@
 
               try {
                 const response = await csLib.callGQL({ query, variables: { entityId } });
-                console.log(`GraphQL Response for ${entityType} thumbnail on hover:`, response);
+                // console.log(`GraphQL Response for ${entityType} thumbnail on hover:`, response);
                 
                 if (entityType === 'tags') {
                     // Extract stream URLs from markers and preview URLs from scenes, combine them
@@ -340,8 +340,8 @@
                     // Combine shuffled marker URLs first, then shuffled scene URLs
                     previewUrls = [...markerUrls, ...sceneUrls];
                     
-                    console.log(`Found ${markerUrls.length} marker streams and ${sceneUrls.length} scene previews for tag ${entityId}`);
-                    console.log("Shuffled markers first, then scenes:", previewUrls);
+                    // console.log(`Found ${markerUrls.length} marker streams and ${sceneUrls.length} scene previews for tag ${entityId}`);
+                    // console.log("Shuffled markers first, then scenes:", previewUrls);
                       
                     // Remove the fallback logic since we're now getting both in one query
                 } else {
@@ -358,9 +358,9 @@
                           const j = Math.floor(Math.random() * (i + 1));
                           [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]]; // Swap elements
                       }
-                      console.log("Shuffled preview URLs:", previewUrls);
+                      // console.log("Shuffled preview URLs:", previewUrls);
                   }
-                  console.log("Found preview URLs on hover:", previewUrls);
+                  // console.log("Found preview URLs on hover:", previewUrls);
                   // Create video element now that we have the URLs
                   videoElement = document.createElement('video');
                   currentVideoIndex = 0; // Start with the first video
@@ -371,7 +371,7 @@
 
                   // Add ended listener for sequential playback
                   videoElement.addEventListener('ended', () => {
-                      console.log(`Video ended, moving to next for ${entityType}:`, entityId);
+                      // console.log(`Video ended, moving to next for ${entityType}:`, entityId);
                       
                       // Fade out the current video
                       videoElement.style.opacity = '0';
@@ -390,7 +390,7 @@
 
                   // Copy classes from the original image element to the video element
                   videoElement.className = existingImage.className;
-                  console.log("Copied classes from image to video:", videoElement.className);
+                  // console.log("Copied classes from image to video:", videoElement.className);
 
                   // Styling for smooth transition (initially hidden and transparent)
                   videoElement.style.transition = 'opacity 0.3s ease-in-out'; // Added transition
@@ -399,7 +399,7 @@
 
                   // Add load success handler to track successful video loads
                   videoElement.onloadeddata = () => {
-                      console.log(`Video successfully loaded: ${videoElement.src} for ${entityType}: ${entityId}`);
+                      // console.log(`Video successfully loaded: ${videoElement.src} for ${entityType}: ${entityId}`);
                       hasSuccessfulVideo = true; // Mark that at least one video was successful
 
                       // Now that video data is loaded, hide the image and show the video
@@ -410,13 +410,13 @@
                        setTimeout(() => {
                           // Check if mouse has left the card during the timeout
                           if (isMouseLeaving) {
-                              console.log(`Mouse left during video display timeout, reverting to image.`, entityId);
+                              // console.log(`Mouse left during video display timeout, reverting to image.`, entityId);
                               // Revert to image state
                               if (videoElement) {
                                   videoElement.pause();
                                   videoElement.style.display = 'none';
                                   videoElement.style.opacity = '0';
-                                  console.log(`Immediately hid video on mouse leave during display timeout.`, entityId);
+                                  // console.log(`Immediately hid video on mouse leave during display timeout.`, entityId);
                               }
                               existingImage.style.display = '';
                               existingImage.style.opacity = '1';
@@ -427,7 +427,7 @@
                               console.warn("Video play failed after loadeddata:", e);
                               // If play fails and no video has been successful (shouldn't happen if loadeddata fired, but as a safeguard)
                               if (!hasSuccessfulVideo) {
-                                  console.log(`Video play failed after loadeddata and no successful video loaded, reverting to image.`, entityId);
+                                  // console.log(`Video play failed after loadeddata and no successful video loaded, reverting to image.`, entityId);
                                   videoElement.style.display = 'none';
                                   videoElement.style.opacity = '0';
                                   existingImage.style.display = '';
@@ -439,7 +439,7 @@
 
                   // Add error handling
                   videoElement.onerror = () => {
-                      console.warn(`Error loading video from URL: ${videoElement.src} for ${entityType}: ${entityId}. Trying next URL.`);
+                      // console.warn(`Error loading video from URL: ${videoElement.src} for ${entityType}: ${entityId}. Trying next URL.`);
 
                       // Move to the next video index
                       currentVideoIndex++;
@@ -450,10 +450,10 @@
                           videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Set new source
                           videoElement.load(); // Load the new video
                           videoElement.play().catch(e => console.warn("Video play failed after error:", e)); // Try playing
-                          console.log(`Attempting to load next video: ${videoElement.src}`);
+                          // console.log(`Attempting to load next video: ${videoElement.src}`);
                       } else {
                           // No more videos in the list, revert to image immediately
-                          console.log(`No more preview URLs to try. Reverting to image immediately.`, entityId);
+                          // console.log(`No more preview URLs to try. Reverting to image immediately.`, entityId);
                           hasSuccessfulVideo = false; // Mark that no video was successful
                           
                           // Show the image immediately
@@ -467,7 +467,7 @@
                                    if (videoElement && videoElement.parentElement) {
                                        videoElement.parentElement.removeChild(videoElement);
                                        videoElement = null; // Clear reference
-                                       console.log("Removed failed video element from thumbnail after trying all.");
+                                       // console.log("Removed failed video element from thumbnail after trying all.");
                                    }
                                }, 300); // Match fade out transition
                           }
@@ -479,20 +479,20 @@
                   if (cardHeaderLink) {
                       // Append video element as a child of the header link
                       cardHeaderLink.appendChild(videoElement);
-                      console.log(`Appended video element to ${currentConfig.headerSelector} link (initially hidden).`);
+                      // console.log(`Appended video element to ${currentConfig.headerSelector} link (initially hidden).`);
                   } else {
-                      console.warn(`${currentConfig.headerSelector} link not found, cannot append video element.`);
+                      // console.warn(`${currentConfig.headerSelector} link not found, cannot append video element.`);
                       // Fallback or error handling if header link is not found
                       // For now, we'll just log a warning and the video won't be appended
                   }
 
                 } else {
-                  console.log(`No preview video found for this ${entityType} on hover.`);
+                  // console.log(`No preview video found for this ${entityType} on hover.`);
                   // Maybe show a placeholder or do nothing
                 }
 
               } catch (error) {
-                console.error(`Error fetching scene for ${entityType} thumbnail on hover:`, error);
+                // console.error(`Error fetching scene for ${entityType} thumbnail on hover:`, error);
                 previewUrls = []; // Reset URLs on error
               } finally {
                   isFetching = false; // Allow fetching again if needed (though unlikely with this logic)
@@ -502,7 +502,7 @@
           // If it's a default thumbnail and we haven't fetched a random scene thumbnail yet
           if (defaultImageUrl && !randomSceneThumbnailUrl && !isFetching) {
               isFetching = true;
-              console.log(`Fetching random scene thumbnail for default ${entityType} thumbnail:`, entityId);
+              // console.log(`Fetching random scene thumbnail for default ${entityType} thumbnail:`, entityId);
               
               let randomSceneQuery;
               
@@ -542,7 +542,7 @@
 
               try {
                   const response = await csLib.callGQL({ query: randomSceneQuery, variables: { entityId } });
-                  console.log("GraphQL Response for random scene thumbnail:", response);
+                  // console.log("GraphQL Response for random scene thumbnail:", response);
                   
                   if (entityType === 'tags') {
                       const marker = response?.findSceneMarkers?.scene_markers?.[0];
@@ -550,7 +550,7 @@
                       
                       // If no marker found, fallback to scenes
                       if (!randomSceneThumbnailUrl) {
-                          console.log(`No marker screenshot found for tag ${entityId}, trying scene fallback...`);
+                          // console.log(`No marker screenshot found for tag ${entityId}, trying scene fallback...`);
                           const sceneFallbackQuery = `
                               query FindRandomSceneForTagThumbnailFallback($entityId: ID!) {
                                 findScenes(
@@ -568,7 +568,7 @@
                           `;
                           
                           const sceneFallbackResponse = await csLib.callGQL({ query: sceneFallbackQuery, variables: { entityId } });
-                          console.log("GraphQL Scene Fallback Response for random thumbnail:", sceneFallbackResponse);
+                          // console.log("GraphQL Scene Fallback Response for random thumbnail:", sceneFallbackResponse);
                           
                           const scene = sceneFallbackResponse?.findScenes?.scenes?.[0];
                           randomSceneThumbnailUrl = scene?.paths?.screenshot;
@@ -579,13 +579,13 @@
                   }
 
                   if (randomSceneThumbnailUrl) {
-                      console.log("Found random scene thumbnail URL:", randomSceneThumbnailUrl);
+                      // console.log("Found random scene thumbnail URL:", randomSceneThumbnailUrl);
                       // TODO: Use this URL later for default thumbnails
                   } else {
-                      console.log(`No random scene thumbnail found for this ${entityType}.`, entityId);
+                      // console.log(`No random scene thumbnail found for this ${entityType}.`, entityId);
                   }
               } catch (error) {
-                  console.error("Error fetching random scene thumbnail:", error);
+                  // console.error("Error fetching random scene thumbnail:", error);
                   randomSceneThumbnailUrl = null; // Reset URL on error
               } finally {
                   isFetching = false; // Allow fetching again if needed
@@ -599,14 +599,14 @@
 
           } else if (previewUrls.length === 0) {
               // If fetch happened and no URLs were found, ensure image is visible
-              console.log(`No preview URLs available for this ${entityType}, keeping image visible.`, entityId);
+              // console.log(`No preview URLs available for this ${entityType}, keeping image visible.`, entityId);
               existingImage.style.display = ''; // Ensure image is visible
               existingImage.style.opacity = '1'; // Ensure image is fully opaque
           }
       });
 
       cardElement.addEventListener('mouseleave', () => {
-          console.log(`Mouse left thumbnail section for ${entityType}:`, entityId);
+          // console.log(`Mouse left thumbnail section for ${entityType}:`, entityId);
           isMouseLeaving = true; // Set flag on mouse leave
           previewUrls = [];
           hasSuccessfulVideo = false; // Reset the successful video flag
@@ -622,7 +622,7 @@
                   // Remove the video element from the DOM
                   if (videoElement && videoElement.parentElement) {
                       videoElement.parentElement.removeChild(videoElement);
-                      console.log(`Removed video element from DOM on mouse leave.`, entityId);
+                      // console.log(`Removed video element from DOM on mouse leave.`, entityId);
                   }
                   videoElement = null; // Clear the reference
 
@@ -632,14 +632,14 @@
                      existingImage.style.opacity = '1'; // Fade in the image
                    }, 10); // Small delay to allow display change
 
-                  console.log(`Paused and hiding video, showing image for ${entityType}:`, entityId);
+                  // console.log(`Paused and hiding video, showing image for ${entityType}:`, entityId);
               }, 300); // Wait for video fade-out duration (0.3s)
 
           } else {
               // If no video was shown, just ensure image is visible
               existingImage.style.display = '';
               existingImage.style.opacity = '1';
-              console.log(`No video was shown, ensuring image is visible for ${entityType}:`, entityId);
+              // console.log(`No video was shown, ensuring image is visible for ${entityType}:`, entityId);
           }
       });
 
@@ -679,7 +679,7 @@
       // Remove overlay container z-index
       const overlayContainer = cardElement.querySelector('.card-controls') || cardElement.querySelector('.card-popovers');
       if (overlayContainer) {
-          console.log("Found overlay container, removing custom z-index.", overlayContainer);
+          // console.log("Found overlay container, removing custom z-index.", overlayContainer);
           overlayContainer.style.zIndex = ''; // Remove custom z-index
           overlayContainer.style.position = ''; // Remove any custom position we might have added
       }
@@ -687,7 +687,7 @@
       // Remove favorite button z-index and positioning
       const favoriteButton = cardElement.querySelector('.favorite-button');
       if (favoriteButton) {
-          console.log("Found favorite button, removing custom z-index and position.", favoriteButton);
+          // console.log("Found favorite button, removing custom z-index and position.", favoriteButton);
           favoriteButton.style.zIndex = ''; // Remove custom z-index
           favoriteButton.style.position = ''; // Remove any custom position
           favoriteButton.style.top = '';
@@ -695,12 +695,12 @@
       }
 
       // Log the state of the card element after setup
-      console.log("Card element setup complete:", cardElement);
+      // console.log("Card element setup complete:", cardElement);
     };
 
     // Process existing cards within the container on page load
     containerElement.querySelectorAll(currentConfig.cardSelector).forEach(processCard);
-    console.log(`Processed initial ${entityType} cards within container.`);
+    // console.log(`Processed initial ${entityType} cards within container.`);
 
     // Use MutationObserver to process newly added cards (e.g., during infinite scroll)
     const observer = new MutationObserver((mutations) => {
@@ -710,16 +710,16 @@
           if (node.nodeType === Node.ELEMENT_NODE) {
             // If the added node itself is a card, process it
             if (node.classList.contains(currentConfig.cardSelector.replace('div.', ''))) {
-              console.log(`MutationObserver directly added ${entityType} card:`, node);
+              // console.log(`MutationObserver directly added ${entityType} card:`, node);
               processCard(node);
             } else {
               // Otherwise, search within the added node for cards
               const cards = node.querySelectorAll(currentConfig.cardSelector);
               if (cards.length > 0) {
-                console.log(`MutationObserver found ${cards.length} ${entityType} cards within added node:`, node);
+                // console.log(`MutationObserver found ${cards.length} ${entityType} cards within added node:`, node);
                 cards.forEach(processCard);
               } else {
-                console.log(`MutationObserver added element without ${entityType} cards:`, node);
+                // console.log(`MutationObserver added element without ${entityType} cards:`, node);
               }
             }
           }
@@ -729,7 +729,7 @@
 
     // Observe the container element for added cards
     observer.observe(containerElement, { childList: true, subtree: true });
-    console.log(`MutationObserver started on item-list-container for ${entityType}.`);
+    // console.log(`MutationObserver started on item-list-container for ${entityType}.`);
 
     // TODO: Consider disconnecting the observer when navigating away (PathElementListener does not handle this)
     // A more robust solution might involve tracking the current page and disconnecting observers on page change.
