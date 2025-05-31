@@ -160,14 +160,14 @@
       .then((data) => data.findImages.images.map((item) => item.id));
   }
 
-  // Wait for video player to load on scene page.
+  // Wait for galleries page to load.
   csLib.PathElementListener(
     "/galleries/",
     ".image-card",
     setupGalleryImageLinks
   ); // PathElementListener is from cs-ui-lib.js
 
-  // Wait for video player to load on scene page.
+  // Wait for images page to load.
   csLib.PathElementListener(
     "/images/",
     ".image-container",
