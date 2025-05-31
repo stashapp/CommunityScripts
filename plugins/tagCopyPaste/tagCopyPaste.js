@@ -35,12 +35,10 @@
     if (tagInputBox) {
       tagInputBox.addEventListener("copy", (event) => {
         event.preventDefault();
-        console.log("Copy event triggered");
         handleCopyClick();
       });
       tagInputBox.addEventListener("paste", (event) => {
         event.preventDefault();
-        console.log("Paste event triggered");
         handlePasteClick(objID, objType);
       });
     }
