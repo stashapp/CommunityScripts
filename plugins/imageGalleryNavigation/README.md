@@ -1,5 +1,7 @@
 # Image Gallery Navigation
 
+https://discourse.stashapp.cc/t/imagegallerynavigation/1857
+
 This plugin adds features for navigating between images within a Gallery from the Image details page. This is intended to make it easier to edit metadata on each Image in a Gallery one at a time without constantly having to go back and forth between the Gallery and Image page.
 
 This plugin currently adds two things to the Image details page:

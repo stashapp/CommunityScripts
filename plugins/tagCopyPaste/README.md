@@ -1,5 +1,7 @@
 # Tag Copy/Paste
 
+https://discourse.stashapp.cc/t/tagcopypaste/1858
+
 This plugin adds Copy and Paste buttons next to the Tags input field that allows for easier bulk adding and copying of tags, with the goal of making it easy to copy Tags between objects, bulk load manually created tag lists, or load tag lists copied from AI tagger output.
 
 The Copy button will create a comma delimited list of all currently entered tags and put this on your clipboard.

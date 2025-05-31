@@ -1,5 +1,7 @@
 # PythonDepManager
 
+https://discourse.stashapp.cc/t/pythondepmanager/1801
+
 Python dependency management system for CommunityScripts plugins.
 
 This plugin provides an easy way to install and manage Python package dependencies in your plugins without manual user interaction.
