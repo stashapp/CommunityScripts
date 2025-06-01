@@ -17,7 +17,7 @@ def processScene(scene):
 
     if settings["tagStashIDs"]:
         if not scene["stash_ids"]: # Tagging empty Stash ID
-            tags.append(empty_stashid)
+            tags.append(int(settings["tagID_emptystashid"]))
 
         for stashbox in scene["stash_ids"]: # Add all the stashbox ID tags
             url = stashbox['endpoint']
@@ -117,6 +117,7 @@ if "hookContext" in json_input["args"]:
         stashbox_tags = []
         stashbox_tags.append(frozenset(
             {
+                int(settings["tagID_emptystashid"]),
                 int(settings["tagID_stashdb"]),
                 int(settings["tagID_pmvstash"]),
                 int(settings["tagID_porndb"]),
@@ -124,20 +125,21 @@ if "hookContext" in json_input["args"]:
                 int(settings["tagID_javstash"])
             }))
 
-        if "tag_ids" in json_input["args"]["hookContext"]["inputFields"]:
-            request_tags = json_input["args"]["hookContext"]["input"]["tag_ids"]
-            if set(request_tags) & set(stashbox_tags): # prevent rerunning tag addition, when the update is simply adding the tags
-                log.info("Already have correct tags.")
-                exit = True
-            else:
-                exit = False
+        if "inputFields" in json_input["args"]["hookContext"]:
+            if "tag_ids" in json_input["args"]["hookContext"]["inputFields"]:
+                request_tags = json_input["args"]["hookContext"]["input"]["tag_ids"]
+                if set(request_tags) & set(stashbox_tags): # prevent rerunning tag addition, when the update is simply adding the tags
+                    log.info("Already have correct tags.")
+                    exit = True
+                else:
+                    exit = False
 
-        if "urls" in json_input["args"]["hookContext"]["inputFields"]:
-            if len(json_input["args"]["hookContext"]["inputFields"]) == 2: # Hacky fix; Plex agent sends only two fields, so in this case we won't update metadata there again. Stash UI etc usually sends all fields in update, so no worries.
-                log.info("Got new Plex URL, will not refresh.")
-                exit = True
-            else:
-                exit = False
+            if "urls" in json_input["args"]["hookContext"]["inputFields"]:
+                if len(json_input["args"]["hookContext"]["inputFields"]) == 2: # Hacky fix; Plex agent sends only two fields, so in this case we won't update metadata there again. Stash UI etc usually sends all fields in update, so no worries.
+                    log.info("Got new Plex URL, will not refresh.")
+                    exit = True
+                else:
+                    exit = False
 
         if exit == True:
             log.info("Nothing to do, exiting.")
