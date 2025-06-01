@@ -46,12 +46,18 @@
     var copyButton = document.createElement("button");
     copyButton.className = "imageGalleryNav-copyButton btn btn-secondary";
     copyButton.innerText = "Copy";
-    copyButton.onclick = () => handleCopyClick();
+    copyButton.onclick = (event) => {
+      event.preventDefault();
+      handleCopyClick();
+    }
 
     var pasteButton = document.createElement("button");
     pasteButton.className = "imageGalleryNav-pasteButton btn btn-secondary";
     pasteButton.innerText = "Paste";
-    pasteButton.onclick = () => handlePasteClick(objID, objType);
+    pasteButton.onclick = (event) => {
+      event.preventDefault();
+      handlePasteClick(objID, objType);
+    }
 
     if (document.querySelector("button.imageGalleryNav-pasteButton") == null) {
       document.querySelector("label[for='tag_ids']").append(pasteButton);
@@ -77,7 +83,7 @@
     var inputTagList = tagInput.split(",") // do de-duplication later
 
     // Get tags from input box and also add to tag list.
-    const existingTagList =  ("label[for='tag_ids'] + div .react-select__multi-value__label")
+    const existingTagList = getAllInnerText("label[for='tag_ids'] + div .react-select__multi-value__label")
 
     inputTagList = [...new Set([...inputTagList, ...existingTagList])].sort();
 
@@ -88,7 +94,7 @@
     // Search for tag ID for each tag. If exists, add to tag ID list. If not exists, create new tag and add to tag ID list.
     for (const inputTag of inputTagList) {
       const tagID = await getTagByName(inputTag.trim());
-      if (tagID) {
+      if (tagID && tagID.length) {
         existingTags.push(inputTag);
         tagUpdateList.push(tagID[0]);
       } else {
