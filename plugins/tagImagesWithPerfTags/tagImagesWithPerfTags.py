@@ -22,6 +22,8 @@ def processAll():
     performersTotal = stash.find_performers(f=query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
     i = 0
     while i < performersTotal:
+        log.progress((i / performersTotal))
+        
         perf = stash.find_performers(f=query, filter={"page": i, "per_page": 1})
 
         performer_tags_ids = []
@@ -29,7 +31,7 @@ def processAll():
         for performer_tag in perf[0]["tags"]:
             performer_tags_ids.append(performer_tag["id"])
             performer_tags_names.append(performer_tag["name"])
-
+        
         image_query = {
             "performers": {
                 "value": [perf[0]["id"]],
@@ -46,22 +48,23 @@ def processAll():
 
         performer_image_count = stash.find_images(f=image_query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
         
-        log.info(f"updating {performer_image_count} images of performer \"{ perf[0]['name']}\" with tags {performer_tags_names}")
+        if performer_image_count > 0:
+            log.info(f"updating {performer_image_count} images of performer \"{ perf[0]['name']}\" with tags {performer_tags_names}")
 
-        performer_image_page_size = 100
-        performer_image_page = 0
-        while performer_image_page * performer_image_page_size < performer_image_count:
-            performer_images = stash.find_images(f=image_query, filter={"page": performer_image_page, "per_page": performer_image_page_size}, fragment='id')
-            performer_image_ids = [performer_image['id'] for performer_image in performer_images]
+            performer_image_page_size = 100
+            performer_image_page = 0
+            while performer_image_page * performer_image_page_size < performer_image_count:
+                performer_images = stash.find_images(f=image_query, filter={"page": performer_image_page, "per_page": performer_image_page_size}, fragment='id')
+                performer_image_ids = [performer_image['id'] for performer_image in performer_images]
 
-            stash.update_images(
-                {
-                    "ids": performer_image_ids,
-                    "tag_ids": {"mode": "ADD", "ids": performer_tags_ids},
-                }
-            )
-            performer_image_page += 1
-        
+                stash.update_images(
+                    {
+                        "ids": performer_image_ids,
+                        "tag_ids": {"mode": "ADD", "ids": performer_tags_ids},
+                    }
+                )
+                performer_image_page += 1
+
         i = i + 1
 
 
