@@ -119,33 +119,78 @@
       // If it's a default thumbnail, immediately fetch a random scene thumbnail and replace the image src
       if (defaultImageUrl) {
           // This fetching logic is similar to the mouseenter, but runs immediately for default thumbnails
-          let randomQuery;
-          
           if (entityType === 'tags') {
-              // For tags, use scene markers
-              randomQuery = `
-                  query FindRandomSceneMarkerForThumbnail($entityId: ID!) {
-                    findSceneMarkers(
-                      scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }
-                    ) {
-                      scene_markers {
-                        id
+              const randomThumbnailQuery = `
+                query FindRandomScreenshotForTagDefaultThumbnail($entityId: ID!) {
+                  findSceneMarkers(scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+                    scene_markers {
+                      id
+                      screenshot
+                    }
+                  }
+                  findScenes(scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+                    scenes {
+                      id
+                      paths {
                         screenshot
                       }
                     }
                   }
+                }
               `;
+
+              csLib.callGQL({ query: randomThumbnailQuery, variables: { entityId } }).then(response => {
+                  let screenshotUrls = [];
+
+                  const markerScreenshots = response?.findSceneMarkers?.scene_markers
+                      ?.map(marker => marker?.screenshot)
+                      ?.filter(url => url) || [];
+
+                  const sceneScreenshots = response?.findScenes?.scenes
+                      ?.map(scene => scene?.paths?.screenshot)
+                      ?.filter(url => url) || [];
+
+                  // Combine all screenshot URLs
+                  screenshotUrls = [...markerScreenshots, ...sceneScreenshots];
+
+                  if (screenshotUrls.length > 0) {
+                      // Shuffle the combined array of screenshot URLs
+                      for (let i = screenshotUrls.length - 1; i > 0; i--) {
+                          const j = Math.floor(Math.random() * (i + 1));
+                          [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]]; // Swap elements
+                      }
+
+                      // Pick a random URL from the shuffled array
+                      randomSceneThumbnailUrl = screenshotUrls[0];
+
+                      if (randomSceneThumbnailUrl) {
+                          // console.log("Found random screenshot URL for default thumbnail, replacing default:", randomSceneThumbnailUrl);
+                          // Replace the existing image thumbnail source
+                          existingImage.src = randomSceneThumbnailUrl;
+                      } else {
+                          // This case should ideally not be hit if screenshotUrls.length > 0, but as a safeguard
+                          // console.log(`First shuffled screenshot URL has no screenshot path.`, entityId);
+                      }
+                  } else {
+                      // console.log(`No random screenshot found for this ${entityType}.`, entityId);
+                  }
+              }).catch(error => {
+                  // console.error("Error fetching random screenshot for default thumbnail:", error);
+                  randomSceneThumbnailUrl = null; // Reset URL on error
+              }).finally(() => {
+                  isFetching = false; // Allow fetching again if needed
+              });
           } else {
-              // For other entity types, use scenes
-              randomQuery = `
+              // For other entity types, use scenes (existing logic)
+              const randomQuery = `
                   query FindRandomSceneForThumbnail($entityId: ID!) {
                     findScenes(
                       scene_filter: { ${currentConfig.graphqlFilter}: { value: [$entityId], modifier: INCLUDES_ALL } }
                     ) {
-                      scenes { # Fetch all scenes initially
+                      scenes {
                         id
                         paths {
-                          screenshot # Also get screenshot path here
+                          screenshot
                         }
                       }
                       # Request total count to know if there are any scenes, though not strictly needed for this logic
@@ -153,78 +198,8 @@
                     }
                   }
               `;
-          }
 
-          csLib.callGQL({ query: randomQuery, variables: { entityId } }).then(response => {
-              if (entityType === 'tags') {
-                  const markers = response?.findSceneMarkers?.scene_markers;
-
-                  if (markers && markers.length > 0) {
-                      // Shuffle the array of markers
-                      for (let i = markers.length - 1; i > 0; i--) {
-                          const j = Math.floor(Math.random() * (i + 1));
-                          [markers[i], markers[j]] = [markers[j], markers[i]]; // Swap elements
-                      }
-                      // console.log(`Shuffled markers for default thumbnail:`, markers);
-
-                      // Get the preview from the first marker in the shuffled array
-                      randomSceneThumbnailUrl = markers[0]?.screenshot;
-
-                      if (randomSceneThumbnailUrl) {
-                          // console.log(`Found random marker screenshot URL on load, replacing default:`, randomSceneThumbnailUrl);
-                          // Replace the existing image thumbnail source
-                          existingImage.src = randomSceneThumbnailUrl;
-                      } else {
-                          // console.log(`First shuffled marker has no screenshot path.`, entityId);
-                      }
-                  } else {
-                      // console.log(`No random marker screenshot found on load for this ${entityType}, trying scenes as fallback.`, entityId);
-                      
-                      // Fallback to scenes for tags
-                      const sceneFallbackQuery = `
-                          query FindRandomSceneForTagThumbnailFallback($entityId: ID!) {
-                            findScenes(
-                              scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }
-                            ) {
-                              scenes {
-                                id
-                                paths {
-                                  screenshot
-                                }
-                              }
-                            }
-                          }
-                      `;
-                      
-                      csLib.callGQL({ query: sceneFallbackQuery, variables: { entityId } }).then(fallbackResponse => {
-                          const scenes = fallbackResponse?.findScenes?.scenes;
-                          
-                          if (scenes && scenes.length > 0) {
-                              // Shuffle the array of scenes
-                              for (let i = scenes.length - 1; i > 0; i--) {
-                                  const j = Math.floor(Math.random() * (i + 1));
-                                  [scenes[i], scenes[j]] = [scenes[j], scenes[i]]; // Swap elements
-                              }
-                              // console.log(`Shuffled fallback scenes for default thumbnail:`, scenes);
-
-                              // Get the screenshot from the first scene in the shuffled array
-                              randomSceneThumbnailUrl = scenes[0]?.paths?.screenshot;
-
-                              if (randomSceneThumbnailUrl) {
-                                  // console.log(`Found random scene screenshot URL on load (fallback), replacing default:`, randomSceneThumbnailUrl);
-                                  // Replace the existing image thumbnail source
-                                  existingImage.src = randomSceneThumbnailUrl;
-                              } else {
-                                  // console.log(`First shuffled fallback scene has no screenshot path.`, entityId);
-                              }
-                          } else {
-                              // console.log(`No fallback scenes found for tag ${entityId}.`);
-                          }
-                      }).catch(error => {
-                          console.error("Error fetching fallback scene thumbnail on load:", error);
-                      });
-                  }
-              } else {
+              csLib.callGQL({ query: randomQuery, variables: { entityId } }).then(response => {
                   const scenes = response?.findScenes?.scenes;
 
                   if (scenes && scenes.length > 0) {
@@ -248,10 +223,10 @@
                   } else {
                       // console.log(`No random scene thumbnail found on load for this ${entityType}.`, entityId);
                   }
-              }
-          }).catch(error => {
-              // console.error("Error fetching random scene thumbnail on load:", error);
-          });
+              }).catch(error => {
+                  // console.error("Error fetching random scene thumbnail on load:", error);
+              });
+          }
       }
 
       // Add mouse enter/leave listeners to the thumbnail section
@@ -333,25 +308,18 @@
                       ?.map(scene => scene?.paths?.preview)
                       ?.filter(url => url) || [];
                     
-                    // Shuffle markers and scenes separately
-                    // Shuffle marker URLs
-                    for (let i = markerUrls.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [markerUrls[i], markerUrls[j]] = [markerUrls[j], markerUrls[i]];
-                    }
-                    
-                    // Shuffle scene URLs
-                    for (let i = sceneUrls.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [sceneUrls[i], sceneUrls[j]] = [sceneUrls[j], sceneUrls[i]];
-                    }
-                    
-                    // Combine shuffled marker URLs first, then shuffled scene URLs
+                    // Combine all URLs into a single array
                     previewUrls = [...markerUrls, ...sceneUrls];
-                    
+
+                    // Shuffle the combined array
+                    for (let i = previewUrls.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]]; // Swap elements
+                    }
+
                     // console.log(`Found ${markerUrls.length} marker streams and ${sceneUrls.length} scene previews for tag ${entityId}`);
-                    // console.log("Shuffled markers first, then scenes:", previewUrls);
-                      
+                    // console.log("Combined and shuffled URLs:", previewUrls);
+
                     // Remove the fallback logic since we're now getting both in one query
                 } else {
                     // Extract preview URLs from the scenes for other entity types
@@ -511,33 +479,21 @@
           // If it's a default thumbnail and we haven't fetched a random scene thumbnail yet
           if (defaultImageUrl && !randomSceneThumbnailUrl && !isFetching) {
               isFetching = true;
-              // console.log(`Fetching random scene thumbnail for default ${entityType} thumbnail:`, entityId);
-              
-              let randomSceneQuery;
-              
+              // console.log(`Fetching random scene or marker screenshot for default ${entityType} thumbnail:`, entityId);
+
+              let randomThumbnailQuery;
+
               if (entityType === 'tags') {
-                  // For tags, use scene markers
-                  randomSceneQuery = `
-                      query FindRandomSceneMarkerForThumbnail($entityId: ID!) {
-                        findSceneMarkers(
-                          scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }
-                          filter: { per_page: 1 }
-                        ) {
+                   // For tags, get both scene markers and scenes
+                  randomThumbnailQuery = `
+                      query FindRandomScreenshotForTagDefaultThumbnail($entityId: ID!) {
+                        findSceneMarkers(scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
                           scene_markers {
                             id
                             screenshot
                           }
                         }
-                      }
-                  `;
-              } else {
-                  // For other entity types, use scenes
-                  randomSceneQuery = `
-                      query FindRandomSceneForThumbnail($entityId: ID!) {
-                        findScenes(
-                          scene_filter: { ${currentConfig.graphqlFilter}: { value: [$entityId], modifier: INCLUDES_ALL } }
-                          filter: { per_page: 1 }
-                        ) {
+                        findScenes(scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
                           scenes {
                             id
                             paths {
@@ -547,54 +503,75 @@
                         }
                       }
                   `;
+              } else {
+                   // For other entity types, use scenes (existing logic)
+                   randomThumbnailQuery = `
+                      query FindRandomSceneForThumbnail($entityId: ID!) {
+                        findScenes(
+                          scene_filter: { ${currentConfig.graphqlFilter}: { value: [$entityId], modifier: INCLUDES_ALL } }
+                        ) {
+                          scenes {
+                            id
+                            paths {
+                              screenshot
+                            }
+                          }
+                        }
+                        # Request total count to know if there are any scenes, though not strictly needed for this logic
+                        count
+                      }
+                  `;
               }
 
               try {
-                  const response = await csLib.callGQL({ query: randomSceneQuery, variables: { entityId } });
-                  // console.log("GraphQL Response for random scene thumbnail:", response);
-                  
+                  const response = await csLib.callGQL({ query: randomThumbnailQuery, variables: { entityId } });
+                  // console.log("GraphQL Response for random thumbnail:", response);
+
+                  let screenshotUrls = [];
+
                   if (entityType === 'tags') {
-                      const marker = response?.findSceneMarkers?.scene_markers?.[0];
-                      randomSceneThumbnailUrl = marker?.screenshot;
-                      
-                      // If no marker found, fallback to scenes
-                      if (!randomSceneThumbnailUrl) {
-                          // console.log(`No marker screenshot found for tag ${entityId}, trying scene fallback...`);
-                          const sceneFallbackQuery = `
-                              query FindRandomSceneForTagThumbnailFallback($entityId: ID!) {
-                                findScenes(
-                                  scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }
-                                  filter: { per_page: 1 }
-                                ) {
-                                  scenes {
-                                    id
-                                    paths {
-                                      screenshot
-                                    }
-                                  }
-                                }
-                              }
-                          `;
-                          
-                          const sceneFallbackResponse = await csLib.callGQL({ query: sceneFallbackQuery, variables: { entityId } });
-                          // console.log("GraphQL Scene Fallback Response for random thumbnail:", sceneFallbackResponse);
-                          
-                          const scene = sceneFallbackResponse?.findScenes?.scenes?.[0];
-                          randomSceneThumbnailUrl = scene?.paths?.screenshot;
-                      }
+                      const markerScreenshots = response?.findSceneMarkers?.scene_markers
+                          ?.map(marker => marker?.screenshot)
+                          ?.filter(url => url) || [];
+
+                      const sceneScreenshots = response?.findScenes?.scenes
+                          ?.map(scene => scene?.paths?.screenshot)
+                          ?.filter(url => url) || [];
+
+                      // Combine all screenshot URLs
+                      screenshotUrls = [...markerScreenshots, ...sceneScreenshots];
+
                   } else {
-                      const scene = response?.findScenes?.scenes?.[0];
-                      randomSceneThumbnailUrl = scene?.paths?.screenshot;
+                     // For other entity types, use scene screenshots (existing logic)
+                     screenshotUrls = response?.findScenes?.scenes
+                       ?.map(scene => scene?.paths?.screenshot)
+                       ?.filter(url => url) || [];
                   }
 
-                  if (randomSceneThumbnailUrl) {
-                      // console.log("Found random scene thumbnail URL:", randomSceneThumbnailUrl);
-                      // TODO: Use this URL later for default thumbnails
+
+                  if (screenshotUrls.length > 0) {
+                       // Shuffle the combined array of screenshot URLs
+                      for (let i = screenshotUrls.length - 1; i > 0; i--) {
+                          const j = Math.floor(Math.random() * (i + 1));
+                          [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]]; // Swap elements
+                      }
+
+                      // Pick a random URL from the shuffled array
+                      randomSceneThumbnailUrl = screenshotUrls[0];
+
+                      if (randomSceneThumbnailUrl) {
+                          // console.log("Found random screenshot URL for default thumbnail, replacing default:", randomSceneThumbnailUrl);
+                          // Replace the existing image thumbnail source
+                          existingImage.src = randomSceneThumbnailUrl;
+                      } else {
+                          // This case should ideally not be hit if screenshotUrls.length > 0, but as a safeguard
+                          // console.log(`First shuffled screenshot URL has no screenshot path.`, entityId);
+                      }
                   } else {
-                      // console.log(`No random scene thumbnail found for this ${entityType}.`, entityId);
+                      // console.log(`No random screenshot found for this ${entityType}.`, entityId);
                   }
               } catch (error) {
-                  // console.error("Error fetching random scene thumbnail:", error);
+                  // console.error("Error fetching random screenshot for default thumbnail:", error);
                   randomSceneThumbnailUrl = null; // Reset URL on error
               } finally {
                   isFetching = false; // Allow fetching again if needed
@@ -762,4 +739,4 @@
     handleThumbLogic(containerElement, "groups");
   });
 
-})(); 
+})();
