@@ -5,6 +5,11 @@
     requireConfirmation: false,
   };
 
+  // helper function to get the innerText of all elements matching a selector
+  const getAllInnerText = (selector) => Array.from(document.querySelectorAll(selector))
+    .map((el) => el.innerText)
+    .filter((text) => text.trim() !== "");
+
   // On image page, get data about gallery (image's position within gallery, next/prev image IDs),
   // add arrow buttons to page, and register arrow keypress handlers,
   async function setupTagCopyPaste(objType) {
@@ -24,21 +29,35 @@
   }
 
   function insertCopyPasteButtons(objID, objType) {
+    // listen for copy and paste events within tag input box
+    // find tag input box
+    const tagInputBox = document.querySelector("label[for='tag_ids'] + div .react-select__value-container");
+    if (tagInputBox) {
+      tagInputBox.addEventListener("copy", (event) => {
+        event.preventDefault();
+        handleCopyClick();
+      });
+      tagInputBox.addEventListener("paste", (event) => {
+        event.preventDefault();
+        handlePasteClick(objID, objType);
+      });
+    }
+
     var copyButton = document.createElement("button");
     copyButton.className = "imageGalleryNav-copyButton btn btn-secondary";
     copyButton.innerText = "Copy";
-    copyButton.addEventListener("click", (e) => {
-      e.preventDefault();
+    copyButton.onclick = (event) => {
+      event.preventDefault();
       handleCopyClick();
-    });
+    }
 
     var pasteButton = document.createElement("button");
     pasteButton.className = "imageGalleryNav-pasteButton btn btn-secondary";
     pasteButton.innerText = "Paste";
-    pasteButton.addEventListener("click", (e) => {
-      e.preventDefault();
+    pasteButton.onclick = (event) => {
+      event.preventDefault();
       handlePasteClick(objID, objType);
-    });
+    }
 
     if (document.querySelector("button.imageGalleryNav-pasteButton") == null) {
       document.querySelector("label[for='tag_ids']").append(pasteButton);
@@ -50,54 +69,32 @@
 
   // Handle copy click. Return delimited list of current tags.
   async function handleCopyClick() {
-    // Get tags from input box.
-    var tagList = [];
-    document
-      .querySelectorAll(
-        "label[for='tag_ids'] + div .react-select__multi-value__label"
-      )
-      .forEach((item) => {
-        tagList.push(item.innerText);
-      });
-
-    // Join tags as comma delimited list and write to clipboard.
-    await navigator.clipboard.writeText(tagList.join(","));
+    // Get tags from input box
+    // join as comma delimited list
+    const tagList = getAllInnerText("label[for='tag_ids'] + div .react-select__multi-value__label").join(",")
+    // write to clipboard.
+    navigator.clipboard.writeText(tagList);
   }
 
   // Handle paste click.
   async function handlePasteClick(objID, objType) {
-    var inputTagList = [];
-
     // Parse tag list from comma delimited string.
-    var tagInput = await navigator.clipboard.readText();
-    tagInput.split(",").forEach((item) => {
-      if (!inputTagList.includes(item)) {
-        inputTagList.push(item);
-      }
-    });
+    const tagInput = await navigator.clipboard.readText();
+    var inputTagList = tagInput.split(",") // do de-duplication later
 
     // Get tags from input box and also add to tag list.
-    document
-      .querySelectorAll(
-        "label[for='tag_ids'] + div .react-select__multi-value__label"
-      )
-      .forEach((item) => {
-        if (!inputTagList.includes(item)) {
-          inputTagList.push(item.innerText);
-        }
-      });
+    const existingTagList = getAllInnerText("label[for='tag_ids'] + div .react-select__multi-value__label")
 
-    inputTagList.sort();
+    inputTagList = [...new Set([...inputTagList, ...existingTagList])].sort();
 
     var missingTags = [];
     var existingTags = [];
     var tagUpdateList = [];
 
     // Search for tag ID for each tag. If exists, add to tag ID list. If not exists, create new tag and add to tag ID list.
-    for (let i = 0; i < inputTagList.length; i++) {
-      var inputTag = inputTagList[i];
-      var tagID = await getTagByName(inputTag);
-      if (tagID != null && tagID.length) {
+    for (const inputTag of inputTagList) {
+      const tagID = await getTagByName(inputTag.trim());
+      if (tagID && tagID.length) {
         existingTags.push(inputTag);
         tagUpdateList.push(tagID[0]);
       } else {
@@ -105,35 +102,24 @@
       }
     }
 
-    if (pluginSettings.requireConfirmation) {
-      var msg = "";
-      if (pluginSettings.createIfNotExists) {
-        msg = `Missing Tags that will be created:\n${missingTags.join(
-          ", "
-        )}\n\nExisting Tags that will be saved: \n${existingTags.join(
-          ", "
-        )}\n\nContinue?`;
-      } else {
-        msg = `Missing Tags that will be skipped:\n${missingTags.join(
-          ", "
-        )}\n\nExisting Tags that will be saved: \n${existingTags.join(
-          ", "
-        )}\n\nContinue?`;
-      }
 
-      var userConfirmed = confirm(msg);
-      if (!userConfirmed) {
+    if (pluginSettings.requireConfirmation) {
+
+      const missingTagsStr = missingTags.join(", ");
+      const existingTagsStr = existingTags.join(", ");
+      const msg = pluginSettings.createIfNotExists
+        ? `Missing Tags that will be created:\n${missingTagsStr}\n\nExisting Tags that will be saved: \n${existingTagsStr}\n\nContinue?`
+        : `Missing Tags that will be skipped:\n${missingTagsStr}\n\nExisting Tags that will be saved: \n${existingTagsStr}\n\nContinue?`;
+
+      if (!confirm(msg)) {
         return;
       }
     }
 
     if (pluginSettings.createIfNotExists && missingTags.length) {
-      for (let i = 0; i < missingTags.length; i++) {
-        var newTagName = missingTags[i];
-        var newTagID = await createNewTag(newTagName);
-        if (newTagID != null) {
-          tagUpdateList.push(newTagID);
-        }
+      for (const missingTag of missingTags) {
+        const newTagID = await createNewTag(missingTag);
+        if (newTagID != null) tagUpdateList.push(newTagID);
       }
     }
 
@@ -141,8 +127,8 @@
     await updateObjTags(
       objID,
       tagUpdateList,
-      objType.toLowerCase() + "Update",
-      objType + "UpdateInput"
+      `${objType.toLowerCase()}Update`,
+      `${objType}UpdateInput`
     );
 
     window.location.reload();
@@ -183,33 +169,18 @@
       .then((data) => data.findTags.tags.map((item) => item.id));
   }
 
-  // Wait for scenes page.
-  csLib.PathElementListener("/scenes/", "[id*='-edit-details']", () => {
-    setupTagCopyPaste("Scene");
-  }); // PathElementListener is from cs-ui-lib.js
-
-  // Wait for studios page.
-  csLib.PathElementListener("/studios/", "[id='studio-edit']", () => {
-    setupTagCopyPaste("Studio");
-  }); // PathElementListener is from cs-ui-lib.js
-
-  // Wait for groups page.
-  csLib.PathElementListener("/groups/", "[id='group-edit']", () => {
-    setupTagCopyPaste("Group");
-  }); // PathElementListener is from cs-ui-lib.js
-
-  // Wait for performers page.
-  csLib.PathElementListener("/performers/", "[id='performer-edit']", () => {
-    setupTagCopyPaste("Performer");
-  }); // PathElementListener is from cs-ui-lib.js
-
-  // Wait for galleries page.
-  csLib.PathElementListener("/galleries/", "[id*='-edit-details']", () => {
-    setupTagCopyPaste("Gallery");
-  }); // PathElementListener is from cs-ui-lib.js
-
-  // Wait for images page.
-  csLib.PathElementListener("/images/", "[id*='-edit-details']", () => {
-    setupTagCopyPaste("Image");
-  }); // PathElementListener is from cs-ui-lib.js
+  // listener arrays
+  [
+    [ "/scenes/", "[id*='-edit-details']", "Scene" ],
+    [ "/studios/", "[id='studio-edit']", "Studio" ],
+    [ "/groups/", "[id='group-edit']", "Group" ],
+    [ "/performers/", "[id='performer-edit']", "Performer" ],
+    [ "/galleries/", "[id*='-edit-details']", "Gallery" ],
+    [ "/images/", "[id*='-edit-details']", "Image" ]
+  ].forEach(([path, selector, objType]) => {
+    // Wait for the page to load and the element to be present.
+    csLib.PathElementListener(path, selector, () => {
+      setupTagCopyPaste(objType);
+    }); // PathElementListener is from cs-ui-lib.js
+  });
 })();
