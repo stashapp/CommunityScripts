@@ -1,7 +1,7 @@
 name: tagCopyPaste
 # requires: CommunityScriptsUILibrary
 description: Adds Copy/Paste buttons to Tags field.
-version: 0.2
+version: 0.3
 settings:
   createIfNotExists:
     displayName: Create If Not Exists

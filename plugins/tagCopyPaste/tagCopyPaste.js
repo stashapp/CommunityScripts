@@ -7,8 +7,8 @@
 
   // helper function to get the innerText of all elements matching a selector
   const getAllInnerText = (selector) => Array.from(document.querySelectorAll(selector))
-    .map((el) => el.innerText)
-    .filter((text) => text.trim() !== "");
+    .map((el) => el.innerText.trim())
+    .filter((text) => text !== "");
 
   // On image page, get data about gallery (image's position within gallery, next/prev image IDs),
   // add arrow buttons to page, and register arrow keypress handlers,
@@ -80,10 +80,10 @@
   async function handlePasteClick(objID, objType) {
     // Parse tag list from comma delimited string.
     const tagInput = await navigator.clipboard.readText();
-    var inputTagList = tagInput.split(",") // do de-duplication later
+    var inputTagList = tagInput.split(/\r?\n|\r|,/).map(s => s.trim()).filter((text) => text !== "") // do de-duplication later
 
     // Get tags from input box and also add to tag list.
-    const existingTagList = getAllInnerText("label[for='tag_ids'] + div .react-select__multi-value__label")
+    const existingTagList = getAllInnerText("label[for='tag_ids'] + div .react-select__multi-value__label");
 
     inputTagList = [...new Set([...inputTagList, ...existingTagList])].sort();
 
@@ -93,7 +93,7 @@
 
     // Search for tag ID for each tag. If exists, add to tag ID list. If not exists, create new tag and add to tag ID list.
     for (const inputTag of inputTagList) {
-      const tagID = await getTagByName(inputTag.trim());
+      const tagID = await getTagByName(inputTag);
       if (tagID && tagID.length) {
         existingTags.push(inputTag);
         tagUpdateList.push(tagID[0]);
@@ -102,9 +102,7 @@
       }
     }
 
-
     if (pluginSettings.requireConfirmation) {
-
       const missingTagsStr = missingTags.join(", ");
       const existingTagsStr = existingTags.join(", ");
       const msg = pluginSettings.createIfNotExists
@@ -133,8 +131,6 @@
 
     window.location.reload();
   }
-
-  // *** Utility Functions ***
 
   // *** GQL Calls ***
 
