@@ -75,7 +75,16 @@
       existingImage.style.opacity = '1'; // Ensure initial opacity is 1
 
       // Extract Entity ID from the card.
-      const entityId = cardElement.dataset.entityId || cardElement.querySelector(`a[href^="${currentConfig.urlPattern}"]`)?.href.match(new RegExp(`${currentConfig.urlPattern.replace('/', '\\/')}([^\\/]+)`))?.[1];
+      let entityId = cardElement.dataset.entityId || cardElement.querySelector(`a[href^="${currentConfig.urlPattern}"]`)?.href.match(new RegExp(`${currentConfig.urlPattern.replace('/', '\\/')}([^\\/]+)`))?.[1];
+
+      // Ensure only the numerical ID is captured, removing any URL parameters
+      if (entityId) {
+          const paramIndex = entityId.indexOf('?');
+          if (paramIndex !== -1) {
+              entityId = entityId.substring(0, paramIndex);
+              // console.log(`Stripped parameters from entityId: ${entityId}`);
+          }
+      }
 
       if (!entityId) {
         // console.warn(`${entityType} ID not found for card:`, cardElement);
