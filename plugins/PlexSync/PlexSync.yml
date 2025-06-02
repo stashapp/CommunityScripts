@@ -1,5 +1,5 @@
 name: Plex Sync
-description: Refresh Plex metadata when scene updated in Stash.
+description: Refresh Plex metadata when scene updated in Stash. Requires the StashPlexAgent.bundle agent.
 version: 0.1
 url: https://github.com/stashapp/CommunityScripts/
 exec:
@@ -48,7 +48,6 @@ settings:
   tagID_javstash:
     displayName: Tag ID for scenes from JAVStash
     type: STRING
-
 
 hooks:
   - name: Scene update
