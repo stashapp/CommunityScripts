@@ -1,5 +1,7 @@
 # Stash Plugin updating your Plex metadata automatically
 
+https://discourse.stashapp.cc/t/plex-sync/1926
+
 This plugin solves the problem of "I have many files in my Plex, but they don't get any of the changes I do in Stash, and doing a `refresh all metadata` takes too much time".
 
 With this, Stash behaves as the main source for all your Stash scenes in Plex, and it keeps Plex in sync with changes done via Stash.
