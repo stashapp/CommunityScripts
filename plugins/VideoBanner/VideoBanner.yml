@@ -1,6 +1,6 @@
 name: Video Banner
-description: Displays random generated preview videos in the studio detail page banner.
-version: 1.1.0
+description: Displays random generated preview videos in the detail page banner.
+version: 0.1
 #url: https://github.com/your_repo # Replace with your plugin repository URL
 
 ui:
