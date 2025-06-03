@@ -153,27 +153,93 @@
                   // Combine all screenshot URLs
                   screenshotUrls = [...markerScreenshots, ...sceneScreenshots];
 
-                  if (screenshotUrls.length > 0) {
-                      // Shuffle the combined array of screenshot URLs
-                      for (let i = screenshotUrls.length - 1; i > 0; i--) {
-                          const j = Math.floor(Math.random() * (i + 1));
-                          [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]]; // Swap elements
+                  // Also get performer scenes for tags
+                  const performersQuery = `
+                    query GetTagPerformersForScreenshot($entityId: ID!) {
+                      findPerformers(performer_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+                        performers {
+                          id
+                        }
                       }
+                    }
+                  `;
+                  
+                  csLib.callGQL({ query: performersQuery, variables: { entityId } }).then(performersResponse => {
+                      const performerIds = performersResponse?.findPerformers?.performers?.map(p => p.id) || [];
+                      
+                      if (performerIds.length > 0) {
+                          const performerScenesQuery = `
+                            query GetPerformerScenesForScreenshot($performerIds: [ID!]!) {
+                              findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
+                                scenes {
+                                  id
+                                  paths {
+                                    screenshot
+                                  }
+                                }
+                              }
+                            }
+                          `;
+                          
+                          csLib.callGQL({ query: performerScenesQuery, variables: { performerIds: performerIds } }).then(performerScenesResponse => {
+                              const performerSceneScreenshots = performerScenesResponse?.findScenes?.scenes
+                                  ?.map(scene => scene?.paths?.screenshot)
+                                  ?.filter(url => url) || [];
+                              
+                              // Combine all screenshot URLs including performer scenes
+                              const allScreenshotUrls = [...screenshotUrls, ...performerSceneScreenshots];
+                              
+                              if (allScreenshotUrls.length > 0) {
+                                  // Shuffle the combined array of screenshot URLs
+                                  for (let i = allScreenshotUrls.length - 1; i > 0; i--) {
+                                      const j = Math.floor(Math.random() * (i + 1));
+                                      [allScreenshotUrls[i], allScreenshotUrls[j]] = [allScreenshotUrls[j], allScreenshotUrls[i]];
+                                  }
 
-                      // Pick a random URL from the shuffled array
-                      randomSceneThumbnailUrl = screenshotUrls[0];
-
-                      if (randomSceneThumbnailUrl) {
-                          // console.log("Found random screenshot URL for default thumbnail, replacing default:", randomSceneThumbnailUrl);
-                          // Replace the existing image thumbnail source
-                          existingImage.src = randomSceneThumbnailUrl;
+                                  randomSceneThumbnailUrl = allScreenshotUrls[0];
+                                  if (randomSceneThumbnailUrl) {
+                                      existingImage.src = randomSceneThumbnailUrl;
+                                  }
+                              }
+                          }).catch(error => {
+                              // Fallback to original screenshots if performer scenes fail
+                              if (screenshotUrls.length > 0) {
+                                  for (let i = screenshotUrls.length - 1; i > 0; i--) {
+                                      const j = Math.floor(Math.random() * (i + 1));
+                                      [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]];
+                                  }
+                                  randomSceneThumbnailUrl = screenshotUrls[0];
+                                  if (randomSceneThumbnailUrl) {
+                                      existingImage.src = randomSceneThumbnailUrl;
+                                  }
+                              }
+                          });
                       } else {
-                          // This case should ideally not be hit if screenshotUrls.length > 0, but as a safeguard
-                          // console.log(`First shuffled screenshot URL has no screenshot path.`, entityId);
+                          // No performers, use original logic
+                          if (screenshotUrls.length > 0) {
+                              for (let i = screenshotUrls.length - 1; i > 0; i--) {
+                                  const j = Math.floor(Math.random() * (i + 1));
+                                  [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]];
+                              }
+                              randomSceneThumbnailUrl = screenshotUrls[0];
+                              if (randomSceneThumbnailUrl) {
+                                  existingImage.src = randomSceneThumbnailUrl;
+                              }
+                          }
                       }
-                  } else {
-                      // console.log(`No random screenshot found for this ${entityType}.`, entityId);
-                  }
+                  }).catch(error => {
+                      // Fallback to original logic
+                      if (screenshotUrls.length > 0) {
+                          for (let i = screenshotUrls.length - 1; i > 0; i--) {
+                              const j = Math.floor(Math.random() * (i + 1));
+                              [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]];
+                          }
+                          randomSceneThumbnailUrl = screenshotUrls[0];
+                          if (randomSceneThumbnailUrl) {
+                              existingImage.src = randomSceneThumbnailUrl;
+                          }
+                      }
+                  });
               }).catch(error => {
                   // console.error("Error fetching random screenshot for default thumbnail:", error);
                   randomSceneThumbnailUrl = null; // Reset URL on error
@@ -311,14 +377,218 @@
                     // Combine all URLs into a single array
                     previewUrls = [...markerUrls, ...sceneUrls];
 
-                    // Shuffle the combined array
-                    for (let i = previewUrls.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]]; // Swap elements
-                    }
+                    // Also get performer scenes for tags
+                    const performersQuery = `
+                      query GetTagPerformersForPreview($entityId: ID!) {
+                        findPerformers(performer_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+                          performers {
+                            id
+                          }
+                        }
+                      }
+                    `;
+                    
+                    csLib.callGQL({ query: performersQuery, variables: { entityId } }).then(performersResponse => {
+                        const performerIds = performersResponse?.findPerformers?.performers?.map(p => p.id) || [];
+                        
+                        if (performerIds.length > 0) {
+                            const performerScenesQuery = `
+                              query GetPerformerScenesForPreview($performerIds: [ID!]!) {
+                                findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
+                                  scenes {
+                                    id
+                                    paths {
+                                      preview
+                                    }
+                                  }
+                                }
+                              }
+                            `;
+                            
+                            csLib.callGQL({ query: performerScenesQuery, variables: { performerIds: performerIds } }).then(performerScenesResponse => {
+                                const performerScenePreviews = performerScenesResponse?.findScenes?.scenes
+                                    ?.map(scene => scene?.paths?.preview)
+                                    ?.filter(url => url) || [];
+                                
+                                // Combine all preview URLs including performer scenes
+                                previewUrls = [...previewUrls, ...performerScenePreviews];
+                                
+                                // Shuffle the combined array
+                                for (let i = previewUrls.length - 1; i > 0; i--) {
+                                    const j = Math.floor(Math.random() * (i + 1));
+                                    [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
+                                }
+                                
+                                // Continue with video creation logic
+                                createVideoElement();
+                            }).catch(error => {
+                                // Fallback to original URLs if performer scenes fail
+                                // Shuffle the array
+                                for (let i = previewUrls.length - 1; i > 0; i--) {
+                                    const j = Math.floor(Math.random() * (i + 1));
+                                    [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
+                                }
+                                
+                                // Continue with video creation logic
+                                createVideoElement();
+                            });
+                        } else {
+                            // No performers, use original logic
+                            // Shuffle the array
+                            for (let i = previewUrls.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
+                            }
+                            
+                            // Continue with video creation logic
+                            createVideoElement();
+                        }
+                    }).catch(error => {
+                        // Fallback to original logic
+                        // Shuffle the array
+                        for (let i = previewUrls.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
+                        }
+                        
+                        // Continue with video creation logic
+                        createVideoElement();
+                    });
 
-                    // console.log(`Found ${markerUrls.length} marker streams and ${sceneUrls.length} scene previews for tag ${entityId}`);
-                    // console.log("Combined and shuffled URLs:", previewUrls);
+                    // Define video creation function
+                    function createVideoElement() {
+                        if (previewUrls.length > 0) {
+                            // console.log("Found preview URLs on hover:", previewUrls);
+                            // Create video element now that we have the URLs
+                            videoElement = document.createElement('video');
+                            currentVideoIndex = 0; // Start with the first video
+                            videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Use the first URL
+                            videoElement.loop = false; // Change loop to false to allow 'ended' event
+                            videoElement.muted = true;
+                            videoElement.playsInline = true;
+
+                            // Add ended listener for sequential playback
+                            videoElement.addEventListener('ended', () => {
+                                // console.log(`Video ended, moving to next for ${entityType}:`, entityId);
+                                
+                                // Fade out the current video
+                                videoElement.style.opacity = '0';
+
+                                // Wait for the fade-out transition to complete before loading/playing the next video
+                                setTimeout(() => {
+                                    currentVideoIndex = (currentVideoIndex + 1) % previewUrls.length; // Calculate next index, looping back
+                                    videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Set new source
+                                    videoElement.load(); // Load the new video
+                                    
+                                    // After loading, fade in and play the next video
+                                    videoElement.style.opacity = '1'; // Fade in the next video
+                                    videoElement.play().catch(e => console.warn("Video play failed after ended:", e)); // Play next video
+                                }, 300); // Match the CSS transition duration (0.3s)
+                            });
+
+                            // Copy classes from the original image element to the video element
+                            videoElement.className = existingImage.className;
+                            // console.log("Copied classes from image to video:", videoElement.className);
+
+                            // Styling for smooth transition (initially hidden and transparent)
+                            videoElement.style.transition = 'opacity 0.3s ease-in-out'; // Added transition
+                            videoElement.style.opacity = '0'; // Initially transparent
+                            videoElement.style.display = 'none'; // Initially hidden
+
+                            // Add load success handler to track successful video loads
+                            videoElement.onloadeddata = () => {
+                                // console.log(`Video successfully loaded: ${videoElement.src} for ${entityType}: ${entityId}`);
+                                hasSuccessfulVideo = true; // Mark that at least one video was successful
+
+                                // Now that video data is loaded, hide the image and show the video
+                                existingImage.style.display = 'none';
+                                videoElement.style.display = ''; // Show the video
+
+                                // Start fading in the video after display is set
+                                 setTimeout(() => {
+                                    // Check if mouse has left the card during the timeout
+                                    if (isMouseLeaving) {
+                                        // console.log(`Mouse left during video display timeout, reverting to image.`, entityId);
+                                        // Revert to image state
+                                        if (videoElement) {
+                                            videoElement.pause();
+                                            videoElement.style.display = 'none';
+                                            videoElement.style.opacity = '0';
+                                            // console.log(`Immediately hid video on mouse leave during display timeout.`, entityId);
+                                        }
+                                        existingImage.style.display = '';
+                                        existingImage.style.opacity = '1';
+                                        return; // Exit this timeout callback
+                                    }
+                                    videoElement.style.opacity = '1'; // Fade in the video
+                                    videoElement.play().catch(e => {
+                                        console.warn("Video play failed after loadeddata:", e);
+                                        // If play fails and no video has been successful (shouldn't happen if loadeddata fired, but as a safeguard)
+                                        if (!hasSuccessfulVideo) {
+                                            // console.log(`Video play failed after loadeddata and no successful video loaded, reverting to image.`, entityId);
+                                            videoElement.style.display = 'none';
+                                            videoElement.style.opacity = '0';
+                                            existingImage.style.display = '';
+                                            existingImage.style.opacity = '1';
+                                        }
+                                    });
+                                 }, 50); // Small delay to allow display change
+                            };
+
+                            // Add error handling
+                            videoElement.onerror = () => {
+                                // console.warn(`Error loading video from URL: ${videoElement.src} for ${entityType}: ${entityId}. Trying next URL.`);
+
+                                // Move to the next video index
+                                currentVideoIndex++;
+
+                                // Check if there is a next video URL
+                                if (currentVideoIndex < previewUrls.length) {
+                                    // Load and try to play the next video
+                                    videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Set new source
+                                    videoElement.load(); // Load the new video
+                                    videoElement.play().catch(e => console.warn("Video play failed after error:", e)); // Try playing
+                                    // console.log(`Attempting to load next video: ${videoElement.src}`);
+                                } else {
+                                    // No more videos in the list, revert to image immediately
+                                    // console.log(`No more preview URLs to try. Reverting to image immediately.`, entityId);
+                                    hasSuccessfulVideo = false; // Mark that no video was successful
+                                    
+                                    // Show the image immediately
+                                    existingImage.style.display = '';
+                                    existingImage.style.opacity = '1';
+
+                                    // Remove the failed video element from the DOM after a short delay for potential fade-out
+                                    if (videoElement && videoElement.parentElement) {
+                                         videoElement.style.opacity = '0'; // Start fade out video
+                                         setTimeout(() => {
+                                             if (videoElement && videoElement.parentElement) {
+                                                 videoElement.parentElement.removeChild(videoElement);
+                                                 videoElement = null; // Clear reference
+                                                 // console.log("Removed failed video element from thumbnail after trying all.");
+                                             }
+                                         }, 300); // Match fade out transition
+                                    }
+                                }
+                            };
+
+                            // Find the card header link
+                            const cardHeaderLink = cardElement.querySelector(currentConfig.headerSelector);
+                            if (cardHeaderLink) {
+                                // Append video element as a child of the header link
+                                cardHeaderLink.appendChild(videoElement);
+                                // console.log(`Appended video element to ${currentConfig.headerSelector} link (initially hidden).`);
+                            } else {
+                                // console.warn(`${currentConfig.headerSelector} link not found, cannot append video element.`);
+                                // Fallback or error handling if header link is not found
+                                // For now, we'll just log a warning and the video won't be appended
+                            }
+
+                        } else {
+                            // console.log(`No preview video found for this ${entityType} on hover.`);
+                            // Maybe show a placeholder or do nothing
+                        }
+                    }
 
                     // Remove the fallback logic since we're now getting both in one query
                 } else {
