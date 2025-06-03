@@ -431,11 +431,13 @@
        const isScenesTab = pathname.endsWith('/scenes');
        const isMarkersTab = pathname.endsWith('/markers');
        const isGroupsTab = pathname.endsWith('/groups');
-      //  console.log("Tag page details:", { pathname, isScenesTab, isMarkersTab, isGroupsTab });
+       const isPerformersTab = pathname.endsWith('/performers');
+      //  console.log("Tag page details:", { pathname, isScenesTab, isMarkersTab, isGroupsTab, isPerformersTab });
 
        let scenePreviews = [];
        let markerPreviews = [];
        let groupScenePreviews = []; // Videos from scenes in groups linked to the tag
+       let performerScenePreviews = []; // Videos from scenes with performers who have the tag
 
        const scenesQuery = `
          query FindScenesForTag($id: ID!) {
@@ -516,7 +518,59 @@
 
          }
 
-         if (isScenesTab || (!isScenesTab && !isMarkersTab)) { // Fetch scenes for scenes tab or main tag page
+         if (isPerformersTab) { // Fetch scenes from performers who have the tag for the performers tab
+            // console.log("Fetching scenes from performers for tag page...");
+            // First, find performers associated with the tag
+            const performersQuery = `
+                query FindPerformersForTag($tagId: ID!) {
+                  findPerformers(performer_filter: { tags: { value: [$tagId], modifier: INCLUDES_ALL } }) {
+                    performers {
+                      id
+                    }
+                  }
+                }
+            `;
+            const performersResponse = await csLib.callGQL({ query: performersQuery, variables: { tagId: id } });
+            // console.log("GraphQL Performers Response (Tags page, Performers tab):", performersResponse);
+
+            const performerIds = performersResponse?.findPerformers?.performers?.map(performer => performer.id) || [];
+            // console.log("Performer IDs associated with tag:", performerIds);
+
+            if (performerIds.length > 0) {
+                 // Then, find scenes associated with these performers
+                 const scenesByPerformerQuery = `
+                     query FindScenesByPerformerIds($performerIds: [ID!]) {
+                       findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
+                         scenes {
+                           id
+                           paths {
+                             preview
+                           }
+                         }
+                       }
+                     }
+                 `;
+                const scenesByPerformerResponse = await csLib.callGQL({ query: scenesByPerformerQuery, variables: { performerIds } });
+                // console.log("GraphQL Scenes by Performer Response (Tags page, Performers tab):", scenesByPerformerResponse);
+
+                performerScenePreviews = scenesByPerformerResponse?.findScenes?.scenes
+                    ?.filter(scene => scene.paths?.preview)
+                    .map(scene => `${scene.paths.preview}?_ts=${Date.now()}`) || [];
+                // console.log("Performer scene preview URLs (Tags page, Performers tab):", performerScenePreviews);
+
+                // Shuffle the collected performer scene preview URLs
+                for (let i = performerScenePreviews.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [performerScenePreviews[i], performerScenePreviews[j]] = [performerScenePreviews[j], performerScenePreviews[i]];
+                }
+                // console.log("Shuffled performer scene preview URLs (Tags page, Performers tab):", performerScenePreviews);
+            } else {
+                // console.log("No performers found for this tag.");
+            }
+
+         }
+
+         if (isScenesTab || (!isScenesTab && !isMarkersTab && !isGroupsTab && !isPerformersTab)) { // Fetch scenes for scenes tab or main tag page
            // console.log("Fetching scenes for tag page...");
            const scenesResponse = await csLib.callGQL({ query: scenesQuery, variables: { id } });
            // console.log("GraphQL Scenes Response (Tags page):", scenesResponse);
@@ -526,7 +580,7 @@
            //  console.log("Scene preview URLs (Tags page):", scenePreviews);
          }
 
-         if (isMarkersTab || (!isScenesTab && !isMarkersTab)) { // Fetch markers for markers tab or main tag page
+         if (isMarkersTab || (!isScenesTab && !isMarkersTab && !isGroupsTab && !isPerformersTab)) { // Fetch markers for markers tab or main tag page
           //  console.log("Fetching markers for tag page...");
            const markersResponse = await csLib.callGQL({ query: markersQuery, variables: { id } });
           //  console.log("GraphQL Markers Response (Tags page):", markersResponse);
@@ -540,6 +594,9 @@
          if (isGroupsTab) {
              videoUrls = groupScenePreviews; // Only group scene previews on groups tab
             //  console.log("Video URLs (Groups tab):", videoUrls);
+         } else if (isPerformersTab) {
+             videoUrls = performerScenePreviews; // Only performer scene previews on performers tab
+            //  console.log("Video URLs (Performers tab):", videoUrls);
          } else if (isMarkersTab) {
              videoUrls = markerPreviews; // Only marker previews on markers tab
             //  console.log("Video URLs (Markers tab):", videoUrls);
@@ -598,6 +655,8 @@
          currentVideoIndex = Math.floor(Math.random() * videoUrls.length);
          if (isGroupsTab) {
             //   console.log(`Starting slideshow with a random group scene preview at index: ${currentVideoIndex} (out of ${videoUrls.length} total videos) on Groups tab.`);
+         } else if (isPerformersTab) {
+            //   console.log(`Starting slideshow with a random performer scene preview at index: ${currentVideoIndex} (out of ${videoUrls.length} total videos) on Performers tab.`);
          } else if (isMarkersTab) {
             //   console.log(`Starting slideshow with a random marker preview at index: ${currentVideoIndex} (out of ${videoUrls.length} total videos) on Markers tab.`);
          } else if (isScenesTab) {
