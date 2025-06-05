@@ -2,981 +2,734 @@
 (function () {
   const csLib = window.csLib;
 
-  // Generic function to handle thumbnail preview logic for different entity types
-  const handleThumbLogic = async (containerElement, entityType) => {
-    // console.log(`PathElementListener triggered for /${entityType}. Found item-list-container:`, containerElement);
-
-    // Configuration for different entity types
-    const config = {
-      studios: {
-        cardSelector: 'div.studio-card',
-        headerSelector: 'a.studio-card-header',
-        urlPattern: '/studios/',
-        graphqlFilter: 'studios'
-      },
-      tags: {
-        cardSelector: 'div.tag-card',
-        headerSelector: 'a.tag-card-header',
-        urlPattern: '/tags/',
-        graphqlFilter: 'tags'
-      },
-      performers: {
-        cardSelector: 'div.performer-card',
-        headerSelector: 'div.thumbnail-section > a',
-        urlPattern: '/performers/',
-        graphqlFilter: 'performers'
-      },
-      groups: {
-        cardSelector: 'div.group-card',
-        headerSelector: 'a.group-card-header',
-        urlPattern: '/groups/',
-        graphqlFilter: 'groups'
-      }
-    };
-
-    const currentConfig = config[entityType];
-    if (!currentConfig) {
-      // console.error(`Unsupported entity type: ${entityType}`);
-      return;
+  // Entity type configurations
+  const CONFIG = {
+    studios: {
+      cardSelector: 'div.studio-card',
+      headerSelector: 'a.studio-card-header',
+      urlPattern: '/studios/',
+      graphqlFilter: 'studios'
+    },
+    tags: {
+      cardSelector: 'div.tag-card',
+      headerSelector: 'a.tag-card-header',
+      urlPattern: '/tags/',
+      graphqlFilter: 'tags'
+    },
+    performers: {
+      cardSelector: 'div.performer-card',
+      headerSelector: 'div.thumbnail-section > a',
+      urlPattern: '/performers/',
+      graphqlFilter: 'performers'
+    },
+    groups: {
+      cardSelector: 'div.group-card',
+      headerSelector: 'a.group-card-header',
+      urlPattern: '/groups/',
+      graphqlFilter: 'groups'
     }
+  };
 
-    // Function to process a single card element
-    const processCard = async (cardElement) => {
-      // Check if this card has already been processed
-      if (cardElement.dataset[`${entityType}CardProcessed`]) {
-        // console.log(`${entityType} card already processed, skipping:`, cardElement);
-        return;
+  // GraphQL queries
+  const QUERIES = {
+    entityScenes: `
+      query FindSceneForEntityThumbnail($entityId: ID!) {
+        findScenes(scene_filter: { FILTER_PLACEHOLDER: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          scenes {
+            id
+            paths {
+              preview
+            }
+          }
+        }
       }
-      // Mark this card as processed
-      cardElement.dataset[`${entityType}CardProcessed`] = "true";
-
-      // console.log(`processCard entered with element:`, cardElement);
-      // console.log(`Processing ${entityType} card:`, cardElement);
-
-      // Find the thumbnail section
-      const thumbnailSection = cardElement.querySelector('div.thumbnail-section');
-      if (!thumbnailSection) {
-        // console.warn(`Thumbnail section not found for ${entityType} card:`, cardElement);
-        return;
+    `,
+    entityRandomThumbnail: `
+      query FindRandomSceneForThumbnail($entityId: ID!) {
+        findScenes(
+          scene_filter: { FILTER_PLACEHOLDER: { value: [$entityId], modifier: INCLUDES_ALL } }
+        ) {
+          scenes {
+            id
+            paths {
+              screenshot
+            }
+          }
+          count
+        }
       }
-
-      // Find the existing image thumbnail (assuming it has a specific class like .studio-card-image or is the only img)
-      const existingImage = thumbnailSection.querySelector(`img.${entityType.slice(0, -1)}-card-image`) || thumbnailSection.querySelector('img');
-
-      if (!existingImage) {
-          // console.warn(`Existing image thumbnail not found for ${entityType} card:`, cardElement);
-          return;
+    `,
+    tagScreenshots: `
+      query FindRandomScreenshotForTagDefaultThumbnail($entityId: ID!) {
+        findSceneMarkers(scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          scene_markers {
+            id
+            screenshot
+          }
+        }
+        findScenes(scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          scenes {
+            id
+            paths {
+              screenshot
+            }
+          }
+        }
       }
+    `,
+    tagPreviews: `
+      query FindSceneMarkersAndScenesForTagThumbnail($entityId: ID!) {
+        findSceneMarkers(scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          scene_markers {
+            id
+            stream
+            screenshot
+            scene {
+              id
+            }
+          }
+        }
+        findScenes(scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          scenes {
+            id
+            paths {
+              preview
+            }
+          }
+        }
+      }
+    `,
+    tagPerformers: `
+      query GetTagPerformersForPreview($entityId: ID!) {
+        findPerformers(performer_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          performers {
+            id
+          }
+        }
+      }
+    `,
+    tagPerformersWithImages: `
+      query GetTagPerformersWithImages($entityId: ID!) {
+        findPerformers(performer_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          performers {
+            id
+            image_path
+          }
+        }
+      }
+    `,
+    performerScenes: `
+      query GetPerformerScenesForPreview($performerIds: [ID!]!) {
+        findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
+          scenes {
+            id
+            paths {
+              preview
+            }
+          }
+        }
+      }
+    `,
+    performerScreenshots: `
+      query GetPerformerScenesForScreenshot($performerIds: [ID!]!) {
+        findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
+          scenes {
+            id
+            paths {
+              screenshot
+            }
+          }
+        }
+      }
+    `
+  };
 
-      // console.log("Found existing image thumbnail:", existingImage);
+  // Helper functions
+  const helpers = {
+    // Shuffle array using Fisher-Yates algorithm
+    shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    },
 
-      // Add initial styles for smooth transition
-      existingImage.style.transition = 'opacity 0.3s ease-in-out'; // Added transition
-      existingImage.style.opacity = '1'; // Ensure initial opacity is 1
-
-      // Extract Entity ID from the card.
-      let entityId = cardElement.dataset.entityId || cardElement.querySelector(`a[href^="${currentConfig.urlPattern}"]`)?.href.match(new RegExp(`${currentConfig.urlPattern.replace('/', '\\/')}([^\\/]+)`))?.[1];
-
-      // Ensure only the numerical ID is captured, removing any URL parameters
+    // Extract entity ID from card element
+    getEntityId(cardElement, urlPattern) {
+      let entityId = cardElement.dataset.entityId || 
+                     cardElement.querySelector(`a[href^="${urlPattern}"]`)?.href.match(new RegExp(`${urlPattern.replace('/', '\\/')}([^\\/]+)`))?.[1];
+      
       if (entityId) {
-          const paramIndex = entityId.indexOf('?');
-          if (paramIndex !== -1) {
-              entityId = entityId.substring(0, paramIndex);
-              // console.log(`Stripped parameters from entityId: ${entityId}`);
-          }
+        const paramIndex = entityId.indexOf('?');
+        if (paramIndex !== -1) {
+          entityId = entityId.substring(0, paramIndex);
+        }
       }
+      
+      return entityId;
+    },
 
-      if (!entityId) {
-        // console.warn(`${entityType} ID not found for card:`, cardElement);
-        return;
-      }
-
-      // console.log(`Found ${entityType} ID:`, entityId);
-
-      // Store state on the thumbnail section or card element
-      let defaultImageUrl = null;
-      let previewUrls = [];
-      let videoElement = null;
-      let isFetching = false; // Flag to prevent multiple fetch requests
-      let currentVideoIndex = 0; // Added variable to track current video index
-      let isMouseLeaving = false; // Added variable to track mouse leave state
-      let hasSuccessfulVideo = false; // Flag to track if any video successfully loaded
-
-      // Variable to store the random scene thumbnail URL for default thumbnails
-      let randomSceneThumbnailUrl = null;
-
-      // Check if the existing image is the default thumbnail
+    // Check if image is a default thumbnail
+    isDefaultThumbnail(imgElement) {
       try {
-          const imageUrl = new URL(existingImage.src);
-          if (imageUrl.searchParams.get('default') === 'true') {
-              defaultImageUrl = existingImage.src;
-              // console.log("Identified default thumbnail URL:", defaultImageUrl);
-          }
+        const imageUrl = new URL(imgElement.src);
+        return imageUrl.searchParams.get('default') === 'true';
       } catch (e) {
-          // console.warn("Could not parse image URL to check for default param:", existingImage.src, e);
+        return false;
       }
-
-      // If it's a default thumbnail, immediately fetch a random scene thumbnail and replace the image src
-      if (defaultImageUrl) {
-          // This fetching logic is similar to the mouseenter, but runs immediately for default thumbnails
-          if (entityType === 'tags') {
-              const randomThumbnailQuery = `
-                query FindRandomScreenshotForTagDefaultThumbnail($entityId: ID!) {
-                  findSceneMarkers(scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                    scene_markers {
-                      id
-                      screenshot
-                    }
-                  }
-                  findScenes(scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                    scenes {
-                      id
-                      paths {
-                        screenshot
-                      }
-                    }
-                  }
-                }
-              `;
-
-              csLib.callGQL({ query: randomThumbnailQuery, variables: { entityId } }).then(response => {
-                  let screenshotUrls = [];
-
-                  const markerScreenshots = response?.findSceneMarkers?.scene_markers
-                      ?.map(marker => marker?.screenshot)
-                      ?.filter(url => url) || [];
-
-                  const sceneScreenshots = response?.findScenes?.scenes
-                      ?.map(scene => scene?.paths?.screenshot)
-                      ?.filter(url => url) || [];
-
-                  // Combine all screenshot URLs
-                  screenshotUrls = [...markerScreenshots, ...sceneScreenshots];
-
-                  // Also get performer scenes for tags
-                  const performersQuery = `
-                    query GetTagPerformersForScreenshot($entityId: ID!) {
-                      findPerformers(performer_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                        performers {
-                          id
-                        }
-                      }
-                    }
-                  `;
-                  
-                  csLib.callGQL({ query: performersQuery, variables: { entityId } }).then(performersResponse => {
-                      const performerIds = performersResponse?.findPerformers?.performers?.map(p => p.id) || [];
-                      
-                      if (performerIds.length > 0) {
-                          const performerScenesQuery = `
-                            query GetPerformerScenesForScreenshot($performerIds: [ID!]!) {
-                              findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
-                                scenes {
-                                  id
-                                  paths {
-                                    screenshot
-                                  }
-                                }
-                              }
-                            }
-                          `;
-                          
-                          csLib.callGQL({ query: performerScenesQuery, variables: { performerIds: performerIds } }).then(performerScenesResponse => {
-                              const performerSceneScreenshots = performerScenesResponse?.findScenes?.scenes
-                                  ?.map(scene => scene?.paths?.screenshot)
-                                  ?.filter(url => url) || [];
-                              
-                              // Combine all screenshot URLs including performer scenes
-                              const allScreenshotUrls = [...screenshotUrls, ...performerSceneScreenshots];
-                              
-                              if (allScreenshotUrls.length > 0) {
-                                  // Shuffle the combined array of screenshot URLs
-                                  for (let i = allScreenshotUrls.length - 1; i > 0; i--) {
-                                      const j = Math.floor(Math.random() * (i + 1));
-                                      [allScreenshotUrls[i], allScreenshotUrls[j]] = [allScreenshotUrls[j], allScreenshotUrls[i]];
-                                  }
-
-                                  randomSceneThumbnailUrl = allScreenshotUrls[0];
-                                  if (randomSceneThumbnailUrl) {
-                                      existingImage.src = randomSceneThumbnailUrl;
-                                  }
-                              }
-                          }).catch(error => {
-                              // Fallback to original screenshots if performer scenes fail
-                              if (screenshotUrls.length > 0) {
-                                  for (let i = screenshotUrls.length - 1; i > 0; i--) {
-                                      const j = Math.floor(Math.random() * (i + 1));
-                                      [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]];
-                                  }
-                                  randomSceneThumbnailUrl = screenshotUrls[0];
-                                  if (randomSceneThumbnailUrl) {
-                                      existingImage.src = randomSceneThumbnailUrl;
-                                  }
-                              }
-                          });
-                      } else {
-                          // No performers, use original logic
-                          if (screenshotUrls.length > 0) {
-                              for (let i = screenshotUrls.length - 1; i > 0; i--) {
-                                  const j = Math.floor(Math.random() * (i + 1));
-                                  [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]];
-                              }
-                              randomSceneThumbnailUrl = screenshotUrls[0];
-                              if (randomSceneThumbnailUrl) {
-                                  existingImage.src = randomSceneThumbnailUrl;
-                              }
-                          }
-                      }
-                  }).catch(error => {
-                      // Fallback to original logic
-                      if (screenshotUrls.length > 0) {
-                          for (let i = screenshotUrls.length - 1; i > 0; i--) {
-                              const j = Math.floor(Math.random() * (i + 1));
-                              [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]];
-                          }
-                          randomSceneThumbnailUrl = screenshotUrls[0];
-                          if (randomSceneThumbnailUrl) {
-                              existingImage.src = randomSceneThumbnailUrl;
-                          }
-                      }
-                  });
-              }).catch(error => {
-                  // console.error("Error fetching random screenshot for default thumbnail:", error);
-                  randomSceneThumbnailUrl = null; // Reset URL on error
-              }).finally(() => {
-                  isFetching = false; // Allow fetching again if needed
-              });
-          } else {
-              // For other entity types, use scenes (existing logic)
-              const randomQuery = `
-                  query FindRandomSceneForThumbnail($entityId: ID!) {
-                    findScenes(
-                      scene_filter: { ${currentConfig.graphqlFilter}: { value: [$entityId], modifier: INCLUDES_ALL } }
-                    ) {
-                      scenes {
-                        id
-                        paths {
-                          screenshot
-                        }
-                      }
-                      # Request total count to know if there are any scenes, though not strictly needed for this logic
-                      count
-                    }
-                  }
-              `;
-
-              csLib.callGQL({ query: randomQuery, variables: { entityId } }).then(response => {
-                  const scenes = response?.findScenes?.scenes;
-
-                  if (scenes && scenes.length > 0) {
-                      // Shuffle the array of scenes
-                      for (let i = scenes.length - 1; i > 0; i--) {
-                          const j = Math.floor(Math.random() * (i + 1));
-                          [scenes[i], scenes[j]] = [scenes[j], scenes[i]]; // Swap elements
-                      }
-                      // console.log(`Shuffled scenes for default thumbnail:`, scenes);
-
-                      // Get the screenshot from the first scene in the shuffled array
-                      randomSceneThumbnailUrl = scenes[0]?.paths?.screenshot;
-
-                      if (randomSceneThumbnailUrl) {
-                          // console.log(`Found random scene thumbnail URL on load, replacing default:`, randomSceneThumbnailUrl);
-                          // Replace the existing image thumbnail source
-                          existingImage.src = randomSceneThumbnailUrl;
-                      } else {
-                          // console.log(`First shuffled scene has no screenshot path.`, entityId);
-                      }
-                  } else {
-                      // console.log(`No random scene thumbnail found on load for this ${entityType}.`, entityId);
-                  }
-              }).catch(error => {
-                  // console.error("Error fetching random scene thumbnail on load:", error);
-              });
-          }
-      }
-
-      // Add mouse enter/leave listeners to the thumbnail section
-      cardElement.addEventListener('mouseenter', async () => {
-          // console.log(`Mouse entered thumbnail section for ${entityType}:`, entityId);
-          isMouseLeaving = false; // Reset flag on mouse enter
-
-          // If a video element already exists from a previous hover, remove it
-          if (videoElement) {
-              // console.log(`Removing existing video element on mouse enter.`, entityId);
-              if (videoElement.parentElement) {
-                  videoElement.parentElement.removeChild(videoElement);
-              }
-              videoElement = null; // Clear the reference
-          }
-
-          // If video URL hasn't been fetched yet and not currently fetching
-          if (!previewUrls.length && !isFetching) {
-              isFetching = true;
-              // console.log(`Fetching preview URLs for ${entityType}:`, entityId);
-              
-              let query, queryName, urlPath;
-              
-              if (entityType === 'tags') {
-                  // For tags, get both scene markers and scenes
-                  query = `
-                    query FindSceneMarkersAndScenesForTagThumbnail($entityId: ID!) {
-                      findSceneMarkers(scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                        scene_markers {
-                          id
-                          stream
-                          screenshot
-                          scene {
-                            id
-                          }
-                        }
-                      }
-                      findScenes(scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                        scenes {
-                          id
-                          paths {
-                            preview
-                          }
-                        }
-                      }
-                    }
-                  `;
-                  queryName = 'combined';
-                  urlPath = 'combined';
-              } else {
-                  // For other entity types, use scenes
-                  query = `
-                    query FindSceneForEntityThumbnail($entityId: ID!) {
-                      findScenes(scene_filter: { ${currentConfig.graphqlFilter}: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                        scenes {
-                          id
-                          paths {
-                            preview
-                          }
-                        }
-                      }
-                    }
-                  `;
-                  queryName = 'findScenes';
-                  urlPath = 'scenes';
-              }
-
-              try {
-                const response = await csLib.callGQL({ query, variables: { entityId } });
-                // console.log(`GraphQL Response for ${entityType} thumbnail on hover:`, response);
-                
-                if (entityType === 'tags') {
-                    // Extract stream URLs from markers and preview URLs from scenes, combine them
-                    const markerUrls = response?.findSceneMarkers?.scene_markers
-                      ?.map(marker => marker?.stream)
-                      ?.filter(url => url) || [];
-                    
-                    const sceneUrls = response?.findScenes?.scenes
-                      ?.map(scene => scene?.paths?.preview)
-                      ?.filter(url => url) || [];
-                    
-                    // Combine all URLs into a single array
-                    previewUrls = [...markerUrls, ...sceneUrls];
-
-                    // Also get performer scenes for tags
-                    const performersQuery = `
-                      query GetTagPerformersForPreview($entityId: ID!) {
-                        findPerformers(performer_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                          performers {
-                            id
-                          }
-                        }
-                      }
-                    `;
-                    
-                    csLib.callGQL({ query: performersQuery, variables: { entityId } }).then(performersResponse => {
-                        const performerIds = performersResponse?.findPerformers?.performers?.map(p => p.id) || [];
-                        
-                        if (performerIds.length > 0) {
-                            const performerScenesQuery = `
-                              query GetPerformerScenesForPreview($performerIds: [ID!]!) {
-                                findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
-                                  scenes {
-                                    id
-                                    paths {
-                                      preview
-                                    }
-                                  }
-                                }
-                              }
-                            `;
-                            
-                            csLib.callGQL({ query: performerScenesQuery, variables: { performerIds: performerIds } }).then(performerScenesResponse => {
-                                const performerScenePreviews = performerScenesResponse?.findScenes?.scenes
-                                    ?.map(scene => scene?.paths?.preview)
-                                    ?.filter(url => url) || [];
-                                
-                                // Combine all preview URLs including performer scenes
-                                previewUrls = [...previewUrls, ...performerScenePreviews];
-                                
-                                // Shuffle the combined array
-                                for (let i = previewUrls.length - 1; i > 0; i--) {
-                                    const j = Math.floor(Math.random() * (i + 1));
-                                    [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
-                                }
-                                
-                                // Continue with video creation logic
-                                createVideoElement();
-                            }).catch(error => {
-                                // Fallback to original URLs if performer scenes fail
-                                // Shuffle the array
-                                for (let i = previewUrls.length - 1; i > 0; i--) {
-                                    const j = Math.floor(Math.random() * (i + 1));
-                                    [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
-                                }
-                                
-                                // Continue with video creation logic
-                                createVideoElement();
-                            });
-                        } else {
-                            // No performers, use original logic
-                            // Shuffle the array
-                            for (let i = previewUrls.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
-                            }
-                            
-                            // Continue with video creation logic
-                            createVideoElement();
-                        }
-                    }).catch(error => {
-                        // Fallback to original logic
-                        // Shuffle the array
-                        for (let i = previewUrls.length - 1; i > 0; i--) {
-                            const j = Math.floor(Math.random() * (i + 1));
-                            [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]];
-                        }
-                        
-                        // Continue with video creation logic
-                        createVideoElement();
-                    });
-
-                    // Define video creation function
-                    function createVideoElement() {
-                        if (previewUrls.length > 0) {
-                            // console.log("Found preview URLs on hover:", previewUrls);
-                            // Create video element now that we have the URLs
-                            videoElement = document.createElement('video');
-                            currentVideoIndex = 0; // Start with the first video
-                            videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Use the first URL
-                            videoElement.loop = false; // Change loop to false to allow 'ended' event
-                            videoElement.muted = true;
-                            videoElement.playsInline = true;
-
-                            // Add ended listener for sequential playback
-                            videoElement.addEventListener('ended', () => {
-                                // console.log(`Video ended, moving to next for ${entityType}:`, entityId);
-                                
-                                // Fade out the current video
-                                videoElement.style.opacity = '0';
-
-                                // Wait for the fade-out transition to complete before loading/playing the next video
-                                setTimeout(() => {
-                                    currentVideoIndex = (currentVideoIndex + 1) % previewUrls.length; // Calculate next index, looping back
-                                    videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Set new source
-                                    videoElement.load(); // Load the new video
-                                    
-                                    // After loading, fade in and play the next video
-                                    videoElement.style.opacity = '1'; // Fade in the next video
-                                    videoElement.play().catch(e => console.warn("Video play failed after ended:", e)); // Play next video
-                                }, 300); // Match the CSS transition duration (0.3s)
-                            });
-
-                            // Copy classes from the original image element to the video element
-                            videoElement.className = existingImage.className;
-                            // console.log("Copied classes from image to video:", videoElement.className);
-
-                            // Styling for smooth transition (initially hidden and transparent)
-                            videoElement.style.transition = 'opacity 0.3s ease-in-out'; // Added transition
-                            videoElement.style.opacity = '0'; // Initially transparent
-                            videoElement.style.display = 'none'; // Initially hidden
-
-                            // Add load success handler to track successful video loads
-                            videoElement.onloadeddata = () => {
-                                // console.log(`Video successfully loaded: ${videoElement.src} for ${entityType}: ${entityId}`);
-                                hasSuccessfulVideo = true; // Mark that at least one video was successful
-
-                                // Now that video data is loaded, hide the image and show the video
-                                existingImage.style.display = 'none';
-                                videoElement.style.display = ''; // Show the video
-
-                                // Start fading in the video after display is set
-                                 setTimeout(() => {
-                                    // Check if mouse has left the card during the timeout
-                                    if (isMouseLeaving) {
-                                        // console.log(`Mouse left during video display timeout, reverting to image.`, entityId);
-                                        // Revert to image state
-                                        if (videoElement) {
-                                            videoElement.pause();
-                                            videoElement.style.display = 'none';
-                                            videoElement.style.opacity = '0';
-                                            // console.log(`Immediately hid video on mouse leave during display timeout.`, entityId);
-                                        }
-                                        existingImage.style.display = '';
-                                        existingImage.style.opacity = '1';
-                                        return; // Exit this timeout callback
-                                    }
-                                    videoElement.style.opacity = '1'; // Fade in the video
-                                    videoElement.play().catch(e => {
-                                        console.warn("Video play failed after loadeddata:", e);
-                                        // If play fails and no video has been successful (shouldn't happen if loadeddata fired, but as a safeguard)
-                                        if (!hasSuccessfulVideo) {
-                                            // console.log(`Video play failed after loadeddata and no successful video loaded, reverting to image.`, entityId);
-                                            videoElement.style.display = 'none';
-                                            videoElement.style.opacity = '0';
-                                            existingImage.style.display = '';
-                                            existingImage.style.opacity = '1';
-                                        }
-                                    });
-                                 }, 50); // Small delay to allow display change
-                            };
-
-                            // Add error handling
-                            videoElement.onerror = () => {
-                                // console.warn(`Error loading video from URL: ${videoElement.src} for ${entityType}: ${entityId}. Trying next URL.`);
-
-                                // Move to the next video index
-                                currentVideoIndex++;
-
-                                // Check if there is a next video URL
-                                if (currentVideoIndex < previewUrls.length) {
-                                    // Load and try to play the next video
-                                    videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Set new source
-                                    videoElement.load(); // Load the new video
-                                    videoElement.play().catch(e => console.warn("Video play failed after error:", e)); // Try playing
-                                    // console.log(`Attempting to load next video: ${videoElement.src}`);
-                                } else {
-                                    // No more videos in the list, revert to image immediately
-                                    // console.log(`No more preview URLs to try. Reverting to image immediately.`, entityId);
-                                    hasSuccessfulVideo = false; // Mark that no video was successful
-                                    
-                                    // Show the image immediately
-                                    existingImage.style.display = '';
-                                    existingImage.style.opacity = '1';
-
-                                    // Remove the failed video element from the DOM after a short delay for potential fade-out
-                                    if (videoElement && videoElement.parentElement) {
-                                         videoElement.style.opacity = '0'; // Start fade out video
-                                         setTimeout(() => {
-                                             if (videoElement && videoElement.parentElement) {
-                                                 videoElement.parentElement.removeChild(videoElement);
-                                                 videoElement = null; // Clear reference
-                                                 // console.log("Removed failed video element from thumbnail after trying all.");
-                                             }
-                                         }, 300); // Match fade out transition
-                                    }
-                                }
-                            };
-
-                            // Find the card header link
-                            const cardHeaderLink = cardElement.querySelector(currentConfig.headerSelector);
-                            if (cardHeaderLink) {
-                                // Append video element as a child of the header link
-                                cardHeaderLink.appendChild(videoElement);
-                                // console.log(`Appended video element to ${currentConfig.headerSelector} link (initially hidden).`);
-                            } else {
-                                // console.warn(`${currentConfig.headerSelector} link not found, cannot append video element.`);
-                                // Fallback or error handling if header link is not found
-                                // For now, we'll just log a warning and the video won't be appended
-                            }
-
-                        } else {
-                            // console.log(`No preview video found for this ${entityType} on hover.`);
-                            // Maybe show a placeholder or do nothing
-                        }
-                    }
-
-                    // Remove the fallback logic since we're now getting both in one query
-                } else {
-                    // Extract preview URLs from the scenes for other entity types
-                    previewUrls = response?.[queryName]?.[urlPath]
-                      ?.map(scene => scene?.paths?.preview)
-                      ?.filter(url => url);
-                }
-
-                if (previewUrls.length > 0) {
-                  // For non-tags, shuffle the array of preview URLs
-                  if (entityType !== 'tags') {
-                      for (let i = previewUrls.length - 1; i > 0; i--) {
-                          const j = Math.floor(Math.random() * (i + 1));
-                          [previewUrls[i], previewUrls[j]] = [previewUrls[j], previewUrls[i]]; // Swap elements
-                      }
-                      // console.log("Shuffled preview URLs:", previewUrls);
-                  }
-                  // console.log("Found preview URLs on hover:", previewUrls);
-                  // Create video element now that we have the URLs
-                  videoElement = document.createElement('video');
-                  currentVideoIndex = 0; // Start with the first video
-                  videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Use the first URL
-                  videoElement.loop = false; // Change loop to false to allow 'ended' event
-                  videoElement.muted = true;
-                  videoElement.playsInline = true;
-
-                  // Add ended listener for sequential playback
-                  videoElement.addEventListener('ended', () => {
-                      // console.log(`Video ended, moving to next for ${entityType}:`, entityId);
-                      
-                      // Fade out the current video
-                      videoElement.style.opacity = '0';
-
-                      // Wait for the fade-out transition to complete before loading/playing the next video
-                      setTimeout(() => {
-                          currentVideoIndex = (currentVideoIndex + 1) % previewUrls.length; // Calculate next index, looping back
-                          videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Set new source
-                          videoElement.load(); // Load the new video
-                          
-                          // After loading, fade in and play the next video
-                          videoElement.style.opacity = '1'; // Fade in the next video
-                          videoElement.play().catch(e => console.warn("Video play failed after ended:", e)); // Play next video
-                      }, 300); // Match the CSS transition duration (0.3s)
-                  });
-
-                  // Copy classes from the original image element to the video element
-                  videoElement.className = existingImage.className;
-                  // console.log("Copied classes from image to video:", videoElement.className);
-
-                  // Styling for smooth transition (initially hidden and transparent)
-                  videoElement.style.transition = 'opacity 0.3s ease-in-out'; // Added transition
-                  videoElement.style.opacity = '0'; // Initially transparent
-                  videoElement.style.display = 'none'; // Initially hidden
-
-                  // Add load success handler to track successful video loads
-                  videoElement.onloadeddata = () => {
-                      // console.log(`Video successfully loaded: ${videoElement.src} for ${entityType}: ${entityId}`);
-                      hasSuccessfulVideo = true; // Mark that at least one video was successful
-
-                      // Now that video data is loaded, hide the image and show the video
-                      existingImage.style.display = 'none';
-                      videoElement.style.display = ''; // Show the video
-
-                      // Start fading in the video after display is set
-                       setTimeout(() => {
-                          // Check if mouse has left the card during the timeout
-                          if (isMouseLeaving) {
-                              // console.log(`Mouse left during video display timeout, reverting to image.`, entityId);
-                              // Revert to image state
-                              if (videoElement) {
-                                  videoElement.pause();
-                                  videoElement.style.display = 'none';
-                                  videoElement.style.opacity = '0';
-                                  // console.log(`Immediately hid video on mouse leave during display timeout.`, entityId);
-                              }
-                              existingImage.style.display = '';
-                              existingImage.style.opacity = '1';
-                              return; // Exit this timeout callback
-                          }
-                          videoElement.style.opacity = '1'; // Fade in the video
-                          videoElement.play().catch(e => {
-                              console.warn("Video play failed after loadeddata:", e);
-                              // If play fails and no video has been successful (shouldn't happen if loadeddata fired, but as a safeguard)
-                              if (!hasSuccessfulVideo) {
-                                  // console.log(`Video play failed after loadeddata and no successful video loaded, reverting to image.`, entityId);
-                                  videoElement.style.display = 'none';
-                                  videoElement.style.opacity = '0';
-                                  existingImage.style.display = '';
-                                  existingImage.style.opacity = '1';
-                              }
-                          });
-                       }, 50); // Small delay to allow display change
-                  };
-
-                  // Add error handling
-                  videoElement.onerror = () => {
-                      // console.warn(`Error loading video from URL: ${videoElement.src} for ${entityType}: ${entityId}. Trying next URL.`);
-
-                      // Move to the next video index
-                      currentVideoIndex++;
-
-                      // Check if there is a next video URL
-                      if (currentVideoIndex < previewUrls.length) {
-                          // Load and try to play the next video
-                          videoElement.src = `${previewUrls[currentVideoIndex]}?_ts=${Date.now()}`; // Set new source
-                          videoElement.load(); // Load the new video
-                          videoElement.play().catch(e => console.warn("Video play failed after error:", e)); // Try playing
-                          // console.log(`Attempting to load next video: ${videoElement.src}`);
-                      } else {
-                          // No more videos in the list, revert to image immediately
-                          // console.log(`No more preview URLs to try. Reverting to image immediately.`, entityId);
-                          hasSuccessfulVideo = false; // Mark that no video was successful
-                          
-                          // Show the image immediately
-                          existingImage.style.display = '';
-                          existingImage.style.opacity = '1';
-
-                          // Remove the failed video element from the DOM after a short delay for potential fade-out
-                          if (videoElement && videoElement.parentElement) {
-                               videoElement.style.opacity = '0'; // Start fade out video
-                               setTimeout(() => {
-                                   if (videoElement && videoElement.parentElement) {
-                                       videoElement.parentElement.removeChild(videoElement);
-                                       videoElement = null; // Clear reference
-                                       // console.log("Removed failed video element from thumbnail after trying all.");
-                                   }
-                               }, 300); // Match fade out transition
-                          }
-                      }
-                  };
-
-                  // Find the card header link
-                  const cardHeaderLink = cardElement.querySelector(currentConfig.headerSelector);
-                  if (cardHeaderLink) {
-                      // Append video element as a child of the header link
-                      cardHeaderLink.appendChild(videoElement);
-                      // console.log(`Appended video element to ${currentConfig.headerSelector} link (initially hidden).`);
-                  } else {
-                      // console.warn(`${currentConfig.headerSelector} link not found, cannot append video element.`);
-                      // Fallback or error handling if header link is not found
-                      // For now, we'll just log a warning and the video won't be appended
-                  }
-
-                } else {
-                  // console.log(`No preview video found for this ${entityType} on hover.`);
-                  // Maybe show a placeholder or do nothing
-                }
-
-              } catch (error) {
-                // console.error(`Error fetching scene for ${entityType} thumbnail on hover:`, error);
-                previewUrls = []; // Reset URLs on error
-              } finally {
-                  isFetching = false; // Allow fetching again if needed (though unlikely with this logic)
-              }
-          }
-
-          // If it's a default thumbnail and we haven't fetched a random scene thumbnail yet
-          if (defaultImageUrl && !randomSceneThumbnailUrl && !isFetching) {
-              isFetching = true;
-              // console.log(`Fetching random scene or marker screenshot for default ${entityType} thumbnail:`, entityId);
-
-              let randomThumbnailQuery;
-
-              if (entityType === 'tags') {
-                   // For tags, get both scene markers and scenes
-                  randomThumbnailQuery = `
-                      query FindRandomScreenshotForTagDefaultThumbnail($entityId: ID!) {
-                        findSceneMarkers(scene_marker_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                          scene_markers {
-                            id
-                            screenshot
-                          }
-                        }
-                        findScenes(scene_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-                          scenes {
-                            id
-                            paths {
-                              screenshot
-                            }
-                          }
-                        }
-                      }
-                  `;
-              } else {
-                   // For other entity types, use scenes (existing logic)
-                   randomThumbnailQuery = `
-                      query FindRandomSceneForThumbnail($entityId: ID!) {
-                        findScenes(
-                          scene_filter: { ${currentConfig.graphqlFilter}: { value: [$entityId], modifier: INCLUDES_ALL } }
-                        ) {
-                          scenes {
-                            id
-                            paths {
-                              screenshot
-                            }
-                          }
-                        }
-                        # Request total count to know if there are any scenes, though not strictly needed for this logic
-                        count
-                      }
-                  `;
-              }
-
-              try {
-                  const response = await csLib.callGQL({ query: randomThumbnailQuery, variables: { entityId } });
-                  // console.log("GraphQL Response for random thumbnail:", response);
-
-                  let screenshotUrls = [];
-
-                  if (entityType === 'tags') {
-                      const markerScreenshots = response?.findSceneMarkers?.scene_markers
-                          ?.map(marker => marker?.screenshot)
-                          ?.filter(url => url) || [];
-
-                      const sceneScreenshots = response?.findScenes?.scenes
-                          ?.map(scene => scene?.paths?.screenshot)
-                          ?.filter(url => url) || [];
-
-                      // Combine all screenshot URLs
-                      screenshotUrls = [...markerScreenshots, ...sceneScreenshots];
-
-                  } else {
-                     // For other entity types, use scene screenshots (existing logic)
-                     screenshotUrls = response?.findScenes?.scenes
-                       ?.map(scene => scene?.paths?.screenshot)
-                       ?.filter(url => url) || [];
-                  }
-
-
-                  if (screenshotUrls.length > 0) {
-                       // Shuffle the combined array of screenshot URLs
-                      for (let i = screenshotUrls.length - 1; i > 0; i--) {
-                          const j = Math.floor(Math.random() * (i + 1));
-                          [screenshotUrls[i], screenshotUrls[j]] = [screenshotUrls[j], screenshotUrls[i]]; // Swap elements
-                      }
-
-                      // Pick a random URL from the shuffled array
-                      randomSceneThumbnailUrl = screenshotUrls[0];
-
-                      if (randomSceneThumbnailUrl) {
-                          // console.log("Found random screenshot URL for default thumbnail, replacing default:", randomSceneThumbnailUrl);
-                          // Replace the existing image thumbnail source
-                          existingImage.src = randomSceneThumbnailUrl;
-                      } else {
-                          // This case should ideally not be hit if screenshotUrls.length > 0, but as a safeguard
-                          // console.log(`First shuffled screenshot URL has no screenshot path.`, entityId);
-                      }
-                  } else {
-                      // console.log(`No random screenshot found for this ${entityType}.`, entityId);
-                  }
-              } catch (error) {
-                  // console.error("Error fetching random screenshot for default thumbnail:", error);
-                  randomSceneThumbnailUrl = null; // Reset URL on error
-              } finally {
-                  isFetching = false; // Allow fetching again if needed
-              }
-          }
-
-          // Now that we potentially have the video element, show and play it
-          if (videoElement && previewUrls.length > 0) {
-              // Step 1: Smoothly fade out the image
-              existingImage.style.opacity = '0';
-
-          } else if (previewUrls.length === 0) {
-              // If fetch happened and no URLs were found, ensure image is visible
-              // console.log(`No preview URLs available for this ${entityType}, keeping image visible.`, entityId);
-              existingImage.style.display = ''; // Ensure image is visible
-              existingImage.style.opacity = '1'; // Ensure image is fully opaque
-          }
-      });
-
-      cardElement.addEventListener('mouseleave', () => {
-          // console.log(`Mouse left thumbnail section for ${entityType}:`, entityId);
-          isMouseLeaving = true; // Set flag on mouse leave
-          previewUrls = [];
-          hasSuccessfulVideo = false; // Reset the successful video flag
-          
-          // Step 3 (mouseleave): Hide the video smoothly and show the image smoothly
-          if (videoElement) { // If video element exists
-              videoElement.pause();
-              // Fade out the video smoothly
-              videoElement.style.opacity = '0';
-
-              // Wait for video fade-out transition to complete before removing and showing image
-              setTimeout(() => {
-                  // Remove the video element from the DOM
-                  if (videoElement && videoElement.parentElement) {
-                      videoElement.parentElement.removeChild(videoElement);
-                      // console.log(`Removed video element from DOM on mouse leave.`, entityId);
-                  }
-                  videoElement = null; // Clear the reference
-
-                  // Show the image and fade it in
-                  existingImage.style.display = ''; // Use default display for image
-                   setTimeout(() => {
-                     existingImage.style.opacity = '1'; // Fade in the image
-                   }, 10); // Small delay to allow display change
-
-                  // console.log(`Paused and hiding video, showing image for ${entityType}:`, entityId);
-              }, 300); // Wait for video fade-out duration (0.3s)
-
-          } else {
-              // If no video was shown, just ensure image is visible
-              existingImage.style.display = '';
-              existingImage.style.opacity = '1';
-              // console.log(`No video was shown, ensuring image is visible for ${entityType}:`, entityId);
-          }
-      });
-
-      // Initial state: ensure image is visible and video is not
-      // These initial states are also handled by the style settings above, but keep display here for clarity
-      existingImage.style.display = ''; // Make sure image is visible by default
-      existingImage.style.opacity = '1'; // Ensure image is fully visible initially
-
-      // If a video element somehow exists already, hide and make it transparent
-      const initialVideo = thumbnailSection.querySelector('video');
-      if(initialVideo) {
-          initialVideo.style.display = 'none';
-          initialVideo.style.opacity = '0';
-      }
-
-      // Remove all the custom CSS styles we added previously for positioning, z-index, etc.
-      // These should now be handled by StashApp's original CSS targeting the image class
-      // Keep these removals here to clean up in case they were applied previously
-      thumbnailSection.style.position = ''; // Remove position: relative
+    },
+
+    // Create video element from existing image
+    createVideoElement(existingImage, previewUrl) {
+      const videoElement = document.createElement('video');
+      videoElement.src = `${previewUrl}?_ts=${Date.now()}`;
+      videoElement.loop = false;
+      videoElement.muted = true;
+      videoElement.playsInline = true;
+      
+      // Copy classes from image to video
+      videoElement.className = existingImage.className;
+      
+      // Styling for smooth transition
+      videoElement.style.transition = 'opacity 0.3s ease-in-out';
+      videoElement.style.opacity = '0';
+      videoElement.style.display = 'none';
+      
+      return videoElement;
+    },
+
+    // Clean up any custom styles previously added
+    cleanupCustomStyles(thumbnailSection, cardElement) {
+      // Remove all custom CSS styles added previously
+      thumbnailSection.style.position = '';
       thumbnailSection.style.width = '';
-      thumbnailSection.style.paddingTop = ''; // Remove aspect ratio padding
+      thumbnailSection.style.paddingTop = '';
       thumbnailSection.style.overflow = '';
-
-      // Video element styles (most handled by copied classes)
-      // Remove styles previously set manually if they exist on an initial video element
-       if (initialVideo) {
-           initialVideo.style.position = ''; // Remove position: absolute
-           initialVideo.style.top = '';
-           initialVideo.style.left = '';
-           initialVideo.style.width = '';
-           initialVideo.style.height = '';
-           initialVideo.style.objectFit = '';
-           initialVideo.style.zIndex = ''; // Remove z-index
-           initialVideo.style.pointerEvents = ''; // Remove pointer-events
-       }
-
+      
+      const initialVideo = thumbnailSection.querySelector('video');
+      if (initialVideo) {
+        initialVideo.style.position = '';
+        initialVideo.style.top = '';
+        initialVideo.style.left = '';
+        initialVideo.style.width = '';
+        initialVideo.style.height = '';
+        initialVideo.style.objectFit = '';
+        initialVideo.style.zIndex = '';
+        initialVideo.style.pointerEvents = '';
+      }
+      
       // Remove overlay container z-index
       const overlayContainer = cardElement.querySelector('.card-controls') || cardElement.querySelector('.card-popovers');
       if (overlayContainer) {
-          // console.log("Found overlay container, removing custom z-index.", overlayContainer);
-          overlayContainer.style.zIndex = ''; // Remove custom z-index
-          overlayContainer.style.position = ''; // Remove any custom position we might have added
+        overlayContainer.style.zIndex = '';
+        overlayContainer.style.position = '';
       }
-
+      
       // Remove favorite button z-index and positioning
       const favoriteButton = cardElement.querySelector('.favorite-button');
       if (favoriteButton) {
-          // console.log("Found favorite button, removing custom z-index and position.", favoriteButton);
-          favoriteButton.style.zIndex = ''; // Remove custom z-index
-          favoriteButton.style.position = ''; // Remove any custom position
-          favoriteButton.style.top = '';
-          favoriteButton.style.right = '';
+        favoriteButton.style.zIndex = '';
+        favoriteButton.style.position = '';
+        favoriteButton.style.top = '';
+        favoriteButton.style.right = '';
       }
+    },
+    
+    // Extract screenshots from API response
+    extractScreenshots(response, entityType) {
+      if (entityType === 'tags') {
+        const markerScreenshots = response?.findSceneMarkers?.scene_markers
+          ?.map(marker => marker?.screenshot)
+          ?.filter(url => url) || [];
+          
+        const sceneScreenshots = response?.findScenes?.scenes
+          ?.map(scene => scene?.paths?.screenshot)
+          ?.filter(url => url) || [];
+          
+        return [...markerScreenshots, ...sceneScreenshots];
+      } else {
+        return response?.findScenes?.scenes
+          ?.map(scene => scene?.paths?.screenshot)
+          ?.filter(url => url) || [];
+      }
+    },
+    
+    // Extract preview URLs from API response
+    extractPreviewUrls(response, entityType) {
+      if (entityType === 'tags') {
+        const markerUrls = response?.findSceneMarkers?.scene_markers
+          ?.map(marker => marker?.stream)
+          ?.filter(url => url) || [];
+          
+        const sceneUrls = response?.findScenes?.scenes
+          ?.map(scene => scene?.paths?.preview)
+          ?.filter(url => url) || [];
+          
+        return [...markerUrls, ...sceneUrls];
+      } else {
+        return response?.findScenes?.scenes
+          ?.map(scene => scene?.paths?.preview)
+          ?.filter(url => url) || [];
+      }
+    }
+  };
 
-      // Log the state of the card element after setup
-      // console.log("Card element setup complete:", cardElement);
+  // Class to manage video previews
+  class VideoPreviewManager {
+    constructor(cardElement, existingImage, entityType, entityId, config) {
+      this.cardElement = cardElement;
+      this.existingImage = existingImage;
+      this.entityType = entityType;
+      this.entityId = entityId;
+      this.config = config;
+      
+      this.defaultImageUrl = null;
+      this.randomSceneThumbnailUrl = null;
+      this.previewUrls = [];
+      this.videoElement = null;
+      this.isFetching = false;
+      this.currentVideoIndex = 0;
+      this.isMouseLeaving = false;
+      this.hasSuccessfulVideo = false;
+      this.lastPlayAttemptTime = 0;
+      this.isPlaying = false;
+      
+      this.initialize();
+    }
+    
+    initialize() {
+      // Set up initial image styles
+      this.existingImage.style.transition = 'opacity 0.3s ease-in-out';
+      this.existingImage.style.opacity = '1';
+      
+      // Check if the existing image is the default thumbnail
+      if (helpers.isDefaultThumbnail(this.existingImage)) {
+        this.defaultImageUrl = this.existingImage.src;
+        this.fetchRandomThumbnail();
+      }
+      
+      // Add event listeners
+      this.cardElement.addEventListener('mouseenter', this.handleMouseEnter.bind(this));
+      this.cardElement.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
+    }
+    
+    async handleMouseEnter() {
+      this.isMouseLeaving = false;
+      
+      // Remove existing video element if present
+      if (this.videoElement) {
+        if (this.videoElement.parentElement) {
+          this.videoElement.parentElement.removeChild(this.videoElement);
+        }
+        this.videoElement = null;
+      }
+      
+      // Fetch preview URLs if not already loaded
+      if (!this.previewUrls.length && !this.isFetching) {
+        await this.fetchPreviewUrls();
+      }
+      
+      // Handle default thumbnail if needed
+      if (this.defaultImageUrl && !this.randomSceneThumbnailUrl && !this.isFetching) {
+        await this.fetchRandomThumbnail();
+      }
+      
+      // Show video if we have preview URLs
+      if (this.videoElement && this.previewUrls.length > 0) {
+        this.existingImage.style.opacity = '0';
+      } else if (this.previewUrls.length === 0) {
+        this.existingImage.style.display = '';
+        this.existingImage.style.opacity = '1';
+      }
+    }
+    
+    handleMouseLeave() {
+      this.isMouseLeaving = true;
+      this.previewUrls = [];
+      this.hasSuccessfulVideo = false;
+      this.isPlaying = false;
+      
+      if (this.videoElement) {
+        try {
+          // Only pause if the video is actually playing or has a play request pending
+          if (!this.videoElement.paused || this.lastPlayAttemptTime > 0) {
+            this.videoElement.pause();
+          }
+        } catch (e) {
+          // Ignore any errors from pause
+        }
+        
+        this.videoElement.style.opacity = '0';
+        
+        setTimeout(() => {
+          if (this.videoElement && this.videoElement.parentElement) {
+            this.videoElement.parentElement.removeChild(this.videoElement);
+          }
+          this.videoElement = null;
+          
+          if (this.existingImage) {
+            this.existingImage.style.display = '';
+            setTimeout(() => {
+              if (this.existingImage) {
+                this.existingImage.style.opacity = '1';
+              }
+            }, 10);
+          }
+        }, 300);
+      } else if (this.existingImage) {
+        this.existingImage.style.display = '';
+        this.existingImage.style.opacity = '1';
+      }
+    }
+    
+    async fetchRandomThumbnail() {
+      this.isFetching = true;
+      
+      try {
+        let query;
+        if (this.entityType === 'tags') {
+          query = QUERIES.tagScreenshots;
+        } else {
+          query = QUERIES.entityRandomThumbnail.replace('FILTER_PLACEHOLDER', this.config.graphqlFilter);
+        }
+        
+        const response = await csLib.callGQL({ query, variables: { entityId: this.entityId } });
+        let screenshotUrls = helpers.extractScreenshots(response, this.entityType);
+        
+        // For tags, try to get performer images first if it's a default thumbnail
+        if (this.entityType === 'tags') {
+          try {
+            // Get performers with images for this tag
+            const performersWithImagesResponse = await csLib.callGQL({ 
+              query: QUERIES.tagPerformersWithImages, 
+              variables: { entityId: this.entityId } 
+            });
+            
+            const performers = performersWithImagesResponse?.findPerformers?.performers || [];
+            const performerIds = performers.map(p => p.id);
+            
+            // Extract performer image paths
+            const performerImagePaths = performers
+              .map(p => p.image_path)
+              .filter(path => path && !path.includes('?default=true'));
+              
+            // If we found performer images and this is a default thumbnail, use them
+            if (performerImagePaths.length > 0 && this.defaultImageUrl) {
+              performerImagePaths.sort(() => Math.random() - 0.5); // Shuffle image paths
+              this.randomSceneThumbnailUrl = performerImagePaths[0];
+              
+              if (this.randomSceneThumbnailUrl) {
+                this.existingImage.src = this.randomSceneThumbnailUrl;
+                this.isFetching = false;
+                return; // Early return as we've found and used a performer image
+              }
+            }
+            
+            // If we have performers but no performer images (or all are default), try to get their scene screenshots
+            if (performerIds.length > 0) {
+              const performerScenesResponse = await csLib.callGQL({ 
+                query: QUERIES.performerScreenshots, 
+                variables: { performerIds } 
+              });
+              
+              const performerSceneScreenshots = performerScenesResponse?.findScenes?.scenes
+                ?.map(scene => scene?.paths?.screenshot)
+                ?.filter(url => url) || [];
+              
+              // If we have performer scene screenshots and this is a default thumbnail with no content
+              if (performerSceneScreenshots.length > 0 && this.defaultImageUrl && screenshotUrls.length === 0) {
+                const shuffledScreenshots = helpers.shuffleArray([...performerSceneScreenshots]);
+                this.randomSceneThumbnailUrl = shuffledScreenshots[0];
+                
+                if (this.randomSceneThumbnailUrl) {
+                  this.existingImage.src = this.randomSceneThumbnailUrl;
+                  this.isFetching = false;
+                  return; // Early return as we've found and used a performer's scene screenshot
+                }
+              }
+              
+              // Add performer scene screenshots to the existing list
+              screenshotUrls = [...screenshotUrls, ...performerSceneScreenshots];
+            }
+          } catch (error) {
+            // Fallback to original screenshots if performer queries fail
+          }
+        }
+        
+        if (screenshotUrls.length > 0) {
+          screenshotUrls = helpers.shuffleArray(screenshotUrls);
+          this.randomSceneThumbnailUrl = screenshotUrls[0];
+          
+          if (this.randomSceneThumbnailUrl) {
+            this.existingImage.src = this.randomSceneThumbnailUrl;
+          }
+        }
+      } catch (error) {
+        this.randomSceneThumbnailUrl = null;
+      } finally {
+        this.isFetching = false;
+      }
+    }
+    
+    async fetchPreviewUrls() {
+      this.isFetching = true;
+      
+      try {
+        let query;
+        if (this.entityType === 'tags') {
+          query = QUERIES.tagPreviews;
+        } else {
+          query = QUERIES.entityScenes.replace('FILTER_PLACEHOLDER', this.config.graphqlFilter);
+        }
+        
+        const response = await csLib.callGQL({ query, variables: { entityId: this.entityId } });
+        this.previewUrls = helpers.extractPreviewUrls(response, this.entityType);
+        
+        // For tags, also get performer scenes
+        if (this.entityType === 'tags') {
+          try {
+            const performersResponse = await csLib.callGQL({ 
+              query: QUERIES.tagPerformers, 
+              variables: { entityId: this.entityId } 
+            });
+            
+            const performerIds = performersResponse?.findPerformers?.performers?.map(p => p.id) || [];
+            
+            if (performerIds.length > 0) {
+              const performerScenesResponse = await csLib.callGQL({ 
+                query: QUERIES.performerScenes, 
+                variables: { performerIds } 
+              });
+              
+              const performerScenePreviews = performerScenesResponse?.findScenes?.scenes
+                ?.map(scene => scene?.paths?.preview)
+                ?.filter(url => url) || [];
+              
+              this.previewUrls = [...this.previewUrls, ...performerScenePreviews];
+            }
+          } catch (error) {
+            // Continue with existing preview URLs if performer scenes query fails
+          }
+        }
+        
+        if (this.previewUrls.length > 0) {
+          this.previewUrls = helpers.shuffleArray(this.previewUrls);
+          this.createVideoElement();
+        }
+      } catch (error) {
+        this.previewUrls = [];
+      } finally {
+        this.isFetching = false;
+      }
+    }
+    
+    createVideoElement() {
+      if (this.previewUrls.length === 0) return;
+      
+      this.videoElement = helpers.createVideoElement(this.existingImage, this.previewUrls[0]);
+      this.currentVideoIndex = 0;
+      
+      // Add event listeners to video element
+      this.setupVideoEvents();
+      
+      // Append video to the header link
+      const cardHeaderLink = this.cardElement.querySelector(this.config.headerSelector);
+      if (cardHeaderLink) {
+        cardHeaderLink.appendChild(this.videoElement);
+      }
+    }
+    
+    setupVideoEvents() {
+      if (!this.videoElement) return;
+      
+      // Handle video ending event for sequential playback
+      this.videoElement.addEventListener('ended', () => {
+        if (!this.videoElement || this.isMouseLeaving) {
+          return; // Bail out if videoElement was removed or mouse already left
+        }
+        
+        this.videoElement.style.opacity = '0';
+        
+        setTimeout(() => {
+          if (!this.videoElement || this.isMouseLeaving) {
+            return; // Bail out if videoElement was removed during timeout or mouse left
+          }
+          
+          this.currentVideoIndex = (this.currentVideoIndex + 1) % this.previewUrls.length;
+          this.videoElement.src = `${this.previewUrls[this.currentVideoIndex]}?_ts=${Date.now()}`;
+          this.videoElement.load();
+          
+          this.videoElement.style.opacity = '1';
+          
+          // Track that we're attempting to play
+          const playAttemptTime = Date.now();
+          this.lastPlayAttemptTime = playAttemptTime;
+          
+          this.videoElement.play().catch(e => {
+            // Only log warning if it's not an abort error or if it's not due to quick mouse movements
+            if (!(e.name === 'AbortError' && this.isMouseLeaving)) {
+              console.warn("Video play failed after ended:", e);
+            }
+          });
+        }, 300);
+      });
+      
+      // Handle successful video loading
+      this.videoElement.onloadeddata = () => {
+        this.hasSuccessfulVideo = true;
+        
+        // Check if elements still exist before accessing their properties
+        if (this.existingImage) {
+          this.existingImage.style.display = 'none';
+        }
+        
+        if (this.videoElement) {
+          this.videoElement.style.display = '';
+        } else {
+          // Video element was removed, bail out
+          return;
+        }
+        
+        setTimeout(() => {
+          // Re-check if elements still exist in the setTimeout callback
+          if (this.isMouseLeaving) {
+            if (this.videoElement) {
+              this.videoElement.pause();
+              this.videoElement.style.display = 'none';
+              this.videoElement.style.opacity = '0';
+            }
+            
+            if (this.existingImage) {
+              this.existingImage.style.display = '';
+              this.existingImage.style.opacity = '1';
+            }
+            return;
+          }
+          
+          if (!this.videoElement) {
+            // Video element no longer exists
+            return;
+          }
+          
+          this.videoElement.style.opacity = '1';
+          
+          // Check if user already moved the mouse out before trying to play
+          if (!this.isMouseLeaving) {
+            // Track that we're attempting to play
+            const playAttemptTime = Date.now();
+            this.lastPlayAttemptTime = playAttemptTime;
+            
+            this.videoElement.play().catch(e => {
+              // Only log warning if it's not an abort error or if it's not due to quick mouse movements
+              if (!(e.name === 'AbortError' && this.isMouseLeaving)) {
+                console.warn("Video play failed after loadeddata:", e);
+              }
+              
+              // Only handle errors if this is still the most recent play attempt
+              if (this.lastPlayAttemptTime === playAttemptTime && !this.hasSuccessfulVideo) {
+                if (this.videoElement) {
+                  this.videoElement.style.display = 'none';
+                  this.videoElement.style.opacity = '0';
+                }
+                
+                if (this.existingImage) {
+                  this.existingImage.style.display = '';
+                  this.existingImage.style.opacity = '1';
+                }
+              }
+            });
+          }
+        }, 50);
+      };
+      
+      // Handle video loading errors
+      this.videoElement.onerror = () => {
+        this.currentVideoIndex++;
+        
+        if (!this.videoElement || this.isMouseLeaving) {
+          return; // Bail out if videoElement was removed or mouse left
+        }
+        
+        if (this.currentVideoIndex < this.previewUrls.length) {
+          this.videoElement.src = `${this.previewUrls[this.currentVideoIndex]}?_ts=${Date.now()}`;
+          this.videoElement.load();
+          
+          // Track that we're attempting to play
+          const playAttemptTime = Date.now();
+          this.lastPlayAttemptTime = playAttemptTime;
+          
+          this.videoElement.play().catch(e => {
+            // Only log warning if it's not an abort error or if it's not due to quick mouse movements
+            if (!(e.name === 'AbortError' && this.isMouseLeaving)) {
+              console.warn("Video play failed after error:", e);
+            }
+          });
+        } else {
+          this.hasSuccessfulVideo = false;
+          
+          if (this.existingImage) {
+            this.existingImage.style.display = '';
+            this.existingImage.style.opacity = '1';
+          }
+          
+          if (this.videoElement && this.videoElement.parentElement) {
+            this.videoElement.style.opacity = '0';
+            setTimeout(() => {
+              if (this.videoElement && this.videoElement.parentElement) {
+                this.videoElement.parentElement.removeChild(this.videoElement);
+                this.videoElement = null;
+              }
+            }, 300);
+          }
+        }
+      };
+    }
+  }
+
+  // Main function to handle thumbnail preview logic
+  const handleThumbLogic = async (containerElement, entityType) => {
+    const currentConfig = CONFIG[entityType];
+    if (!currentConfig) return;
+
+    // Process a single card element
+    const processCard = async (cardElement) => {
+      // Skip if already processed
+      if (cardElement.dataset[`${entityType}CardProcessed`]) return;
+      cardElement.dataset[`${entityType}CardProcessed`] = "true";
+
+      // Find the thumbnail section
+      const thumbnailSection = cardElement.querySelector('div.thumbnail-section');
+      if (!thumbnailSection) return;
+
+      // Find the existing image thumbnail
+      const existingImage = thumbnailSection.querySelector(`img.${entityType.slice(0, -1)}-card-image`) || thumbnailSection.querySelector('img');
+      if (!existingImage) return;
+
+      // Extract entity ID from the card
+      const entityId = helpers.getEntityId(cardElement, currentConfig.urlPattern);
+      if (!entityId) return;
+
+      // Clean up any custom styles previously added
+      helpers.cleanupCustomStyles(thumbnailSection, cardElement);
+
+      // Create and initialize the video preview manager
+      new VideoPreviewManager(cardElement, existingImage, entityType, entityId, currentConfig);
     };
 
-    // Process existing cards within the container on page load
+    // Process existing cards
     containerElement.querySelectorAll(currentConfig.cardSelector).forEach(processCard);
-    // console.log(`Processed initial ${entityType} cards within container.`);
 
-    // Use MutationObserver to process newly added cards (e.g., during infinite scroll)
+    // Use MutationObserver to process newly added cards
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
-          // Check if the added node is an element and a card
           if (node.nodeType === Node.ELEMENT_NODE) {
-            // If the added node itself is a card, process it
             if (node.classList.contains(currentConfig.cardSelector.replace('div.', ''))) {
-              // console.log(`MutationObserver directly added ${entityType} card:`, node);
               processCard(node);
             } else {
-              // Otherwise, search within the added node for cards
               const cards = node.querySelectorAll(currentConfig.cardSelector);
-              if (cards.length > 0) {
-                // console.log(`MutationObserver found ${cards.length} ${entityType} cards within added node:`, node);
-                cards.forEach(processCard);
-              } else {
-                // console.log(`MutationObserver added element without ${entityType} cards:`, node);
-              }
+              cards.forEach(processCard);
             }
           }
         });
@@ -985,28 +738,13 @@
 
     // Observe the container element for added cards
     observer.observe(containerElement, { childList: true, subtree: true });
-    // console.log(`MutationObserver started on item-list-container for ${entityType}.`);
-
-    // TODO: Consider disconnecting the observer when navigating away (PathElementListener does not handle this)
-    // A more robust solution might involve tracking the current page and disconnecting observers on page change.
   };
 
-  // Use PathElementListener to detect navigation to the studios listing page and wait for the main content container
-  // We are guessing the main content container is div.item-list-container based on observed added nodes
-  csLib.PathElementListener("/studios", "div.item-list-container", async (containerElement) => {
-    handleThumbLogic(containerElement, "studios");
-  });
-
-  csLib.PathElementListener("/tags", "div.item-list-container", async (containerElement) => {
-    handleThumbLogic(containerElement, "tags");
-  });
-
-  csLib.PathElementListener("/performers", "div.item-list-container", async (containerElement) => {
-    handleThumbLogic(containerElement, "performers");
-  });
-
-  csLib.PathElementListener("/groups", "div.item-list-container", async (containerElement) => {
-    handleThumbLogic(containerElement, "groups");
+  // Set up path listeners for different entity pages
+  ['studios', 'tags', 'performers', 'groups'].forEach(entityType => {
+    csLib.PathElementListener(`/${entityType}`, "div.item-list-container", (containerElement) => {
+      handleThumbLogic(containerElement, entityType);
+    });
   });
 
 })();
