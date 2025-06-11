@@ -18,7 +18,8 @@ class RemovableTag(object):
         return self.id == other.id
 
     def __repr__(self):
-        return f"RemovableTag(id={repr(self.id)}, name={repr(self.name)}, cause={repr(self.cause)})"
+        #return f"RemovableTag(id={repr(self.id)}, name={repr(self.name)}, cause={repr(self.cause)})"
+        return f"Tag(id={repr(self.id)}, name={repr(self.name)})"
 
 
 REMOVABLE_PARENT_TAG_CACHE : dict[int, set[RemovableTag]] = dict()
@@ -58,9 +59,9 @@ def calc_removable_tags_for_tag_id(tag_id : str, is_explict : bool) -> set[Remov
 
 
 def calc_removable_tags_for_tag(tag : dict, is_explict : bool) -> set[RemovableTag]:
-    log.debug(f"calc_removable_tags_for_tag(): {tag['name']}, {is_explict}")
+    #log.debug(f"calc_removable_tags_for_tag(): {tag['name']}, {is_explict}")
 
-    tag_id = int(tag["id"])
+    tag_id = int(tag['id'])
         
     removable_tags : set[RemovableTag] = set()
 
@@ -83,7 +84,7 @@ def calc_removable_tags_for_tag(tag : dict, is_explict : bool) -> set[RemovableT
         elif len(tag["parents"]) > 0 and settings["removeIntermediateParents"]:
             removable_tags.add(RemovableTag(id = tag_id, name = tag["name"], cause = "removeIntermediateParents"))
 
-    log.debug(f"calc_removable_tags_for_tag(): {tag['name']}, {is_explict} = {removable_tags}")
+    #log.debug(f"calc_removable_tags_for_tag(): {tag['name']}, {is_explict} = {removable_tags}")
 
     return removable_tags
 
@@ -121,8 +122,8 @@ def processScene(scene : dict):
         log.debug("disabled for scenes")
         return
     if scene['organized'] and settings["excludeOrganized"]:
+        log.debug("disabled for organized")
         return
-        log.trace("disabled for organized")
 
     tag_ids = {int(t['id']) for t in scene["tags"]}
     removable_tags = calc_removable_tags_from_tags(scene["tags"], is_explict=True)
@@ -131,7 +132,7 @@ def processScene(scene : dict):
     if len(tags_to_remove) > 0:
         tag_ids_to_remove = [t.id for t in tags_to_remove]
         log.info(f"scene {scene['id']} removing redundant tags {tags_to_remove}")
-        stash.update_scenes({"ids": scene["id"], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
+        stash.update_scenes({"ids": scene['id'], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
     else:
         log.debug(f"scene {scene['id']} no redundant tags {tags_to_remove} in {tag_ids} from possible {removable_tags}")
 
@@ -169,8 +170,8 @@ def processImage(image : dict):
         log.trace("disabled for images")
         return
     if image['organized'] and settings["excludeOrganized"]:
+        log.debug("disabled for organized")
         return
-        log.trace("disabled for organized")
     
     tag_ids = {int(t['id']) for t in image["tags"]}
     removable_tags = calc_removable_tags_from_tags(image["tags"], is_explict=True)
@@ -179,7 +180,7 @@ def processImage(image : dict):
     if len(tags_to_remove) > 0:
         tag_ids_to_remove = [t.id for t in tags_to_remove]
         log.info(f"image {image['id']} removing redundant tags {tags_to_remove}")
-        stash.update_images({"ids": image["id"], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
+        stash.update_images({"ids": image['id'], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
     else:
         log.debug(f"image {image['id']} no redundant tags {tags_to_remove} in {tag_ids} from possible {removable_tags}")
 
@@ -217,8 +218,8 @@ def processGallery(gallery : dict):
         log.debug("disabled for galleries")
         return
     if gallery['organized'] and settings["excludeOrganized"]:
-        return
         log.trace("disabled for organized")
+        return
 
     tag_ids = {int(t['id']) for t in gallery["tags"]}
     
@@ -229,7 +230,7 @@ def processGallery(gallery : dict):
     if len(tags_to_remove) > 0:
         tag_ids_to_remove = [t.id for t in tags_to_remove]
         log.info(f"gallery {gallery['id']} removing redundant tags {tags_to_remove}")
-        stash.update_galleries({"ids": gallery["id"], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
+        stash.update_galleries({"ids": gallery['id'], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
     else:
         log.debug(f"gallery {gallery['id']} no redundant tags {tags_to_remove} in {tag_ids} from possible {removable_tags}")
 
@@ -274,7 +275,7 @@ def processPerformer(performer : dict):
     if len(tags_to_remove) > 0:
         tag_ids_to_remove = [t.id for t in tags_to_remove]
         log.info(f"performer {performer['id']} removing redundant tags {tags_to_remove}")
-        stash.update_performers({"ids": performer["id"], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
+        stash.update_performers({"ids": performer['id'], "tag_ids": {"mode": "REMOVE", "ids": tag_ids_to_remove}})
     else:
         log.debug(f"performer {performer['id']} no redundant tags {tags_to_remove} in {tag_ids} from possible {removable_tags}")
 
@@ -307,7 +308,7 @@ if "mode" in json_input["args"]:
     elif "processAllPerformers" in PLUGIN_ARGS:
         processAllPerformers()
 elif "hookContext" in json_input["args"]:
-    id = json_input["args"]["hookContext"]["id"]
+    id = json_input["args"]["hookContext"]['id']
     log.debug(f"hook invoked with {json_input["args"]["hookContext"]["type"]} in {id}")
 
     if (
