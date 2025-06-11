@@ -57,7 +57,7 @@ def processGallery(gallery : dict):
         existing_tag_ids = {t['id'] for t in gallery['tags']}
         existing_performer_ids = {p['id'] for p in gallery['performers']}
 
-        images = stash.find_gallery_images(gallery["id"], fragment='tags { id name } performers { id name }')
+        images = stash.find_gallery_images(gallery['id'], fragment='tags { id name } performers { id name }')
         if len(images) > 0:
             tag_ids = set()
             tag_names = set()
@@ -80,8 +80,8 @@ def processGallery(gallery : dict):
             new_performer_ids = performer_ids - existing_performer_ids
             
             if len(new_tags_ids) > 0 or len(new_performer_ids) > 0:
-                log.info(f"updating gallery {gallery["id"]} from {len(images)} images with tags {tag_names} ({len(new_tags_ids)} new) and performers {performer_names} ({len(new_performer_ids)} new)")
-                stash.update_galleries({"ids": gallery["id"], "tag_ids": {"mode": "ADD", "ids": list(new_tags_ids)}, "performer_ids": {"mode": "ADD", "ids": list(new_performer_ids)}})
+                log.info(f"updating gallery {gallery['id']} from {len(images)} images with tags {tag_names} ({len(new_tags_ids)} new) and performers {performer_names} ({len(new_performer_ids)} new)")
+                stash.update_galleries({"ids": gallery['id'], "tag_ids": {"mode": "ADD", "ids": list(new_tags_ids)}, "performer_ids": {"mode": "ADD", "ids": list(new_performer_ids)}})
 
 
 json_input = json.loads(sys.stdin.read())
@@ -100,7 +100,7 @@ if "mode" in json_input["args"]:
     if "processAll" in PLUGIN_ARGS:
         processAll()
 elif "hookContext" in json_input["args"]:
-    id = json_input["args"]["hookContext"]["id"]
+    id = json_input["args"]["hookContext"]['id']
     if (
         (
             json_input["args"]["hookContext"]["type"] == "Gallery.Update.Post"
