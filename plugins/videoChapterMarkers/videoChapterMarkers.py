@@ -110,9 +110,9 @@ if "mode" in json_input["args"]:
     PLUGIN_ARGS = json_input["args"]["mode"]
     if "processAll" == PLUGIN_ARGS:
         processAll()
-    elif "hookContext" in json_input["args"]:
-        _id = json_input["args"]["hookContext"]["id"]
-        _type = json_input["args"]["hookContext"]["type"]
-        if _type == "Scene.Update.Post":
-            scene = stash.find_scene(_id)
-            processScene(scene)
+if "hookContext" in json_input["args"]:
+    _id = json_input["args"]["hookContext"]["id"]
+    _type = json_input["args"]["hookContext"]["type"]
+    if _type == "Scene.Update.Post":
+        scene = stash.find_scene(_id)
+        processScene(scene)
