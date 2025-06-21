@@ -114,9 +114,27 @@ def parse_skip_tags(client: StashInterface, skip_tags: str) -> list[str]:
             tag_ids.append(tag_id)
     return tag_ids
 
+def parse_performerIds_filter(performerIdsFilter: str) -> list[str]:
+    """
+    Parse a list of performer ids
+    """
+    if performerIdsFilter == "" or performerIdsFilter is None:
+        return []
 
-def build_image_filter(skip_tags: list[str], exclude_organized: bool) -> dict:
+    performerIdsFilter = performerIdsFilter.split(",")
+    return performerIdsFilter
+
+
+def build_image_filter(skip_tags: list[str], performerIdsFilter: list[str], exclude_organized: bool
+) -> dict:
     image_filter: dict = {}
+
+    if performerIdsFilter is not None and len(performerIdsFilter) > 0:
+        log.info(f"Images filtered for performer ID : {performerIdsFilter}")
+        image_filter["performers"] = {
+            "value": performerIdsFilter,
+            "modifier": "INCLUDES",
+        }
 
     if exclude_organized:
         image_filter["organized"] = False
@@ -134,12 +152,12 @@ def build_image_filter(skip_tags: list[str], exclude_organized: bool) -> dict:
 
 
 def count_all_images(
-    client: StashInterface, skip_tags: list[str], exclude_organized: bool
+    client: StashInterface, skip_tags: list[str], performerIdsFilter: list[str], exclude_organized: bool
 ) -> int:
     """
     count all images from the stash
     """
-    image_filter: dict = build_image_filter(skip_tags=skip_tags, exclude_organized=exclude_organized)
+    image_filter: dict = build_image_filter(skip_tags=skip_tags, performerIdsFilter=performerIdsFilter, exclude_organized=exclude_organized)
 
     all_results: dict = {
         "page": 1,
@@ -154,12 +172,12 @@ def count_all_images(
 
 
 def get_all_images(
-    client: StashInterface, skip_tags: list[str], exclude_organized: bool, skip_entries: int = 0
+    client: StashInterface, skip_tags: list[str], performerIdsFilter: list[str], exclude_organized: bool, skip_entries: int = 0
 ) -> Generator[dict, None, None]:
     """
     Get all images from the stash
     """
-    image_filter: dict = build_image_filter(skip_tags=skip_tags, exclude_organized=exclude_organized)
+    image_filter: dict = build_image_filter(skip_tags=skip_tags, performerIdsFilter=performerIdsFilter, exclude_organized=exclude_organized)
 
     page_size = 100
     page = 1
@@ -281,12 +299,14 @@ config: dict = stash.get_configuration()["plugins"]
 settings: dict[str, any] = {
     "ScraperID": "",
     "SkipTags": "",
+    "PerformerIdsFilter": "",
     "CreateMissingPerformers": False,
     "CreateMissingStudios": False,
     "CreateMissingTags": False,
     "MergeExistingTags": False,
     "ExcludeOrganized": False,
     "SkipEntriesNum": 0,
+
 }
 
 if "BulkImageScrape" in config:
@@ -308,6 +328,7 @@ scrape_parser = ScrapeParser(
 validate_stashapi(StashItem.IMAGE, stash)
 scraper_id: str = validate_scraper(stash, settings["ScraperID"])
 parsed_skip_tags: list[str] = parse_skip_tags(stash, settings["SkipTags"])
+parsed_performerids_filter: list[str] = parse_performerIds_filter(settings["PerformerIdsFilter"])
 
 #
 # MAIN
@@ -315,7 +336,7 @@ parsed_skip_tags: list[str] = parse_skip_tags(stash, settings["SkipTags"])
 
 log.info("Querying images from stash")
 total_images: int = count_all_images(
-    stash, parsed_skip_tags, settings["ExcludeOrganized"]
+    stash, parsed_skip_tags, parsed_performerids_filter, settings["ExcludeOrganized"]
 ) - settings["SkipEntriesNum"]
 
 if total_images == 0:
@@ -325,7 +346,7 @@ else:
     log.info(f"Found {total_images} images")
 
 images: Generator[dict, None, None] = get_all_images(
-    stash, parsed_skip_tags, settings["ExcludeOrganized"], settings["SkipEntriesNum"]
+    stash, parsed_skip_tags, parsed_performerids_filter, settings["ExcludeOrganized"], settings["SkipEntriesNum"]
 )
 
 for i, image in enumerate(images, start=1):
