@@ -1,5 +1,6 @@
 import sys, json
-
+from PythonDepManager import ensure_import
+ensure_import("dateparser>=1.2.1")
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import re
