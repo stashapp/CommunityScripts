@@ -1,0 +1,18 @@
+name: Image Date From Metadata
+# requires: PythonDepManager
+description: Find date in image or clip metadata
+version: 1.0.0
+exec:
+  - python
+  - "{pluginDir}/image_date_from_metadata.py"
+interface: raw
+tasks:
+  - name: Find all missing dates
+    description: Try to find the date in the image or clip metadata and add it
+    defaultArgs:
+      mode: find
+hooks:
+  - name: hook_image_created
+    description: Get the image creation date from the file metadata
+    triggeredBy:
+      - Image.Create.Post
