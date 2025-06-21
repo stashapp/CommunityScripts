@@ -1,6 +1,7 @@
 name: Gallery Date Parser
+# requires: PythonDepManager
 description: Find date in path or filename and add it to the gallery
-version: 0.3.0
+version: 1.0.0
 exec:
   - python
   - "{pluginDir}/date_parser.py"
