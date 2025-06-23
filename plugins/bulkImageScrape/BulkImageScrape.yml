@@ -1,7 +1,7 @@
 name: Bulk Image Scrape
 # requires: PythonDepManager 
 description: Apply an image scraper to all images
-version: 0.3.2
+version: 0.3.3
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
@@ -33,6 +33,9 @@ settings:
   SkipEntriesNum:
     displayName: number of entries to skip over (mostly for rerunning after an error on large collections)
     type: NUMBER
+  PerformerIdsFilter:
+    displayName: List of performers IDs (comma separated) to filter images the plugins sees
+    type: STRING
   
 tasks:
   - name: "Bulk Image Scrape"
