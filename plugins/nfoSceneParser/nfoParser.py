@@ -22,7 +22,7 @@ class NfoParser(AbstractParser):
                 # look in current dir & parents for a folder.nfo file...
                 self._nfo_file = self._find_in_parents(dir_path, "folder.nfo")
             else:
-                if len(config.custom_nfo_name) > 0:
+                if len(getattr(config, "custom_nfo_name", "")) > 0:
                     self._nfo_file = os.path.join(dir_path, config.custom_nfo_name)
                 else:
                     self._nfo_file = os.path.splitext(scene_path)[0] + ".nfo"
@@ -106,7 +106,8 @@ class NfoParser(AbstractParser):
         return file_images
 
     def __extract_nfo_rating(self):
-        user_rating = round(float(self._nfo_root.findtext(config.user_rating_field) or 0) * config.user_rating_multiplier)
+        multiplier = getattr(config, "user_rating_multiplier", 1)
+        user_rating = round(float(self._nfo_root.findtext(getattr(config, "user_rating_field", "userrating")) or 0) * multiplier)
         if user_rating > 0:
             return user_rating
         # <rating> is converted to a scale of 5 if needed
@@ -127,7 +128,7 @@ class NfoParser(AbstractParser):
         return self._nfo_root.findtext("premiered") or year
 
     def __extract_nfo_tags(self):
-        source = config.load_tags_from.lower()
+        source = getattr(config, "load_tags_from", "both").lower()
         file_tags = []
         if source in ["tags", "both"]:
             # from nfo <tag>
