@@ -51,6 +51,10 @@ create_missing_movies = True
 user_rating_field = "userrating"
 user_rating_multiplier = 1
 
+# Let you decide from where genres should be loaded from.
+# Possible values: "tags", "genres", "both"
+load_tags_from = "both"
+
 ###############################################################################
 # Do not change config below unless you are absolutely sure of what you do...
 ###############################################################################

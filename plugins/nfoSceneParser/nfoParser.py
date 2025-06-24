@@ -127,17 +127,20 @@ class NfoParser(AbstractParser):
         return self._nfo_root.findtext("premiered") or year
 
     def __extract_nfo_tags(self):
+        source = config.load_tags_from.lower()
         file_tags = []
-        # from nfo <tag>
-        tags = self._nfo_root.findall("tag")
-        for tag in tags:
-            if tag.text:
-                file_tags.append(tag.text)
-        # from nfo <genre>
-        genres = self._nfo_root.findall("genre")
-        for genre in genres:
-            if genre.text:
-                file_tags.append(genre.text)
+        if source in ["tags", "both"]:
+            # from nfo <tag>
+            tags = self._nfo_root.findall("tag")
+            for tag in tags:
+                if tag.text:
+                    file_tags.append(tag.text)
+        if source in ["genres", "both"]:
+            # from nfo <genre>
+            genres = self._nfo_root.findall("genre")
+            for genre in genres:
+                if genre.text:
+                    file_tags.append(genre.text)
         return list(set(file_tags))
 
     def __extract_nfo_actors(self):
