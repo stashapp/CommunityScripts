@@ -154,6 +154,8 @@ class NfoParser(AbstractParser):
 
     def parse(self):
         if not self._nfo_file or not os.path.exists(self._nfo_file):
+            if self._nfo_file:
+                log.LogDebug(f"The NFO file \"{os.path.split(self._nfo_file)[1]}\" was not found")
             return {}
         log.LogDebug("Parsing '{}'".format(self._nfo_file))
         # Parse NFO xml content
