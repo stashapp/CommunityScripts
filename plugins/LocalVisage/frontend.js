@@ -14561,9 +14561,10 @@
       if (!document.querySelector("#localFaces")) {
         new SearchFaces({ target: e });
       }
-      if (!document.querySelector("#localSceneFaces")) {
+      /*if (!document.querySelector("#localSceneFaces")) {
         new FindFaces({ target: e });
-      }
+      }*/
+      //To use the above, a compatible version of mediapipe is required and i didnt find it
     });
   });
   stash.addEventListener("stash:page:image", function () {
