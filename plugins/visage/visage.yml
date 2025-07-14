@@ -1,0 +1,15 @@
+name: Visage
+# requires: StashUserscriptLibrary
+description: Use facial Recognition To Lookup Performers.
+version: 1.1.0
+ui:
+  requires: 
+  - StashUserscriptLibrary
+  javascript:
+  - visage.js
+  - https://cdn.jsdelivr.net/npm/@gradio/client@1.15.3/dist/index.js
+  css:
+  - visage.css
+  csp:
+    connect-src:
+    - "https://cc1234-stashface.hf.space"
