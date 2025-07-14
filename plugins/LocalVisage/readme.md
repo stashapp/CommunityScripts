@@ -1,5 +1,7 @@
 # Local Performer Recognition
 
+https://discourse.stashapp.cc/t/local-visage/2478
+
 A plugin for recognizing performers from their images using [DeepFace](https://github.com/serengil/deepface). This plugin integrates seamlessly with Stash and enables automatic facial recognition by building or updating a local model trained from your existing image collection.
 
 ## 🔍 Features
