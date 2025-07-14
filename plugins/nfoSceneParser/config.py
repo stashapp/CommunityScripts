@@ -10,6 +10,11 @@ dry_mode = False
 # ! Not yet implemented. Currently, only "with files" is supported
 nfo_location = "with files"
 
+# By default the plugin will look for an nfo based on file name:
+# "Movie Title (2023).nfo"
+# If you want to use a custom file name eg. "movie.nfo", set it here.
+custom_nfo_name = ""
+
 # If True, will never update already "organized" scenes.
 skip_organized = True
 
@@ -40,6 +45,15 @@ create_missing_performers = True
 create_missing_studios = True
 create_missing_tags = True
 create_missing_movies = True
+
+# Choose which field should be parsed into user rating
+# and if it should be multiplied by a factor.
+user_rating_field = "userrating"
+user_rating_multiplier = 1
+
+# Let you decide from where genres should be loaded from.
+# Possible values: "tags", "genres", "both"
+load_tags_from = "both"
 
 ###############################################################################
 # Do not change config below unless you are absolutely sure of what you do...
