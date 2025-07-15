@@ -2562,7 +2562,7 @@
           a,
           "href",
           (a_href_value =
-            window.stash7dJx1qP.stash.serverUrl.slice(0, -1) +
+            window.stash7dJx1qP.stash.serverUrl +
             "/performers/" +
             /*match*/ ctx[14].id)
         );
@@ -2646,7 +2646,7 @@
           dirty & /*matches*/ 1 &&
           a_href_value !==
             (a_href_value =
-              window.stash7dJx1qP.stash.serverUrl.slice(0, -1) +
+              window.stash7dJx1qP.stash.serverUrl +
               "/performers/" +
               /*match*/ ctx[14].id)
         ) {
@@ -13974,12 +13974,11 @@
                     )
                   ) {
                     performer.image =
-                      window.stash7dJx1qP.stash.serverUrl.slice(0, -1) +
-                      performer.image;
+                      window.stash7dJx1qP.stash.serverUrl + performer.image;
                   }
                   if (performer.performer_url) {
                     performer.performer_url =
-                      window.stash7dJx1qP.stash.serverUrl.slice(0, -1) +
+                      window.stash7dJx1qP.stash.serverUrl +
                       performer.performer_url;
                   }
                 });
@@ -14555,7 +14554,6 @@
       init(this, options, instance, create_fragment, safe_not_equal, {});
     }
   }
-
   stash7dJx1qP.stash.addEventListener("page:scene", function () {
     let elms = ".scene-toolbar-group:nth-child(1)";
     waitForElm(elms).then(() => {
