@@ -1,7 +1,5 @@
 (function () {
   "use strict";
-  console.log("LocalVisage frontend.js loaded");
-  console.log("stash7dJx1qP:", stash7dJx1qP);
   // Using CDN version of @gradio/client to avoid bundling issues
   // import { Client, handle_file } from "@gradio/client";
 
@@ -14557,9 +14555,8 @@
       init(this, options, instance, create_fragment, safe_not_equal, {});
     }
   }
-  console.log("Local Faces loaded");
+
   stash7dJx1qP.stash.addEventListener("page:scene", function () {
-    console.log("Local Faces scene toolbar");
     let elms = ".scene-toolbar-group:nth-child(1)";
     waitForElm(elms).then(() => {
       const e = document.querySelector(elms);
