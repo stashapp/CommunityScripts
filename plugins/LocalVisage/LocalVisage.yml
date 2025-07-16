@@ -1,15 +1,15 @@
 name: Local Visage
 description: Local Performer Recognition plugin using DeepFace
 # requires: PythonDepManager
-# requires: StashUserscriptLibrary
-version: 1.0
+# requires: stashUserscriptLibrary7dJx1qP
+version: 1.0.1
 exec:
   - python
   - "{pluginDir}/LocalVisage.py"
 interface: raw
 ui:
   requires:
-    - StashUserscriptLibrary
+    - stashUserscriptLibrary7dJx1qP
   javascript:
     - frontend.js
     - https://cdn.jsdelivr.net/npm/@gradio/client@1.15.3/dist/index.js

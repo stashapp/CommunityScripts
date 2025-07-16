@@ -22,7 +22,7 @@ A plugin for recognizing performers from their images using [DeepFace](https://g
 
 - Python 3.10.11 (temporarily, see instructions below)
 - `PythonDepManager`
-- `StashUserscriptLibrary`
+- `stashUserscriptLibrary7djx1qp` (add repo https://7djx1qp.github.io/stash-plugins/
 
 ## ⚙️ Tasks
 

@@ -1,6 +1,5 @@
-(function (stash) {
+(function () {
   "use strict";
-
   // Using CDN version of @gradio/client to avoid bundling issues
   // import { Client, handle_file } from "@gradio/client";
 
@@ -42,7 +41,7 @@
   runPluginTask(plugin_id:"LocalVisage",task_name:"Start server")
 }`,
     };
-    await stash.callGQL(reqData);
+    await stash7dJx1qP.stash.callGQL(reqData);
   }
 
   async function getPerformersForScene(scene_id) {
@@ -55,7 +54,7 @@
       }
     }`,
     };
-    var result = await stash.callGQL(reqData);
+    var result = await stash7dJx1qP.stash.callGQL(reqData);
     return result.data.findScene.performers.map((p) => p.id);
   }
 
@@ -69,7 +68,7 @@
       }
     }`,
     };
-    var result = await stash.callGQL(reqData);
+    var result = await stash7dJx1qP.stash.callGQL(reqData);
     return result.data.findImage.performers.map((p) => p.id);
   }
 
@@ -82,7 +81,7 @@
       }
     }`,
     };
-    return stash.callGQL(reqData);
+    return stash7dJx1qP.stash.callGQL(reqData);
   }
 
   async function updateImage(image_id, performer_ids) {
@@ -94,7 +93,7 @@
       }
     }`,
     };
-    return stash.callGQL(reqData);
+    return stash7dJx1qP.stash.callGQL(reqData);
   }
 
   async function getStashboxEndpoint() {
@@ -109,7 +108,7 @@
       }
     }`,
     };
-    var result = await stash.callGQL(reqData);
+    var result = await stash7dJx1qP.stash.callGQL(reqData);
     return result.data.configuration.general.stashBoxes[0].endpoint;
   }
 
@@ -151,7 +150,7 @@
         }
       }`,
     };
-    var result = await stash.callGQL(reqData);
+    var result = await stash7dJx1qP.stash.callGQL(reqData);
     return result.data.scrapeSinglePerformer.filter(
       (p) => p.remote_site_id === stash_id
     )[0];
@@ -166,7 +165,7 @@
         }
       }`,
     };
-    return stash.callGQL(reqData);
+    return stash7dJx1qP.stash.callGQL(reqData);
   }
 
   let gradioClientModule = null;
@@ -433,7 +432,7 @@
       }
     }`,
     };
-    var result = await stash.callGQL(reqData);
+    var result = await stash7dJx1qP.stash.callGQL(reqData);
     const url = result.data.findScene.paths["sprite"];
     const response = await fetch(url);
     if (response.status === 404) {
@@ -2563,7 +2562,7 @@
           a,
           "href",
           (a_href_value =
-            window.stash.serverUrl.slice(0, -1) +
+            window.stash7dJx1qP.stash.serverUrl +
             "/performers/" +
             /*match*/ ctx[14].id)
         );
@@ -2647,7 +2646,7 @@
           dirty & /*matches*/ 1 &&
           a_href_value !==
             (a_href_value =
-              window.stash.serverUrl.slice(0, -1) +
+              window.stash7dJx1qP.stash.serverUrl +
               "/performers/" +
               /*match*/ ctx[14].id)
         ) {
@@ -13970,14 +13969,16 @@
                   if (
                     performer.image &&
                     typeof performer.image === "string" &&
-                    !performer.image.startsWith(window.stash.serverUrl)
+                    !performer.image.startsWith(
+                      window.stash7dJx1qP.stash.serverUrl
+                    )
                   ) {
                     performer.image =
-                      window.stash.serverUrl.slice(0, -1) + performer.image;
+                      window.stash7dJx1qP.stash.serverUrl + performer.image;
                   }
                   if (performer.performer_url) {
                     performer.performer_url =
-                      window.stash.serverUrl.slice(0, -1) +
+                      window.stash7dJx1qP.stash.serverUrl +
                       performer.performer_url;
                   }
                 });
@@ -14553,8 +14554,7 @@
       init(this, options, instance, create_fragment, safe_not_equal, {});
     }
   }
-
-  stash.addEventListener("stash:page:scene", function () {
+  stash7dJx1qP.stash.addEventListener("page:scene", function () {
     let elms = ".scene-toolbar-group:nth-child(1)";
     waitForElm(elms).then(() => {
       const e = document.querySelector(elms);
@@ -14567,7 +14567,7 @@
       //To use the above, a compatible version of mediapipe is required and i didnt find it
     });
   });
-  stash.addEventListener("stash:page:image", function () {
+  stash7dJx1qP.stash.addEventListener("page:image", function () {
     let elms = ".image-toolbar-group:nth-child(1)";
     waitForElm(elms).then(() => {
       if (!document.querySelector("#localFaces")) {
@@ -14576,4 +14576,4 @@
       }
     });
   });
-})(window.stash || stash);
+})(window.stash7dJx1qP);
