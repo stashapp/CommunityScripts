@@ -11,8 +11,18 @@ per_page = 100
 request_s = requests.Session()
 
 TPDB_ENDPOINT = "https://theporndb.net/graphql"
+tags_cache = {}
+
+
+def getTag(name):
+    if name not in tags_cache:
+        tag = stash.find_tag(name, create=True)
+        tags_cache[name] = tag.get("id")
+    return tags_cache[name]
+
 
 def processScene(scene):
+    getTag("[TPDBMarker]")
     for sid in scene["stash_ids"]:
         if sid["endpoint"] == TPDB_ENDPOINT:
             log.debug("Scene has a TPDB stash id, looking up %s " % (sid["stash_id"],))
@@ -26,24 +36,35 @@ def processScene(scene):
                     markers = []
                     for m in data["markers"]:
                         log.debug(m)
+
                         marker = {
                             "title": m["title"],
-                            "primary_tag": m["title"],
+                            "primary_tag": None,
                             "tags": [],
                             "seconds": m["start_time"],
                         }
+                        if settings["addTPDBMarkerTag"]:
+                            marker["tags"].append(int(getTag("[TPDBMarker]")))
+
+                        if settings["addTPDBMarkerTitle"]:
+                            marker["title"] = f"[TPDBMarker] {m["title"]}"
+
                         markers.append(marker)
 
                     if len(markers) > 0:
                         log.info("Saving markers")
-                        mp.import_scene_markers(stash, markers, scene["id"], 15)
+                        if settings["overwriteMarkers"]:
+                            stash.destroy_scene_markers(scene["id"])
+                            mp.import_scene_markers(stash, markers, scene["id"], 15)
+                        elif (len(scene["scene_markers"]) == 0 or settings["mergeMarkers"]):
+                            mp.import_scene_markers(stash, markers, scene["id"], 15)
                     # skip if there is already a movie linked
                     if settings["createMovieFromScene"] and len(scene.get("movies", [])) == 0:
                         movies=[]
                         for m in data["movies"]:
-                           movie=processMovie(m)
-                           if movie:
-                               movies.append({"movie_id": movie["id"],"scene_index":None})
+                            movie=processMovie(m)
+                            if movie:
+                                movies.append({"movie_id": movie["id"],"scene_index":None})
                         log.debug(movies)
                         if len(movies) > 0:
                            stash.update_scene({'id':scene["id"],"movies":movies})
@@ -56,21 +77,23 @@ def processScene(scene):
 def processAll():
     log.info("Getting scene count")
     skip_sync_tag_id = stash.find_tag("[TPDB: Skip Marker]", create=True).get("id")
-    count = stash.find_scenes(
-        f={
-            "stash_id_endpoint": {
-                "endpoint": TPDB_ENDPOINT,
-                "modifier": "NOT_NULL",
-                "stash_id": "",
-            },
-            "has_markers": "false",
-            "tags": {
-                "depth": 0,
-                "excludes": [skip_sync_tag_id],
-                "modifier": "INCLUDES_ALL",
-                "value": [],
-            },
+    f = {
+        "stash_id_endpoint": {
+            "endpoint": TPDB_ENDPOINT,
+            "modifier": "NOT_NULL",
+            "stash_id": "",
         },
+        "tags": {
+            "depth": 0,
+            "excludes": [skip_sync_tag_id],
+            "modifier": "INCLUDES_ALL",
+            "value": [],
+        },
+    }
+    if not settings["runOnScenesWithMarkers"]:
+        f["has_markers"] = "false"
+    count = stash.find_scenes(
+        f,
         filter={"per_page": 1},
         get_count=True,
     )[0]
@@ -85,15 +108,17 @@ def processAll():
                 (i / count) * 100,
             )
         )
-        scenes = stash.find_scenes(
-            f={
-                "stash_id_endpoint": {
-                    "endpoint": TPDB_ENDPOINT,
-                    "modifier": "NOT_NULL",
-                    "stash_id": "",
-                },
-                "has_markers": "false",
+        f = {
+            "stash_id_endpoint": {
+                "endpoint": TPDB_ENDPOINT,
+                "modifier": "NOT_NULL",
+                "stash_id": "",
             },
+        }
+        if not settings["runOnScenesWithMarkers"]:
+            f["has_markers"] = "false"
+        scenes = stash.find_scenes(
+            f,
             filter={"page": r, "per_page": per_page},
         )
         for s in scenes:
@@ -155,6 +180,11 @@ config = stash.get_configuration()["plugins"]
 settings = {
     "disableSceneMarkerHook": False,
     "createMovieFromScene":True,
+    "addTPDBMarkerTag": False,
+    "addTPDBMarkerTitle": False,
+    "runOnScenesWithMarkers": False,
+    "overwriteMarkers": False,
+    "mergeMarkers": False,
 }
 if "tPdBmarkers" in config:
     settings.update(config["tPdBmarkers"])
