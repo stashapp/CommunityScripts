@@ -39,7 +39,7 @@ def processScene(scene):
 
                         marker = {
                             "title": m["title"],
-                            "primary_tag": None,
+                            "primary_tag": m["title"],
                             "tags": [],
                             "seconds": m["start_time"],
                         }
