@@ -5,6 +5,7 @@ import difflib
 import config
 import log
 import re
+import unicodedata
 from abstractParser import AbstractParser
 from nfoParser import NfoParser
 from reParser import RegExParser
@@ -135,7 +136,7 @@ class NfoSceneParser:
             map(lambda p: p.get("id"), self._scene["performers"]))
         scene_tag_ids = list(map(lambda t: t.get("id"), self._scene["tags"]))
         # in "reload" mode, removes the reload marker tag as part of the scene update
-        if config.reload_tag and self._reload_tag_id:
+        if config.reload_tag and self._reload_tag_id and self._reload_tag_id in scene_tag_ids:
             scene_tag_ids.remove(self._reload_tag_id)
         # Currently supports only one movie (the first one...)
         scene_movie_id = scene_movie_index = None
@@ -178,14 +179,21 @@ class NfoSceneParser:
     def __is_matching(self, text1, text2, tolerance=False):
         if not text1 or not text2:
             return text1 == text2
+        
+        # Normalize Unicode to handle emoji and special character variations
+        normalized_text1 = unicodedata.normalize('NFC', text1).strip()
+        normalized_text2 = unicodedata.normalize('NFC', text2).strip()
+        
         if tolerance:
-            distance = self.levenshtein_distance(text1.lower(), text2.lower())
-            match = distance < (config.levenshtein_distance_tolerance * log10(len(text1)))
+            distance = self.levenshtein_distance(normalized_text1.lower(), normalized_text2.lower())
+            # Ensure minimum tolerance for very short strings (like single emoji)
+            tolerance_threshold = max(config.levenshtein_distance_tolerance * log10(max(len(normalized_text1), 2)), 1)
+            match = distance < tolerance_threshold
             if match and distance:
-                log.LogDebug(f"Matched with distance {distance}: '{text1}' with '{text2}'")
+                log.LogDebug(f"Matched with distance {distance}: '{normalized_text1}' with '{normalized_text2}'")
             return match
         else:
-            return text1.lower() == text2.lower()
+            return normalized_text1.lower() == normalized_text2.lower()
 
     def __find_create_performers(self):
         performer_ids = []
