@@ -193,8 +193,7 @@ class NfoParser(AbstractParser):
             # Below are NFO extensions or liberal tag interpretations (not part of the nfo spec)
             "movie": self._nfo_root.findtext("set/name") or self._get_default("title", "nfo"),
             "scene_index": self._nfo_root.findtext("set/index") or None,
-            # TODO: read multiple URL tags into array
-            "urls": None if not self._nfo_root.findtext("url") else [self._nfo_root.findtext("url")],
+            "urls": [url.text for url in self._nfo_root.findall("url") if url.text],
 
         }
         return file_data
