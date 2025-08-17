@@ -1,6 +1,6 @@
 name: Performer Stashbox Url to ID
 description: If the performer has a url for another stashbox add it as an id to the performer
-version: 0.1
+version: 0.2
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
