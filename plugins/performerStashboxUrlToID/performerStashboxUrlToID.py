@@ -7,8 +7,7 @@ STASH_BOXES = [
     "https://fansdb.cc",
     "https://pmvstash.org",
     "https://stashdb.org",
-    "https://javstash.org",
-    "https://theporndb.net"
+    "https://javstash.org"
 ]
 
 def processPerformer(performer):
