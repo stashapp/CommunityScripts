@@ -2,37 +2,30 @@ import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import sys
 import json
-import time
-import re
 
+STASH_BOXES = [
+    "https://fansdb.cc",
+    "https://pmvstash.org",
+    "https://stashdb.org",
+    "https://javstash.org"
+]
 
 def processPerformer(performer):
-    log.debug(performer["stash_ids"])
+    log.trace(performer["stash_ids"])
     stash_boxes = [x["endpoint"] for x in performer["stash_ids"]]
     needs_update = False
     performer_update = {"id": performer["id"], "stash_ids": performer["stash_ids"]}
     for url in performer["urls"]:
-        log.debug(url)
-        if "https://fansdb.cc/performers/" in url:
-            if "https://fansdb.cc/graphql" not in stash_boxes:
+        log.trace(url)
+        for domain in STASH_BOXES:
+            if domain in url and f"{domain}/graphql" not in stash_boxes:
                 performer_update["stash_ids"].append(
-                    {"endpoint": "https://fansdb.cc/graphql", "stash_id": url[-36:]}
+                    {"endpoint": f"{domain}/graphql", "stash_id": url[-36:]}
                 )
                 needs_update = True
-        if "https://pmvstash.org/performers/" in url:
-            if "https://pmvstash.org/graphql" not in stash_boxes:
-                performer_update["stash_ids"].append(
-                    {"endpoint": "https://pmvstash.org/graphql", "stash_id": url[-36:]}
-                )
-                needs_update = True
-        if "https://stashdb.org/performers/" in url:
-            if "https://stashdb.org/graphql" not in stash_boxes:
-                performer_update["stash_ids"].append(
-                    {"endpoint": "https://stashdb.org/graphql", "stash_id": url[-36:]}
-                )
-                needs_update = True
+                log.info("Adding stashbox %s to performer %s" % (domain, performer["id"]))
 
-    log.debug(performer_update)
+    log.trace(performer_update)
     if needs_update:
         stash.update_performer(performer_update)
 
