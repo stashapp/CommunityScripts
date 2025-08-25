@@ -2,12 +2,14 @@ import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import sys
 import json
+import uuid
 
 STASH_BOXES = [
     "https://fansdb.cc",
     "https://pmvstash.org",
     "https://stashdb.org",
-    "https://javstash.org"
+    "https://javstash.org",
+    "https://theporndb.net",
 ]
 
 def processPerformer(performer):
@@ -18,9 +20,15 @@ def processPerformer(performer):
     for url in performer["urls"]:
         log.trace(url)
         for domain in STASH_BOXES:
-            if domain in url and f"{domain}/graphql" not in stash_boxes:
+            if f"{domain}/performers/" in url and f"{domain}/graphql" not in stash_boxes:
+                try:
+                    stash_box_id = url.rstrip("/").rsplit("/", 1)[1]
+                    stash_box_id = str(uuid.UUID(stash_box_id, version=4))
+                except ValueError:
+                    continue
+
                 performer_update["stash_ids"].append(
-                    {"endpoint": f"{domain}/graphql", "stash_id": url[-36:]}
+                    {"endpoint": f"{domain}/graphql", "stash_id": stash_box_id}
                 )
                 needs_update = True
                 log.info("Adding stashbox %s to performer %s" % (domain, performer["id"]))
