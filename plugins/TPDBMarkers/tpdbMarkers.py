@@ -61,8 +61,8 @@ def processScene(scene):
                     # skip if there is already a group linked
                     if settings["createGroupFromScene"] and len(scene.get("groups", [])) == 0:
                         groups=[]
-                        for m in data["groups"]:
-                            group=processGroup(m)
+                        for g in data["groups"]:
+                            group=processGroup(g)
                             if group:
                                 groups.append({"group_id": group["id"],"scene_index":None})
                         log.debug(groups)
@@ -127,45 +127,45 @@ def processAll():
             log.progress((i / count))
             time.sleep(1)
 
-def processGroup(m):
-    log.debug(m)
-    log.debug(m.keys())
+def processGroup(g):
+    log.debug(g)
+    log.debug(g.keys())
     # check if the group exists with the url, then match to the scene
-    sm = stash.find_groups(
+    sg = stash.find_groups(
       f={
         "url": {
           "modifier": "EQUALS",
-          "value": m["url"],
+          "value": g["url"],
         }
       }
     )
-    log.debug("sm: %s" % (sm,))
-    if len(sm) >0:
-        return sm[0]
+    log.debug("sg: %s" % (sg,))
+    if len(sg) >0:
+        return sg[0]
     # find the group by name
-    sm=stash.find_groups(q=m['title'])
-    for mov in sm:
-        if mov['name']==m['title']:
-          return mov
+    sg=stash.find_groups(q=g['title'])
+    for grp in sg:
+        if grp['name']==g['title']:
+          return grp
 
 
     # just create the group with the details from tpdb
     new_group={
-       'name': m['title'],
-       'date': m['date'],
-       'synopsis': m['description'],
-       'front_image': m['image'],
-       'back_image': m['back_image'],
-       'urls': [m['url']],
+       'name': g['title'],
+       'date': g['date'],
+       'synopsis': g['description'],
+       'front_image': g['image'],
+       'back_image': g['back_image'],
+       'urls': [g['url']],
     }
-    if m['site']:
-        studio=stash.find_studio(m['site'],create=True)
+    if g['site']:
+        studio=stash.find_studio(g['site'],create=True)
         if studio:
             new_group['studio_id']=studio['id']
 
-    mov=stash.create_group(new_group)
-    log.debug(mov)
-    return mov
+    grp=stash.create_group(new_group)
+    log.debug(grp)
+    return grp
 
 
 
