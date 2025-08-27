@@ -58,16 +58,16 @@ def processScene(scene):
                             mp.import_scene_markers(stash, markers, scene["id"], 15)
                         elif (len(scene["scene_markers"]) == 0 or settings["mergeMarkers"]):
                             mp.import_scene_markers(stash, markers, scene["id"], 15)
-                    # skip if there is already a movie linked
-                    if settings["createMovieFromScene"] and len(scene.get("movies", [])) == 0:
-                        movies=[]
-                        for m in data["movies"]:
-                            movie=processMovie(m)
-                            if movie:
-                                movies.append({"movie_id": movie["id"],"scene_index":None})
-                        log.debug(movies)
-                        if len(movies) > 0:
-                           stash.update_scene({'id':scene["id"],"movies":movies})
+                    # skip if there is already a group linked
+                    if settings["createGroupFromScene"] and len(scene.get("groups", [])) == 0:
+                        groups=[]
+                        for m in data["groups"]:
+                            group=processGroup(m)
+                            if group:
+                                groups.append({"group_id": group["id"],"scene_index":None})
+                        log.debug(groups)
+                        if len(groups) > 0:
+                           stash.update_scene({'id':scene["id"],"groups":groups})
             else:
                 log.error('bad response from tpdb: %s' % (res.status_code,))
 
@@ -127,10 +127,10 @@ def processAll():
             log.progress((i / count))
             time.sleep(1)
 
-def processMovie(m):
+def processGroup(m):
     log.debug(m)
     log.debug(m.keys())
-    # check if the movie exists with the url, then match to the scene
+    # check if the group exists with the url, then match to the scene
     sm = stash.find_groups(
       f={
         "url": {
@@ -142,15 +142,15 @@ def processMovie(m):
     log.debug("sm: %s" % (sm,))
     if len(sm) >0:
         return sm[0]
-    # find the movie by name
+    # find the group by name
     sm=stash.find_groups(q=m['title'])
     for mov in sm:
         if mov['name']==m['title']:
           return mov
 
 
-    # just create the movie with the details from tpdb
-    new_movie={
+    # just create the group with the details from tpdb
+    new_group={
        'name': m['title'],
        'date': m['date'],
        'synopsis': m['description'],
@@ -161,9 +161,9 @@ def processMovie(m):
     if m['site']:
         studio=stash.find_studio(m['site'],create=True)
         if studio:
-            new_movie['studio_id']=studio['id']
+            new_group['studio_id']=studio['id']
 
-    mov=stash.create_movie(new_movie)
+    mov=stash.create_group(new_group)
     log.debug(mov)
     return mov
 
@@ -179,7 +179,7 @@ stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()["plugins"]
 settings = {
     "disableSceneMarkerHook": False,
-    "createMovieFromScene":True,
+    "createGroupFromScene":True,
     "addTPDBMarkerTag": False,
     "addTPDBMarkerTitle": False,
     "runOnScenesWithMarkers": False,
