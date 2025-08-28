@@ -59,7 +59,7 @@ def processScene(scene):
                         elif (len(scene["scene_markers"]) == 0 or settings["mergeMarkers"]):
                             mp.import_scene_markers(stash, markers, scene["id"], 15)
                     # skip if there is already a group linked
-                    if settings["createGroupFromScene"] and len(scene.get("groups", [])) == 0:
+                    if settings["createMovieFromScene"] and len(scene.get("groups", [])) == 0:
                         groups=[]
                         for g in data["groups"]:
                             group=processGroup(g)
