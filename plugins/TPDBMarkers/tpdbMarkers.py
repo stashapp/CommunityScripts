@@ -25,7 +25,8 @@ def processScene(scene):
     getTag("[TPDBMarker]")
     for sid in scene["stash_ids"]:
         if sid["endpoint"] == TPDB_ENDPOINT:
-            log.debug("Scene has a TPDB stash id, looking up %s " % (sid["stash_id"],))
+            log.debug("Scene has a TPDB stash id, looking up %s " %
+                      (sid["stash_id"],))
             res = request_s.get(
                 "https://api.theporndb.net/scenes/%s" % (sid["stash_id"],)
             )
@@ -55,19 +56,23 @@ def processScene(scene):
                         log.info("Saving markers")
                         if settings["overwriteMarkers"]:
                             stash.destroy_scene_markers(scene["id"])
-                            mp.import_scene_markers(stash, markers, scene["id"], 15)
+                            mp.import_scene_markers(
+                                stash, markers, scene["id"], 15)
                         elif (len(scene["scene_markers"]) == 0 or settings["mergeMarkers"]):
-                            mp.import_scene_markers(stash, markers, scene["id"], 15)
+                            mp.import_scene_markers(
+                                stash, markers, scene["id"], 15)
                     # skip if there is already a movie linked
                     if settings["createMovieFromScene"] and len(scene.get("movies", [])) == 0:
-                        movies=[]
+                        movies = []
                         for m in data["movies"]:
-                            movie=processMovie(m)
+                            movie = processMovie(m)
                             if movie:
-                                movies.append({"movie_id": movie["id"],"scene_index":None})
+                                movies.append(
+                                    {"movie_id": movie["id"], "scene_index": None})
                         log.debug(movies)
                         if len(movies) > 0:
-                           stash.update_scene({'id':scene["id"],"movies":movies})
+                            stash.update_scene(
+                                {'id': scene["id"], "movies": movies})
             else:
                 log.error('bad response from tpdb: %s' % (res.status_code,))
 
@@ -76,7 +81,8 @@ def processScene(scene):
 
 def processAll():
     log.info("Getting scene count")
-    skip_sync_tag_id = stash.find_tag("[TPDB: Skip Marker]", create=True).get("id")
+    skip_sync_tag_id = stash.find_tag(
+        "[TPDB: Skip Marker]", create=True).get("id")
     f = {
         "stash_id_endpoint": {
             "endpoint": TPDB_ENDPOINT,
@@ -127,48 +133,45 @@ def processAll():
             log.progress((i / count))
             time.sleep(1)
 
+
 def processMovie(m):
     log.debug(m)
     log.debug(m.keys())
     # check if the movie exists with the url, then match to the scene
     sm = stash.find_groups(
-      f={
-        "url": {
-          "modifier": "EQUALS",
-          "value": m["url"],
+        f={
+            "url": {
+                "modifier": "EQUALS",
+                "value": m["url"],
+            }
         }
-      }
     )
     log.debug("sm: %s" % (sm,))
-    if len(sm) >0:
+    if len(sm) > 0:
         return sm[0]
     # find the movie by name
-    sm=stash.find_groups(q=m['title'])
+    sm = stash.find_groups(q=m['title'])
     for mov in sm:
-        if mov['name']==m['title']:
-          return mov
-
+        if mov['name'] == m['title']:
+            return mov
 
     # just create the movie with the details from tpdb
-    new_movie={
-       'name': m['title'],
-       'date': m['date'],
-       'synopsis': m['description'],
-       'front_image': m['image'],
-       'back_image': m['back_image'],
-       'urls': [m['url']],
+    new_movie = {
+        'name': m['title'],
+        'date': m['date'],
+        'synopsis': m['description'],
+        'front_image': m['image'],
+        'back_image': m['back_image'],
+        'urls': [m['url']],
     }
     if m['site']:
-        studio=stash.find_studio(m['site'],create=True)
+        studio = stash.find_studio(m['site'], create=True)
         if studio:
-            new_movie['studio_id']=studio['id']
+            new_movie['studio_id'] = studio['id']
 
-    mov=stash.create_movie(new_movie)
+    mov = stash.create_movie(new_movie)
     log.debug(mov)
     return mov
-
-
-
 
 
 json_input = json.loads(sys.stdin.read())
@@ -179,7 +182,7 @@ stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()["plugins"]
 settings = {
     "disableSceneMarkerHook": False,
-    "createMovieFromScene":True,
+    "createMovieFromScene": True,
     "addTPDBMarkerTag": False,
     "addTPDBMarkerTitle": False,
     "runOnScenesWithMarkers": False,
@@ -202,7 +205,9 @@ if TPDB_ENDPOINT in [
         PLUGIN_ARGS = json_input["args"]["mode"]
         if "processScene" == PLUGIN_ARGS:
             if "scene_id" in json_input["args"]:
-                scene = stash.find_scene(json_input["args"]["scene_id"], fragment='id urls stash_ids {endpoint stash_id} tags {id} interactive files { path duration fingerprint(type: "phash")}')
+                scene = stash.find_scene(
+                    json_input["args"]["scene_id"],
+                    fragment='id urls stash_ids {endpoint stash_id} tags {id} interactive files { path duration fingerprint(type: "phash")}')
                 processScene(scene)
             else:
                 processAll()
@@ -210,7 +215,8 @@ if TPDB_ENDPOINT in [
         _id = json_input["args"]["hookContext"]["id"]
         _type = json_input["args"]["hookContext"]["type"]
         if _type == "Scene.Update.Post" and not settings["disableSceneMarkerHook"]:
-            stash.run_plugin_task("TPDBMarkers", "Sync", args={"scene_id": _id})
+            stash.run_plugin_task("TPDBMarkers", "Sync",
+                                  args={"scene_id": _id})
 #          scene = stash.find_scene(_id)
 #            processScene(scene)
 
