@@ -179,7 +179,7 @@ stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()["plugins"]
 settings = {
     "disableSceneMarkerHook": False,
-    "createGroupFromScene":True,
+    "createMovieFromScene":True,
     "addTPDBMarkerTag": False,
     "addTPDBMarkerTitle": False,
     "runOnScenesWithMarkers": False,
