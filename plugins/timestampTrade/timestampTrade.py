@@ -35,8 +35,7 @@ def processSceneTimestamTrade(s):
         for url in s["urls"]:
             log.debug(url)
             if url.startswith("https://timestamp.trade/scene/"):
-                json_url = "https://timestamp.trade/json-scene/%s" % (
-                    url[30:],)
+                json_url = "https://timestamp.trade/json-scene/%s" % (url[30:],)
                 res = request_s.get(json_url)
                 if res.status_code == 200:
                     data = res.json()
@@ -59,8 +58,7 @@ def processSceneTimestamTrade(s):
                                 "title": m["name"],
                             }
                             if settings["addTsTradeTag"]:
-                                marker["tags"].append(
-                                    int(getTag("[Timestamp]")))
+                                marker["tags"].append(int(getTag("[Timestamp]")))
 
                             if m["tag_name"]:
                                 marker["primary_tag"] = m["tag_name"]
@@ -89,14 +87,11 @@ def processSceneTimestamTrade(s):
                             log.debug(markers)
                             if settings["overwriteMarkers"]:
                                 stash.destroy_scene_markers(s["id"])
-                                mp.import_scene_markers(
-                                    stash, markers, s["id"], 15)
+                                mp.import_scene_markers(stash, markers, s["id"], 15)
                             elif (
-                                len(s["scene_markers"]
-                                    ) == 0 or settings["mergeMarkers"]
+                                len(s["scene_markers"]) == 0 or settings["mergeMarkers"]
                             ):
-                                mp.import_scene_markers(
-                                    stash, markers, s["id"], 15)
+                                mp.import_scene_markers(stash, markers, s["id"], 15)
 
                     new_scene = {
                         "id": s["id"],
@@ -164,10 +159,8 @@ def processSceneTimestamTrade(s):
                                         gallery["scene_ids"].append(s["id"])
                                         needs_update = True
                                     if needs_update:
-                                        log.info("updating gallery: %s" %
-                                                 (gal["id"],))
-                                        stash.update_gallery(
-                                            gallery_data=gallery)
+                                        log.info("updating gallery: %s" % (gal["id"],))
+                                        stash.update_gallery(gallery_data=gallery)
                     if settings["extraUrls"]:
                         if "urls" in data and data["urls"]:
                             extra_urls = s["urls"]
@@ -276,14 +269,11 @@ def processSceneTimestamTrade(s):
                                                             x["url"] for x in m["urls"]
                                                         ]
                                                         if hasattr(new_movie, "url"):
-                                                            delattr(
-                                                                new_movie, "url")
+                                                            delattr(new_movie, "url")
                                                     log.debug(
-                                                        "new movie: %s" % (
-                                                            new_movie,)
+                                                        "new movie: %s" % (new_movie,)
                                                     )
-                                                    nm = stash.create_movie(
-                                                        new_movie)
+                                                    nm = stash.create_movie(new_movie)
                                                     if nm:
                                                         movies.append(nm)
                                                         created = True
@@ -297,8 +287,7 @@ def processSceneTimestamTrade(s):
                                         if len(m["urls"]) > 0:
                                             new_movie["urls"] = m["urls"][0]["url"]
 
-                                        log.debug("new movie: %s" %
-                                                  (new_movie,))
+                                        log.debug("new movie: %s" % (new_movie,))
                                         nm = stash.create_movie(new_movie)
                                         if nm:
                                             new_movie["urls"] = m["urls"]
@@ -356,8 +345,7 @@ def processSceneTimestamTrade(s):
                                     ]
                                 for g2 in g1:
                                     if g2["id"] not in new_scene["gallery_ids"]:
-                                        new_scene["gallery_ids"].append(
-                                            g2["id"])
+                                        new_scene["gallery_ids"].append(g2["id"])
                                         needs_update = True
                                         autoGallery = False
                         if autoGallery:
@@ -382,8 +370,7 @@ def processSceneTimestamTrade(s):
                                 getTag("[Timestamp: Skip Submit]")
                             )
                             gal = stash.create_gallery(gallery_input)
-                            new_scene["gallery_ids"] = [x["id"]
-                                                        for x in s["galleries"]]
+                            new_scene["gallery_ids"] = [x["id"] for x in s["galleries"]]
                             new_scene["gallery_ids"].append(gal)
                             needs_update = True
                         else:
@@ -395,32 +382,31 @@ def processSceneTimestamTrade(s):
                             for fs in data["funscripts"]:
                                 log.debug(fs["md5"])
                                 with db_migrations() as conn:
-                                    cur = conn.cursor()
-                                    res = cur.execute(
-                                        "select id,filename,scene_id from script_index where md5=?",
-                                        (fs["md5"],),
-                                    )
-                                    for row in res.fetchall():
-                                        if len(s["files"]) > 0:
-                                            log.debug(
-                                                "found matching funscript, copying funscript"
-                                            )
-                                            scriptfile_source = Path(row[1])
-                                            video_file = Path(
-                                                s["files"][0]["path"])
-                                            scriptfile_destination = video_file.parent / (
-                                                video_file.stem + ".funscript"
-                                            )
-                                            log.info(
-                                                "copying funscript %s, to destination %s,"
-                                                % (
-                                                    scriptfile_source,
-                                                    scriptfile_destination,
-                                                )
-                                            )
-                                            shutil.copyfile(
-                                                scriptfile_source, scriptfile_destination
-                                            )
+                                  cur = conn.cursor()
+                                  res = cur.execute(
+                                      "select id,filename,scene_id from script_index where md5=?",
+                                      (fs["md5"],),
+                                  )
+                                  for row in res.fetchall():
+                                      if len(s["files"]) > 0:
+                                          log.debug(
+                                              "found matching funscript, copying funscript"
+                                          )
+                                          scriptfile_source = Path(row[1])
+                                          video_file = Path(s["files"][0]["path"])
+                                          scriptfile_destination = video_file.parent / (
+                                              video_file.stem + ".funscript"
+                                          )
+                                          log.info(
+                                              "copying funscript %s, to destination %s,"
+                                              % (
+                                                  scriptfile_source,
+                                                  scriptfile_destination,
+                                              )
+                                          )
+                                          shutil.copyfile(
+                                              scriptfile_source, scriptfile_destination
+                                          )
 
                     if needs_update:
                         log.debug("updating scene: %s" % (new_scene,))
@@ -470,8 +456,7 @@ def processSceneStashid(s):
                     )
 
         except json.decoder.JSONDecodeError:
-            log.error("api returned invalid JSON for stash id: " +
-                      sid["stash_id"])
+            log.error("api returned invalid JSON for stash id: " + sid["stash_id"])
 
 
 def processAll(query):
@@ -694,8 +679,7 @@ def submitScene(query):
           }
         }"""
 
-    count = stash.find_scenes(
-        f=query, filter={"per_page": 1}, get_count=True)[0]
+    count = stash.find_scenes(f=query, filter={"per_page": 1}, get_count=True)[0]
     i = 0
     for r in range(1, math.ceil(count / per_page) + 1):
         log.info(
@@ -711,18 +695,18 @@ def submitScene(query):
         )
         for s in scenes:
             log.debug("submitting scene: " + str(s))
-
+            
             if settings["submitFunscriptHash"]:
                 log.debug(s)
                 s["funscriptHashes"] = []
-
+                
                 with db_migrations() as conn:
                     cur = conn.cursor()
                     res = cur.execute(
                         "select id, filename, metadata, scene_id, md5 from script_index where scene_id=?",
                         (s["id"],),
                     )
-
+                    
                     for row in res.fetchall():
                         s["funscriptHashes"].append(
                             {
@@ -731,11 +715,11 @@ def submitScene(query):
                                 "md5": row[4],
                             }
                         )
-
+            
             s.pop("id")
             log.debug(s)
             request_s.post("https://timestamp.trade/submit-stash", json=s)
-
+            
             i += 1
             log.progress((i / count))
             time.sleep(0.5)
@@ -848,16 +832,14 @@ def submitGallery():
         )
         for g in galleries:
             log.debug("submitting gallery: %s" % (g,))
-            request_s.post(
-                "https://timestamp.trade/submit-stash-gallery", json=g)
+            request_s.post("https://timestamp.trade/submit-stash-gallery", json=g)
             i = i + 1
             log.progress((i / count))
             time.sleep(2)
 
 
 def processGalleries():
-    skip_sync_tag_id = stash.find_tag(
-        "[Timestamp: Skip Sync]", create=True).get("id")
+    skip_sync_tag_id = stash.find_tag("[Timestamp: Skip Sync]", create=True).get("id")
 
     count = stash.find_galleries(
         f={
@@ -926,8 +908,7 @@ def processGallery(gallery):
         for f in gallery["files"]:
             for fp in f["fingerprints"]:
                 if fp["type"] == "md5":
-                    log.debug("looking up galleries by file hash: %s " %
-                              (fp["value"],))
+                    log.debug("looking up galleries by file hash: %s " % (fp["value"],))
                     res = request_s.post(
                         "https://timestamp.trade/gallery-md5/" + fp["value"]
                     )
@@ -964,14 +945,12 @@ def processGallery(gallery):
                                     if len(performers) > 0:
                                         performer_id = performers[0]["id"]
                                         log.debug(
-                                            "performer matched %s" % (
-                                                performer_id,)
+                                            "performer matched %s" % (performer_id,)
                                         )
                                         break
                                 # look for the performer
                                 if not performer_id:
-                                    performers = stash.find_performers(
-                                        q=p["name"])
+                                    performers = stash.find_performers(q=p["name"])
                                     for perf in performers:
                                         if p["name"].lower() == perf["name"].lower():
                                             performer_id = perf["id"]
@@ -994,14 +973,12 @@ def processGallery(gallery):
                                     )
                                     performer_id = new_perf["id"]
                                     log.debug(new_perf)
-                                new_gallery["performer_ids"].append(
-                                    performer_id)
+                                new_gallery["performer_ids"].append(performer_id)
                                 log.debug(performer_id)
 
                             for tag in g["tags"]:
                                 new_gallery["tag_ids"].append(
-                                    stash.find_tag(
-                                        tag["name"], create=True).get("id")
+                                    stash.find_tag(tag["name"], create=True).get("id")
                                 )
                             for sid in g["studio"]["stash_ids"]:
                                 stud = stash.find_studios(
@@ -1017,8 +994,7 @@ def processGallery(gallery):
                                     new_gallery["studio_id"] = stud[0]["id"]
                                     break
                             if new_gallery["studio_id"] is None:
-                                stud = stash.find_studios(
-                                    q=g["studio"]["name"])
+                                stud = stash.find_studios(q=g["studio"]["name"])
                                 for s in stud:
                                     if s["name"].lower() == g["studio"]["name"].lower():
                                         new_gallery["studio_id"] = s["id"]
@@ -1070,10 +1046,8 @@ def downloadGallery(gallery):
                     )
                     if len(img) == 0:
                         image_id = uuid.uuid4().hex
-                        image_file = Path(
-                            settings["path"]) / (image_id + ".jpg")
-                        metadata_file = Path(
-                            settings["path"]) / (image_id + ".json")
+                        image_file = Path(settings["path"]) / (image_id + ".jpg")
+                        metadata_file = Path(settings["path"]) / (image_id + ".json")
                         image_data = {
                             "title": "%s - %s "
                             % (
@@ -1092,8 +1066,7 @@ def downloadGallery(gallery):
                         if gallery["studio"]:
                             image_data["studio_id"] = gallery["studio"]["id"]
                         if i["type"] == "cover":
-                            image_data["tag_ids"].append(
-                                getTag("[Timestamp: Cover]"))
+                            image_data["tag_ids"].append(getTag("[Timestamp: Cover]"))
                         elif i["type"] == "gallery":
                             image_data["tag_ids"].append(
                                 getTag("[Timestamp: Gallery Image]")
@@ -1107,8 +1080,7 @@ def downloadGallery(gallery):
                             for p in data["performers"]:
                                 perf = stash.find_performers(q=p["name"])
                                 for p1 in perf:
-                                    image_data["performer_ids"].append(
-                                        p1["id"])
+                                    image_data["performer_ids"].append(p1["id"])
 
                         log.debug(image_data)
                         log.info(
@@ -1266,61 +1238,59 @@ def db_migrations():
 
 def funscript_index(path):
     with db_migrations() as conn:
-        cur = conn.cursor()
-        for file in path.glob("**/*.funscript"):
-            log.info("indexing script file %s" % (file,))
-            with open(file, "rb") as f:
-                data = f.read()
-                hash = hashlib.md5(data).hexdigest()
-                log.debug(hash)
-                d = json.loads(data)
-                metadata = {}
-                if "metadata" in d:
-                    metadata = d["metadata"]
-                res = cur.execute(
-                    "select count(*) from script_index where filename=? ",
-                    (str(file.resolve()),),
-                )
-                if res.fetchone()[0] == 0:
-                    cur.execute(
-                        "insert into script_index (filename,metadata,md5)values (?,?,?)",
-                        (str(file.resolve()), json.dumps(metadata), hash),
-                    )
-                    conn.commit()
-        res = cur.execute("select count(*) from script_index ")
-        funscript_count = res.fetchone()[0]
-        log.info(
-            "finished indexing funscripts, %s scripts indexed, matching to scenes"
-            % (funscript_count,)
-        )
-        res = cur.execute(
-            "select id,filename,scene_id from script_index where scene_id is null;"
-        )
-        for row in res.fetchall():
-            id = row[0]
-            filename = row[1]
-            scenes = stash.find_scenes(
-                f={"path": {"modifier": "INCLUDES",
-                            "value": Path(filename).stem}},
-                fragment="id\nfiles{basename}",
-            )
-            i = 0
-            for s in scenes:
-
-                for f in s["files"]:
-                    if Path(filename).stem == Path(f["basename"]).stem:
-                        log.info(
-                            "matching scene %s to script %s"
-                            % (
-                                s["id"],
-                                filename,
-                            )
-                        )
-                        cur.execute(
-                            "update script_index set scene_id=? where id=?", (
-                                s["id"], id)
-                        )
-                conn.commit()
+      cur = conn.cursor()
+      for file in path.glob("**/*.funscript"):
+          log.info("indexing script file %s" % (file,))
+          with open(file, "rb") as f:
+              data = f.read()
+              hash = hashlib.md5(data).hexdigest()
+              log.debug(hash)
+              d = json.loads(data)
+              metadata = {}
+              if "metadata" in d:
+                  metadata = d["metadata"]
+              res = cur.execute(
+                  "select count(*) from script_index where filename=? ",
+                  (str(file.resolve()),),
+              )
+              if res.fetchone()[0] == 0:
+                  cur.execute(
+                      "insert into script_index (filename,metadata,md5)values (?,?,?)",
+                      (str(file.resolve()), json.dumps(metadata), hash),
+                  )
+                  conn.commit()
+      res = cur.execute("select count(*) from script_index ")
+      funscript_count = res.fetchone()[0]
+      log.info(
+          "finished indexing funscripts, %s scripts indexed, matching to scenes"
+          % (funscript_count,)
+      )
+      res = cur.execute(
+          "select id,filename,scene_id from script_index where scene_id is null;"
+      )
+      for row in res.fetchall():
+          id = row[0]
+          filename = row[1]
+          scenes = stash.find_scenes(
+              f={"path": {"modifier": "INCLUDES", "value": Path(filename).stem}},
+              fragment="id\nfiles{basename}",
+          )
+          i = 0
+          for s in scenes:
+  
+              for f in s["files"]:
+                  if Path(filename).stem == Path(f["basename"]).stem:
+                      log.info(
+                          "matching scene %s to script %s"
+                          % (
+                              s["id"],
+                              filename,
+                          )
+                      )
+                      cur.execute(
+                          "update script_index set scene_id=? where id=?", (s["id"], id)
+                      )
+              conn.commit()
 
 
 def excluded_marker_tag(marker):
@@ -1338,8 +1308,7 @@ def excluded_marker_tag(marker):
         for word in settings.get("excludedMarkerWords", "").split(",")
         if len(word.strip()) >= 4 and clean_input_pattern.match(word.strip())
     }
-    primary_tag_words = re.sub(
-        r"[^\w\s]", "", marker["primary_tag"].lower()).split()
+    primary_tag_words = re.sub(r"[^\w\s]", "", marker["primary_tag"].lower()).split()
     if any(
         tag_word.startswith(word) and len(tag_word) - len(word) <= 3
         for word in excluded_words
@@ -1474,6 +1443,7 @@ if "mode" in json_input["args"]:
             "id"
         )
         if "scene_id" in json_input["args"]:
+            scene = stash.find_scene(json_input["args"]["scene_id"])
             scene = stash.find_scene(
                 json_input["args"]["scene_id"],
                 fragment='id urls stash_ids {endpoint stash_id} groups {scene_index group {id}} tags {id} scene_markers {id} interactive files { path duration fingerprint(type: "phash")}')
