@@ -202,7 +202,9 @@ if TPDB_ENDPOINT in [
         PLUGIN_ARGS = json_input["args"]["mode"]
         if "processScene" == PLUGIN_ARGS:
             if "scene_id" in json_input["args"]:
-                scene = stash.find_scene(json_input["args"]["scene_id"])
+                scene = stash.find_scene(
+                    json_input["args"]["scene_id"],
+                    fragment='id urls stash_ids {endpoint stash_id} groups {scene_index group {id}} tags {id} scene_markers {id} interactive files { path duration fingerprint(type: "phash")}')
                 processScene(scene)
             else:
                 processAll()
