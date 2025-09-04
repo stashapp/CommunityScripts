@@ -226,7 +226,7 @@ query findGallery($id: ID!) {\
     return null;
   }
 
-  var path = findGallery.folder.path
+  var path = findGallery.folder.path;
   return path;
 }
 
