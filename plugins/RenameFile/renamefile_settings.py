@@ -1,4 +1,4 @@
-# By David Maisonave (aka Axter) 2024
+# By David Maisonave (aka Axter) 2025
 # RenameFile plugin main configuration options are available on the Stash GUI under Settings->Plugins->Plugins->[RenameFile].
 # Most users should only use the GUI options.
 # The configuration options in this file are for advanced users ONLY!!!
@@ -57,6 +57,23 @@ config = {
     "tagAppendEnable": True,
     # Enable to move file instead of rename file. (Not recommended for Windows OS)
     "fileRenameViaMove": False,
+    # Maximum allowed performers to be added to file name. If value -1=no limit.
+    "max_performers": -1,
+    # When value set to true, will enable feature for associated_files_to_rename.
+    "rename_associated_files_enable": True, # See associated_files_to_rename option.
+    # Add or remove file extensions which are to get renamed when renaming a video file. For example if having a.mp4 and a.funscript, if a.mp4 gets renamed to foofoo.mp4, then a.funscript will get renamed to foofoo.funscript.
+    "associated_files_to_rename": [".funscript", ".srt", ".vtt", ".scc", ".ttml", ".dfxp", ".lrc", ".cap", ".sami", ".stl", ".mcc", ".info", ".txt", ".xml"],
+        # funscript = A file format that is the standard format for scripting interactive devices by syncing them up to a video
+        # SRT       = SubRip Text -> A widely used, simple text file format that displays caption text with timecodes
+        # VTT       = WebVTT -> A text-based format that is part of the HTML5 standard
+        # SCC       = Scenarist Closed Caption -> A format used by broadcast and digital media producers for TV and movies. 
+        # TTML      = Timed Text Markup Language
+        # DFXP      = Distribution Format Exchange Profile
+        # LRC       = A computer file format that synchronizes song lyrics with an audio file, such as MP3, AAC, or MIDI.
+        # CAP       = Primarily used for Japanese subtitles
+        # SAMI      = Synchronized Accessible Media Interchange -> A Microsoft accessibility initiative released in the summer of 1998. 
+        # STL       = Spruce Subtitle File -> Text file for Apple's DVD Studio Pro
+        # MCC       = MacCaption
     
     # handleExe is for Windows only.
     # In Windows, a file can't be renamed if the file is opened by another process.
