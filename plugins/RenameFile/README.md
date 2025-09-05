@@ -80,19 +80,19 @@ That's it!!!
   - **rename_associated_files_enable** - (Default=True). When value set to true, will enable feature for associated_files_to_rename. See **associated_files_to_rename**.
   - **associated_files_to_rename** - This field is a list of file extension that are associated with the video file, and that are renamed when the video file is renamed.  Requires **rename_associated_files_enable** to be True. User should add or remove extensions from this list for their particular requirements.
     - By default, the following extensions are set to this list:
-      - **Funscript**: A file format that is the standard format for scripting interactive devices by syncing them up to a video.
-      - **SRT**: SubRip Text -> A widely used, simple text file format that displays caption text with timecodes
-      - **VTT**: WebVTT -> A text-based format that is part of the HTML5 standard
-      - **SCC**: Scenarist Closed Caption -> A format used by broadcast and digital media producers for TV and movies.
-      - **TTML**: Timed Text Markup Language
-      - **DFXP**: Distribution Format Exchange Profile
-      - **LRC**: A computer file format that synchronizes song lyrics with an audio file, such as MP3, AAC, or MIDI.
       - **CAP**: Primarily used for Japanese subtitles
-      - **SAMI**: Synchronized Accessible Media Interchange -> A Microsoft accessibility initiative released in the summer of 1998.
-      - **STL**: Spruce Subtitle File -> Text file for Apple's DVD Studio Pro
-      - **MCC**: MacCaption
+      - **DFXP**: Distribution Format Exchange Profile
+      - **Funscript**: A file format that is the standard format for scripting interactive devices by syncing them up to a video.
       - **INFO**: A ".info file" is a configuration or metadata file with different meanings depending on the context.
+      - **LRC**: A computer file format that synchronizes song lyrics with an audio file, such as MP3, AAC, or MIDI.
+      - **MCC**: MacCaption
+      - **SAMI**: Synchronized Accessible Media Interchange -> A Microsoft accessibility initiative released in the summer of 1998.
+      - **SCC**: Scenarist Closed Caption -> A format used by broadcast and digital media producers for TV and movies.
+      - **SRT**: SubRip Text -> A widely used, simple text file format that displays caption text with timecodes
+      - **STL**: Spruce Subtitle File -> Text file for Apple's DVD Studio Pro
+      - **TTML**: Timed Text Markup Language
       - **TXT**: A plain text file containing information about the associated video file.
+      - **VTT**: WebVTT -> A text-based format that is part of the HTML5 standard
       - **XML**: Extensible Markup Language -> A text-based file format used for storing and transporting data for the associated video file. It is designed to be both human-readable and machine-readable.
   - **handleExe** - Populate this field in order to allow RenameFile plugin to close all open file handles.
     - In Windows, a file can't be renamed if the file is opened by another process. In other words, if a file is being played by Stash or any other video player, the RenameFile plugin will get an access denied error when trying to rename the file.
