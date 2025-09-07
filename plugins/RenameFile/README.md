@@ -133,6 +133,6 @@ Please do **NOT** use the feature request to include any problems associated wit
 [Discourse-RenameFile](https://discourse.stashapp.cc/t/renamefile/1334)
 
 **Note:**
-The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
-The Discourse link should be use for discussion that would be inappropriate in GitHub.
+- The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
+- The [Discourse link](https://discourse.stashapp.cc/t/renamefile/1334) should be use for discussion that would be inappropriate in GitHub.
 
