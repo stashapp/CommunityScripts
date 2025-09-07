@@ -1,12 +1,23 @@
 # RenameFile: Ver 1.0.0 (By David Maisonave)
 
-https://discourse.stashapp.cc/t/renamefile/1334
+[Discourse-RenameFile](https://discourse.stashapp.cc/t/renamefile/1334)
 
-### Note: 
-The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
-The Discourse link should be use for discussion that would be inappropriate in GitHub.
+Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
 
 RenameFile is a [Stash](https://github.com/stashapp/stash) plugin. Starting version 0.5.5, user can add the current title to the title input field by clicking on the current title. Also, the Stash database gets updated directly instead of running a scan task as long as the database is version 68.
+
+## Content
+- [Summary](#Summary)
+- [RenameFile vs RenameOnUpdate](#RenameFile-vs-RenameOnUpdate)
+- [Using RenameFile](#Using-RenameFile)
+- [Requirements](#Requirements)
+- [Installation](#Installation)
+- [Options](#Options)
+- [Bugs and Feature Request](#Bugs-and-Feature-Request)
+- [Discourse](#Discourse)
+
+
+## Summary
 
 - The plugin allows user to rename one scene at a time by editing the **[Title]** field and then clicking **[Save]**.
 
@@ -118,4 +129,10 @@ Please do **NOT** use the feature request to include any problems associated wit
 
 **Note:** This script is **largely** based on the [Renamer](https://github.com/Serechops/Serechops-Stash/tree/main/plugins/Renamer) script.
 
-### Future Planned Features or Fixes
+### Discourse
+[Discourse-RenameFile](https://discourse.stashapp.cc/t/renamefile/1334)
+
+**Note:**
+The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
+The Discourse link should be use for discussion that would be inappropriate in GitHub.
+
