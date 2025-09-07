@@ -1,6 +1,6 @@
 # RenameFile: Ver 1.0.0 (By David Maisonave)
 
-[Discourse-RenameFile](https://discourse.stashapp.cc/t/renamefile/1334)
+https://discourse.stashapp.cc/t/renamefile/1334
 
 ### Note: 
 The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
