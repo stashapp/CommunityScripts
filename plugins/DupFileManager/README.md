@@ -2,6 +2,11 @@
 
 https://discourse.stashapp.cc/t/dupfilemanager/1331
 
+### Note: 
+The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
+The Discourse link should be use for discussion that would be inappropriate in GitHub.
+
+
 DupFileManager is a [Stash](https://github.com/stashapp/stash) plugin which manages duplicate files in the Stash system.
 It has both **task** and **tools-UI** components.
 
