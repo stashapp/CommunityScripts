@@ -1,8 +1,23 @@
-# RenameFile: Ver 0.5.7 (By David Maisonave)
+# RenameFile: Ver 1.0.0 (By David Maisonave)
 
 https://discourse.stashapp.cc/t/renamefile/1334
 
+Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
+
 RenameFile is a [Stash](https://github.com/stashapp/stash) plugin. Starting version 0.5.5, user can add the current title to the title input field by clicking on the current title. Also, the Stash database gets updated directly instead of running a scan task as long as the database is version 68.
+
+## Content
+- [Summary](#Summary)
+- [RenameFile vs RenameOnUpdate](#RenameFile-vs-RenameOnUpdate)
+- [Using RenameFile](#Using-RenameFile)
+- [Requirements](#Requirements)
+- [Installation](#Installation)
+- [Options](#Options)
+- [Bugs and Feature Request](#Bugs-and-Feature-Request)
+- [Discourse](#Discourse)
+
+
+## Summary
 
 - The plugin allows user to rename one scene at a time by editing the **[Title]** field and then clicking **[Save]**.
 
@@ -80,6 +95,23 @@ That's it!!!
 
 - Main options are accessible in the GUI via Settings->Plugins->Plugins->[RenameFile].
 - Advanced options are available in the **renamefile_settings.py** file. After making changes, go to http://localhost:9999/settings?tab=plugins, and click [Reload Plugins].
+  - **rename_associated_files_enable** - (Default=True). When value set to true, will enable feature for associated_files_to_rename. See **associated_files_to_rename**.
+  - **associated_files_to_rename** - This field is a list of file extension that are associated with the video file, and that are renamed when the video file is renamed.  Requires **rename_associated_files_enable** to be True. User should add or remove extensions from this list for their particular requirements.
+    - By default, the following extensions are set to this list:
+      - **CAP**: Primarily used for Japanese subtitles
+      - **DFXP**: Distribution Format Exchange Profile
+      - **Funscript**: A file format that is the standard format for scripting interactive devices by syncing them up to a video.
+      - **INFO**: A ".info file" is a configuration or metadata file with different meanings depending on the context.
+      - **LRC**: A computer file format that synchronizes song lyrics with an audio file, such as MP3, AAC, or MIDI.
+      - **MCC**: MacCaption
+      - **SAMI**: Synchronized Accessible Media Interchange -> A Microsoft accessibility initiative released in the summer of 1998.
+      - **SCC**: Scenarist Closed Caption -> A format used by broadcast and digital media producers for TV and movies.
+      - **SRT**: SubRip Text -> A widely used, simple text file format that displays caption text with timecodes
+      - **STL**: Spruce Subtitle File -> Text file for Apple's DVD Studio Pro
+      - **TTML**: Timed Text Markup Language
+      - **TXT**: A plain text file containing information about the associated video file.
+      - **VTT**: WebVTT -> A text-based format that is part of the HTML5 standard
+      - **XML**: Extensible Markup Language -> A text-based file format used for storing and transporting data for the associated video file. It is designed to be both human-readable and machine-readable.
   - **handleExe** - Populate this field in order to allow RenameFile plugin to close all open file handles.
     - In Windows, a file can't be renamed if the file is opened by another process. In other words, if a file is being played by Stash or any other video player, the RenameFile plugin will get an access denied error when trying to rename the file.
     - As a workaround, the 'handleExe' field can be populated with the full path to handle.exe or handle64.exe. (See requirements for download link)
@@ -97,4 +129,10 @@ Please do **NOT** use the feature request to include any problems associated wit
 
 **Note:** This script is **largely** based on the [Renamer](https://github.com/Serechops/Serechops-Stash/tree/main/plugins/Renamer) script.
 
-### Future Planned Features or Fixes
+### Discourse
+[Discourse-RenameFile](https://discourse.stashapp.cc/t/renamefile/1334)
+
+**Note:**
+- The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
+- The [Discourse link](https://discourse.stashapp.cc/t/renamefile/1334) should be use for discussion that would be inappropriate in GitHub.
+
