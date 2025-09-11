@@ -10,14 +10,15 @@ from stashapi.stashapp import StashInterface
 
 def get_all_images(
     client: StashInterface,
-    skip_tags: list[int],
+    skip_tag_ids: list[int],
     exclude_organized: bool,
     per_page: int = 100,
 ) -> list[dict]:
     """
-    Generator to fetch images in pages from the stash API.
+    Fetch all images (returns a stable list snapshot). Uses numeric tag IDs in skip_tag_ids.
     """
     page = 1
+    all_images = []
     while True:
         image_filter = {}
         pagination = {
@@ -27,10 +28,10 @@ def get_all_images(
             "direction": "ASC",
         }
 
-        if skip_tags:
+        if skip_tag_ids:
             image_filter["tags"] = {
                 "value": [],
-                "excludes": skip_tags,
+                "excludes": skip_tag_ids,
                 "modifier": "INCLUDES_ALL",
                 "depth": -1,
             }
@@ -40,20 +41,16 @@ def get_all_images(
 
         images = client.find_images(f=image_filter, filter=pagination)
         if not images:
-            # no more pages
             break
 
         log.info(f"Fetched page {page} with {len(images)} images")
-        for img in images:
-            yield img
-
-        # move to next page
+        all_images.extend(images)
         page += 1
+
+    return all_images
 
 
 def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> None:
-    """Process e621 metadata and update Stash records"""
-    # same as before...
     image = stash.find_image(image_id)
     if any(t["name"] == "e621_tagged" for t in image.get("tags", [])):
         return
@@ -66,7 +63,7 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
         response = requests.get(
             f"https://e621.net/posts.json?md5={image_md5}",
             headers={"User-Agent": "Stash-e621-Tagger/1.0"},
-            timeout=10
+            timeout=10,
         )
         response.raise_for_status()
         post_data = response.json().get("post", {})
@@ -100,27 +97,27 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
 
     performer_ids = []
     for char in post_data.get("tags", {}).get("character", []):
-        name = char.split('_(')[0]
+        name = char.split("_(")[0]
         perf = get_or_create_performer(stash, name)
         performer_ids.append(perf["id"])
 
     try:
-        stash.update_image({
-            "id": image_id,
-            "organized": True,
-            "urls": [post_url],
-            "tag_ids": list(set(tag_ids)),
-            "studio_id": studio_id,
-            "performer_ids": performer_ids
-        })
+        stash.update_image(
+            {
+                "id": image_id,
+                "organized": True,
+                "urls": [post_url],
+                "tag_ids": list(set(tag_ids)),
+                "studio_id": studio_id,
+                "performer_ids": performer_ids,
+            }
+        )
         log.info(f"Image updated: {image_id}")
     except Exception as e:
         log.error(f"Update failed: {str(e)}")
 
 
 def get_or_create_tag(stash: StashInterface, tag_name: str) -> dict:
-    """Find or create tag with hierarchy handling"""
-    # Validate tag name
     tag_name = tag_name.strip()
     if not tag_name:
         log.error("Attempted to create tag with empty name")
@@ -129,15 +126,17 @@ def get_or_create_tag(stash: StashInterface, tag_name: str) -> dict:
     existing = stash.find_tags(f={"name": {"value": tag_name, "modifier": "EQUALS"}})
     if existing:
         return existing[0]
-    
+
     parts = tag_name.split(":")
     parent_id = None
     for i in range(len(parts)):
-        current_name = ":".join(parts[:i+1]).strip()
+        current_name = ":".join(parts[: i + 1]).strip()
         if not current_name:
             continue
-            
-        existing = stash.find_tags(f={"name": {"value": current_name, "modifier": "EQUALS"}})
+
+        existing = stash.find_tags(
+            f={"name": {"value": current_name, "modifier": "EQUALS"}}
+        )
         if not existing:
             create_data = {"name": current_name}
             if parent_id:
@@ -155,28 +154,27 @@ def get_or_create_tag(stash: StashInterface, tag_name: str) -> dict:
             parent_id = existing[0]["id"]
     return {"id": parent_id}
 
+
 def get_or_create_studio(stash: StashInterface, name: str) -> dict:
-    """Find or create studio"""
     studios = stash.find_studios(f={"name": {"value": name, "modifier": "EQUALS"}})
     return studios[0] if studios else stash.create_studio({"name": name})
 
 
 def get_or_create_performer(stash: StashInterface, name: str) -> dict:
-    """Find or create performer"""
-    performers = stash.find_performers(f={"name": {"value": name, "modifier": "EQUALS"}})
+    performers = stash.find_performers(
+        f={"name": {"value": name, "modifier": "EQUALS"}}
+    )
     return performers[0] if performers else stash.create_performer({"name": name})
 
 
 def scrape_image(client: StashInterface, image_id: str) -> None:
-    """Main scraping handler"""
-    # same logic as before for MD5 extraction and process_e621_post call
     image = client.find_image(image_id)
     if not image or not image.get("visual_files"):
         return
 
     file_data = image["visual_files"][0]
     filename = file_data["basename"]
-    filename_md5 = filename.split('.')[0]
+    filename_md5 = filename.split(".")[0]
 
     if re.match(r"^[a-f0-9]{32}$", filename_md5):
         final_md5 = filename_md5
@@ -197,30 +195,41 @@ def scrape_image(client: StashInterface, image_id: str) -> None:
 
 
 if __name__ == "__main__":
-    log.info("Starting tagger with pagination...")
+    log.info("Starting tagger with stable pagination snapshot...")
     json_input = json.loads(sys.stdin.read())
     stash = StashInterface(json_input["server_connection"])
 
     config = stash.get_configuration().get("plugins", {})
-    settings = {
-        "SkipTags": "e621_tagged, e621_tag_failed",
-        "ExcludeOrganized": False
-    }
+    settings = {"SkipTags": "e621_tagged, e621_tag_failed", "ExcludeOrganized": False}
     settings.update(config.get("e621_tagger", {}))
 
+    # ensure e621 tags exist and get their ids
     e621_tagged = get_or_create_tag(stash, "e621_tagged")
     e621_failed = get_or_create_tag(stash, "e621_tag_failed")
 
-    skip_tags = [t.strip() for t in settings["SkipTags"].split(",") if t.strip()]
-    skip_tags = [st for st in skip_tags]
-    skip_tags.extend([e621_tagged["id"], e621_failed["id"]])
+    # resolve skip tag NAMES from settings to tag IDs
+    skip_tag_names = [n.strip() for n in settings["SkipTags"].split(",") if n.strip()]
+    skip_tag_ids = []
+    for name in skip_tag_names:
+        found = stash.find_tags(f={"name": {"value": name, "modifier": "EQUALS"}})
+        if found:
+            skip_tag_ids.append(found[0]["id"])
+    # always include the internal e621 tags (ensure ints)
+    skip_tag_ids.extend([e621_tagged["id"], e621_failed["id"]])
 
-    log.info("Fetching images in pages...")
-    for idx, image in enumerate(get_all_images(stash, skip_tags, settings["ExcludeOrganized"], per_page=100), start=1):
-        current_tags = [t["name"] for t in image.get("tags", [])]
-        if any(t in current_tags for t in skip_tags):
+    log.info("Fetching images in pages (stable snapshot)...")
+    images = get_all_images(
+        stash, skip_tag_ids, settings["ExcludeOrganized"], per_page=10
+    )
+    total = len(images) or 1
+
+    for idx, image in enumerate(images, start=1):
+        progress = idx / total
+        log.progress(progress)
+
+        current_tag_ids = [t["id"] for t in image.get("tags", [])]
+        if any(tid in current_tag_ids for tid in skip_tag_ids):
             log.info(f"Skipping image {image['id']} - contains skip tag")
             continue
 
-        log.progress(idx)
         scrape_image(stash, image["id"])
