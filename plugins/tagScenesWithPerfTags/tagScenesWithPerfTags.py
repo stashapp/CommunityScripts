@@ -1,8 +1,15 @@
+import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import sys
 import json
 
 def processAll():
+    exclusion_marker_tag_id = None
+    if settings["excludeSceneWithTag"] != "":
+        exclussion_marker_tag = stash.find_tag(settings["excludeSceneWithTag"])
+        if exclussion_marker_tag is not None:
+            exclusion_marker_tag_id = exclussion_marker_tag['id']
+    
     query = {
         "tags": {
             "modifier": "NOT_NULL",
@@ -12,25 +19,53 @@ def processAll():
             "value": 0,
         },
     }
-    performersTotal = stash.find_performers(f=query, get_count=True)[0]
+    performersTotal = stash.find_performers(f=query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
     i = 0
-    tags = []
-    scenes = []
     while i < performersTotal:
+        log.progress((i / performersTotal))
+        
         perf = stash.find_performers(f=query, filter={"page": i, "per_page": 1})
-        for tag in perf[0]["tags"]:
-            tags.append(tag["id"])
-        for scene in perf[0]["scenes"]:
-            scenes.append(scene["id"])
-        stash.update_scenes(
-            {
-                "ids": scenes,
-                "tag_ids": {"mode": "ADD", "ids": tags},
+
+        performer_tags_ids = []
+        performer_tags_names = []
+        for performer_tag in perf[0]["tags"]:
+            performer_tags_ids.append(performer_tag["id"])
+            performer_tags_names.append(performer_tag["name"])
+        
+        scene_query = {
+            "performers": {
+                "value": [perf[0]["id"]],
+                "modifier": "INCLUDES_ALL"
             }
-        )
+        }
+        if settings['excludeSceneOrganized']:
+            scene_query["organized"] = False
+        if exclusion_marker_tag_id is not None:
+             scene_query["tags"] = {
+                "value": [exclusion_marker_tag_id],
+                "modifier": "EXCLUDES"
+            }
+
+        performer_scene_count = stash.find_scenes(f=scene_query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
+        
+        if performer_scene_count > 0:
+            log.info(f"updating {performer_scene_count} scenes of performer \"{ perf[0]['name']}\" with tags {performer_tags_names}")
+
+            performer_scene_page_size = 100
+            performer_scene_page = 0
+            while performer_scene_page * performer_scene_page_size < performer_scene_count:
+                performer_scenes = stash.find_scenes(f=scene_query, filter={"page": performer_scene_page, "per_page": performer_scene_page_size}, fragment='id')
+                performer_scene_ids = [performer_scene['id'] for performer_scene in performer_scenes]
+
+                stash.update_scenes(
+                    {
+                        "ids": performer_scene_ids,
+                        "tag_ids": {"mode": "ADD", "ids": performer_tags_ids},
+                    }
+                )
+                performer_scene_page += 1
+
         i = i + 1
-        tags = []
-        scenes = []
 
 
 def processScene(scene):
@@ -42,6 +77,10 @@ def processScene(scene):
             if tag["name"] == settings["excludeSceneWithTag"]:
                 should_tag = False
                 break
+    
+    if settings['excludeSceneOrganized']:
+        if scene['organized']:
+            should_tag = False
 
     if should_tag:
         for perf in scene["performers"]:
@@ -64,6 +103,7 @@ stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()
 settings = {
     "excludeSceneWithTag": "",
+    "excludeSceneOrganized": False
 }
 if "tagScenesWithPerfTags" in config["plugins"]:
     settings.update(config["plugins"]["tagScenesWithPerfTags"])

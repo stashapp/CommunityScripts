@@ -1,5 +1,7 @@
 # **Set Performers From Tags**  
 
+https://discourse.stashapp.cc/t/set-performers-from-tags/1390
+
 This Stash plugin automatically assigns performers to scenes and images based on their tags. It matches performer names (including aliases) with scene/image tags, even if tags contain special characters like dashes, underscores, dots, or hashtags. The plugin can be run manually or triggered automatically when scenes or images are created or updated.  
 
 ## **Features**  

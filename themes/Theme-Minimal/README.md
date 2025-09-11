@@ -1,5 +1,7 @@
 # Minimal Theme
 
+https://discourse.stashapp.cc/t/minimal/1421
+
 A theme that brings content to the front.
 
 It's still rough around the edges. Feedback is welcome.

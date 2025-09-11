@@ -1,7 +1,7 @@
 name: nfoSceneParser
 description: Fills scene data from NFO or filename pattern
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/nfoSceneParser
-version: 1.3.1
+version: 1.5.0
 exec:
   - python
   - "{pluginDir}/nfoSceneParser.py"
@@ -16,4 +16,4 @@ tasks:
     description: Reload all scenes that have specific "marker" tag (see plugin's config.py)
     defaultArgs:
       mode: reload
-# Last Updated January 3, 2024
+# Last Updated June 24, 2025

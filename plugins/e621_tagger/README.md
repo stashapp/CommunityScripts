@@ -1,5 +1,7 @@
 # e621 tagger
 
+https://discourse.stashapp.cc/t/e621-tagger/1377
+
 Just a quick script to tag your uploadings
 
 Took some code from bulkImageScrape as example, because I'm not a python dev

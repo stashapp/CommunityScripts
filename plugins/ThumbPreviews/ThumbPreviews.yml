@@ -1,0 +1,9 @@
+name: Thumbnail Previews
+description: Displays preview videos on thumbnail cards.
+version: 0.1
+ui:
+  javascript:
+    - ThumbPreviews.js
+# You might need to require CommunityScriptsUILibrary if using csLib
+  requires:
+   - CommunityScriptsUILibrary 

@@ -1,0 +1,56 @@
+name: Plex Sync
+description: Refresh Plex metadata when scene updated in Stash. Requires the StashPlexAgent.bundle agent.
+version: 0.1
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python3
+  - "{pluginDir}/PlexSync.py"
+interface: raw
+settings:
+  plexToken:
+    displayName: Plex server token
+    description: The X-Plex-Token for your connected Plex server.
+    type: STRING
+  plexHost:
+    displayName: Plex server address
+    description: Address to your Plex server; only hostname (do NOT add "https" or similar). "localhost" should work if Stash is on the same machine.
+    type: STRING
+  plexPort:
+    displayName: Plex server port
+    description: Port to your Plex server. Usually "32400"
+    type: STRING
+  tagStashIDs:
+    displayName: Set tags on scenes based on their Stashbox source. Suggested default False.
+    description: If enabled, you MUST manually create each tag, and set all the following tagID configs.
+    type: BOOLEAN
+  skipUnorganized:
+    displayName: Do not process scenes that are not marked as "organized". Suggested default True.
+    type: BOOLEAN
+  cleanTitles:
+    displayName: Convert away non-ASCII characters in titles. Suggested default True.
+    description: This is useful especially for "new Plex experience", but it will remove non-ASCII characters such as Cyrillic script.
+    type: BOOLEAN
+  tagID_emptystashid:
+    displayName: Tag ID for scenes not containing any Stashbox URL
+    type: STRING
+  tagID_stashdb:
+    displayName: Tag ID for scenes from StashDB
+    type: STRING
+  tagID_pmvstash:
+    displayName: Tag ID for scenes from PMVStash
+    type: STRING
+  tagID_porndb:
+    displayName: Tag ID for scenes from PornDB
+    type: STRING
+  tagID_fansdb:
+    displayName: Tag ID for scenes from FansDB
+    type: STRING
+  tagID_javstash:
+    displayName: Tag ID for scenes from JAVStash
+    type: STRING
+
+hooks:
+  - name: Scene update
+    description: Run tasks for PlexSync
+    triggeredBy:
+      - Scene.Update.Post

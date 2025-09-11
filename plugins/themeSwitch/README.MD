@@ -1,5 +1,7 @@
 # Theme Switch
 
+https://discourse.stashapp.cc/t/theme-switch/1414
+
 ## Information about plugin
 
 Adds a button that shows a menu, allowing you to change CSS Themes and apply various CSS snippets for Stash App. The CSS isn't made by myself and in the CSS files authors where known are referenced.

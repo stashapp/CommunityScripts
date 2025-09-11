@@ -1,5 +1,7 @@
 # Path Parser
 
+https://discourse.stashapp.cc/t/path-parser/1386
+
 Updates scene info based on the file path.
 
 ## Contents

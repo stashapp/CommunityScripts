@@ -1,0 +1,16 @@
+name: Video Banner
+description: Displays random generated preview videos in the detail page banner.
+version: 0.1.1
+#url: https://github.com/your_repo # Replace with your plugin repository URL
+
+ui:
+  requires:
+    - CommunityScriptsUILibrary # Ensure CommunityScriptsUILibrary is loaded before this plugin
+  javascript:
+    - VideoBanner.js
+
+settings:
+  videoBrightness:
+    displayName: Video Brightness (%)
+    description: Adjust the brightness of the background video (e.g., 50 for 50%).
+    type: NUMBER 

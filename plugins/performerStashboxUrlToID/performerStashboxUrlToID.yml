@@ -1,0 +1,19 @@
+name: Performer Stashbox Url to ID
+description: If the performer has a url for another stashbox add it as an id to the performer
+version: 0.3
+url: https://github.com/stashapp/CommunityScripts/
+exec:
+  - python
+  - "{pluginDir}/performerStashboxUrlToID.py"
+interface: raw
+hooks:
+  - name: Process Performer
+    description: Adds/updates stashbox IDs based on the performer URLs
+    triggeredBy:
+      - Performer.Update.Post
+      - Performer.Create.Post
+tasks:
+  - name: Process all
+    description: Process Performers
+    defaultArgs:
+      mode: processPerformers

@@ -1,4 +1,7 @@
 # CJ's Card Tweaks
+
+https://discourse.stashapp.cc/t/cjs-card-tweaks/1342
+
 This plugin contains the various tweaks I've made to my Stash cards for anyone who may be interested. Each tweak will be toggleable, so users have the option to subscribe to some without subscribing to all.
 
 ## Tweaks

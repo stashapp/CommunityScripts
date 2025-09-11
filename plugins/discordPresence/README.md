@@ -1,5 +1,7 @@
 # Discord Presence
 
+https://discourse.stashapp.cc/t/discord-presence/1374
+
 A plugin which shows the metadata of the currently playing Stash scene as your Discord presence
 
 ## Setup

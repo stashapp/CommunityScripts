@@ -1,6 +1,6 @@
 name: Extra Performer Info
-description: Add extra tags for VR and other ues
-version: 0.1
+description: add award info from wikidata
+version: 0.2
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python

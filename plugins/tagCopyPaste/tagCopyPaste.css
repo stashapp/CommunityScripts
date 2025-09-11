@@ -1,0 +1,8 @@
+button.imageGalleryNav-copyButton,
+button.imageGalleryNav-pasteButton {
+  float: right;
+  height: 21px;
+  line-height: 20px;
+  padding: 0 10px;
+  margin-right: 15px;
+}
