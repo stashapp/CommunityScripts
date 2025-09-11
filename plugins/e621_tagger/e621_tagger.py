@@ -6,17 +6,18 @@ import time
 import requests
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
+from typing import List
+
+
+MD5_RE = re.compile(r"^[a-f0-9]{32}$")
 
 
 def get_all_images(
     client: StashInterface,
-    skip_tag_ids: list[int],
+    skip_tag_ids: List[int],
     exclude_organized: bool,
     per_page: int = 100,
-) -> list[dict]:
-    """
-    Fetch all images (returns a stable list snapshot). Uses numeric tag IDs in skip_tag_ids.
-    """
+) -> List[dict]:
     page = 1
     all_images = []
     while True:
@@ -43,25 +44,80 @@ def get_all_images(
         if not images:
             break
 
-        log.info(f"Fetched page {page} with {len(images)} images")
+        log.info(f"Fetched image page {page} with {len(images)} images")
         all_images.extend(images)
         page += 1
 
     return all_images
 
 
-def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> None:
-    image = stash.find_image(image_id)
-    if any(t["name"] == "e621_tagged" for t in image.get("tags", [])):
-        return
+def get_all_scenes(
+    client: StashInterface,
+    skip_tag_ids: List[int],
+    exclude_organized: bool,
+    per_page: int = 100,
+) -> List[dict]:
+    page = 1
+    all_scenes = []
+    while True:
+        scene_filter = {}
+        pagination = {
+            "page": page,
+            "per_page": per_page,
+            "sort": "created_at",
+            "direction": "ASC",
+        }
 
-    if any(t["name"] == "e621_tag_failed" for t in image.get("tags", [])):
+        if skip_tag_ids:
+            scene_filter["tags"] = {
+                "value": [],
+                "excludes": skip_tag_ids,
+                "modifier": "INCLUDES_ALL",
+                "depth": -1,
+            }
+
+        if exclude_organized:
+            scene_filter["organized"] = False
+
+        scenes = client.find_scenes(f=scene_filter, filter=pagination)
+        if not scenes:
+            break
+
+        log.info(f"Fetched scene page {page} with {len(scenes)} scenes")
+        all_scenes.extend(scenes)
+        page += 1
+
+    return all_scenes
+
+
+def process_e621_post_for_item(
+    stash: StashInterface, item_type: str, item_id: str, item_md5: str
+) -> None:
+    """
+    item_type: "image" or "scene"
+    Update the corresponding object on success, or tag as failed on API error.
+    """
+    # Fetch latest object to check tags
+    if item_type == "image":
+        obj = stash.find_image(item_id)
+        already_tagged = any(t["name"] == "e621_tagged" for t in obj.get("tags", []))
+        already_failed = any(
+            t["name"] == "e621_tag_failed" for t in obj.get("tags", [])
+        )
+    else:
+        obj = stash.find_scene(item_id)
+        already_tagged = any(t["name"] == "e621_tagged" for t in obj.get("tags", []))
+        already_failed = any(
+            t["name"] == "e621_tag_failed" for t in obj.get("tags", [])
+        )
+
+    if already_tagged or already_failed:
         return
 
     try:
         time.sleep(0.5)
         response = requests.get(
-            f"https://e621.net/posts.json?md5={image_md5}",
+            f"https://e621.net/posts.json?md5={item_md5}",
             headers={"User-Agent": "Stash-e621-Tagger/1.0"},
             timeout=10,
         )
@@ -70,8 +126,11 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
     except Exception as e:
         log.error(f"Marking as failed. e621 API error: {str(e)}")
         e621_tag_failed = get_or_create_tag(stash, "e621_tag_failed")
-        fail_ids = [e621_tag_failed["id"]] + [t["id"] for t in image.get("tags", [])]
-        stash.update_image({"id": image_id, "tag_ids": list(set(fail_ids))})
+        fail_ids = [e621_tag_failed["id"]] + [t["id"] for t in obj.get("tags", [])]
+        if item_type == "image":
+            stash.update_image({"id": item_id, "tag_ids": list(set(fail_ids))})
+        else:
+            stash.update_scene({"id": item_id, "tag_ids": list(set(fail_ids))})
         return
 
     if not post_data:
@@ -81,7 +140,7 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
     post_url = f"https://e621.net/posts/{post_data['id']}"
 
     tag_ids = [e621_tag["id"]]
-    for cat in ["general", "species", "character", "artist", "copyright"]:
+    for cat in ["general", "species", "character", "artist", "copyright", "meta"]:
         for tag in post_data.get("tags", {}).get(cat, []):
             clean_tag = tag.strip()
             if not clean_tag:
@@ -102,17 +161,20 @@ def process_e621_post(stash: StashInterface, image_id: str, image_md5: str) -> N
         performer_ids.append(perf["id"])
 
     try:
-        stash.update_image(
-            {
-                "id": image_id,
-                "organized": True,
-                "urls": [post_url],
-                "tag_ids": list(set(tag_ids)),
-                "studio_id": studio_id,
-                "performer_ids": performer_ids,
-            }
-        )
-        log.info(f"Image updated: {image_id}")
+        update_payload = {
+            "id": item_id,
+            "organized": True,
+            "urls": [post_url],
+            "tag_ids": list(set(tag_ids)),
+            "studio_id": studio_id,
+            "performer_ids": performer_ids,
+        }
+        if item_type == "image":
+            stash.update_image(update_payload)
+            log.info(f"Image updated: {item_id}")
+        else:
+            stash.update_scene(update_payload)
+            log.info(f"Scene updated: {item_id}")
     except Exception as e:
         log.error(f"Update failed: {str(e)}")
 
@@ -173,29 +235,92 @@ def scrape_image(client: StashInterface, image_id: str) -> None:
         return
 
     file_data = image["visual_files"][0]
-    filename = file_data["basename"]
-    filename_md5 = filename.split(".")[0]
+    filename = file_data.get("basename", "")
+    filename_md5 = filename.split(".")[0] if filename else ""
 
-    if re.match(r"^[a-f0-9]{32}$", filename_md5):
+    if MD5_RE.match(filename_md5):
         final_md5 = filename_md5
-        log.info(f"Using filename MD5: {final_md5}")
+        log.info(f"Using filename MD5 for image: {final_md5}")
     else:
-        try:
-            md5_hash = hashlib.md5()
-            with open(file_data["path"], "rb") as f:
-                for chunk in iter(lambda: f.read(65536), b""):
-                    md5_hash.update(chunk)
-            final_md5 = md5_hash.hexdigest()
-            log.info(f"Generated content MD5: {final_md5}")
-        except Exception as e:
-            log.error(f"Failed to generate MD5: {str(e)}")
+        # try if API provided checksum/md5 field on image
+        if image.get("checksum"):
+            final_md5 = image["checksum"]
+            log.info(f"Using image checksum: {final_md5}")
+        elif image.get("md5"):
+            final_md5 = image["md5"]
+            log.info(f"Using image md5: {final_md5}")
+        else:
+            try:
+                md5_hash = hashlib.md5()
+                with open(file_data["path"], "rb") as f:
+                    for chunk in iter(lambda: f.read(65536), b""):
+                        md5_hash.update(chunk)
+                final_md5 = md5_hash.hexdigest()
+                log.info(f"Generated content MD5 for image: {final_md5}")
+            except Exception as e:
+                log.error(f"Failed to generate MD5 for image: {str(e)}")
+                return
+
+    process_e621_post_for_item(client, "image", image_id, final_md5)
+
+
+def scrape_scene(client: StashInterface, scene_id: str) -> None:
+    """
+    Attempt to find a stable MD5 for a scene/video:
+      - prefer scene.checksum or scene.md5
+      - then files[0].checksum
+      - then files[0].basename parsed for md5
+      - fallback: compute MD5 from files[0].path
+    """
+    scene = client.find_scene(scene_id)
+    if not scene:
+        return
+
+    final_md5 = None
+
+    # direct fields
+    if scene.get("checksum") and MD5_RE.match(scene.get("checksum")):
+        final_md5 = scene.get("checksum")
+        log.info(f"Using scene checksum: {final_md5}")
+    elif scene.get("md5") and MD5_RE.match(scene.get("md5")):
+        final_md5 = scene.get("md5")
+        log.info(f"Using scene md5: {final_md5}")
+    else:
+        files = scene.get("files") or scene.get("scene_files") or []
+        if files:
+            file_data = files[0]
+            # try file-level checksum
+            if file_data.get("checksum") and MD5_RE.match(file_data.get("checksum")):
+                final_md5 = file_data.get("checksum")
+                log.info(f"Using file checksum for scene: {final_md5}")
+            else:
+                basename = file_data.get("basename", "")
+                filename_md5 = basename.split(".")[0] if basename else ""
+                if MD5_RE.match(filename_md5):
+                    final_md5 = filename_md5
+                    log.info(f"Using filename MD5 for scene: {final_md5}")
+                else:
+                    # attempt to compute
+                    try:
+                        md5_hash = hashlib.md5()
+                        with open(file_data["path"], "rb") as f:
+                            for chunk in iter(lambda: f.read(65536), b""):
+                                md5_hash.update(chunk)
+                        final_md5 = md5_hash.hexdigest()
+                        log.info(f"Generated content MD5 for scene: {final_md5}")
+                    except Exception as e:
+                        log.error(f"Failed to generate MD5 for scene: {str(e)}")
+                        return
+        else:
+            log.error(f"No files found for scene {scene_id}; cannot compute md5")
             return
 
-    process_e621_post(client, image_id, final_md5)
+    if final_md5:
+        process_e621_post_for_item(client, "scene", scene_id, final_md5)
 
 
 if __name__ == "__main__":
-    log.info("Starting tagger with stable pagination snapshot...")
+    log.info("Starting tagger with stable pagination snapshot (images + scenes)...")
     json_input = json.loads(sys.stdin.read())
     stash = StashInterface(json_input["server_connection"])
 
@@ -209,7 +334,7 @@ if __name__ == "__main__":
 
     # resolve skip tag NAMES from settings to tag IDs
     skip_tag_names = [n.strip() for n in settings["SkipTags"].split(",") if n.strip()]
-    skip_tag_ids = []
+    skip_tag_ids: List[int] = []
     for name in skip_tag_names:
         found = stash.find_tags(f={"name": {"value": name, "modifier": "EQUALS"}})
         if found:
@@ -219,17 +344,43 @@ if __name__ == "__main__":
 
     log.info("Fetching images in pages (stable snapshot)...")
     images = get_all_images(
-        stash, skip_tag_ids, settings["ExcludeOrganized"], per_page=10
+        stash, skip_tag_ids, settings["ExcludeOrganized"], per_page=50
     )
-    total = len(images) or 1
+    log.info("Fetching scenes in pages (stable snapshot)...")
+    scenes = get_all_scenes(
+        stash, skip_tag_ids, settings["ExcludeOrganized"], per_page=50
+    )
 
-    for idx, image in enumerate(images, start=1):
-        progress = idx / total
-        log.progress(progress)
+    # build unified list with type so we can preserve progress and skipping logic
+    unified = []
+    for img in images:
+        unified.append({"type": "image", "obj": img})
+    for sc in scenes:
+        unified.append({"type": "scene", "obj": sc})
 
-        current_tag_ids = [t["id"] for t in image.get("tags", [])]
+    total = len(unified) or 1
+    for idx, entry in enumerate(unified, start=1):
+        # report start-of-item progress (0..1). avoid sending 1.0 until the very end.
+        log.progress(float(idx - 1) / float(total))
+
+        item_type = entry["type"]
+        item = entry["obj"]
+        item_id = item["id"]
+
+        current_tag_ids = [t["id"] for t in item.get("tags", [])]
         if any(tid in current_tag_ids for tid in skip_tag_ids):
-            log.info(f"Skipping image {image['id']} - contains skip tag")
+            log.info(f"Skipping {item_type} {item_id} - contains skip tag")
+            # reflect the skipped item as completed
+            log.progress(float(idx) / float(total))
             continue
 
-        scrape_image(stash, image["id"])
+        if item_type == "image":
+            scrape_image(stash, item_id)
+        else:
+            scrape_scene(stash, item_id)
+
+        # mark this item done
+        log.progress(float(idx) / float(total))
+
+    # ensure UI shows complete when finished
+    log.progress(1.0)
