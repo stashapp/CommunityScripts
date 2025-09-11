@@ -140,7 +140,7 @@ def process_e621_post_for_item(
     post_url = f"https://e621.net/posts/{post_data['id']}"
 
     tag_ids = [e621_tag["id"]]
-    for cat in ["general", "species", "character", "artist", "copyright", "meta"]:
+    for cat in ["general", "species", "artist", "copyright", "meta"]:
         for tag in post_data.get("tags", {}).get(cat, []):
             clean_tag = tag.strip()
             if not clean_tag:
