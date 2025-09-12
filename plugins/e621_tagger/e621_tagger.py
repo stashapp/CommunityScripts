@@ -7,7 +7,7 @@ import requests
 import itertools
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
-from typing import List
+from typing import List, Optional, Tuple
 
 MD5_RE = re.compile(r"^[a-f0-9]{32}$")
 
@@ -94,7 +94,11 @@ def stream_scenes(
 
 def process_e621_post_for_item(
     stash: StashInterface, item_type: str, item_id: str, item_md5: str
-) -> None:
+) -> bool:
+    """
+    CHANGED: return boolean indicating whether the item was updated/marked (True) or left untouched (False).
+    This lets the caller (main loop) increment progress only when an item actually changed state.
+    """
     # Fetch latest object to check tags
     if item_type == "image":
         obj = stash.find_image(item_id)
@@ -110,7 +114,7 @@ def process_e621_post_for_item(
         )
 
     if already_tagged or already_failed:
-        return
+        return False  # nothing to do
 
     try:
         time.sleep(0.5)
@@ -125,14 +129,19 @@ def process_e621_post_for_item(
         log.error(f"Marking as failed. e621 API error: {str(e)}")
         e621_tag_failed = get_or_create_tag(stash, "e621_tag_failed")
         fail_ids = [e621_tag_failed["id"]] + [t["id"] for t in obj.get("tags", [])]
-        if item_type == "image":
-            stash.update_image({"id": item_id, "tag_ids": list(set(fail_ids))})
-        else:
-            stash.update_scene({"id": item_id, "tag_ids": list(set(fail_ids))})
-        return
+        try:
+            if item_type == "image":
+                stash.update_image({"id": item_id, "tag_ids": list(set(fail_ids))})
+            else:
+                stash.update_scene({"id": item_id, "tag_ids": list(set(fail_ids))})
+            return True
+        except Exception as e2:
+            log.error(f"Failed to mark as failed: {str(e2)}")
+            return False
 
     if not post_data:
-        return
+        # not found on e621: leave untouched so it can be retried later (or user may decide to mark failed)
+        return False
 
     e621_tag = get_or_create_tag(stash, "e621_tagged")
     post_url = f"https://e621.net/posts/{post_data['id']}"
@@ -173,8 +182,10 @@ def process_e621_post_for_item(
         else:
             stash.update_scene(update_payload)
             log.info(f"Scene updated: {item_id}")
+        return True
     except Exception as e:
         log.error(f"Update failed: {str(e)}")
+        return False
 
 
 def get_or_create_tag(stash: StashInterface, tag_name: str) -> dict:
@@ -227,10 +238,13 @@ def get_or_create_performer(stash: StashInterface, name: str) -> dict:
     return performers[0] if performers else stash.create_performer({"name": name})
 
 
-def scrape_image(client: StashInterface, image_id: str) -> None:
+def scrape_image(client: StashInterface, image_id: str) -> bool:
+    """
+    PAGINATION: return True if item was updated/marked (so main loop can count progress).
+    """
     image = client.find_image(image_id)
     if not image or not image.get("visual_files"):
-        return
+        return False
 
     file_data = image["visual_files"][0]
     filename = file_data.get("basename", "")
@@ -256,15 +270,18 @@ def scrape_image(client: StashInterface, image_id: str) -> None:
                 log.info(f"Generated content MD5 for image: {final_md5}")
             except Exception as e:
                 log.error(f"Failed to generate MD5 for image: {str(e)}")
-                return
+                return False
 
-    process_e621_post_for_item(client, "image", image_id, final_md5)
+    return process_e621_post_for_item(client, "image", image_id, final_md5)
 
 
-def scrape_scene(client: StashInterface, scene_id: str) -> None:
+def scrape_scene(client: StashInterface, scene_id: str) -> bool:
+    """
+    PAGINATION: return True if item was updated/marked (so main loop can count progress).
+    """
     scene = client.find_scene(scene_id)
     if not scene:
-        return
+        return False
 
     final_md5 = None
 
@@ -297,17 +314,16 @@ def scrape_scene(client: StashInterface, scene_id: str) -> None:
                         log.info(f"Generated content MD5 for scene: {final_md5}")
                     except Exception as e:
                         log.error(f"Failed to generate MD5 for scene: {str(e)}")
-                        return
+                        return False
         else:
             log.error(f"No files found for scene {scene_id}; cannot compute md5")
-            return
+            return False
 
-    if final_md5:
-        process_e621_post_for_item(client, "scene", scene_id, final_md5)
+    return process_e621_post_for_item(client, "scene", scene_id, final_md5)
 
 
 if __name__ == "__main__":
-    log.info("Starting tagger with stable pagination snapshot (streamed)...")
+    log.info("Starting tagger with scanning passes until no work left...")
     json_input = json.loads(sys.stdin.read())
     stash = StashInterface(json_input["server_connection"])
 
@@ -337,30 +353,117 @@ if __name__ == "__main__":
 
     log.info(f"Total items (images + scenes): {total}")
 
-    stream = itertools.chain(
-        stream_images(
-            stash, skip_tag_ids, settings["ExcludeOrganized"], per_page=per_page
-        ),
-        stream_scenes(
-            stash, skip_tag_ids, settings["ExcludeOrganized"], per_page=per_page
-        ),
-    )
+    processed_count = 0
+    pass_num = 0
+    # Loop passes until a full pass processes zero items.
+    while True:
+        pass_num += 1
+        log.info(f"Starting scanning pass #{pass_num}")
+        pass_processed = 0
 
-    for idx, (item_type, item) in enumerate(stream, start=1):
-        log.progress(float(idx - 1) / float(total))
+        # Scan images by pages
+        page = 1
+        while True:
+            pagination = {
+                "page": page,
+                "per_page": per_page,
+                "sort": "created_at",
+                "direction": "ASC",
+            }
+            images = stash.find_images(f=_build_filter(skip_tag_ids, settings["ExcludeOrganized"]), filter=pagination)
+            log.info(f"[pass {pass_num}] fetched image page {page}, count={len(images)}")
+            if not images:
+                break
+            for img in images:
+                item_id = img.get("id")
+                if not item_id:
+                    log.error(f"[pass {pass_num}] image without id on page {page}")
+                    continue
 
-        item_id = item["id"]
-        current_tag_ids = [t["id"] for t in item.get("tags", [])]
-        if any(tid in current_tag_ids for tid in skip_tag_ids):
-            log.info(f"Skipping {item_type} {item_id} - contains skip tag")
-            log.progress(float(idx) / float(total))
-            continue
+                # Defensive fetch of current tags to avoid race conditions
+                current = stash.find_image(item_id)
+                current_tag_ids = [t["id"] for t in current.get("tags", [])]
+                if any(tid in current_tag_ids for tid in skip_tag_ids):
+                    # Shouldn't usually happen because filter excluded them, but handle gracefully.
+                    log.info(f"[pass {pass_num}] skipping image {item_id} - now has skip tag")
+                    processed_count += 1
+                    pass_processed += 1
+                    log.progress(float(processed_count) / float(total))
+                    continue
 
-        if item_type == "image":
-            scrape_image(stash, item_id)
-        else:
-            scrape_scene(stash, item_id)
+                # Attempt to process; scrape_image now returns True if it updated/marked the item.
+                try:
+                    updated = scrape_image(stash, item_id)
+                except Exception as e:
+                    log.error(f"[pass {pass_num}] scrape_image exception for {item_id}: {str(e)}")
+                    updated = False
 
-        log.progress(float(idx) / float(total))
+                if updated:
+                    processed_count += 1
+                    pass_processed += 1
+                    log.info(f"[pass {pass_num}] processed image {item_id} (processed_count={processed_count})")
+                    log.progress(float(processed_count) / float(total))
+                # If not updated, it will remain in future passes. Continue scanning.
 
+            # If fewer than per_page results, we're at the end of current snapshot
+            if len(images) < per_page:
+                break
+            page += 1
+
+        # Scan scenes by pages
+        page = 1
+        while True:
+            pagination = {
+                "page": page,
+                "per_page": per_page,
+                "sort": "created_at",
+                "direction": "ASC",
+            }
+            scenes = stash.find_scenes(f=_build_filter(skip_tag_ids, settings["ExcludeOrganized"]), filter=pagination)
+            log.info(f"[pass {pass_num}] fetched scene page {page}, count={len(scenes)}")
+            if not scenes:
+                break
+            for sc in scenes:
+                item_id = sc.get("id")
+                if not item_id:
+                    log.error(f"[pass {pass_num}] scene without id on page {page}")
+                    continue
+
+                # Defensive fetch
+                current = stash.find_scene(item_id)
+                current_tag_ids = [t["id"] for t in current.get("tags", [])]
+                if any(tid in current_tag_ids for tid in skip_tag_ids):
+                    log.info(f"[pass {pass_num}] skipping scene {item_id} - now has skip tag")
+                    processed_count += 1
+                    pass_processed += 1
+                    log.progress(float(processed_count) / float(total))
+                    continue
+
+                try:
+                    updated = scrape_scene(stash, item_id)
+                except Exception as e:
+                    log.error(f"[pass {pass_num}] scrape_scene exception for {item_id}: {str(e)}")
+                    updated = False
+
+                if updated:
+                    processed_count += 1
+                    pass_processed += 1
+                    log.info(f"[pass {pass_num}] processed scene {item_id} (processed_count={processed_count})")
+                    log.progress(float(processed_count) / float(total))
+
+            if len(scenes) < per_page:
+                break
+            page += 1
+
+        log.info(f"Pass #{pass_num} finished. items processed this pass: {pass_processed}")
+
+        # If no items processed in a full pass, we're done
+        if pass_processed == 0:
+            log.info("No items processed in last pass; finishing scan.")
+            break
+
+        # Small sleep to avoid hammering API and to let the DB settle between passes
+        time.sleep(0.2)
+
+    # ensure progress finished
     log.progress(1.0)
