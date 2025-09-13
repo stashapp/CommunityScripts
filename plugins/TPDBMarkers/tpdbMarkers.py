@@ -47,7 +47,7 @@ def processScene(scene):
                             marker["tags"].append(int(getTag("[TPDBMarker]")))
 
                         if settings["addTPDBMarkerTitle"]:
-                            marker["title"] = f"[TPDBMarker] {m["title"]}"
+                            marker["title"] = f'[TPDBMarker] {m["title"]}'
 
                         markers.append(marker)
 
