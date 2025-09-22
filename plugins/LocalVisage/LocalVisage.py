@@ -8,7 +8,7 @@ venv_dir = os.path.join(os.path.dirname(__file__), "venv")
 requirements_path = os.path.join(os.path.dirname(__file__), "requirements.txt")
 # --- PYTHON VERSION CHECK ---
 
-if not os.path.isdir(venv_dir) and not (sys.version_info.major == 3 and sys.version_info.minor == 10):
+if not os.path.isdir(venv_dir) and not (sys.version_info.major == 3 and sys.version_info.minor >= 10):
     ensure_import("stashapi:stashapp-tools>=0.2.58")
     import stashapi.log as log
     log.error("Error: Python version must be >= 3.10.X (recommanded 3.10.11) for the first installation of the plugin. Once installed you can change back your python version in stash as this plugin will run within its own venv")
