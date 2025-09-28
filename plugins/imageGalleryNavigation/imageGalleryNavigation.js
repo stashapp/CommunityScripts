@@ -2,7 +2,10 @@
   const localStorageGalleryKey = "imageGalleryNavigation-GalleryID";
   const localStorageGalleryParams = "imageGalleryNavigation-GalleryParams";
 
-  const defaultSearchParams = new URLSearchParams({ sortby: "title", sortdir: "asc" });
+  const defaultSearchParams = new URLSearchParams({
+    sortby: "title",
+    sortdir: "asc",
+  });
 
   // In order to handle scenarios where an image is in multiple galleries, capture ID of gallery the user is navigating from.
   // If user navigates directly to an image URL and image is in multiple galleries, we will just use the first gallery in list.
@@ -33,11 +36,15 @@
 
       // Check if there is a saved gallery ID and it is in gallery list. If true, use saved ID.
       var savedGalleryId = localStorage.getItem(localStorageGalleryKey);
-      var savedGalleryParamsStr = localStorage.getItem(localStorageGalleryParams);
-      var savedGalleryParams = savedGalleryParamsStr ? new URLSearchParams(savedGalleryParamsStr) : defaultSearchParams
+      var savedGalleryParamsStr = localStorage.getItem(
+        localStorageGalleryParams
+      );
+      var savedGalleryParams = savedGalleryParamsStr
+        ? new URLSearchParams(savedGalleryParamsStr)
+        : defaultSearchParams;
       if (savedGalleryId != null && imageGalleries.includes(savedGalleryId)) {
         galleryID = savedGalleryId;
-        
+
         if (savedGalleryParams != null) {
           galleryParams = savedGalleryParams;
         }
@@ -152,8 +159,10 @@
     var findFilter = {
       per_page: -1,
       sort: searchParams.has("sortby") ? searchParams.get("sortby") : "title",
-      direction: searchParams.has("sortdir") ? searchParams.get("sortdir").toUpperCase() : "ASC"
-    }
+      direction: searchParams.has("sortdir")
+        ? searchParams.get("sortdir").toUpperCase()
+        : "ASC",
+    };
 
     return findFilter;
   }
@@ -164,9 +173,9 @@
     };
 
     if (searchParams.has("c")) {
-      searchParams.getAll("c").forEach(cStr => {
+      searchParams.getAll("c").forEach((cStr) => {
         // Parse filter condition string.
-        cStr = cStr.replaceAll('(','{').replaceAll(')','}');
+        cStr = cStr.replaceAll("(", "{").replaceAll(")", "}");
         cObj = JSON.parse(cStr);
 
         // Init filter type field.
@@ -174,14 +183,14 @@
 
         // Get all keys (except for "type").
         var keys = Object.keys(cObj);
-        keys.splice(keys.indexOf("type"),1);
+        keys.splice(keys.indexOf("type"), 1);
 
         // Add all filter data.
-        keys.forEach(keyName => {
-          if (typeof cObj[keyName] === 'object') {
+        keys.forEach((keyName) => {
+          if (typeof cObj[keyName] === "object") {
             // Special parsing for object type "value" fields (used where there's possibly a value and value2)
             var keys2 = Object.keys(cObj[keyName]);
-            keys2.forEach(keyName2 => {
+            keys2.forEach((keyName2) => {
               imageFilter[cObj.type][keyName2] = cObj[keyName][keyName2];
             });
           } else {
