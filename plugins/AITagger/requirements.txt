@@ -1,4 +1,4 @@
-stashapp-tools
+stashapi
 aiohttp
 asyncio
 pydantic

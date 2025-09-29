@@ -1,1 +1,1 @@
-stashapp-tools
+stashapi

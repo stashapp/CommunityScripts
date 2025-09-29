@@ -1,0 +1,2 @@
+stashapp-tools>=0.2.58
+piexif==1.1.3

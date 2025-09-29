@@ -1,2 +1,2 @@
-stashapp-tools
+stashapi
 pyyaml

@@ -20,7 +20,7 @@ try:
         import stashapi.log as log
         from stashapi.stashapp import StashInterface
     except ModuleNotFoundError:
-        install('stashapp-tools')
+        install('stashapi')
         toRaise = True
 
     try:

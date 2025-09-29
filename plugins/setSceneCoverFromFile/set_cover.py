@@ -9,7 +9,7 @@ try:
     from stashapi.stashapp import StashInterface
 except ModuleNotFoundError:
     print(
-        "You need to install the stashapi module. (pip install stashapp-tools)",
+        "You need to install the stashapi module. (pip install stashapi)",
         file=sys.stderr,
     )
 
