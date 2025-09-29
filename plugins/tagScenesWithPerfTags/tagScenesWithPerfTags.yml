@@ -1,6 +1,6 @@
 name: Tag Scenes From Performer Tags
 description: tags scenes with performer tags.
-version: 0.2.2
+version: 0.2.3
 exec:
   - python
   - "{pluginDir}/tagScenesWithPerfTags.py"
