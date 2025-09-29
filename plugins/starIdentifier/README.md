@@ -1,5 +1,7 @@
 # Star Identifier
 
+https://discourse.stashapp.cc/t/star-identifier/3761
+
 https://github.com/axxeman23/star_identifier
 
 ## Intro
