@@ -8,7 +8,6 @@ This plugin currently adds two things to the Image details page:
     - A line above the tabs in the left panel that indicates the current page and total number of pages in the current Gallery. The current image number can be changed to jump to a specific image within the Gallery.
     - Buttons along the left/right side of the main Image display panel that allow moving to the previous/next image in the Gallery.
 
-In the case of Images that are in multiple Galleries, the Gallery being navigated is set by accessing an Images from the Gallery you want to navigate. Otherwise, if you navigate directly to an Image, the first Gallery the Image belongs to will be used as the basis for navigation.
+In the case of Images that are in multiple Galleries, the Gallery being navigated is set by accessing an Image from the Gallery you want to navigate. When navigating to an Image from a Gallery, the sorting/filtering currently on the Gallery view will also be applied to the Gallery navigation on the Image page.
 
-Known issues/limitations:
-    - Currently is hardcoded to always sort Images by title.
+If you navigate directly to an Image (not through a Gallery), the first Gallery the Image belongs to will be used as the basis for navigation, and navigation will default to sorting by title with no filtering.
