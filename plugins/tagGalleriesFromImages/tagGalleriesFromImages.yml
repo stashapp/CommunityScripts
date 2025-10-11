@@ -1,0 +1,30 @@
+name: Tag galleries from images
+description: tags galleries with tags of contained images.
+version: 0.1
+exec:
+  - python
+  - "{pluginDir}/tagGalleriesFromImages.py"
+interface: raw
+
+hooks:
+  - name: update gallery
+    description: Will tag galleries with tags of contained images
+    triggeredBy:
+      - Gallery.Update.Post
+      - Gallery.Create.Post
+
+settings:
+  excludeOrganized:
+    displayName: Exclude galleries marked as organized
+    description: Do not automatically tag galleries if it is marked as organized
+    type: BOOLEAN
+  excludeWithTag:
+    displayName: Exclude galleries with tag from Hook
+    description: Do not automatically tag galleries if the gallery has this tag
+    type: STRING
+
+tasks:
+  - name: "Tag all galleries"
+    description: Loops through all galleries, and applies the tags of the contained images. Can take a long time on large db's.
+    defaultArgs:
+      mode: processAll
