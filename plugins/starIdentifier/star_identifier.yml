@@ -1,0 +1,21 @@
+name: Star Identifier
+description: Use facial recognition to automatically identify who is in images or scene screenshots from the performers already in your Stash library.
+version: 1.0
+url: https://github.com/axxeman23/star_identifier
+exec:
+  - python
+  - "{pluginDir}/py_plugins/star_identifier.py"
+interface: raw
+tasks:
+  - name: Export Performers
+    description: Run this first! Exports current performer images and adds them to an encoding file for recognition.
+    defaultArgs:
+      mode: export_known
+  - name: Identify Images
+    description: Compares images tagged with 'star identifier' (by default) to exported performers, and adds all possible matches to the images.
+    defaultArgs:
+      mode: identify_imgs
+  - name: Identify Scene Screenshots
+    description: Compares scene screenshots tagged with 'star identifier' (by default) to exported performers, and adds all possible matches to the scenes.
+    defaultArgs:
+      mode: identify_scene_screenshots

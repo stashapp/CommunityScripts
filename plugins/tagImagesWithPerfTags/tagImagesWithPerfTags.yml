@@ -1,0 +1,30 @@
+name: Tag Images From Performer Tags
+description: tags images with performer tags.
+version: 0.1
+exec:
+  - python
+  - "{pluginDir}/tagImagesWithPerfTags.py"
+interface: raw
+
+hooks:
+  - name: update image
+    description: Will tag image with selected performers tags
+    triggeredBy:
+      - Image.Update.Post
+      - Image.Create.Post
+
+settings:
+  excludeImageOrganized:
+    displayName: Exclude Images marked as organized
+    description: Do not automatically tag images with performer tags if the image is marked as organized
+    type: BOOLEAN
+  excludeImageWithTag:
+    displayName: Exclude Images with Tag from Hook
+    description: Do not automatically tag images with performer tags if the image has this tag
+    type: STRING
+
+tasks:
+  - name: "Tag All Images"
+    description: Loops through all performers, finds all of their images, then applies the performers tags to each of the images they appear in. Can take a long time on large db's.
+    defaultArgs:
+      mode: processAll

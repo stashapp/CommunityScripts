@@ -1,6 +1,6 @@
 name: The Porn DB Markers
 description: Sync Markers from The Porn DB aka theporndb.net
-version: 0.3
+version: 0.4.2
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python
@@ -18,8 +18,23 @@ settings:
     displayName: Disable the Scene Markers hook
     type: BOOLEAN
   createMovieFromScene:
-    displayName: Create Movie from scene
-    description: If there is a Movie linked to the scene in the timestamp.trade database automatically create a movie in stash with that info
+    displayName: Create Group from scene
+    description: If there is a Group linked to the scene in the timestamp.trade database automatically create a group in stash with that info
+    type: BOOLEAN
+  runOnScenesWithMarkers:
+    displayName: Run on scenes that already have markers.
+    type: BOOLEAN
+  addTPDBMarkerTag:
+    displayName: Add the [TPDBMarker] tag to created markers.
+    type: BOOLEAN
+  addTPDBMarkerTitle:
+    displayName: Add "[TPDBMarker]" to the start of generated marker titles.
+    type: BOOLEAN
+  overwriteMarkers:
+    displayName: Overwrite Markers
+    type: BOOLEAN
+  mergeMarkers:
+    displayName: Merge Markers
     type: BOOLEAN
 tasks:
   - name: "Sync"

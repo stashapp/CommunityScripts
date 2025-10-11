@@ -1,0 +1,57 @@
+name: Local Visage
+description: Local Performer Recognition plugin using DeepFace
+# requires: PythonDepManager
+# requires: stashUserscriptLibrary7dJx1qP
+version: 1.0.1
+exec:
+  - python
+  - "{pluginDir}/LocalVisage.py"
+interface: raw
+ui:
+  requires:
+    - stashUserscriptLibrary7dJx1qP
+  javascript:
+    - frontend.js
+    - https://cdn.jsdelivr.net/npm/@gradio/client@1.15.3/dist/index.js
+  css:
+    - frontend.css
+  csp:
+    connect-src:
+      - http://localhost:7860
+      - http://192.168.1.198:7860
+      - http://your-server-ip-address:7860
+    script-src:
+      - https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js
+      - https://cdn.jsdelivr.net/npm/@gradio/client@1.15.3/dist/index.js
+
+tasks:
+  - name: Rebuild Face Recognition Model
+    description: Rebuild the face recognition model entirely
+    defaultArgs:
+      mode: rebuild_model
+  - name: Update Face Recognition Model
+    description: Update the face performers model with new images if there model was built on less than "Target image count per voy" images
+    defaultArgs:
+      mode: update_model
+  - name: Start server
+    description: Start the face recognition server (if not started) to allow the plugin to work
+    defaultArgs:
+      mode: spawn_server
+  - name: Stop server
+    description: Stop the face recognition server
+    defaultArgs:
+      mode: stop_server
+
+settings:
+  voyCount:
+    displayName: Target image count per voy (default is 15)
+    description: Number of images to to use to create the face recognition model (per performer)
+    type: NUMBER
+  imgCount:
+    displayName: Minimum number of images for performer to be added to model
+    description: Minimum number of images a performer must have to be included in recognition (EXCLUDING THE PERFORMER THUMBNAIL). Set to 0 for best result.
+    type: NUMBER
+  sceneCount:
+    displayName: Minimum number of scenes for performer to be added to model
+    description: Minimum number of scenes a performer must have to be included in recognition
+    type: NUMBER

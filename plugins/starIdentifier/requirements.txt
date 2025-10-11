@@ -1,0 +1,3 @@
+face_recognition
+numpy
+requests

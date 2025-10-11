@@ -1,6 +1,7 @@
 name: Gallery Date Parser
+# requires: PythonDepManager
 description: Find date in path or filename and add it to the gallery
-version: 0.3.0
+version: 1.1.0
 exec:
   - python
   - "{pluginDir}/date_parser.py"
@@ -10,3 +11,8 @@ tasks:
     description: Add the date on galleries based on their path
     defaultArgs:
       mode: gallery
+settings:
+  setTitle:
+    displayName: Set title ?
+    description: Set title from folder name minus the found date ? Only applies on galleries without titles
+    type: BOOLEAN
