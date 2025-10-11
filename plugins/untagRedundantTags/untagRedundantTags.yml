@@ -1,0 +1,81 @@
+name: Remove redundant parent tags from tagged objects
+description: removes parent tags from objects if a more specific child tag is also present
+version: 0.1
+exec:
+  - python
+  - "{pluginDir}/untagRedundantTags.py"
+interface: raw
+
+hooks:
+  - name: Clean up image tags on save
+    description: Remove redundant parent tags from image on save
+    triggeredBy:
+      - Image.Update.Post
+      - Image.Create.Post
+  - name: Clean up scene tags on save
+    description: Remove redundant parent tags from scene on save
+    triggeredBy:
+      - Scene.Update.Post
+      - Scene.Create.Post
+  - name: Clean up  gallery tags on save
+    description: Remove redundant parent tags from gallery on save
+    triggeredBy:
+      - Gallery.Update.Post
+      - Gallery.Create.Post
+  - name: Clean up  performer tags on save
+    description: Remove redundant parent tags from performer on save
+    triggeredBy:
+      - Performer.Update.Post
+      - Performer.Create.Post
+
+settings:
+  enableForScenes:
+    displayName: Enable for scenes
+    description: Enabled the automatic tag removal behavior for scenes. Need to also enable at least one allow rule too.
+    type: BOOLEAN
+  enableForImages:
+    displayName: Enable for images
+    description: Enable the automatic tag removal behavior for images. Need to also enable at least one allow rule too.
+    type: BOOLEAN
+  enableForGalleries:
+    displayName: Enable for galleries
+    description: Enable the automatic tag removal behavior for galleries. Need to also enable at least one allow rule too.
+    type: BOOLEAN
+  enableForPerformers:
+    displayName: Enable for performers
+    description: Enable the automatic tag removal behavior for performers. Need to also enable at least one allow rule too.
+    type: BOOLEAN
+  removeRootParents:
+    displayName: Allow removing all root tags (tags without parent)
+    description: If enabled, tags without a parent tag (root tags) are allowed to be removed. Useful if tag hierarchies are used to group thematically related tags, to prevent the group itself from being used.
+    type: BOOLEAN
+  removeNonAutotagableParents:
+    displayName: Allow removing tags ignored for Auto-Tagging
+    description: If enabled, tags marked as "Ignore for Auto-Tag" are allowed to be removed. Useful for deeper tag hierarchies, gives selective control on a likely related attribute.
+    type: BOOLEAN
+  removeIntermediateParents:
+    displayName: Allow removing all intermediate tags (tags with parent and child tag)
+    description: If enabled, all tags with a parent tag and a child tag are allowed to be removed. Useful for deeper tag hierarchies, but quite aggressive, will possibly remove parallel legitimate uses of less specialized and more spezialized tags.
+    type: BOOLEAN
+  excludeOrganized:
+    displayName: Exclude objects marked as organized
+    description: Do not change tags if the image/scene/... is marked as organized
+    type: BOOLEAN
+
+tasks:
+  - name: "Update all scenes"
+    description: Loops through all scenes, removing redundant parent tags from each of them. Can take a long time on large db's.
+    defaultArgs:
+      mode: processAllScenes
+  - name: "Update all images"
+    description: Loops through all images, removing redundant parent tags from each of them. Can take a long time on large db's.
+    defaultArgs:
+      mode: processAllImages
+  - name: "Update all galleries"
+    description: Loops through all galleries, removing redundant parent tags from each of them. Can take a long time on large db's.
+    defaultArgs:
+      mode: processAllGalleries
+  - name: "Update all performers"
+    description: Loops through all performaers, removing redundant parent tags from each of them. Can take a long time on large db's.
+    defaultArgs:
+      mode: processAllPerformers
