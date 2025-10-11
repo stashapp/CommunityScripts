@@ -1,5 +1,11 @@
 (async () => {
   const localStorageGalleryKey = "imageGalleryNavigation-GalleryID";
+  const localStorageGalleryParams = "imageGalleryNavigation-GalleryParams";
+
+  const defaultSearchParams = new URLSearchParams({
+    sortby: "title",
+    sortdir: "asc",
+  });
 
   // In order to handle scenarios where an image is in multiple galleries, capture ID of gallery the user is navigating from.
   // If user navigates directly to an image URL and image is in multiple galleries, we will just use the first gallery in list.
@@ -7,8 +13,12 @@
   async function setupGalleryImageLinks() {
     document.querySelectorAll("a[href*='/images/']").forEach(function (link) {
       link.addEventListener("click", () => {
+        // Parse Gallery URL.
         var galleryID = window.location.pathname.split("/")[2];
+
+        // Save Gallery Info.
         localStorage.setItem(localStorageGalleryKey, galleryID);
+        localStorage.setItem(localStorageGalleryParams, window.location.search);
       });
     });
   }
@@ -22,17 +32,29 @@
     if (imageGalleries != null && imageGalleries.length > 0) {
       // Get first entry in galleries list.
       var galleryID = imageGalleries[0];
+      var galleryParams = defaultSearchParams;
 
       // Check if there is a saved gallery ID and it is in gallery list. If true, use saved ID.
       var savedGalleryId = localStorage.getItem(localStorageGalleryKey);
+      var savedGalleryParamsStr = localStorage.getItem(
+        localStorageGalleryParams
+      );
+      var savedGalleryParams = savedGalleryParamsStr
+        ? new URLSearchParams(savedGalleryParamsStr)
+        : defaultSearchParams;
       if (savedGalleryId != null && imageGalleries.includes(savedGalleryId)) {
         galleryID = savedGalleryId;
+
+        if (savedGalleryParams != null) {
+          galleryParams = savedGalleryParams;
+        }
       } else {
         localStorage.setItem(localStorageGalleryKey, galleryID);
+        localStorage.setItem(localStorageGalleryParams, null);
       }
 
       // Get gallery image list.
-      var galleryImages = await findGalleryImages(galleryID);
+      var galleryImages = await findGalleryImages(galleryID, galleryParams);
       var totalImageCount = galleryImages.length;
       var currentImageIndex = galleryImages.indexOf(imageID);
       var nextImageID =
@@ -113,7 +135,6 @@
 
   function redirectToImage(imageID) {
     const baseImagesPath = "/images/";
-    // window.location.href = `${baseImagesPath}${imageID}`;
     window.location.replace(`${baseImagesPath}${imageID}`);
   }
 
@@ -134,6 +155,55 @@
     return ((index % arrayLength) + arrayLength) % arrayLength;
   }
 
+  function getFindFilter(searchParams) {
+    var findFilter = {
+      per_page: -1,
+      sort: searchParams.has("sortby") ? searchParams.get("sortby") : "title",
+      direction: searchParams.has("sortdir")
+        ? searchParams.get("sortdir").toUpperCase()
+        : "ASC",
+    };
+
+    return findFilter;
+  }
+
+  function getImageFilter(galleryID, searchParams) {
+    var imageFilter = {
+      galleries: { value: galleryID, modifier: "INCLUDES_ALL" },
+    };
+
+    if (searchParams.has("c")) {
+      searchParams.getAll("c").forEach((cStr) => {
+        // Parse filter condition string.
+        cStr = cStr.replaceAll("(", "{").replaceAll(")", "}");
+        cObj = JSON.parse(cStr);
+
+        // Init filter type field.
+        imageFilter[cObj.type] = {};
+
+        // Get all keys (except for "type").
+        var keys = Object.keys(cObj);
+        keys.splice(keys.indexOf("type"), 1);
+
+        // Add all filter data.
+        keys.forEach((keyName) => {
+          if (typeof cObj[keyName] === "object") {
+            // Special parsing for object type "value" fields (used where there's possibly a value and value2)
+            var keys2 = Object.keys(cObj[keyName]);
+            keys2.forEach((keyName2) => {
+              imageFilter[cObj.type][keyName2] = cObj[keyName][keyName2];
+            });
+          } else {
+            imageFilter[cObj.type][keyName] = cObj[keyName];
+          }
+        });
+      });
+    }
+
+    console.log(imageFilter);
+    return imageFilter;
+  }
+
   // *** GQL Calls ***
 
   // Find Image by ID
@@ -148,11 +218,9 @@
 
   // Find Images by Gallery ID
   // Return Images list (id)
-  async function findGalleryImages(galleryID) {
-    const imageFilter = {
-      galleries: { value: galleryID, modifier: "INCLUDES_ALL" },
-    };
-    const findFilter = { per_page: -1, sort: "title" };
+  async function findGalleryImages(galleryID, galleryParams) {
+    const imageFilter = getImageFilter(galleryID, galleryParams);
+    const findFilter = getFindFilter(galleryParams);
     const variables = { image_filter: imageFilter, filter: findFilter };
     const query = `query ($image_filter: ImageFilterType!, $filter: FindFilterType!) { findImages(image_filter: $image_filter, filter: $filter) { images { id } } }`;
     return await csLib

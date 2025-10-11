@@ -1,7 +1,7 @@
 name: imageGalleryNavigation
 # requires: CommunityScriptsUILibrary
 description: This plugin adds features for navigating between images within a Gallery from the Image details page.
-version: 0.1
+version: 0.2
 ui:
   requires:
     - CommunityScriptsUILibrary

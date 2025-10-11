@@ -16,13 +16,16 @@ class NfoParser(AbstractParser):
             self._defaults = defaults
         # Finds nfo file
         self._nfo_file = None
+        dir_path = os.path.dirname(scene_path)
         if config.nfo_location.lower() == "with files":
             if folder_mode:
                 # look in current dir & parents for a folder.nfo file...
-                dir_path = os.path.dirname(scene_path)
                 self._nfo_file = self._find_in_parents(dir_path, "folder.nfo")
             else:
-                self._nfo_file = os.path.splitext(scene_path)[0] + ".nfo"
+                if len(getattr(config, "custom_nfo_name", "")) > 0:
+                    self._nfo_file = os.path.join(dir_path, config.custom_nfo_name)
+                else:
+                    self._nfo_file = os.path.splitext(scene_path)[0] + ".nfo"
         # else:
             # TODO: support dedicated dir instead of "with files" (compatibility with nfo exporters)
         self._nfo_root = None
@@ -56,7 +59,7 @@ class NfoParser(AbstractParser):
         # Not found? Look tor folder image...
         path_dir = os.path.dirname(self._nfo_file)
         folder_files = sorted(glob.glob(f"{glob.escape(path_dir)}{os.path.sep}*.*"))
-        folder_pattern = re.compile("^.*(landscape\\d{0,2}|thumb\\d{0,2}|poster\\d{0,2}|cover\\d{0,2})\\.(jpe?g|png|webp)$", re.I)
+        folder_pattern = re.compile("^.*(landscape\\d{0,2}|thumb\\d{0,2}|poster\\d{0,2}|folder\\d{0,2}|cover\\d{0,2})\\.(jpe?g|png|webp)$", re.I)
         result = self.__match_image_files(folder_files, folder_pattern)
         return result
 
@@ -103,7 +106,8 @@ class NfoParser(AbstractParser):
         return file_images
 
     def __extract_nfo_rating(self):
-        user_rating = round(float(self._nfo_root.findtext("userrating") or 0))
+        multiplier = getattr(config, "user_rating_multiplier", 1)
+        user_rating = round(float(self._nfo_root.findtext(getattr(config, "user_rating_field", "userrating")) or 0) * multiplier)
         if user_rating > 0:
             return user_rating
         # <rating> is converted to a scale of 5 if needed
@@ -124,17 +128,20 @@ class NfoParser(AbstractParser):
         return self._nfo_root.findtext("premiered") or year
 
     def __extract_nfo_tags(self):
+        source = getattr(config, "load_tags_from", "both").lower()
         file_tags = []
-        # from nfo <tag>
-        tags = self._nfo_root.findall("tag")
-        for tag in tags:
-            if tag.text:
-                file_tags.append(tag.text)
-        # from nfo <genre>
-        genres = self._nfo_root.findall("genre")
-        for genre in genres:
-            if genre.text:
-                file_tags.append(genre.text)
+        if source in ["tags", "both"]:
+            # from nfo <tag>
+            tags = self._nfo_root.findall("tag")
+            for tag in tags:
+                if tag.text:
+                    file_tags.append(tag.text)
+        if source in ["genres", "both"]:
+            # from nfo <genre>
+            genres = self._nfo_root.findall("genre")
+            for genre in genres:
+                if genre.text:
+                    file_tags.append(genre.text)
         return list(set(file_tags))
 
     def __extract_nfo_actors(self):
@@ -147,6 +154,8 @@ class NfoParser(AbstractParser):
 
     def parse(self):
         if not self._nfo_file or not os.path.exists(self._nfo_file):
+            if self._nfo_file:
+                log.LogDebug(f"The NFO file \"{os.path.split(self._nfo_file)[1]}\" was not found")
             return {}
         log.LogDebug("Parsing '{}'".format(self._nfo_file))
         # Parse NFO xml content
@@ -184,8 +193,7 @@ class NfoParser(AbstractParser):
             # Below are NFO extensions or liberal tag interpretations (not part of the nfo spec)
             "movie": self._nfo_root.findtext("set/name") or self._get_default("title", "nfo"),
             "scene_index": self._nfo_root.findtext("set/index") or None,
-            # TODO: read multiple URL tags into array
-            "urls": None if not self._nfo_root.findtext("url") else [self._nfo_root.findtext("url")],
+            "urls": [url.text for url in self._nfo_root.findall("url") if url.text],
 
         }
         return file_data

@@ -1,6 +1,6 @@
 name: Video Chapter Markers
 description: Create markers from chapter information embedded in video files
-version: 1.0
+version: 1.1
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/videoChapterMarkers
 exec:
   - python
