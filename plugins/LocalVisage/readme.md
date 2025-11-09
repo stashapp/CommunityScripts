@@ -20,9 +20,13 @@ A plugin for recognizing performers from their images using [DeepFace](https://g
 
 ## 📦 Requirements
 
-- Python 3.10.11 (temporarily, see instructions below)
+- Warning: user reported that the dependencies are not available on the docker version of stash. You'd need to make a different docker with source build dependencies and I don't know how to
+
+  
+-  Python 3.10.11 (temporarily, see instructions below)
 - `PythonDepManager`
-- `stashUserscriptLibrary7djx1qp` (add repo https://7djx1qp.github.io/stash-plugins/
+- `stashUserscriptLibrary7djx1qp` (add repo https://7djx1qp.github.io/stash-plugins)
+- `git` need to be installed and in the PATH
 
 ## ⚙️ Tasks
 
