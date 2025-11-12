@@ -37,8 +37,9 @@ You have two options to use this image:
 
 - A working docker compose can be found in the plugin folder.
   - Only changes are the build section to use the modified Dockerfile, and a new port to expose that is the deepface server port (7860)
+  - Use this command to rebuild your docker container: `docker compose up -d --build --pull always`
 - Build the image yourself
-  - Run this to build it inside the plugin repo folder: `docker build -t stashapp/stash:LocalVisage -f Dockerfile .`
+  - Run this to build it inside the plugin repo folder: `docker build --pull -t stashapp/stash:LocalVisage -f Dockerfile .`
   - Update your stash container configuration to expose a new port: `docker run -p 7860:7860 ... stashapp/stash:LocalVisage ...`
 
 ## ⚙️ Tasks
