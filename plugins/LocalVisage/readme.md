@@ -42,6 +42,17 @@ You have two options to use this image:
   - Run this to build it inside the plugin repo folder: `docker build --pull -t stashapp/stash:LocalVisage -f Dockerfile .`
   - Update your stash container configuration to expose a new port: `docker run -p 7860:7860 ... stashapp/stash:LocalVisage ...`
 
+Once this image is built and running, you can skip the "Set Python Path" step below and enjoy the plugin!
+
+> [!NOTE]
+> If you use a reverse proxy, you may encounter difficulties setting up the redirection to the deepface server.
+> 
+> URL used by the plugin is hardcoded inside the `frontend.js` file:<br>
+> `window.location.protocol + "//" + window.location.hostname + ":7860"`
+>
+> e.g. using `https://stash.example.org` will send requests to `https://stash.example.org:7860`.<br>
+> But worse, using `https://example.com/stash` will use `https://example.com:7860`
+
 ## ⚙️ Tasks
 
 | Task                               | Description                                                           |
