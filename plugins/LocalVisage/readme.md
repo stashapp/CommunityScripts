@@ -20,13 +20,26 @@ A plugin for recognizing performers from their images using [DeepFace](https://g
 
 ## 📦 Requirements
 
-- Warning: user reported that the dependencies are not available on the docker version of stash. You'd need to make a different docker with source build dependencies and I don't know how to
-
-  
 -  Python 3.10.11 (temporarily, see instructions below)
 - `PythonDepManager`
 - `stashUserscriptLibrary7djx1qp` (add repo https://7djx1qp.github.io/stash-plugins)
 - `git` need to be installed and in the PATH
+
+### Docker Usage
+
+Because this plugin relies on tensorflow (the AI framework used), the official Stash docker image can't be used.
+See [this post](https://discourse.stashapp.cc/t/local-visage/2478/15?u=jeanpierremartinez81) for details.
+
+A Dockerfile has been created as a replacement to use compatible dependencies.
+You can find it in the [plugin repository](https://github.com/stashapp/CommunityScripts/tree/main/plugins/LocalVisage).
+
+You have two options to use this image:
+
+- A working docker compose can be found in the plugin folder.
+  - Only changes are the build section to use the modified Dockerfile, and a new port to expose that is the deepface server port (7860)
+- Build the image yourself
+  - Run this to build it inside the plugin repo folder: `docker build -t stashapp/stash:LocalVisage -f Dockerfile .`
+  - Update your stash container configuration to expose a new port: `docker run -p 7860:7860 ... stashapp/stash:LocalVisage ...`
 
 ## ⚙️ Tasks
 
