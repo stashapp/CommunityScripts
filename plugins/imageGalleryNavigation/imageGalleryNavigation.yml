@@ -1,7 +1,12 @@
 name: imageGalleryNavigation
 # requires: CommunityScriptsUILibrary
 description: This plugin adds features for navigating between images within a Gallery from the Image details page.
-version: 0.2
+version: 0.3
+settings:
+  enableTransform:
+    displayName: Enable Zoom/Pan
+    description: Enable zoom (mouse wheel) and pan (click and drag) on Image detail page.
+    type: BOOLEAN
 ui:
   requires:
     - CommunityScriptsUILibrary
