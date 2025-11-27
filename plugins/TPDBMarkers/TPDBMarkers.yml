@@ -1,6 +1,6 @@
 name: The Porn DB Markers
 description: Sync Markers from The Porn DB aka theporndb.net
-version: 0.4.2
+version: 0.4.3
 url: https://github.com/stashapp/CommunityScripts/
 exec:
   - python

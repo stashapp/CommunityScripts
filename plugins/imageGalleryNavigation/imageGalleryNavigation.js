@@ -7,6 +7,11 @@
     sortdir: "asc",
   });
 
+  let pluginSettings = {};
+  const defaultPluginSettings = {
+    enableTransform: true
+  };
+
   // In order to handle scenarios where an image is in multiple galleries, capture ID of gallery the user is navigating from.
   // If user navigates directly to an image URL and image is in multiple galleries, we will just use the first gallery in list.
   // This may break if user jumps around in browser history, in which case we will fall back to basic scenario of assuming first gallery in list.
@@ -26,6 +31,12 @@
   // On image page, get data about gallery (image's position within gallery, next/prev image IDs),
   // add arrow buttons to page, and register arrow keypress handlers,
   async function setupImageContainer() {
+    const configSettings = await csLib.getConfiguration("imageGalleryNavigation", {}); // getConfiguration is from cs-ui-lib.js
+    pluginSettings = {
+      ...defaultPluginSettings,
+      ...configSettings,
+    };
+
     var imageID = window.location.pathname.split("/")[2];
     var imageGalleries = await findImage(imageID);
 
@@ -66,6 +77,11 @@
       insertGalleryToolbar(currentImageIndex, totalImageCount, galleryImages);
       insertArrowButtons(nextImageID, prevImageID);
       insertArrowKeyHandlers(nextImageID, prevImageID);
+
+      // Add translate/scale controls.
+      if (pluginSettings.enableTransform) {
+        setupMouseEventHandlers();
+      }
     }
   }
 
@@ -129,6 +145,84 @@
     //     }
     //   }
     // });
+  }
+
+  function setupMouseEventHandlers() {
+    var img = document.querySelector("div.image-container img");
+
+    // Init transform values.
+    imgScale = 1.0;
+    imgTranslateX = 0.0;
+    imgTranslateY = 0.0;
+
+    // Prevent listeners from being attached twice.
+    img.removeEventListener('mousedown', onStartDrag);
+    img.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', onStopDrag);
+    img.removeEventListener('wheel', onMouseWheel);
+
+    // Add event listeners.
+    img.addEventListener('mousedown', onStartDrag);
+    img.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', onStopDrag);
+    img.addEventListener('wheel', onMouseWheel);
+  }
+
+  // *** Mouse Event Handlers *** //
+  var imgScale = 1.0;
+  var imgTranslateX = 0.0;
+  var imgTranslateY = 0.0;
+  var dragStartX = 0.0;
+  var dragStartY = 0.0;
+  var dragStartTranslateX = 0.0;
+  var dragStartTranslateY = 0.0;
+  var dragActive = false;
+
+  function onStartDrag(event) {
+    if (event.button === 0) {
+      event.preventDefault(); // Needed to prevent drag from being blocked.
+      dragActive = true;
+      dragStartX = event.clientX;
+      dragStartY = event.clientY;
+      dragStartTranslateX = imgTranslateX;
+      dragStartTranslateY = imgTranslateY;
+    }
+  }
+
+  function onStopDrag(event) {
+    if (event.button === 0) {
+      dragActive = false;
+    }
+  }
+
+  function onDrag(event) {
+    if (dragActive) {
+      imgTranslateX = dragStartTranslateX + (event.clientX - dragStartX);
+      imgTranslateY = dragStartTranslateY + (event.clientY - dragStartY);
+      applyImageTransform();
+    }
+  }
+  
+  function onMouseWheel(event) {
+    event.preventDefault();
+
+    // TODO: Zoom to cursor.
+    // var img = document.querySelector("div.image-container img");
+    // img.style.transformOrigin = `${event.offsetX}px ${event.offsetY}px`
+    imgScale += (event.deltaY * -0.001);
+    imgScale = Math.max(imgScale, 1.0);
+
+    if (imgScale == 1.0) {
+      imgTranslateX = 0.0;
+      imgTranslateY = 0.0;
+    }
+
+    applyImageTransform();
+  }
+
+  function applyImageTransform() {
+    var img = document.querySelector("div.image-container img");
+    img.style.transform = `translate(${imgTranslateX}px,${imgTranslateY}px) scale(${imgScale})`
   }
 
   // *** Utility Functions ***

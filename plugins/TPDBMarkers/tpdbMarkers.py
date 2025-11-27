@@ -61,7 +61,7 @@ def processScene(scene):
                     # skip if there is already a group linked
                     if settings["createMovieFromScene"] and len(scene.get("groups", [])) == 0:
                         groups=[]
-                        for g in data["groups"]:
+                        for g in data["movies"]:
                             group=processGroup(g)
                             if group:
                                 groups.append({"group_id": group["id"],"scene_index":None})
