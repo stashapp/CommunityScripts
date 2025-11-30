@@ -5,6 +5,9 @@
     requireConfirmation: false,
   };
 
+  var objID = null;
+  var objType = null;
+
   // helper function to get the innerText of all elements matching a selector
   const getAllInnerText = (selector) => Array.from(document.querySelectorAll(selector))
     .map((el) => el.innerText.trim())
@@ -12,7 +15,7 @@
 
   // On image page, get data about gallery (image's position within gallery, next/prev image IDs),
   // add arrow buttons to page, and register arrow keypress handlers,
-  async function setupTagCopyPaste(objType) {
+  async function setupTagCopyPaste(objTypeTriggered) {
     // Get plugin settings.
     const configSettings = await csLib.getConfiguration("tagCopyPaste", {}); // getConfiguration is from cs-ui-lib.js
     pluginSettings = {
@@ -20,27 +23,34 @@
       ...configSettings,
     };
 
-    var objID = window.location.pathname.split("/")[2];
+    objID = window.location.pathname.split("/")[2];
+    objType = objTypeTriggered;
 
     // Add UI elements.
     if (objID !== "new") {
-      insertCopyPasteButtons(objID, objType);
+      insertCopyPasteButtons();
     }
   }
 
-  function insertCopyPasteButtons(objID, objType) {
+  function copyEventHandler(event) {
+      event.preventDefault();
+      handleCopyClick();
+  }
+
+  function pasteEventHandler(event) {
+      event.preventDefault();
+      handlePasteClick();
+  }
+
+  function insertCopyPasteButtons() {
     // listen for copy and paste events within tag input box
     // find tag input box
     const tagInputBox = document.querySelector("label[for='tag_ids'] + div .react-select__value-container");
     if (tagInputBox) {
-      tagInputBox.addEventListener("copy", (event) => {
-        event.preventDefault();
-        handleCopyClick();
-      });
-      tagInputBox.addEventListener("paste", (event) => {
-        event.preventDefault();
-        handlePasteClick(objID, objType);
-      });
+      tagInputBox.removeEventListener("copy", copyEventHandler);
+      tagInputBox.removeEventListener("paste", pasteEventHandler);
+      tagInputBox.addEventListener("copy", copyEventHandler);
+      tagInputBox.addEventListener("paste", pasteEventHandler);
     }
 
     var copyButton = document.createElement("button");
@@ -56,7 +66,7 @@
     pasteButton.innerText = "Paste";
     pasteButton.onclick = (event) => {
       event.preventDefault();
-      handlePasteClick(objID, objType);
+      handlePasteClick();
     }
 
     if (document.querySelector("button.imageGalleryNav-pasteButton") == null) {
@@ -77,7 +87,7 @@
   }
 
   // Handle paste click.
-  async function handlePasteClick(objID, objType) {
+  async function handlePasteClick() {
     // Parse tag list from comma delimited string.
     const tagInput = await navigator.clipboard.readText();
     var inputTagList = tagInput.split(/\r?\n|\r|,/).map(s => s.trim()).filter((text) => text !== "") // do de-duplication later
@@ -123,7 +133,6 @@
 
     // Update tags on object with new tag ID list.
     await updateObjTags(
-      objID,
       tagUpdateList,
       `${objType.toLowerCase()}Update`,
       `${objType}UpdateInput`
@@ -135,7 +144,7 @@
   // *** GQL Calls ***
 
   // Update Object by ID, new tags list, and GQL mutation name.
-  async function updateObjTags(objID, tags, fnName, inputName) {
+  async function updateObjTags(tags, fnName, inputName) {
     const variables = { input: { id: objID, tag_ids: tags } };
     const query = `mutation UpdateObj($input:${inputName}!) { ${fnName}(input: $input) {id} }`;
     return await csLib.callGQL({ query, variables });
@@ -173,10 +182,10 @@
     [ "/performers/", "[id='performer-edit']", "Performer" ],
     [ "/galleries/", "[id*='-edit-details']", "Gallery" ],
     [ "/images/", "[id*='-edit-details']", "Image" ]
-  ].forEach(([path, selector, objType]) => {
+  ].forEach(([path, selector, objTypeTriggered]) => {
     // Wait for the page to load and the element to be present.
     csLib.PathElementListener(path, selector, () => {
-      setupTagCopyPaste(objType);
+      setupTagCopyPaste(objTypeTriggered);
     }); // PathElementListener is from cs-ui-lib.js
   });
 })();
