@@ -467,6 +467,10 @@ div.react-datepicker {
   border-right: var(--primary-1) !important;
 }
 
+.sidebar-section {
+  border-bottom: var(--primary-1) !important;
+}
+
 /* sliders */
 input[type="range"]::-moz-range-track {
   background: var(--primary-4);
