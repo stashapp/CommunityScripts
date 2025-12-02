@@ -444,6 +444,29 @@ div.react-datepicker {
   font-size: var(--text-xs);
 }
 
+/* scene list toolbar and sidebar backgrounds */
+.sidebar-pane .sidebar {
+  background-color: var(--primary-1) !important;
+  border-right: var(--primary-1) !important;
+}
+
+.scene-list-toolbar.filtered-list-toolbar {
+  background-color: var(--primary-1) !important;
+}
+
+.list-results-header {
+  background-color: var(--primary-1) !important;
+}
+
+.scene-list-toolbar.filtered-list-toolbar .toolbar-selection-section,
+.scene-list-toolbar.filtered-list-toolbar div.filter-section {
+  border: var(--primary-1) !important;
+}
+
+.scene-list-toolbar.filtered-list-toolbar .search-container {
+  border-right: var(--primary-1) !important;
+}
+
 /* sliders */
 input[type="range"]::-moz-range-track {
   background: var(--primary-4);
