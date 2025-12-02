@@ -15,7 +15,6 @@ for (let sheet of existingStyles) {
         i--; // Adjust index due to rule removal
       }
     }
-    console.log("done");
   } catch (e) {
     // Catch and ignore cross-origin stylesheets (they can't be modified)
   }
