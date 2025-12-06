@@ -1,6 +1,6 @@
 # SFW Switch
 
-https://discourse.stashapp.cc/t/sfw-switch/4657
+https://discourse.stashapp.cc/t/sfw-switch/4658
 
 ## Features
 
