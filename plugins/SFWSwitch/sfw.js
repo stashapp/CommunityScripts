@@ -72,7 +72,7 @@ function sfwswitch_switcher() {
 function sfwswitch_findstashcss() {
     for (let i = 0; i < document.styleSheets.length; i++) {
         const stylesheet = document.styleSheets[i];
-        if (stylesheet.href && stylesheet.href.includes("/plugin/sfw_switch/css")) {
+        if (stylesheet.href && stylesheet.href.includes("/plugin/sfwswitch/css")) {
             return stylesheet;
         }
     }
