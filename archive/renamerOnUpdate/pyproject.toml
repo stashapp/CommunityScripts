@@ -1,0 +1,64 @@
+[project]
+name = "renamerOnUpdate"
+version = "3.0.0"
+description = "Rename/move stash files based on a template."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gql[requests]>=4.0.0",
+    "unidecode>=1.4.0",
+    "emoji>=2.15.0",
+    "pydantic>=2.12.4",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "ruff>=0.14.5",
+]
+
+[tool.mypy]
+python_version = "3.13"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+warn_return_any = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+
+# Skip type checking user-facing config files
+[[tool.mypy.overrides]]
+module = [
+    "config",
+    "renamerOnUpdate_config",
+]
+ignore_errors = true
+
+[tool.ruff.lint]
+extend-select = [
+    "ARG",  # Unused arguments
+    "B",  # Bugbear (potential bugs and security issues)
+    "C4",  # Comprehensions (inefficient patterns)
+    "D",  # All pydocstyle rules
+    "E",  # All Pycodestyle errors
+    "I",  # isort (import sorting)
+    "N",  # All pep8-naming rules
+    "SIM",  # Simplifications (code simplification suggestions)
+    "UP",  # pyupgrade (modernize syntax)
+    "W",  # All Pycodestyle warnings
+]
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# Ignore user-facing config files (they have legacy naming conventions)
+[tool.ruff.lint.per-file-ignores]
+"config.py" = ["D100", "N816"]  # User config file with legacy naming
+"renamerOnUpdate_config.py" = ["D100", "N816"]  # Template config file with legacy naming
