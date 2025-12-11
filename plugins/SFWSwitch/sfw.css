@@ -9,6 +9,7 @@
 video,
 .scene-cover,
 .scrubber-item,
+.scene-image,
 
 /* image */
 .image-card-preview,
@@ -85,6 +86,7 @@ div:hover > .scene-header,
 .image-thumbnail:hover,
 .scene-card-preview:hover,
 .scrubber-item:hover,
+.scene-image:hover,
 
 /* image */
 .image-image:hover,
