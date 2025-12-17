@@ -1,0 +1,16 @@
+name: Add secondary performer image
+description: Adds support for a secondary perfomrer image on the perform details page.
+url: https://github.com/stashapp/CommunityScripts
+version: 1.1
+settings:
+  imageMode:
+    displayName: Image Mode
+    description: Mode at which to display the performer image. There are only 3 valid values. Specify 0 to enable the secondary image to be used in the expanded view. Specify 1 to enable the secondary image to be used in the collapsed view. Specify 2 to enable a button to be used to flip between the primary and secondary image.
+    type: NUMBER
+ui:
+  javascript:
+    - SecondaryPerformerImage.js
+  css:
+    - SecondaryPerformerImage.css
+  assets:
+    /: .

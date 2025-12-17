@@ -121,5 +121,5 @@ elif "hookContext" in json_input["args"]:
         ) and "inputFields" in json_input["args"]["hookContext"]
         and len(json_input["args"]["hookContext"]["inputFields"]) > 2
     ):
-        scene = stash.find_scene(id)
+        scene = stash.find_scene(id, fragment="id organized tags {name} performers {id}")
         processScene(scene)

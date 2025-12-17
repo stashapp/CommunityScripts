@@ -967,8 +967,3 @@ h2 {
     padding-top: 0;
   }
 }
-
-[href="/performers/new"],
-[href="/scenes/new"] {
-  display: none;
-}

@@ -1,6 +1,6 @@
 name: Theme - Minimal
 description: Minimal Theme for Stash
-version: 0.2.7
+version: 0.2.8
 ui:
   css:
     - index.css
