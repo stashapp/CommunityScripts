@@ -163,7 +163,7 @@ def process_e621_post_for_item(
 
     performer_ids = []
     for char in post_data.get("tags", {}).get("character", []):
-        name = char.split("_(")[0]
+        name = char
         perf = get_or_create_performer(stash, name)
         performer_ids.append(perf["id"])
 
