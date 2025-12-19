@@ -1,0 +1,257 @@
+:root {
+	--ai-rec-container-padding: 30px;
+	--ai-rec-card-margin: 10px;
+	--ai-input-bg: #24272b;
+	--ai-input-border: #2f3337;
+	--ai-input-focus-border: #3d4348;
+	--ai-input-focus-ring: rgba(90,150,255,.15);
+	/* Normal textbox colors (used as the canonical textbox style) */
+	/* Ensure textbox variables mirror input variables so tag boxes match inputs */
+	--ai-textbox-bg: var(--ai-input-bg);
+	--ai-textbox-border: var(--ai-input-border);
+}
+.btn-constraint.btn-save {
+	background: #2e7d32;
+	color: #fff;
+	border: none;
+	border-radius: 3px;
+	padding: 4px 8px;
+	font-size: 10px;
+	cursor: pointer;
+}
+/* Constraint Editor: Co-occurrence selected tag chip */
+.constraint-cochip-tag {
+	display: inline-flex;
+	align-items: center;
+	margin: 1px 2px;
+	padding: 2px 4px;
+	background: #2a3f5f;
+	color: #fff;
+	border-radius: 3px;
+	font-size: 10px;
+}
+.constraint-cochip-remove {
+	background: transparent;
+	border: none;
+	color: #fff;
+	margin-left: 4px;
+	cursor: pointer;
+	font-size: 10px;
+	padding: 0;
+}
+.ai-rec-config{font-size:12px;line-height:1.2}
+.ai-rec-config .config-row{margin-left:-4px;margin-right:-4px}
+.ai-rec-config .config-row>[class*="col-"]{padding-left:4px;padding-right:4px}
+.ai-rec-config .form-group{position:relative;margin-bottom:1px}
+.ai-rec-config .form-group label{font-weight:500;font-size:10px;margin-bottom:0;line-height:1.2;color:#999}
+.ai-rec-config .form-control,
+.ai-rec-config .form-control-sm{font-size:11px;padding:5.25px 8px;height:33.5px;min-height:33.5px}
+.ai-rec-config input[type=range]{height:16px;margin:0}
+.ai-rec-config .switch-inline{display:flex;align-items:center;gap:.25rem;height:33.5px}
+.ai-rec-config .custom-control.custom-switch{display:flex;align-items:center;gap:6px;min-height:33.5px}
+.ai-rec-config .custom-control-label{line-height:1.1}
+.ai-rec-config .range-wrapper{display:flex;align-items:center;gap:.25rem;height:33.5px;width:92px}
+.ai-rec-config .zoom-slider{width:100%;height:16px}
+
+/* Global zoom slider styles for toolbar */
+.zoom-slider{width:100%;height:16px}
+.ai-rec-config .range-value{min-width:32px;text-align:center;font-size:10px;padding:1px 3px;background:#2c2f33;border:1px solid #373a3e;border-radius:2px;line-height:1.2;height:22px;display:flex;align-items:center;justify-content:center}
+.ai-rec-config .text-muted{font-size:10px}
+.ai-rec-config .w-num{width:72px}
+.ai-rec-config .w-180,.ai-rec-config .w-select,.ai-rec-config .w-text,.ai-rec-config .w-search{width:180px;max-width:180px}
+.ai-rec-config .w-tags{width:400px;max-width:400px}
+.ai-rec-config .label-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Wrapper used in RecommendedScenes.tsx to align controls under their labels */
+.ai-rec-config .control-wrap{display:flex;align-items:center;justify-content:center;min-height:33.5px;height:auto}
+
+/* Ensure inner switch fills the wrapper and its input is centered precisely */
+.ai-rec-config .control-wrap .custom-control.custom-switch{height:100%;align-items:center;display:flex}
+.ai-rec-config .control-wrap .custom-control-input{margin:0;align-self:center}
+.ai-rec-config .control-wrap .custom-control-label{display:flex;align-items:center;justify-content:center;height:100%}
+
+
+/* Force the switch pseudo-elements (Bootstrap's .custom-control-label::before/::after)
+	 to be vertically centered within the label's area. Use high specificity so theme
+	 overrides won't push the switch off-center. */
+.ai-rec-config .control-wrap .custom-control.custom-switch .custom-control-label::before,
+.ai-rec-config .control-wrap .custom-control.custom-switch .custom-control-label::after{
+	top:50% !important;
+	transform:translateY(-50%) !important;
+}
+
+/* Ensure the label itself doesn't collapse baseline spacing that could push the switch up */
+.ai-rec-config .control-wrap .custom-control-label{line-height:1;padding:0}
+
+/* Layout: center controls horizontally inside each config row */
+.ai-rec-config .config-row{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin-left:0;margin-right:0}
+.ai-rec-config .config-row>[class*="col-"]{padding-left:4px;padding-right:4px;display:flex;align-items:center;justify-content:center}
+
+.ai-tag-fallback{position:relative;/* use textbox vars for color + fallbacks for visual parity */
+	background: var(--ai-textbox-bg) !important;
+	/* exact computed values from canonical textbox to ensure pixel parity */
+	background-color: rgba(16,22,26,.3) !important;
+	color: #f5f8fa !important;
+	border: 0 !important; /* canonical input uses inset box-shadow instead of an outer border */
+	border-radius: 4px;
+	padding: 5.25px 8px;
+	font-size: 11px;
+	/* allow grow vertically when chips wrap */
+	min-height: 33.5px;
+	display:flex;
+	flex-wrap:wrap;
+	/* allow chips to wrap and grow the control vertically; align to top */
+	align-items:flex-start;
+	gap:4px;
+	cursor:text;
+	box-shadow: inset 0 0 0 1px rgba(16,22,26,.3), inset 0 1px 1px rgba(16,22,26,.4) !important;
+	background-clip: padding-box;
+	transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+/* Allow the outer tag control to appear transparent (so it visually matches inputs that are transparent)
+   while keeping dropdowns readable. `.unified` indicates the 'use canonical textbox look' mode. */
+.ai-tag-fallback.unified{
+	/* Use the intended semi-transparent fill (not fully transparent) so the box
+	   keeps the subtle background tint seen on other text inputs */
+	background-color: rgba(16,22,26,.3) !important;
+	background-image: none !important;
+	color: #f5f8fa !important;
+	/* preserve the inner stroke from the canonical textbox for pixel parity */
+	box-shadow: inset 0 0 0 1px rgba(16,22,26,.3), inset 0 1px 1px rgba(16,22,26,.4) !important;
+	background-clip: padding-box;
+}
+.ai-tag-fallback.unified:focus-within{border-color:var(--ai-input-focus-border);box-shadow:0 0 0 2px var(--ai-input-focus-ring)}
+.ai-tag-fallback .combination-toggle{padding:2px 8px;font-size:11px;line-height:1.1;border-radius:3px;border:1px solid transparent;cursor:pointer;font-weight:600;min-width:32px}
+.ai-tag-fallback .combination-toggle.disabled{opacity:.6;cursor:not-allowed}
+.ai-tag-fallback .combination-toggle.and{background:#1f3d23;border-color:#2d6a36;color:#8ee19b}
+.ai-tag-fallback .combination-toggle.or{background:#3d2a1f;border-color:#6a4a2d;color:#e2c19b}
+.ai-tag-fallback .mode-toggle{padding:2px 6px;font-size:11px;line-height:1.1;border-radius:3px;border:1px solid transparent;cursor:pointer;font-weight:600}
+.ai-tag-fallback .mode-toggle.include{background:#1f3d23;border-color:#2d6a36;color:#8ee19b}
+.ai-tag-fallback .mode-toggle.exclude{background:#4a1b1b;border-color:#a33;color:#f08a8a}
+.ai-tag-fallback .tag-chip{display:inline-flex;align-items:center;gap:2px;border-radius:3px;padding:2px 6px;font-size:11px;font-weight:500;border:1px solid;position:relative;max-width:250px}
+.ai-tag-fallback .tag-chip .chip-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.ai-tag-fallback .tag-chip .chip-actions{display:flex;gap:2px;flex-shrink:0;margin-left:4px}
+.ai-tag-fallback .tag-chip.include{background:#1f4d2a;border-color:#2e7d32;color:#cfe8d0}
+.ai-tag-fallback .tag-chip.exclude{background:#5c1f1f;border-color:#b33;color:#f5d0d0}
+.ai-tag-fallback .tag-chip.duration{background:#2a3f5f;border-color:#4a90e2;color:#cfe8ff}
+.ai-tag-fallback .tag-chip.overlap{background:#5f3f2a;border-color:#e2904a;color:#ffeacf}
+.ai-tag-fallback .tag-chip.importance{background:#5f2a5f;border-color:#9b4a9b;color:#f5d0f5}
+.ai-tag-fallback .tag-input{flex:1;min-width:120px;border:none;outline:none;background:transparent;color:inherit;padding:2px 4px;font-size:11px;line-height:1.2;height:auto}
+.ai-tag-fallback .tag-input::placeholder{color:rgba(255,255,255,0.4)}
+
+.ai-tag-fallback .suggestions-list{position:absolute;z-index:1000;left:0;right:0;top:100%;margin-top:2px;max-height:220px;overflow:auto;border-radius:4px;box-shadow:0 8px 20px rgba(0,0,0,0.6);
+	/* Dropdown/suggestions stay opaque and legible regardless of outer control transparency */
+	background-color: rgba(16,22,26,0.95) !important;
+	color: #f5f8fa !important;
+	border: 1px solid rgba(255,255,255,0.03) !important;
+	padding-top:6px;
+}
+.ai-tag-fallback .suggestions-list div{padding:5px 8px;cursor:pointer;font-size:11px}
+.ai-tag-fallback .suggestions-list div:hover{background:#2d3236}
+.ai-tag-fallback .empty-suggest{padding:6px 8px;font-size:11px;color:#889}
+
+/* Tag chip button styles */
+.ai-tag-fallback .tag-chip button{background:transparent;border:none;cursor:pointer;padding:0 0 0 2px;font-size:13px;line-height:1;color:inherit}
+.ai-tag-fallback .tag-chip .constraint-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:2px;padding:1px 3px;font-size:9px;margin-left:2px;cursor:pointer}
+.ai-tag-fallback .tag-chip .constraint-btn:hover{background:rgba(255,255,255,0.2)}
+
+.ai-tag-fallback .tag-dropdown{position:absolute;top:100%;left:0;right:0;border-top:none;border-radius:0 0 6px 6px;max-height:200px;overflow-y:auto;z-index:1000;
+	background-color: rgba(16,22,26,0.95) !important;
+	color: #f5f8fa !important;
+	border: 1px solid rgba(255,255,255,0.04) !important;
+	box-shadow: 0 12px 30px rgba(0,0,0,0.7) !important;
+}
+
+/* Higher-specificity fallback so other theme rules don't accidentally override these */
+.ai-tag-fallback.unified{
+	/* use the intended semi-transparent fill so the control matches other text inputs */
+	background-color: rgba(16,22,26,.3) !important;
+	background-image: none !important;
+	color: #f5f8fa !important;
+	/* preserve the inner stroke so it still reads as an input */
+	box-shadow: inset 0 0 0 1px rgba(16,22,26,.3), inset 0 1px 1px rgba(16,22,26,.4) !important;
+	background-clip: padding-box;
+}
+.ai-tag-fallback.unified .suggestions-list,
+.ai-tag-fallback.unified .tag-dropdown{
+	/* dropdowns remain opaque and legible */
+	background-color: rgba(16,22,26,0.95) !important;
+	color: #f5f8fa !important;
+	border: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+/* Ensure the text inputs we use for config match the canonical input variables exactly
+   This targets the specific class combination used by the textbox in the UI so it's
+   precise and doesn't affect unrelated inputs. */
+/* NOTE: Removed .text-input.form-control override so global inputs keep their original theme styles.
+   The tag selector now explicitly uses the canonical textbox variables (--ai-textbox-*) so it matches
+   the intended textbox appearance without forcing other inputs to adopt tag styles. */
+.ai-tag-fallback .tag-dropdown-item{padding:4px 8px;cursor:pointer;color:#fff;font-size:12px}
+.ai-tag-fallback .tag-dropdown-item:hover{background:#2a2e33}
+.ai-tag-fallback .tag-dropdown-item.selected{background:#1a3d23;color:#8ee19b}
+
+/* Constraint editor styles */
+.constraint-popup{position:fixed;z-index:1101;background:#1a1d21;border:1px solid #333;border-radius:6px;padding:8px;box-shadow:0 4px 12px rgba(0,0,0,0.6);font-size:11px;min-width:200px}
+.constraint-popup .constraint-title{font-weight:bold;margin-bottom:6px}
+.constraint-popup .constraint-type{margin-bottom:6px}
+.constraint-popup .constraint-type select{width:100%;padding:2px 4px;background:var(--ai-input-bg);border:1px solid var(--ai-input-border);border-radius:3px;color:#fff;font-size:11px}
+.constraint-popup .constraint-options{margin-bottom:6px}
+.constraint-popup .constraint-options input,.constraint-popup .constraint-options select{width:60px;padding:2px 4px;background:var(--ai-input-bg);border:1px solid var(--ai-input-border);border-radius:3px;color:#fff;font-size:10px;margin:1px}
+.constraint-popup .constraint-actions{display:flex;justify-content:flex-end;margin-top:8px;gap:4px}
+.constraint-popup .btn-constraint{padding:2px 6px;background:var(--ai-input-bg);border:1px solid var(--ai-input-border);border-radius:3px;color:#fff;cursor:pointer;font-size:10px}
+.constraint-popup .btn-constraint:hover{background:var(--ai-input-bg)}
+.constraint-popup .constraint-actions button{padding:3px 6px;font-size:10px;border:none;border-radius:3px;cursor:pointer}
+.constraint-popup .btn-save{background:#2e7d32;color:#fff}
+.constraint-popup .btn-cancel{background:#666;color:#fff}
+.constraint-popup .close-btn{background:transparent;border:none;color:#fff;cursor:pointer;font-size:14px;position:absolute;top:2px;right:4px;padding:2px 4px;border-radius:2px}
+
+/* Co-occurrence chip styles (flex, horizontal growth) */
+.co-chip{display:flex;align-items:center;width:fit-content;min-width:0;padding:4px 8px;gap:6px}
+.co-chip .co-constraint-info{flex-shrink:0;font-size:10px;font-weight:bold;margin-right:4px}
+.co-chip .co-tags{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:0}
+.co-chip .co-tag-item{display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
+.co-chip .co-tag-name{max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.co-chip .co-tag-remove{background:transparent;border:none;color:#fff;margin-left:4px;cursor:pointer;font-size:12px;padding:0}
+.co-chip .co-actions{flex-shrink:0;display:flex;align-items:center;gap:8px}
+.co-chip .co-chip-remove{background:transparent;border:none;color:#fff;cursor:pointer;font-size:12px;padding:0}
+
+/* Grid and scene styles */
+.scene-grid-loading,.scene-grid-error,.scene-grid-empty,.scene-grid-calculating{margin-top:24px}
+.scene-grid-error{color:#c66}
+.ai-rec-grid{gap:0 !important}
+.ai-rec-grid .scene-card{width:var(--ai-card-width) !important}
+.backend-status{margin-right:6px}
+
+/* Generic tag chip styles for include/exclude */
+.tag-chip-flex{display:inline-flex;align-items:center;gap:4px;max-width:300px}
+.tag-chip-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.tag-chip-constraint{font-size:10px;color:#aaa;flex-shrink:0}
+.tag-chip-actions{display:flex;gap:2px;flex-shrink:0}
+.tag-chip-remove{background:transparent;border:none;cursor:pointer;padding:0 0 0 2px;font-size:13px;line-height:1;color:inherit}
+
+/* Constraint editor selected tags area */
+.constraint-selected-tags{margin-bottom:6px;min-height:20px;border:1px solid #444;border-radius:3px;padding:2px}
+.constraint-selected-empty{color:#888;font-size:10px;padding:2px}
+.constraint-available-tags{display:flex;flex-wrap:wrap;gap:1px;margin-top:4px}
+.constraint-tag-button{padding:1px 4px;background:#2a3f5f;color:#fff;border:none;border-radius:2px;cursor:pointer;font-size:9px;line-height:12px}
+
+/* Enhanced co-occurrence chip styles - moved from AIOverhaul.css */
+.tag-chip.overlap{display:flex;align-items:center;gap:6px;padding:6px 12px 6px 10px;border:2px solid;border-radius:8px;background:rgba(255,255,255,0.03);position:relative;width:fit-content;min-width:0;max-width:none}
+.co-occurrence-constraint-info{font-size:10px;opacity:0.8;font-weight:600;letter-spacing:0.5px;white-space:nowrap;margin-right:4px}
+.co-occurrence-tags{display:flex;flex-wrap:nowrap;gap:3px;align-items:center}
+.co-tag-item{display:flex;align-items:center;gap:3px;padding:2px 5px;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.5);border-radius:10px;font-size:11px;line-height:1;cursor:pointer;transition:all 0.15s ease}
+.co-tag-item:hover{background:rgba(59,130,246,0.3);border-color:rgba(59,130,246,0.7);transform:translateY(-1px)}
+.co-tag-remove{background:none;border:1px solid rgba(255,255,255,0.3);color:inherit;font-size:9px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.7;line-height:1;transition:all 0.15s ease}
+.co-tag-remove:hover{opacity:1;background:rgba(255,100,100,0.3);border-color:rgba(255,100,100,0.6);transform:scale(1.1)}
+.tag-chip.overlap .co-actions{display:flex;align-items:center;gap:8px;margin-left:8px;flex:0 0 auto}
+.tag-chip.overlap .constraint-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:2px 6px;font-size:11px;cursor:pointer}
+.tag-chip.overlap .co-chip-remove,.tag-chip.overlap .remove-group-btn{background:none;border:none;color:inherit;font-size:12px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.85}
+.tag-chip.overlap .co-chip-remove:hover,.tag-chip.overlap .remove-group-btn:hover{opacity:1;background:rgba(255,255,255,0.12)}
+
+/* Final override: ensure unified tag controls use the semi-transparent textbox fill */
+body .ai-tag-fallback.unified {
+	background-color: rgba(16,22,26,.3) !important;
+	background-image: none !important;
+	color: #f5f8fa !important;
+}

@@ -1,0 +1,339 @@
+/* =============================================================================
+   AI Overhaul - Glassy Minimalist Theme
+   ============================================================================= */
+
+/* Main Container Styling */
+.ai-overhaul-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 2px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.ai-overhaul-container:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Styling */
+.ai-overhaul-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.ai-overhaul-card-header {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.15), rgba(80, 200, 120, 0.15));
+  border: none;
+  border-radius: 12px 12px 0 0;
+  padding: 16px 24px;
+  margin: -24px -24px 20px -24px;
+}
+
+.ai-overhaul-card-title {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Form Controls */
+.ai-overhaul-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+}
+
+.ai-overhaul-input:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(74, 144, 226, 0.5);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  outline: none;
+}
+
+.ai-overhaul-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Button Styling */
+.ai-overhaul-btn {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.8), rgba(80, 200, 120, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  padding: 10px 20px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.ai-overhaul-btn:hover {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.9), rgba(80, 200, 120, 0.9));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.ai-overhaul-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ai-overhaul-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Endpoint Preview */
+.ai-overhaul-endpoint-preview {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+}
+
+/* Status Indicators */
+.ai-overhaul-status-success {
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.ai-overhaul-status-error {
+  color: #f87171;
+  font-weight: 500;
+}
+
+/* Health Results Container */
+.ai-overhaul-health-results {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+/* Animations */
+.ai-overhaul-fade-in {
+  animation: aiOverhaulFadeIn 0.3s ease-out;
+}
+
+@keyframes aiOverhaulFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading State */
+.ai-overhaul-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Typography */
+.ai-overhaul-title {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.ai-overhaul-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+/* =============================================================================
+   AI Button Specific Styles
+   ============================================================================= */
+
+.ai-overhaul-button-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.ai-overhaul-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  min-width: 220px;
+  overflow: hidden;
+  animation: aiOverhaulDropdownFadeIn 0.2s ease-out;
+}
+
+.ai-overhaul-dropdown-item {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ai-overhaul-dropdown-item:hover {
+  background: rgba(74, 144, 226, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateX(2px);
+}
+
+.ai-overhaul-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+/* Button Processing State */
+.ai-overhaul-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Dropdown Animation */
+@keyframes aiOverhaulDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Context-specific button styling */
+.ai-overhaul-button-container[data-context="image"] .ai-overhaul-btn {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(139, 92, 246, 0.8));
+}
+
+.ai-overhaul-button-container[data-context="scene"] .ai-overhaul-btn {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.8), rgba(251, 146, 60, 0.8));
+}
+
+.ai-overhaul-button-container[data-context="performer"] .ai-overhaul-btn {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.8), rgba(59, 130, 246, 0.8));
+}
+
+/* =============================================================================
+  Inlined Minimal AI Button Styles (previously src/css/AIButton.css)
+  ============================================================================= */
+:root {
+  --ai-btn-transition: 0.18s ease;
+  --ai-btn-radius: 8px;
+  --ai-btn-size: 48px;
+  --ai-color-default: #374151;
+  --ai-color-scenes: #3b82f6;
+  --ai-color-galleries: #8b5cf6;
+  --ai-color-images: #f59e0b;
+  --ai-color-performers: #ef4444;
+  --ai-color-studios: #0ea5e9;
+  --ai-color-tags: #6366f1;
+  --ai-color-markers: #f472b6;
+  --ai-color-home: #6b7280;
+  --ai-color-settings: #c5662f;
+  --ai-color-detail: #10b981;
+}
+.minimal-ai-button { position: relative; display: inline-block; font-family: inherit; }
+.ai-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; width:var(--ai-btn-size); height:var(--ai-btn-size); background:transparent; border:2px solid var(--ai-color-default); color:var(--ai-color-default); border-radius:var(--ai-btn-radius); cursor:pointer; transition: transform var(--ai-btn-transition), box-shadow var(--ai-btn-transition), background-color var(--ai-btn-transition), color var(--ai-btn-transition), border-color var(--ai-btn-transition); font-size:14px; font-weight:600; padding:4px; user-select:none; position:relative; }
+.ai-btn__icon { font-size:16px; line-height:1; margin-bottom:2px; }
+.ai-btn__label { font-size:8px; line-height:1; text-align:center; letter-spacing:.5px; }
+.ai-btn__badge { position:absolute; top:-6px; right:-6px; background:#ef4444; color:#fff; min-width:18px; height:18px; padding:0 4px; border-radius:10px; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.35); pointer-events:none; }
+.ai-btn--progress { position:relative; }
+.ai-btn--progress::after { content:''; position:absolute; inset:0; border-radius:var(--ai-btn-radius); box-shadow:0 0 0 2px currentColor inset; opacity:.25; pointer-events:none; }
+.ai-btn__progress-ring { position:absolute; inset:-2px; border-radius:var(--ai-btn-radius); background:conic-gradient(currentColor var(--ai-progress,0), rgba(255,255,255,0.08) 0); display:flex; align-items:center; justify-content:center; mix-blend-mode:normal; opacity:.85; pointer-events:none; mask:radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 48%, rgba(0,0,0,1) 49%); -webkit-mask:radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 48%, rgba(0,0,0,1) 49%); }
+.ai-btn--progress .ai-btn__icon { font-size:13px; font-weight:600; position:relative; z-index:1; }
+.ai-btn--scenes { border-color:var(--ai-color-scenes); color:var(--ai-color-scenes); }
+.ai-btn--galleries { border-color:var(--ai-color-galleries); color:var(--ai-color-galleries); }
+.ai-btn--images { border-color:var(--ai-color-images); color:var(--ai-color-images); }
+.ai-btn--performers { border-color:var(--ai-color-performers); color:var(--ai-color-performers); }
+.ai-btn--studios { border-color:var(--ai-color-studios); color:var(--ai-color-studios); }
+.ai-btn--tags { border-color:var(--ai-color-tags); color:var(--ai-color-tags); }
+.ai-btn--markers { border-color:var(--ai-color-markers); color:var(--ai-color-markers); }
+.ai-btn--home { border-color:var(--ai-color-home); color:var(--ai-color-home); }
+.ai-btn--settings { border-color:var(--ai-color-settings); color:var(--ai-color-settings); }
+.ai-btn--detail { border-color:var(--ai-color-detail); color:var(--ai-color-detail); }
+.ai-btn:hover { transform:scale(1.05); box-shadow:0 2px 8px rgba(0,0,0,0.15); background-color:currentColor; color:#fff; }
+.ai-btn:active { transform:scale(0.94); }
+.ai-btn__tooltip { position:absolute; top:-64px; left:50%; transform:translateX(-50%); background:#1f2937; color:#fff; padding:8px 12px; border-radius:6px; font-size:12px; white-space:nowrap; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.25); border:1px solid #374151; display:flex; flex-direction:column; gap:2px; pointer-events:none; }
+.ai-btn__tooltip-main { font-weight:600; }
+.ai-btn__tooltip-detail { font-size:10px; opacity:.85; }
+.ai-btn__tooltip-id { font-size:10px; opacity:.6; }
+.ai-btn__tooltip-sel { font-size:10px; opacity:.75; color:#93c5fd; }
+.ai-actions-menu { position:absolute; top:56px; right:0; background:#1f2937; border:1px solid #374151; border-radius:8px; padding:6px 0; min-width:220px; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+.ai-actions-menu__status { padding:8px 12px; color:#9ca3af; font-size:12px; }
+.ai-actions-menu__item { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:8px 12px; background:transparent; border:none; color:#e5e7eb; font-size:13px; cursor:pointer; }
+.ai-actions-menu__item:hover { background:#374151; }
+.ai-actions-menu__item:disabled { opacity:.5; cursor:not-allowed; }
+.ai-actions-menu__svc { opacity:.5; font-size:11px; letter-spacing:.5px; }
+.ai-actions-menu__rk { font-size:10px; color:#93c5fd; }
+.ai-actions-menu__exec { font-size:10px; }
+
+/* =============================================================================
+  Inlined Task Dashboard Styles (previously src/css/TaskDashboard.css)
+  ============================================================================= */
+.ai-task-dashboard { font-family: var(--font, sans-serif); padding:8px; color: var(--ai-fg, #eee); background: rgba(20,20,25,0.6); backdrop-filter: blur(6px); border:1px solid #333; border-radius:6px; max-width:860px; }
+.ai-task-dash__header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.ai-task-dash__filters select, .ai-task-dash__filters button { margin-left:6px; background:#222; color:#ddd; border:1px solid #444; padding:4px 8px; border-radius:4px; cursor:pointer; }
+.ai-task-dash__filters button[disabled]{ opacity:.5; cursor:default; }
+.ai-task-dash__section { margin-top:12px; }
+.ai-task-row { display:grid; grid-template-columns:110px 1fr 90px 70px 120px; gap:8px; padding:4px 6px; border-bottom:1px solid #333; font-size:13px; align-items:center; }
+.ai-task-row:nth-child(odd){ background:rgba(255,255,255,0.02); }
+.ai-task-row__status { text-transform:capitalize; }
+.ai-task-row--history { opacity:.85; }
+.ai-task-dash__empty { font-style:italic; padding:4px 2px; color:#888; }
+.ai-task-row__progress { font-variant-numeric: tabular-nums; }
+
+/* Compact nav tabs in scene details to prevent wrapping */
+.scene-tabs .nav-tabs .nav-item .nav-link {
+  padding: 6px 8px; /* much smaller padding */
+  font-size: 0.8rem; /* smaller font */
+  margin-right: 2px; /* minimal spacing */
+  white-space: nowrap; /* prevent text wrapping within tabs */
+}
+
+.scene-tabs .nav-tabs .nav-item {
+  margin-bottom: 0; /* ensure no vertical spacing */
+  flex-shrink: 0; /* prevent flex shrinking */
+}
+
+/* More aggressive targeting - apply to all nav-tabs in scene areas */
+.ScenePage .nav-tabs .nav-item .nav-link,
+[class*="scene"] .nav-tabs .nav-item .nav-link {
+  padding: 6px 6px !important;
+  font-size: 0.92rem !important;
+  margin-right: 2px !important;
+}
