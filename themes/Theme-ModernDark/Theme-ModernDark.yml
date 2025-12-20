@@ -1,6 +1,7 @@
 name: Theme - ModernDark
 description: ModernDark Theme for Stash by cj13
 version: 1.2
+url: https://discourse.stashapp.cc/t/moderndark/1423
 ui:
   css:
     - Theme-ModernDark.css

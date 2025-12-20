@@ -1,6 +1,7 @@
 name: Remove redundant parent tags from tagged objects
-description: removes parent tags from objects if a more specific child tag is also present
+description: Removes parent tags from objects if a more specific child tag is also present
 version: 0.1
+url: https://discourse.stashapp.cc/t/remove-redundant-parent-tags-from-tagged-objects/3905
 exec:
   - python
   - "{pluginDir}/untagRedundantTags.py"

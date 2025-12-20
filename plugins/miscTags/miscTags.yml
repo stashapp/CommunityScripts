@@ -1,7 +1,7 @@
 name: Misc Tags
 description: Add extra tags for VR and other ues
 version: 0.4.1
-url: https://github.com/stashapp/CommunityScripts/
+url: https://discourse.stashapp.cc/t/misc-tags/1383
 exec:
   - python
   - "{pluginDir}/miscTags.py"

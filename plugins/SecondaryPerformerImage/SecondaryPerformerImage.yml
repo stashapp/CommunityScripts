@@ -1,7 +1,7 @@
 name: Add secondary performer image
 description: Adds support for a secondary perfomrer image on the perform details page.
-url: https://github.com/stashapp/CommunityScripts
 version: 1.1
+url: https://discourse.stashapp.cc/t/add-secondary-performer-image/3996
 settings:
   imageMode:
     displayName: Image Mode

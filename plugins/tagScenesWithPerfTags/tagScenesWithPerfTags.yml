@@ -1,6 +1,7 @@
 name: Tag Scenes From Performer Tags
 description: tags scenes with performer tags.
 version: 0.2.3
+url: https://discourse.stashapp.cc/t/tag-scenes-from-performer-tags/1413
 exec:
   - python
   - "{pluginDir}/tagScenesWithPerfTags.py"

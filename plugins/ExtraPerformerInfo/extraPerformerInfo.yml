@@ -1,7 +1,7 @@
 name: Extra Performer Info
 description: add award info from wikidata
 version: 0.2
-url: https://github.com/stashapp/CommunityScripts/
+url: https://discourse.stashapp.cc/t/extra-performer-info/1332
 exec:
   - python
   - "{pluginDir}/extraPerformerInfo.py"

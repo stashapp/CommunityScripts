@@ -1,7 +1,7 @@
-# example plugin config
 name: Path Parser
 description: Updates scene info based on the file path.
 version: 1.0
+url: https://discourse.stashapp.cc/t/path-parser/1386
 exec:
   - pathParser.js
 interface: js

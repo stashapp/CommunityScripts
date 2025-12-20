@@ -1,6 +1,7 @@
 name: Theme - Rounded Yellow
 description: Theme with rounded corners and yellow accents
 version: 1.0
+url: https://discourse.stashapp.cc/t/rounded-yellow/1431
 ui:
   css:
     - Theme-RoundedYellow.css

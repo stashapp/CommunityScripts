@@ -1,6 +1,7 @@
 name: Theme - NeonDark
 description: NeonDark Theme for Stash by Dankonite
 version: 1.0
+url: https://discourse.stashapp.cc/t/neondark/1424
 ui:
   css:
     - Theme-NeonDark.css

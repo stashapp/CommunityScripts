@@ -1,7 +1,7 @@
 name: audio-transcodes
 description: Generate a transcode video from an audio file
 version: 0.2
-url: https://github.com/stashapp/CommunityScripts/
+url: https://discourse.stashapp.cc/t/audio-transcodes/1338
 exec:
   - python
   - "{pluginDir}/audio-transcodes.py"

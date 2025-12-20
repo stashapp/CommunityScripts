@@ -1,7 +1,7 @@
 name: RenameFile
 description: Renames video (scene) file names when the user edits the [Title] field located in the scene [Edit] tab.
 version: 1.0.0
-url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/RenameFile
+url: https://discourse.stashapp.cc/t/renamefile/1334
 ui:
   css:
     - renamefile.css

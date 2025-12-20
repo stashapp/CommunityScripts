@@ -1,7 +1,7 @@
 name: Star Identifier
 description: Use facial recognition to automatically identify who is in images or scene screenshots from the performers already in your Stash library.
 version: 1.0
-url: https://github.com/axxeman23/star_identifier
+url: https://discourse.stashapp.cc/t/star-identifier/3761
 exec:
   - python
   - "{pluginDir}/py_plugins/star_identifier.py"

@@ -1,20 +1,21 @@
 name: AudioPlayer
 description: Add an audio-only toggle button and support for audio files in the Stash player through hls transcoder.
 version: 0.3
+url: https://discourse.stashapp.cc/t/audioplayer/1328
 ui:
-    requires:
-        - CommunityScriptsUILibrary
-    javascript:
-        - AudioPlayer.js
-    css:
-        - AudioPlayer.css
+  requires:
+    - CommunityScriptsUILibrary
+  javascript:
+    - AudioPlayer.js
+  css:
+    - AudioPlayer.css
 
 settings:
-    audioExtensions:
-        displayName: Audio Extensions
-        description: "Extensions to mach as audio files. Default: mp3, m4a"
-        type: STRING
-    useTag:
-        displayName: Use Tag
-        description: Use "Audio" tag instead of extensions.
-        type: BOOLEAN
+  audioExtensions:
+    displayName: Audio Extensions
+    description: "Extensions to mach as audio files. Default: mp3, m4a"
+    type: STRING
+  useTag:
+    displayName: Use Tag
+    description: Use "Audio" tag instead of extensions.
+    type: BOOLEAN

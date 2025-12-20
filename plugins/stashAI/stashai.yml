@@ -2,6 +2,7 @@ name: Stash AI
 # requires: CommunityScriptsUILibrary
 description: Add Tags or Markers to a video using AI
 version: 1.0.2
+url: https://discourse.stashapp.cc/t/stash-ai/1392
 ui:
   requires:
     - CommunityScriptsUILibrary

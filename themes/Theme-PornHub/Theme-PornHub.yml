@@ -1,6 +1,7 @@
 name: Theme - Pornhub
 description: PornHub Theme for Stash by neurokinin
 version: 1.0.1
+url: https://discourse.stashapp.cc/t/pornhub/1428
 ui:
   css:
     - Theme-PornHub.css

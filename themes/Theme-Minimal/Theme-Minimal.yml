@@ -1,6 +1,7 @@
 name: Theme - Minimal
 description: Minimal Theme for Stash
 version: 0.2.8
+url: https://discourse.stashapp.cc/t/minimal/1421
 ui:
   css:
     - index.css

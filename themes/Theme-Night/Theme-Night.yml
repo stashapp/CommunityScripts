@@ -1,6 +1,7 @@
 name: Theme - Night
 description: Night Theme for Stash (unknown author)
 version: 0.1
+url: https://discourse.stashapp.cc/t/night/1425
 ui:
   css:
     - Theme-Night.css

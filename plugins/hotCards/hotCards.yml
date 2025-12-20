@@ -1,8 +1,8 @@
 name: Hot Cards
+# requires: CommunityScriptsUILibrary
 description: Adds custom styling to card elements that match a Tag ID or a Rating Threshold.
 version: 1.2.2
-url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/hotCards
-# requires: CommunityScriptsUILibrary
+url: https://discourse.stashapp.cc/t/hot-cards/1380
 ui:
   requires:
     - CommunityScriptsUILibrary

@@ -3,6 +3,7 @@ description: Local Performer Recognition plugin using DeepFace
 # requires: PythonDepManager
 # requires: stashUserscriptLibrary7dJx1qP
 version: 1.0.1
+url: https://discourse.stashapp.cc/t/local-visage/2478
 exec:
   - python
   - "{pluginDir}/LocalVisage.py"

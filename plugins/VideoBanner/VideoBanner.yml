@@ -1,11 +1,11 @@
 name: Video Banner
 description: Displays random generated preview videos in the detail page banner.
 version: 0.1.1
-#url: https://github.com/your_repo # Replace with your plugin repository URL
+url: https://discourse.stashapp.cc/t/video-banner/1927
 
 ui:
   requires:
-    - CommunityScriptsUILibrary # Ensure CommunityScriptsUILibrary is loaded before this plugin
+    - CommunityScriptsUILibrary
   javascript:
     - VideoBanner.js
 

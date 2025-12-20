@@ -1,7 +1,8 @@
 name: Choose Your Own Adventure Player (Backer)
+# requires: CommunityScriptsUILibrary
 description: Plugin to adapt Choose Your Own Adventure Games to the VideoJS player.
 version: 1.0.1
-# requires: CommunityScriptsUILibrary
+url: https://discourse.stashapp.cc/t/choose-your-own-adventure-player/1222
 settings:
   accessToken:
     displayName: Access Token

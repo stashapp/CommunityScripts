@@ -1,7 +1,7 @@
 name: "Adulttime Interactive Downloader"
 description: Download Interactive Files for Adulttime Scenes
 version: 0.1.2
-url: https://github.com/tooliload/StashAppCommunityScripts/tree/main/plugins/AdulttimeInteractiveDL
+url: https://discourse.stashapp.cc/t/adulttime-interactive-downloader/1327
 exec:
   - python
   - "{pluginDir}/AdulttimeInteractiveDL.py"

@@ -1,7 +1,8 @@
 name: CJ's Card Tweaks.
+# requires: CommunityScriptsUILibrary
 description: Provides various tweaks for the Stash Cards.
 version: 1.1
-# requires: CommunityScriptsUILibrary
+url: https://discourse.stashapp.cc/t/cjs-card-tweaks/1342
 ui:
   requires:
     - CommunityScriptsUILibrary

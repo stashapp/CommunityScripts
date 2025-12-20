@@ -1,7 +1,7 @@
 name: e621_tagger
 description: Finding images and videos on e621 and tagging them.
 version: 0.5
-url: https://github.com/stashapp/CommunityScripts/
+url: https://discourse.stashapp.cc/t/e621-tagger/1377
 exec:
   - python
   - "{pluginDir}/e621_tagger.py"

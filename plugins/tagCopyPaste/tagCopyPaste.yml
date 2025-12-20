@@ -2,6 +2,7 @@ name: tagCopyPaste
 # requires: CommunityScriptsUILibrary
 description: Adds Copy/Paste buttons to Tags field.
 version: 0.4
+url: https://discourse.stashapp.cc/t/tagcopypaste/1858
 settings:
   createIfNotExists:
     displayName: Create If Not Exists

@@ -1,7 +1,7 @@
 name: Funscript Markers
 description: Create markers if there is a funscript with "chapters" included in the metadata of the script
 version: 0.1
-url: https://github.com/stashapp/CommunityScripts/
+url: https://discourse.stashapp.cc/t/funscript-markers/1379
 exec:
   - python
   - "{pluginDir}/funscriptMarkers.py"

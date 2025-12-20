@@ -1,8 +1,9 @@
 name: AudioPlayerLite
 description: This plugin identifies files with no video codec and plays them as audio.
 version: 0.1
+url: https://discourse.stashapp.cc/t/audioplayerlite/1329
 ui:
-    javascript:
-        - AudioPlayerLite.js
-    css:
-        - AudioPlayerLite.css
+  javascript:
+    - AudioPlayerLite.js
+  css:
+    - AudioPlayerLite.css

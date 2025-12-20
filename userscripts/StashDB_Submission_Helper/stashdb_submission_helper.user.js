@@ -8,7 +8,7 @@
 // @match       https://stashdb.org/drafts/*
 // @match       https://stashdb.org/performers/*/edit
 // @match       https://stashdb.org/performers/add
-// @homepageURL https://github.com/stashapp/CommunityScripts/tree/main/userscripts/StashDB_Submission_Helper
+// @homepageURL https://discourse.stashapp.cc/t/stashdb-submission-helper/1417
 // @downloadURL https://raw.githubusercontent.com/stashapp/CommunityScripts/main/userscripts/StashDB_Submission_Helper/stashdb_submission_helper.user.js
 // @updateURL   https://raw.githubusercontent.com/stashapp/CommunityScripts/main/userscripts/StashDB_Submission_Helper/stashdb_submission_helper.user.js
 // ==/UserScript==
