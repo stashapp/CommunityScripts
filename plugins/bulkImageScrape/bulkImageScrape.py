@@ -5,7 +5,7 @@ import math
 import time
 
 from PythonDepManager import ensure_import
-ensure_import("stashapi@git+https://github.com/stg-annon/stashapi@f2de6fa")
+ensure_import("stashapi")
 
 import stashapi.log as log
 from stashapi.stash_types import StashItem
