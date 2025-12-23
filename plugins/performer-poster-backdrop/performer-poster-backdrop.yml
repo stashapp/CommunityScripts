@@ -1,0 +1,30 @@
+name: Performer Poster Backdrop
+description: Adds a blurred poster backdrop to performer pages.
+version: 1.0.3
+
+ui:
+  javascript:
+    - performer-poster-backdrop.js
+  css:
+    - performer-poster-backdrop.css
+
+settings:
+  opacity:
+    displayName: Backdrop opacity
+    description: "0–1 (leave blank for default: 1)"
+    type: STRING
+
+  blur:
+    displayName: Backdrop blur
+    description: "Pixels (leave blank for default: 10)"
+    type: STRING
+
+  defaultYOffset:
+    displayName: Default Y offset
+    description: "Background position % (leave blank for default: 20)"
+    type: STRING
+
+  perPerformerOffsets:
+    displayName: Per-performer Y overrides
+    description: "Comma seperated: performerId:percent (blank = none)"
+    type: STRING
