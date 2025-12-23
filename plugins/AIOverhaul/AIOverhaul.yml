@@ -1,7 +1,6 @@
 name: AIOverhaul
 description: AI Overhaul for Stash with a full plugin engine included to install and manage asynchronous stash plugins for AI or other purposes.
-version: 0.9.0
-url: https://discourse.stashapp.cc/t/aioverhaul/4847
+version: 0.9.1
 ui:
   javascript:
     - VersionInfo.js
