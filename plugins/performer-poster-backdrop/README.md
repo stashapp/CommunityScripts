@@ -1,5 +1,7 @@
 # Performer Poster Backdrop (Stash UI Plugin)
 
+https://discourse.stashapp.cc/t/performer-poster-backdrop/4897
+
 Adds a blurred poster-style backdrop behind performer headers using the performer’s poster image.
 
 ![Performer Poster Backdrop example](https://raw.githubusercontent.com/worryaboutstuff/performer-poster-backdrop/main/assets/performer-poster-backdrop-example.png)
