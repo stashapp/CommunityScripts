@@ -557,3 +557,6 @@ button.minimal {
 .package-manager table thead {
   background-color: var(--nav-color);
 }
+a.bg-secondary:hover, a.bg-secondary:focus, button.bg-secondary:hover, button.bg-secondary:focus {
+  background-color: var(--nav-color) !important;
+}
