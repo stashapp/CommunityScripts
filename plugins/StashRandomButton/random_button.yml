@@ -1,6 +1,6 @@
 name: RandomButton
 description: Adds a button to quickly jump to a random scene, image, performer, studio, group, tag, or gallery, both on overview and internal entity pages.
-version: 2.0.1
+version: 2.0.2
 url: https://discourse.stashapp.cc/t/randombutton/1809
 ui:
   requires: []
