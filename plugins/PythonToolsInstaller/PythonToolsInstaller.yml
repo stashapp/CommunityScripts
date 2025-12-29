@@ -1,6 +1,6 @@
 name: "Python Tools Installer"
 description: Download stashapp-tools for DockerEnv
-version: 0.1.2
+version: 0.1.3
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/PythonToolsInstaller
 exec:
   - python
