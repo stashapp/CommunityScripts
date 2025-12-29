@@ -51,8 +51,8 @@ def get_download_py_stashapp_tools(PLUGIN_DIR):
 
 	# venv/lib/python3.11/site-packages/stashapp_tools-
 
-	src = f"{used_dir}/venv/lib/python3.12/site-packages"
-	destination = shutil.copytree(src, org_packagedir,ignore_func,None,shutil.copy2,False,True)  
+	src = f"{used_dir}/venv/lib/python3.13/site-packages"
+	destination = shutil.copytree(src, org_packagedir,ignore_func,None,shutil.copy2,False,True)
 	fp = open(f'{used_dir}/copydo.txt', 'w+')
 	fp.write("%s\n" % print(destination))
 
