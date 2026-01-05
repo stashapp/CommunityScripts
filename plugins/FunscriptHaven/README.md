@@ -23,7 +23,7 @@ Funscript Haven analyzes video content using computer vision techniques to detec
 - **StashApp** - This plugin requires a running StashApp instance
 - **Python 3.8+** - Python interpreter with pip
 - **Dependencies** (automatically installed):
-  - `stashapp-tools` (v0.2.58)
+  - `stashapp-tools` (>=0.2.58)
   - `numpy` (v1.26.4)
   - `opencv-python` (v4.10.0.84)
   - `decord` (v0.6.0)
@@ -70,11 +70,13 @@ Settings can be configured in two ways:
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `threads` | CPU count | Number of threads for optical flow computation |
-| `detrend_window` | 1.5 | Detrend window in seconds - controls drift removal (1-10 recommended) |
-| `norm_window` | 4.0 | Normalization window in seconds - calibrates motion range |
+| `detrend_window` | 2 | Detrend window in seconds - controls drift removal (integer 1-10) |
+| `norm_window` | 4 | Normalization window in seconds - calibrates motion range (integer 1-10) |
 | `batch_size` | 3000 | Frames per batch - higher is faster but uses more RAM |
 | `overwrite` | false | Whether to overwrite existing funscript files |
 | `keyframe_reduction` | true | Enable intelligent keyframe reduction |
+
+**Note:** StashApp UI only accepts integer values 0-10 for NUMBER type settings. Decimal values are converted internally.
 
 ### Mode Settings
 
@@ -88,11 +90,13 @@ Settings can be configured in two ways:
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `multi_axis` | false | Generate secondary axis funscripts |
-| `multi_axis_intensity` | 0.5 | Intensity of secondary axis motion (0.0-1.0) |
-| `random_speed` | 0.3 | Speed of random motion variation |
-| `auto_home_delay` | 1.0 | Seconds of inactivity before returning to center |
-| `auto_home_duration` | 0.5 | Time to smoothly return to center position |
+| `multi_axis_intensity` | 5 | Intensity of secondary axis motion (0-10, where 10 = maximum) |
+| `random_speed` | 3 | Speed of random motion variation (0-10, where 10 = fastest) |
+| `auto_home_delay` | 1 | Seconds of inactivity before returning to center (integer 0-10) |
+| `auto_home_duration` | 1 | Time to smoothly return to center position in seconds (integer 0-10) |
 | `smart_limit` | true | Scale secondary axis with primary stroke activity |
+
+**Note:** Settings like `multi_axis_intensity` and `random_speed` use 0-10 integer scale in the UI but are converted to 0.0-1.0 decimal values internally.
 
 ### VR Detection
 

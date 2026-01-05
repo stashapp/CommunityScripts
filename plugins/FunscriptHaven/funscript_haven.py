@@ -16,9 +16,11 @@ from typing import Dict, Any, List, Optional, Callable
 
 # ----------------- Setup and Dependencies -----------------
 
+# Use PythonDepManager for dependency management
 try:
     from PythonDepManager import ensure_import
     
+    # Install and ensure all required dependencies with specific versions
     ensure_import(
         "stashapi:stashapp-tools==0.2.58",
         "numpy==1.26.4",
@@ -26,6 +28,7 @@ try:
         "decord==0.6.0"
     )
     
+    # Import the dependencies after ensuring they're available
     import stashapi.log as log
     from stashapi.stashapp import StashInterface
     import numpy as np
@@ -34,17 +37,20 @@ try:
     
 except ImportError as e:
     print(f"Failed to import PythonDepManager or required dependencies: {e}")
+    print("Please ensure PythonDepManager is installed and available.")
     sys.exit(1)
 except Exception as e:
     print(f"Error during dependency management: {e}")
+    import traceback
+    print(f"Stack trace: {traceback.format_exc()}")
     sys.exit(1)
 
 # Import local config
 try:
-    import funscript_flow_config as config
+    import funscript_haven_config as config
 except ModuleNotFoundError:
-    log.error("Please provide a funscript_flow_config.py file with the required variables.")
-    raise Exception("Please provide a funscript_flow_config.py file.")
+    log.error("Please provide a funscript_haven_config.py file with the required variables.")
+    raise Exception("Please provide a funscript_haven_config.py file with the required variables.")
 
 # ----------------- Global Variables -----------------
 
@@ -746,9 +752,12 @@ def get_scenes_with_tag(tag_name: str) -> List[Dict[str, Any]]:
         log.warning(f"Tag '{tag_name}' not found")
         return []
     
+    # Use fragment to limit fields and avoid fingerprint errors
+    # Only fetch id, files.path, and tags.id/name - avoiding problematic fragments
     scenes = stash.find_scenes(
         f={"tags": {"value": [tag["id"]], "modifier": "INCLUDES"}},
-        filter={"per_page": -1}
+        filter={"per_page": -1},
+        fragment="id files { path } tags { id name }"
     )
     return scenes or []
 
@@ -759,7 +768,8 @@ def remove_tag_from_scene(scene_id: str, tag_name: str) -> None:
     if not tag:
         return
     
-    scene = stash.find_scene(scene_id)
+    # Use fragment to limit fields and avoid fingerprint errors
+    scene = stash.find_scene(scene_id, fragment="id tags { id }")
     if not scene:
         return
     
@@ -775,7 +785,8 @@ def add_tag_to_scene(scene_id: str, tag_name: str) -> None:
     if not tag:
         return
     
-    scene = stash.find_scene(scene_id)
+    # Use fragment to limit fields and avoid fingerprint errors
+    scene = stash.find_scene(scene_id, fragment="id tags { id }")
     if not scene:
         return
     
@@ -824,7 +835,7 @@ def get_scene_file_path(scene: Dict[str, Any]) -> Optional[str]:
 def get_plugin_setting(key: str, default: Any = None) -> Any:
     """Get a plugin setting from StashApp, falling back to config file."""
     try:
-        settings = stash.get_configuration().get("plugins", {}).get("funscript_flow", {})
+        settings = stash.get_configuration().get("plugins", {}).get("funscript_haven", {})
         if key in settings and settings[key] is not None:
             return settings[key]
     except Exception:
@@ -882,10 +893,18 @@ def process_tagged_scenes() -> None:
             continue
         
         # Build processing parameters from plugin settings (with config file fallback)
+        # Convert 0-10 integer settings to their actual decimal values
+        detrend_window_raw = get_plugin_setting('detrend_window', 2)  # Default: 2 (was 1.5)
+        norm_window_raw = get_plugin_setting('norm_window', 4)  # Default: 4 (was 4.0)
+        multi_axis_intensity_raw = get_plugin_setting('multi_axis_intensity', 5)  # Default: 5 (was 0.5, scale 0-10)
+        random_speed_raw = get_plugin_setting('random_speed', 3)  # Default: 3 (was 0.3, scale 0-10)
+        auto_home_delay_raw = get_plugin_setting('auto_home_delay', 1)  # Default: 1 (was 1.0)
+        auto_home_duration_raw = get_plugin_setting('auto_home_duration', 1)  # Default: 1 (was 0.5, rounded)
+        
         params = {
             "threads": int(get_plugin_setting('threads', os.cpu_count() or 4)),
-            "detrend_window": float(get_plugin_setting('detrend_window', 1.5)),
-            "norm_window": float(get_plugin_setting('norm_window', 4.0)),
+            "detrend_window": float(max(1, min(10, int(detrend_window_raw)))),  # Clamp to 1-10 seconds
+            "norm_window": float(max(1, min(10, int(norm_window_raw)))),  # Clamp to 1-10 seconds
             "batch_size": int(get_plugin_setting('batch_size', 3000)),
             "overwrite": bool(get_plugin_setting('overwrite', False)),
             "keyframe_reduction": bool(get_plugin_setting('keyframe_reduction', True)),
@@ -893,10 +912,10 @@ def process_tagged_scenes() -> None:
             "pov_mode": bool(get_plugin_setting('pov_mode', False)),
             "balance_global": bool(get_plugin_setting('balance_global', True)),
             "multi_axis": bool(get_plugin_setting('multi_axis', False)),
-            "multi_axis_intensity": float(get_plugin_setting('multi_axis_intensity', 0.5)),
-            "random_speed": float(get_plugin_setting('random_speed', 0.3)),
-            "auto_home_delay": float(get_plugin_setting('auto_home_delay', 1.0)),
-            "auto_home_duration": float(get_plugin_setting('auto_home_duration', 0.5)),
+            "multi_axis_intensity": float(max(0, min(10, int(multi_axis_intensity_raw))) / 10.0),  # Convert 0-10 to 0.0-1.0
+            "random_speed": float(max(0, min(10, int(random_speed_raw))) / 10.0),  # Convert 0-10 to 0.0-1.0
+            "auto_home_delay": float(max(0, min(10, int(auto_home_delay_raw)))),  # Clamp to 0-10 seconds
+            "auto_home_duration": float(max(0, min(10, int(auto_home_duration_raw)))),  # Clamp to 0-10 seconds
             "smart_limit": bool(get_plugin_setting('smart_limit', True)),
         }
         
@@ -963,16 +982,16 @@ def read_json_input() -> Dict[str, Any]:
 
 def run(json_input: Dict[str, Any], output: Dict[str, Any]) -> None:
     """Main execution logic."""
+    plugin_args = None
     try:
-        log.debug(f"Server connection: {json_input['server_connection']}")
+        log.debug(json_input["server_connection"])
         os.chdir(json_input["server_connection"]["PluginDir"])
         initialize_stash(json_input["server_connection"])
     except Exception as e:
         log.error(f"Failed to initialize: {e}")
         output["output"] = "error"
         return
-    
-    plugin_args = None
+
     try:
         plugin_args = json_input['args'].get("mode")
     except (KeyError, TypeError):
@@ -986,6 +1005,7 @@ def run(json_input: Dict[str, Any], output: Dict[str, Any]) -> None:
     # Default action: process tagged scenes
     process_tagged_scenes()
     output["output"] = "ok"
+    return
 
 
 if __name__ == "__main__":

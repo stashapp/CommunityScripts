@@ -24,13 +24,15 @@ vr_tag_names = ["VR", "Virtual Reality", "180°", "360°"]
 import os
 threads = os.cpu_count() or 4
 
-# Detrend window in seconds - controls drift removal aggressiveness
+# Detrend window - controls drift removal aggressiveness (integer 1-10)
 # Higher values work better for stable cameras (recommended: 1-10)
-detrend_window = 1.5
+# Note: StashApp UI only accepts integers 0-10
+detrend_window = 2
 
-# Normalization window in seconds - time window to calibrate motion range
+# Normalization window in seconds - time window to calibrate motion range (integer 1-10)
 # Shorter values amplify motion but may cause artifacts in long thrusts
-norm_window = 4.0
+# Note: StashApp UI only accepts integers 0-10
+norm_window = 4
 
 # Batch size in frames - higher values are faster but use more RAM
 batch_size = 3000
@@ -58,19 +60,23 @@ balance_global = True
 # (Roll, Pitch, Twist, Surge, Sway)
 multi_axis = False
 
-# Intensity of secondary axis motion (0.0 - 1.0)
+# Intensity of secondary axis motion (0-10, where 10 = maximum)
 # Higher values = more movement
-multi_axis_intensity = 0.5
+# Note: StashApp UI only accepts integers 0-10, converted to 0.0-1.0 internally
+multi_axis_intensity = 5
 
-# Speed of random motion variation
+# Speed of random motion variation (0-10, where 10 = fastest)
 # Higher values = faster changes
-random_speed = 0.3
+# Note: StashApp UI only accepts integers 0-10, converted to 0.0-1.0 internally
+random_speed = 3
 
-# Seconds of inactivity before returning to center position
-auto_home_delay = 1.0
+# Seconds of inactivity before returning to center position (integer 0-10)
+# Note: StashApp UI only accepts integers 0-10
+auto_home_delay = 1
 
-# Time to smoothly return to center position
-auto_home_duration = 0.5
+# Time to smoothly return to center position in seconds (integer 0-10)
+# Note: StashApp UI only accepts integers 0-10
+auto_home_duration = 1
 
 # Scale secondary axis movement with primary stroke activity
 smart_limit = True
