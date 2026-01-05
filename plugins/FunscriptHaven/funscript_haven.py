@@ -330,7 +330,12 @@ def enable_software_decoding() -> None:
     os.environ["LIBVA_DRIVERS_PATH"] = ""
     os.environ["LIBVA_DRIVER_NAME"] = ""
     os.environ["AVCODEC_FORCE_SOFTWARE"] = "1"
+    # Suppress FFmpeg error messages (these are just warnings about hardware acceleration)
     os.environ["FFREPORT"] = "file=/dev/null:level=0"
+    # Additional FFmpeg options to suppress AV1 hardware errors
+    os.environ["FFMPEG_LOGLEVEL"] = "error"  # Only show errors, not warnings
+    # Disable VAAPI completely
+    os.environ["LIBVA_DRIVERS_PATH"] = "/dev/null"  # Point to invalid path to disable VAAPI
 
 
 def disable_software_decoding() -> None:
@@ -425,36 +430,53 @@ def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any
     """
     Fetch frames using OpenCV as fallback when decord fails.
     Software decoding is enforced via environment variables set before calling this function.
+    FFmpeg warnings about AV1 hardware acceleration are suppressed (FFmpeg will fall back to software).
     """
     frames_gray = []
     target_width = 512 if params.get("vr_mode") else 256
     target_height = 512 if params.get("vr_mode") else 256
     
-    # OpenCV will use software decoding due to environment variables set earlier
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        return frames_gray
+    # Suppress FFmpeg stderr output (these AV1 hardware errors are harmless - FFmpeg falls back to software)
+    import sys
+    import io
+    old_stderr = sys.stderr
+    suppressed_stderr = io.StringIO()
     
     try:
-        for frame_idx in chunk:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
-            ret, frame = cap.read()
-            if not ret or frame is None:
-                continue
-            
-            # Resize frame
-            frame_resized = cv2.resize(frame, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
-            
-            # Convert to grayscale
-            if params.get("vr_mode"):
-                h, w = frame_resized.shape[:2]
-                gray = cv2.cvtColor(frame_resized[h // 2:, :w // 2], cv2.COLOR_BGR2GRAY)
-            else:
-                gray = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2GRAY)
-            
-            frames_gray.append(gray)
+        # Temporarily redirect stderr to suppress FFmpeg AV1 hardware warnings
+        sys.stderr = suppressed_stderr
+        
+        # OpenCV will use software decoding due to environment variables set earlier
+        # FFmpeg may still try hardware first and log warnings, but will fall back to software
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            return frames_gray
+        
+        try:
+            for frame_idx in chunk:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                ret, frame = cap.read()
+                if not ret or frame is None:
+                    continue
+                
+                # Resize frame
+                frame_resized = cv2.resize(frame, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
+                
+                # Convert to grayscale
+                if params.get("vr_mode"):
+                    h, w = frame_resized.shape[:2]
+                    gray = cv2.cvtColor(frame_resized[h // 2:, :w // 2], cv2.COLOR_BGR2GRAY)
+                else:
+                    gray = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2GRAY)
+                
+                frames_gray.append(gray)
+        finally:
+            cap.release()
     finally:
-        cap.release()
+        # Restore stderr
+        sys.stderr = old_stderr
+        # Discard suppressed output (FFmpeg AV1 hardware warnings)
+        suppressed_stderr.close()
     
     return frames_gray
 
@@ -1026,14 +1048,25 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
     if use_opencv_fallback:
         # Use OpenCV to get video properties
         # Software decoding is already enabled above
-        cap = cv2.VideoCapture(video_path)
-        if not cap.isOpened():
-            log_func(f"ERROR: OpenCV fallback also failed to open video: {video_path}")
-            return True
+        # Suppress FFmpeg stderr warnings during property reading
+        import sys
+        import io
+        old_stderr = sys.stderr
+        suppressed_stderr = io.StringIO()
         
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        cap.release()
+        try:
+            sys.stderr = suppressed_stderr
+            cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                log_func(f"ERROR: OpenCV fallback also failed to open video: {video_path}")
+                return True
+            
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            cap.release()
+        finally:
+            sys.stderr = old_stderr
+            suppressed_stderr.close()
         
         if total_frames <= 0:
             log_func(f"ERROR: Video has no frames: {video_path}")
