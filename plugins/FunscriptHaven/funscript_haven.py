@@ -15,6 +15,9 @@ import subprocess
 from multiprocessing import Pool
 from typing import Dict, Any, List, Optional, Callable, Tuple
 
+# Hardware acceleration will be tried first, then fallback to software decoding if needed
+# We don't set these initially to allow hardware acceleration to be attempted
+
 # ----------------- Setup and Dependencies -----------------
 
 # Use PythonDepManager for dependency management
@@ -131,6 +134,226 @@ def precompute_wrapper(p, params):
     return precompute_flow_info(p[0], p[1], params)
 
 
+def find_intel_arc_render_device() -> Optional[str]:
+    """
+    Find the render device path (/dev/dri/renderD*) for the Intel Arc GPU.
+    Returns the device path or None if not found.
+    """
+    try:
+        # Check all render devices
+        render_devices = []
+        for item in os.listdir("/dev/dri/"):
+            if item.startswith("renderD"):
+                render_devices.append(f"/dev/dri/{item}")
+        
+        # Try each render device to find the Intel Arc one
+        for render_dev in sorted(render_devices):
+            try:
+                result = subprocess.run(
+                    ["vainfo", "--display", "drm", "--device", render_dev],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0 and "Intel" in result.stdout:
+                    # Check if it supports AV1 (Arc GPUs support AV1)
+                    if "AV1" in result.stdout or "av1" in result.stdout.lower():
+                        return render_dev
+            except (FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError):
+                continue
+        
+        # Fallback: if we found Intel but no AV1, still return the first Intel device
+        for render_dev in sorted(render_devices):
+            try:
+                result = subprocess.run(
+                    ["vainfo", "--display", "drm", "--device", render_dev],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0 and "Intel" in result.stdout:
+                    return render_dev
+            except (FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError):
+                continue
+        
+        return None
+    except Exception:
+        return None
+
+
+def detect_intel_arc_gpu() -> Tuple[bool, Optional[str], Optional[str]]:
+    """
+    Detect if an Intel Arc GPU is available.
+    Returns (is_available, device_name_or_error, render_device_path).
+    """
+    render_device: Optional[str] = None
+    try:
+        # Method 1: Check /sys/class/drm for Intel graphics devices
+        drm_path = "/sys/class/drm"
+        if os.path.exists(drm_path):
+            for item in os.listdir(drm_path):
+                if item.startswith("card") and os.path.isdir(os.path.join(drm_path, item)):
+                    device_path = os.path.join(drm_path, item, "device", "vendor")
+                    if os.path.exists(device_path):
+                        with open(device_path, "r") as f:
+                            vendor_id = f.read().strip()
+                            # Intel vendor ID is 0x8086
+                            if vendor_id == "0x8086" or vendor_id == "8086":
+                                # Check device name
+                                uevent_path = os.path.join(drm_path, item, "device", "uevent")
+                                if os.path.exists(uevent_path):
+                                    with open(uevent_path, "r") as uf:
+                                        uevent_data = uf.read()
+                                        # Check for Arc-specific device IDs or names
+                                        # Intel Arc GPU device ID ranges:
+                                        # - 569x series: Arc A310 (e.g., 0x5690-0x569F)
+                                        # - 56Ax series: Arc A380 (e.g., 0x56A0-0x56AF)
+                                        # - 56Bx series: Arc A750, A770 (e.g., 0x56B0-0x56BF)
+                                        # Format in uevent: PCI_ID=8086:56A5 or PCI_ID=0000:0000:8086:56A5
+                                        device_id_line = [line for line in uevent_data.split("\n") if "PCI_ID" in line]
+                                        if device_id_line:
+                                            device_id = device_id_line[0].split("=")[-1] if "=" in device_id_line[0] else ""
+                                            # Extract device ID part (after vendor ID 8086)
+                                            # Handle formats like "8086:56A5" or "0000:0000:8086:56A5"
+                                            arc_detected = False
+                                            if ":" in device_id:
+                                                parts = device_id.split(":")
+                                                # Find the part after 8086 (vendor ID)
+                                                for i, part in enumerate(parts):
+                                                    if part.upper() == "8086" and i + 1 < len(parts):
+                                                        device_part = parts[i + 1].upper()
+                                                        # Check if it's an Arc GPU device ID
+                                                        if any(arc_id in device_part for arc_id in ["569", "56A", "56B"]):
+                                                            arc_detected = True
+                                                            break
+                                            # Fallback: check if any Arc ID is in the full device_id string
+                                            if not arc_detected:
+                                                arc_detected = any(arc_id in device_id.upper() for arc_id in ["569", "56A", "56B"])
+                                            if arc_detected:
+                                                # Find the corresponding render device
+                                                render_device = find_intel_arc_render_device()
+                                                return True, f"Intel Arc GPU (device: {device_id})", render_device
+        
+        # Method 2: Try using lspci if available
+        try:
+            result = subprocess.run(
+                ["lspci"], 
+                capture_output=True, 
+                text=True, 
+                timeout=5
+            )
+            if result.returncode == 0:
+                for line in result.stdout.split("\n"):
+                    if "VGA" in line or "Display" in line:
+                        if "Intel" in line and ("Arc" in line or "A" in line.split("Intel")[-1].split()[0] if len(line.split("Intel")) > 1 else False):
+                            # Find the corresponding render device
+                            render_device = find_intel_arc_render_device()
+                            return True, f"Intel Arc GPU detected via lspci: {line.strip()}", render_device
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+        
+        # Method 3: Check vaapi devices (try all render devices)
+        # This is a fallback method that checks VAAPI directly
+        render_device = find_intel_arc_render_device()
+        if render_device:
+            # Verify it supports AV1
+            try:
+                result = subprocess.run(
+                    ["vainfo", "--display", "drm", "--device", render_device],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0 and "Intel" in result.stdout:
+                    # Check if it supports AV1
+                    if "AV1" in result.stdout or "av1" in result.stdout.lower():
+                        return True, "Intel Arc GPU (VAAPI with AV1 support)", render_device
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                pass
+        
+        return False, "No Intel Arc GPU detected", None
+    except Exception as e:
+        return False, f"Error detecting GPU: {e}", None
+
+
+def enable_intel_arc_hardware_acceleration(render_device: Optional[str] = None) -> None:
+    """
+    Enable Intel Arc GPU hardware acceleration via VAAPI.
+    
+    This function sets environment variables that force FFmpeg/decord to use the Intel Arc GPU
+    for hardware-accelerated video decoding. The iHD driver will automatically select the
+    Intel Arc GPU when LIBVA_DRIVER_NAME is set to "iHD".
+    
+    Args:
+        render_device: Path to the render device (e.g., /dev/dri/renderD128).
+                      If None, will try to detect it automatically.
+                      Note: libva typically auto-selects the correct device, but specifying
+                      it explicitly ensures the right GPU is used.
+    """
+    # Remove software-only restrictions
+    os.environ.pop("DECORD_CPU_ONLY", None)
+    os.environ.pop("FFMPEG_HWACCEL", None)
+    os.environ.pop("AVCODEC_FORCE_SOFTWARE", None)
+    
+    # Enable VAAPI hardware acceleration for Intel Arc
+    # Setting LIBVA_DRIVER_NAME to "iHD" forces libva to use the Intel HD Graphics driver
+    # which supports Intel Arc GPUs and AV1 hardware acceleration
+    os.environ["LIBVA_DRIVER_NAME"] = "iHD"
+    # Don't set LIBVA_DRIVERS_PATH to allow system to find the driver automatically
+    os.environ.pop("LIBVA_DRIVERS_PATH", None)
+    
+    # Enable hardware acceleration in FFmpeg (used by decord)
+    os.environ["FFMPEG_HWACCEL"] = "vaapi"
+    
+    # Specify the render device explicitly to ensure we use the Intel Arc GPU
+    # libva will use this device when initializing the iHD driver
+    if render_device:
+        # Some systems respect these environment variables for device selection
+        os.environ["LIBVA_DRIVER_DEVICE"] = render_device
+        # Alternative variable name that some tools use
+        os.environ["VAAPI_DEVICE"] = render_device
+    else:
+        # Try to find the device automatically
+        detected_device = find_intel_arc_render_device()
+        if detected_device:
+            os.environ["LIBVA_DRIVER_DEVICE"] = detected_device
+            os.environ["VAAPI_DEVICE"] = detected_device
+    
+    # Suppress FFmpeg report messages
+    os.environ["FFREPORT"] = "file=/dev/null:level=0"
+
+
+def enable_software_decoding() -> None:
+    """Enable software-only decoding by setting environment variables."""
+    os.environ["DECORD_CPU_ONLY"] = "1"
+    os.environ["FFMPEG_HWACCEL"] = "none"
+    os.environ["LIBVA_DRIVERS_PATH"] = ""
+    os.environ["LIBVA_DRIVER_NAME"] = ""
+    os.environ["AVCODEC_FORCE_SOFTWARE"] = "1"
+    os.environ["FFREPORT"] = "file=/dev/null:level=0"
+
+
+def disable_software_decoding() -> None:
+    """Disable software-only decoding by removing environment variables."""
+    os.environ.pop("DECORD_CPU_ONLY", None)
+    os.environ.pop("FFMPEG_HWACCEL", None)
+    os.environ.pop("LIBVA_DRIVERS_PATH", None)
+    os.environ.pop("LIBVA_DRIVER_NAME", None)
+    os.environ.pop("AVCODEC_FORCE_SOFTWARE", None)
+    os.environ.pop("FFREPORT", None)
+
+
+def is_av1_hardware_error(error_msg: str) -> bool:
+    """Check if error is related to AV1 hardware acceleration failure."""
+    error_lower = error_msg.lower()
+    return (
+        "av1" in error_lower and 
+        ("failed to get pixel format" in error_lower or 
+         "doesn't suppport hardware accelerated" in error_lower or
+         "hardware accelerated" in error_lower)
+    )
+
+
 def probe_video_streams(video_path: str) -> Tuple[bool, Optional[int], Optional[str]]:
     """
     Probe video file to find the correct video stream index.
@@ -221,7 +444,9 @@ def fetch_frames(video_path, chunk, params):
     
     batch_frames = None
     needs_resize = False
+    av1_hardware_error_detected = False
     
+    # First attempt: Try with current settings (hardware acceleration if enabled)
     for strategy in initialization_strategies:
         vr = None
         try:
@@ -232,11 +457,36 @@ def fetch_frames(video_path, chunk, params):
                 needs_resize = True
             # Success - break out of loop, vr will be cleaned up after processing
             break
-        except Exception:
+        except Exception as e:
+            error_msg = str(e)
+            # Check if this is an AV1 hardware acceleration error
+            if is_av1_hardware_error(error_msg):
+                av1_hardware_error_detected = True
+                break  # Exit to try software decoding
             # Failed with this strategy, try next one
             if vr is not None:
                 vr = None
             continue
+    
+    # If AV1 hardware acceleration failed, retry with software decoding
+    if batch_frames is None and av1_hardware_error_detected:
+        enable_software_decoding()
+        # Retry all strategies with software decoding
+        for strategy in initialization_strategies:
+            vr = None
+            try:
+                vr = VideoReader(video_path, ctx=cpu(0), **strategy)
+                batch_frames = vr.get_batch(chunk).asnumpy()
+                # Check if we got frames without the desired size
+                if batch_frames.size > 0 and "width" not in strategy:
+                    needs_resize = True
+                # Success - break out of loop
+                break
+            except Exception:
+                # Failed with this strategy, try next one
+                if vr is not None:
+                    vr = None
+                continue
     
     # Clean up VideoReader after getting frames
     if vr is not None:
@@ -633,6 +883,18 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
     if probe_success and video_stream_index is not None:
         log_func(f"Found video stream at index {video_stream_index}")
     
+    # Detect Intel Arc GPU and configure hardware acceleration
+    intel_arc_detected, arc_info, render_device = detect_intel_arc_gpu()
+    if intel_arc_detected:
+        log_func(f"Intel Arc GPU detected: {arc_info}")
+        if render_device:
+            log_func(f"Using render device: {render_device}")
+        log_func("Configuring hardware acceleration for Intel Arc AV1 decoding...")
+        enable_intel_arc_hardware_acceleration(render_device)
+    else:
+        log_func(f"No Intel Arc GPU detected ({arc_info}), using software decoding")
+        enable_software_decoding()
+    
     # Try multiple initialization strategies for decord VideoReader
     vr: Optional[VideoReader] = None
     initialization_strategies = [
@@ -649,6 +911,14 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
     ]
     
     last_error: Optional[str] = None
+    av1_hardware_error_detected = False
+    
+    # First attempt: Try with detected configuration (Intel Arc if detected, otherwise software)
+    if intel_arc_detected:
+        log_func("Attempting to open video with Intel Arc hardware acceleration...")
+    else:
+        log_func("Attempting to open video with software decoding...")
+    
     for i, strategy in enumerate(initialization_strategies):
         try:
             log_func(f"Trying VideoReader initialization strategy {i+1}/{len(initialization_strategies)}...")
@@ -656,17 +926,50 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
             # Test that we can actually read properties
             _ = len(vr)
             _ = vr.get_avg_fps()
-            log_func(f"Successfully opened video with strategy {i+1}")
+            if intel_arc_detected:
+                log_func(f"Successfully opened video with Intel Arc hardware acceleration using strategy {i+1}")
+            else:
+                log_func(f"Successfully opened video with software decoding using strategy {i+1}")
             break
         except Exception as e:
             error_msg = str(e)
             last_error = error_msg
+            
+            # Check if this is an AV1 hardware acceleration error
+            if is_av1_hardware_error(error_msg):
+                av1_hardware_error_detected = True
+                log_func(f"AV1 hardware acceleration error detected, will fallback to software decoding")
+                break  # Exit loop to try software decoding
+            
             if "cannot find video stream" in error_msg or "st_nb" in error_msg:
                 # This is the specific error we're trying to fix, try next strategy
                 continue
             else:
                 # Other errors, try next strategy
                 continue
+    
+    # If AV1 hardware acceleration failed, retry with software decoding
+    if vr is None and av1_hardware_error_detected:
+        log_func("Falling back to software decoding due to AV1 hardware acceleration issues...")
+        enable_software_decoding()
+        
+        # Retry all strategies with software decoding
+        for i, strategy in enumerate(initialization_strategies):
+            try:
+                log_func(f"Trying VideoReader initialization strategy {i+1}/{len(initialization_strategies)} (software decoding)...")
+                vr = VideoReader(video_path, ctx=cpu(0), **strategy)
+                # Test that we can actually read properties
+                _ = len(vr)
+                _ = vr.get_avg_fps()
+                log_func(f"Successfully opened video with software decoding using strategy {i+1}")
+                break
+            except Exception as e:
+                error_msg = str(e)
+                last_error = error_msg
+                if "cannot find video stream" in error_msg or "st_nb" in error_msg:
+                    continue
+                else:
+                    continue
     
     if vr is None:
         error_msg = last_error or "Unknown error"
