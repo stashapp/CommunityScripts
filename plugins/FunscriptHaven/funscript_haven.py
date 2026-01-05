@@ -422,11 +422,15 @@ def validate_video_file(video_path: str) -> Tuple[bool, Optional[str]]:
 
 
 def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any]) -> List[np.ndarray]:
-    """Fetch frames using OpenCV as fallback when decord fails."""
+    """
+    Fetch frames using OpenCV as fallback when decord fails.
+    Software decoding is enforced via environment variables set before calling this function.
+    """
     frames_gray = []
     target_width = 512 if params.get("vr_mode") else 256
     target_height = 512 if params.get("vr_mode") else 256
     
+    # OpenCV will use software decoding due to environment variables set earlier
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         return frames_gray
@@ -1014,11 +1018,14 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
         if probe_success:
             log_func(f"WARNING: Video has valid stream at index {video_stream_index}, but decord cannot access it.")
         log_func("Attempting to use OpenCV as fallback (slower but more compatible)...")
+        # Force software decoding when using OpenCV fallback to avoid AV1 hardware errors
+        enable_software_decoding()
         use_opencv_fallback = True
 
     # Get video properties
     if use_opencv_fallback:
         # Use OpenCV to get video properties
+        # Software decoding is already enabled above
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             log_func(f"ERROR: OpenCV fallback also failed to open video: {video_path}")
@@ -1095,6 +1102,15 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
 
         if not frames_gray:
             log_func(f"ERROR: Unable to fetch frames for chunk {chunk_start} - skipping.")
+            # If this is a critical chunk and we have no data, we might need to abort
+            if len(final_flow_list) == 0 and chunk_start == 0:
+                log_func("ERROR: Failed to fetch initial frames - cannot continue processing")
+                return True
+            continue
+        
+        # Ensure we have at least 2 frames to create pairs
+        if len(frames_gray) < 2:
+            log_func(f"WARNING: Chunk {chunk_start} has insufficient frames ({len(frames_gray)}) - skipping.")
             continue
             
         if chunk_start + bracket_size < len(indices):
@@ -1148,6 +1164,10 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
             progress_callback(prog)
 
     # Piecewise Integration
+    if not final_flow_list:
+        log_func("ERROR: No flow data computed - video processing failed completely")
+        return True
+    
     cum_flow = [0]
     time_stamps = [final_flow_list[0][2]]
 
