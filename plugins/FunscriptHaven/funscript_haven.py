@@ -11,8 +11,9 @@ import math
 import threading
 import concurrent.futures
 import random
+import subprocess
 from multiprocessing import Pool
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional, Callable, Tuple
 
 # ----------------- Setup and Dependencies -----------------
 
@@ -130,24 +131,126 @@ def precompute_wrapper(p, params):
     return precompute_flow_info(p[0], p[1], params)
 
 
+def probe_video_streams(video_path: str) -> Tuple[bool, Optional[int], Optional[str]]:
+    """
+    Probe video file to find the correct video stream index.
+    Returns (success, video_stream_index, error_message).
+    """
+    try:
+        cmd = [
+            "ffprobe",
+            "-v", "error",
+            "-select_streams", "v",
+            "-show_entries", "stream=index,codec_type",
+            "-of", "json",
+            video_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            return False, None, f"ffprobe failed: {result.stderr}"
+        
+        data = json.loads(result.stdout)
+        streams = data.get("streams", [])
+        
+        # Find the first video stream
+        for stream in streams:
+            if stream.get("codec_type") == "video":
+                stream_index = stream.get("index")
+                if stream_index is not None:
+                    return True, int(stream_index), None
+        
+        return False, None, "No video stream found in file"
+    except subprocess.TimeoutExpired:
+        return False, None, "ffprobe timed out"
+    except json.JSONDecodeError as e:
+        return False, None, f"Failed to parse ffprobe output: {e}"
+    except Exception as e:
+        return False, None, f"Error probing video: {e}"
+
+
+def validate_video_file(video_path: str) -> Tuple[bool, Optional[str]]:
+    """
+    Validate that a video file can be opened with OpenCV.
+    Returns (is_valid, error_message).
+    """
+    if not os.path.exists(video_path):
+        return False, f"Video file does not exist: {video_path}"
+    
+    if not os.path.isfile(video_path):
+        return False, f"Path is not a file: {video_path}"
+    
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        cap.release()
+        return False, f"OpenCV cannot open video file: {video_path}"
+    
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()
+    
+    if frame_count <= 0:
+        return False, f"Video file has no frames: {video_path}"
+    
+    if fps <= 0:
+        return False, f"Video file has invalid FPS: {video_path}"
+    
+    return True, None
+
+
 def fetch_frames(video_path, chunk, params):
     """Fetch and preprocess frames from video."""
     frames_gray = []
-    try:
-        vr = VideoReader(
-            video_path, 
-            ctx=cpu(0), 
-            num_threads=params["threads"], 
-            width=512 if params.get("vr_mode") else 256, 
-            height=512 if params.get("vr_mode") else 256
-        )
-        batch_frames = vr.get_batch(chunk).asnumpy()
-    except Exception as e:
-        return frames_gray
-    vr = None
+    vr: Optional[VideoReader] = None
+    target_width = 512 if params.get("vr_mode") else 256
+    target_height = 512 if params.get("vr_mode") else 256
+    
+    # Try multiple strategies for VideoReader initialization
+    initialization_strategies = [
+        # Strategy 1: With width/height (preferred for performance)
+        {"width": target_width, "height": target_height, "num_threads": params["threads"]},
+        # Strategy 2: Without width/height (will resize frames manually)
+        {"num_threads": params["threads"]},
+        # Strategy 3: Lower resolution
+        {"width": target_width // 2, "height": target_height // 2, "num_threads": params["threads"]},
+        # Strategy 4: Single thread
+        {"width": target_width, "height": target_height, "num_threads": 1},
+        # Strategy 5: Minimal parameters
+        {},
+    ]
+    
+    batch_frames = None
+    needs_resize = False
+    
+    for strategy in initialization_strategies:
+        vr = None
+        try:
+            vr = VideoReader(video_path, ctx=cpu(0), **strategy)
+            batch_frames = vr.get_batch(chunk).asnumpy()
+            # Check if we got frames without the desired size
+            if batch_frames.size > 0 and "width" not in strategy:
+                needs_resize = True
+            # Success - break out of loop, vr will be cleaned up after processing
+            break
+        except Exception:
+            # Failed with this strategy, try next one
+            if vr is not None:
+                vr = None
+            continue
+    
+    # Clean up VideoReader after getting frames
+    if vr is not None:
+        vr = None
     gc.collect()
+    
+    if batch_frames is None or batch_frames.size == 0:
+        return frames_gray
 
     for f in batch_frames:
+        # Resize if needed (when VideoReader was initialized without width/height)
+        if needs_resize:
+            f = cv2.resize(f, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
+        
         if params.get("vr_mode"):
             h, w, _ = f.shape
             gray = cv2.cvtColor(f[h // 2:, :w // 2], cv2.COLOR_RGB2GRAY)
@@ -517,16 +620,74 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
         log_func(f"Skipping: output file exists ({output_path})")
         return error_occurred
 
-    try:
-        log_func(f"Processing video: {video_path}")
-        vr = VideoReader(video_path, ctx=cpu(0), width=1024, height=1024, num_threads=params["threads"])
-    except Exception as e:
-        log_func(f"ERROR: Unable to open video at {video_path}: {e}")
+    # Validate video file before attempting to process
+    is_valid, validation_error = validate_video_file(video_path)
+    if not is_valid:
+        log_func(f"ERROR: Video validation failed: {validation_error}")
         return True
 
+    log_func(f"Processing video: {video_path}")
+    
+    # Probe video to get stream information
+    probe_success, video_stream_index, probe_error = probe_video_streams(video_path)
+    if probe_success and video_stream_index is not None:
+        log_func(f"Found video stream at index {video_stream_index}")
+    
+    # Try multiple initialization strategies for decord VideoReader
+    vr: Optional[VideoReader] = None
+    initialization_strategies = [
+        # Strategy 1: With width/height (original approach)
+        {"width": 1024, "height": 1024, "num_threads": params["threads"]},
+        # Strategy 2: Without width/height (native resolution, resize later)
+        {"num_threads": params["threads"]},
+        # Strategy 3: Lower resolution
+        {"width": 512, "height": 512, "num_threads": params["threads"]},
+        # Strategy 4: Single thread
+        {"width": 1024, "height": 1024, "num_threads": 1},
+        # Strategy 5: No parameters (minimal)
+        {},
+    ]
+    
+    last_error: Optional[str] = None
+    for i, strategy in enumerate(initialization_strategies):
+        try:
+            log_func(f"Trying VideoReader initialization strategy {i+1}/{len(initialization_strategies)}...")
+            vr = VideoReader(video_path, ctx=cpu(0), **strategy)
+            # Test that we can actually read properties
+            _ = len(vr)
+            _ = vr.get_avg_fps()
+            log_func(f"Successfully opened video with strategy {i+1}")
+            break
+        except Exception as e:
+            error_msg = str(e)
+            last_error = error_msg
+            if "cannot find video stream" in error_msg or "st_nb" in error_msg:
+                # This is the specific error we're trying to fix, try next strategy
+                continue
+            else:
+                # Other errors, try next strategy
+                continue
+    
+    if vr is None:
+        error_msg = last_error or "Unknown error"
+        log_func(f"ERROR: Unable to open video at {video_path} with any initialization strategy.")
+        log_func(f"ERROR: Last error: {error_msg}")
+        if probe_success:
+            log_func(f"ERROR: Video has valid stream at index {video_stream_index}, but decord cannot access it.")
+        return True
+
+    # Get video properties (already validated in initialization loop, but get values)
     try:
         total_frames = len(vr)
         fps = vr.get_avg_fps()
+        
+        if total_frames <= 0:
+            log_func(f"ERROR: Video has no frames: {video_path}")
+            return True
+        
+        if fps <= 0:
+            log_func(f"ERROR: Video has invalid FPS: {video_path}")
+            return True
     except Exception as e:
         log_func(f"ERROR: Unable to read video properties: {e}")
         return True
