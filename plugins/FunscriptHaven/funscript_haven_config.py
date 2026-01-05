@@ -1,0 +1,82 @@
+"""
+Funscript Haven - Configuration File
+Edit these settings to customize the plugin behavior
+"""
+
+# ----------------- Tag Configuration -----------------
+
+# Tag name that triggers processing (add this tag to scenes you want to process)
+trigger_tag = "FunscriptHaven_Process"
+
+# Tag name added when processing completes successfully (set to None to disable)
+complete_tag = "FunscriptHaven_Complete"
+
+# Tag name added when an error occurs during processing
+error_tag = "FunscriptHaven_Error"
+
+# Tag names that indicate a VR scene (case-insensitive)
+vr_tag_names = ["VR", "Virtual Reality", "180°", "360°"]
+
+
+# ----------------- Processing Settings -----------------
+
+# Number of threads for optical flow computation (default: CPU count)
+import os
+threads = os.cpu_count() or 4
+
+# Detrend window in seconds - controls drift removal aggressiveness
+# Higher values work better for stable cameras (recommended: 1-10)
+detrend_window = 1.5
+
+# Normalization window in seconds - time window to calibrate motion range
+# Shorter values amplify motion but may cause artifacts in long thrusts
+norm_window = 4.0
+
+# Batch size in frames - higher values are faster but use more RAM
+batch_size = 3000
+
+# Overwrite existing funscript files
+overwrite = False
+
+# Enable keyframe reduction (reduces file size while maintaining quality)
+keyframe_reduction = True
+
+
+# ----------------- Mode Settings -----------------
+
+# POV Mode - improves stability for POV videos
+pov_mode = False
+
+# Balance Global Motion - tries to cancel out camera motion
+# Disable for scenes with no camera movement
+balance_global = True
+
+
+# ----------------- Multi-Axis Settings -----------------
+
+# Generate additional funscript files for secondary axes
+# (Roll, Pitch, Twist, Surge, Sway)
+multi_axis = False
+
+# Intensity of secondary axis motion (0.0 - 1.0)
+# Higher values = more movement
+multi_axis_intensity = 0.5
+
+# Speed of random motion variation
+# Higher values = faster changes
+random_speed = 0.3
+
+# Seconds of inactivity before returning to center position
+auto_home_delay = 1.0
+
+# Time to smoothly return to center position
+auto_home_duration = 0.5
+
+# Scale secondary axis movement with primary stroke activity
+smart_limit = True
+
+
+# ----------------- Marker Settings -----------------
+
+# Add a scene marker when funscript generation completes
+add_marker = True
