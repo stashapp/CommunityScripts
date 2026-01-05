@@ -1,7 +1,7 @@
 name: Funscript Haven
 description: Generates funscript files from video scenes using optical flow analysis. Tag scenes with 'FunscriptHaven_Process' to queue them for processing.
 version: 1.0.0
-url: http://github.com/haven-hvn
+url: https://discourse.stashapp.cc/t/funscript-haven/5124
 exec:
   - python
   - "{pluginDir}/funscript_haven.py"

@@ -1,5 +1,7 @@
 # Funscript Haven
 
+https://discourse.stashapp.cc/t/funscript-haven/5124
+
 A StashApp plugin that automatically generates funscript files from video scenes using optical flow analysis.
 
 ## Overview
