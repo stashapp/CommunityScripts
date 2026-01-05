@@ -421,6 +421,40 @@ def validate_video_file(video_path: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 
+def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any]) -> List[np.ndarray]:
+    """Fetch frames using OpenCV as fallback when decord fails."""
+    frames_gray = []
+    target_width = 512 if params.get("vr_mode") else 256
+    target_height = 512 if params.get("vr_mode") else 256
+    
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        return frames_gray
+    
+    try:
+        for frame_idx in chunk:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            ret, frame = cap.read()
+            if not ret or frame is None:
+                continue
+            
+            # Resize frame
+            frame_resized = cv2.resize(frame, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
+            
+            # Convert to grayscale
+            if params.get("vr_mode"):
+                h, w = frame_resized.shape[:2]
+                gray = cv2.cvtColor(frame_resized[h // 2:, :w // 2], cv2.COLOR_BGR2GRAY)
+            else:
+                gray = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2GRAY)
+            
+            frames_gray.append(gray)
+    finally:
+        cap.release()
+    
+    return frames_gray
+
+
 def fetch_frames(video_path, chunk, params):
     """Fetch and preprocess frames from video."""
     frames_gray = []
@@ -971,18 +1005,28 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
                 else:
                     continue
     
+    # If decord completely failed, try OpenCV as a fallback
+    use_opencv_fallback = False
     if vr is None:
         error_msg = last_error or "Unknown error"
-        log_func(f"ERROR: Unable to open video at {video_path} with any initialization strategy.")
-        log_func(f"ERROR: Last error: {error_msg}")
+        log_func(f"WARNING: Decord failed to open video with all strategies.")
+        log_func(f"WARNING: Last decord error: {error_msg}")
         if probe_success:
-            log_func(f"ERROR: Video has valid stream at index {video_stream_index}, but decord cannot access it.")
-        return True
+            log_func(f"WARNING: Video has valid stream at index {video_stream_index}, but decord cannot access it.")
+        log_func("Attempting to use OpenCV as fallback (slower but more compatible)...")
+        use_opencv_fallback = True
 
-    # Get video properties (already validated in initialization loop, but get values)
-    try:
-        total_frames = len(vr)
-        fps = vr.get_avg_fps()
+    # Get video properties
+    if use_opencv_fallback:
+        # Use OpenCV to get video properties
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            log_func(f"ERROR: OpenCV fallback also failed to open video: {video_path}")
+            return True
+        
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        cap.release()
         
         if total_frames <= 0:
             log_func(f"ERROR: Video has no frames: {video_path}")
@@ -991,9 +1035,24 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
         if fps <= 0:
             log_func(f"ERROR: Video has invalid FPS: {video_path}")
             return True
-    except Exception as e:
-        log_func(f"ERROR: Unable to read video properties: {e}")
-        return True
+        
+        log_func(f"Using OpenCV fallback for video reading")
+    else:
+        # Use decord video properties
+        try:
+            total_frames = len(vr)
+            fps = vr.get_avg_fps()
+            
+            if total_frames <= 0:
+                log_func(f"ERROR: Video has no frames: {video_path}")
+                return True
+            
+            if fps <= 0:
+                log_func(f"ERROR: Video has invalid FPS: {video_path}")
+                return True
+        except Exception as e:
+            log_func(f"ERROR: Unable to read video properties: {e}")
+            return True
 
     step = max(1, int(math.ceil(fps / 15.0)))
     effective_fps = fps / step
@@ -1003,6 +1062,9 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
     step = max(1, int(math.ceil(fps / 30.0)))
     indices = list(range(0, total_frames, step))
     bracket_size = int(params.get("batch_size", 3000))
+    
+    # Store whether to use OpenCV fallback in params for fetch_frames
+    params["use_opencv_fallback"] = use_opencv_fallback
 
     final_flow_list = []
     next_batch = None
@@ -1020,10 +1082,16 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
 
         if fetch_thread:
             fetch_thread.join()
-            frames_gray = next_batch if next_batch is not None else fetch_frames(video_path, chunk, params)
+            if params.get("use_opencv_fallback"):
+                frames_gray = next_batch if next_batch is not None else fetch_frames_opencv(video_path, chunk, params)
+            else:
+                frames_gray = next_batch if next_batch is not None else fetch_frames(video_path, chunk, params)
             next_batch = None
         else:
-            frames_gray = fetch_frames(video_path, chunk, params)
+            if params.get("use_opencv_fallback"):
+                frames_gray = fetch_frames_opencv(video_path, chunk, params)
+            else:
+                frames_gray = fetch_frames(video_path, chunk, params)
 
         if not frames_gray:
             log_func(f"ERROR: Unable to fetch frames for chunk {chunk_start} - skipping.")
@@ -1033,7 +1101,10 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
             next_chunk = indices[chunk_start + bracket_size:chunk_start + 2 * bracket_size]
             def fetch_and_store():
                 global next_batch
-                next_batch = fetch_frames(video_path, next_chunk, params)
+                if params.get("use_opencv_fallback"):
+                    next_batch = fetch_frames_opencv(video_path, next_chunk, params)
+                else:
+                    next_batch = fetch_frames(video_path, next_chunk, params)
 
             fetch_thread = threading.Thread(target=fetch_and_store)
             fetch_thread.start()
