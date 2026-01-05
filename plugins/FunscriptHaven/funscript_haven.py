@@ -485,20 +485,35 @@ def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any
         # FFmpeg will try hardware first, fail, then AUTOMATICALLY fall back to software - these are just warnings
         sys.stderr = suppressed_stderr
         
-        # OpenCV will use software decoding due to environment variables
-        # Even if FFmpeg tries hardware first and logs warnings, it AUTOMATICALLY falls back to software
-        # This is FFmpeg's built-in behavior - it always has software decoding as a fallback
-        cap = cv2.VideoCapture(video_path)
+        # Try opening with OpenCV - use CAP_FFMPEG backend explicitly and disable hardware acceleration
+        # OpenCV's VideoCapture may need explicit backend selection to respect our environment variables
+        cap = cv2.VideoCapture(video_path, cv2.CAP_FFMPEG)
         if not cap.isOpened():
-            return frames_gray
+            # Try without explicit backend
+            cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                # Restore stderr before returning
+                sys.stderr = old_stderr
+                suppressed_stderr.close()
+                return frames_gray
         
         try:
             frames_read = 0
+            frames_failed = 0
+            
+            # Try reading frames - OpenCV should use software decoding via FFmpeg's automatic fallback
             for frame_idx in chunk:
+                # Set frame position
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                
+                # Try reading frame - FFmpeg will automatically use software if hardware fails
                 ret, frame = cap.read()
                 if not ret or frame is None:
-                    continue
+                    frames_failed += 1
+                    # Try reading the frame again - sometimes the first read fails
+                    ret, frame = cap.read()
+                    if not ret or frame is None:
+                        continue
                 
                 frames_read += 1
                 
@@ -516,8 +531,10 @@ def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any
             
             # If we read frames successfully, FFmpeg's automatic fallback worked
             # (The AV1 warnings are harmless - FFmpeg fell back to software automatically)
+            # Log diagnostic info if we failed to read frames
             if frames_read == 0 and len(chunk) > 0:
                 # This would indicate an actual problem, not just warnings
+                # The AV1 warnings are harmless, but if we can't read frames, there's a real issue
                 pass  # Will return empty list, which is handled by caller
         finally:
             cap.release()
@@ -1203,6 +1220,33 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
             # If this is a critical chunk and we have no data, we might need to abort
             if len(final_flow_list) == 0 and chunk_start == 0:
                 log_func("ERROR: Failed to fetch initial frames - cannot continue processing")
+                # Add diagnostic information
+                if params.get("use_opencv_fallback"):
+                    log_func("DEBUG: Using OpenCV fallback - checking if video can be opened...")
+                    import sys
+                    import io
+                    old_stderr = sys.stderr
+                    suppressed_stderr = io.StringIO()
+                    try:
+                        sys.stderr = suppressed_stderr
+                        test_cap = cv2.VideoCapture(video_path)
+                        if test_cap.isOpened():
+                            test_frame_count = int(test_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                            test_fps = test_cap.get(cv2.CAP_PROP_FPS)
+                            log_func(f"DEBUG: OpenCV can open video - frame_count={test_frame_count}, fps={test_fps}")
+                            # Try reading a single frame
+                            test_cap.set(cv2.CAP_PROP_POS_FRAMES, chunk[0] if chunk else 0)
+                            ret, test_frame = test_cap.read()
+                            if ret and test_frame is not None:
+                                log_func(f"DEBUG: OpenCV can read frames - frame shape: {test_frame.shape}")
+                            else:
+                                log_func("DEBUG: OpenCV opened video but cannot read frames")
+                        else:
+                            log_func("DEBUG: OpenCV cannot open video file")
+                        test_cap.release()
+                    finally:
+                        sys.stderr = old_stderr
+                        suppressed_stderr.close()
                 return True
             continue
         
