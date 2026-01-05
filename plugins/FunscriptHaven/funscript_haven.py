@@ -324,18 +324,44 @@ def enable_intel_arc_hardware_acceleration(render_device: Optional[str] = None) 
 
 
 def enable_software_decoding() -> None:
-    """Enable software-only decoding by setting environment variables."""
+    """
+    Enable software-only decoding by setting environment variables.
+    
+    These environment variables are set at the Python process level and will override
+    any system-wide or user-level settings. They take effect for:
+    - The current Python process
+    - All child processes (including FFmpeg subprocesses)
+    - OpenCV's FFmpeg backend
+    - Decord's FFmpeg backend
+    
+    Note: Process-level environment variables (set via os.environ) have the highest
+    precedence and will override system/user settings.
+    
+    This function aggressively disables ALL hardware acceleration, including Intel Arc GPU.
+    """
+    # Force software decoding - these override any system/user settings
     os.environ["DECORD_CPU_ONLY"] = "1"
     os.environ["FFMPEG_HWACCEL"] = "none"
-    os.environ["LIBVA_DRIVERS_PATH"] = ""
-    os.environ["LIBVA_DRIVER_NAME"] = ""
+    
+    # Aggressively disable VAAPI (Video Acceleration API) completely
+    # Clear any Intel Arc GPU settings that might have been set
+    os.environ["LIBVA_DRIVERS_PATH"] = "/dev/null"  # Invalid path disables VAAPI
+    os.environ["LIBVA_DRIVER_NAME"] = ""  # Clear driver name (removes iHD setting)
+    os.environ.pop("LIBVA_DRIVER_DEVICE", None)  # Remove device setting
+    os.environ.pop("VAAPI_DEVICE", None)  # Remove alternative device setting
+    
+    # Force software decoding in libavcodec (FFmpeg's codec library)
     os.environ["AVCODEC_FORCE_SOFTWARE"] = "1"
-    # Suppress FFmpeg error messages (these are just warnings about hardware acceleration)
+    
+    # Suppress FFmpeg logging (warnings about hardware acceleration failures)
     os.environ["FFREPORT"] = "file=/dev/null:level=0"
-    # Additional FFmpeg options to suppress AV1 hardware errors
-    os.environ["FFMPEG_LOGLEVEL"] = "error"  # Only show errors, not warnings
-    # Disable VAAPI completely
-    os.environ["LIBVA_DRIVERS_PATH"] = "/dev/null"  # Point to invalid path to disable VAAPI
+    os.environ["FFMPEG_LOGLEVEL"] = "error"  # Only show errors, suppress warnings
+    
+    # Additional FFmpeg options to prevent hardware acceleration attempts
+    os.environ["FFMPEG_HWACCEL_DEVICE"] = ""
+    
+    # Explicitly disable all hardware acceleration methods
+    os.environ["FFMPEG_HWACCEL_OUTPUT_FORMAT"] = ""
 
 
 def disable_software_decoding() -> None:
@@ -431,10 +457,22 @@ def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any
     Fetch frames using OpenCV as fallback when decord fails.
     Software decoding is enforced via environment variables set before calling this function.
     FFmpeg warnings about AV1 hardware acceleration are suppressed (FFmpeg will fall back to software).
+    
+    IMPORTANT: FFmpeg has BUILT-IN automatic fallback to software decoding.
+    Even if environment variables are ignored, FFmpeg will:
+    1. Try hardware acceleration first (if available)
+    2. If hardware fails, automatically fall back to software decoding
+    3. Continue processing successfully with software decoding
+    
+    The AV1 hardware warnings you see are just warnings - FFmpeg continues with software decoding.
     """
     frames_gray = []
     target_width = 512 if params.get("vr_mode") else 256
     target_height = 512 if params.get("vr_mode") else 256
+    
+    # Ensure software decoding is enforced (in case it wasn't set properly)
+    # This is a safety check - environment variables should already be set
+    enable_software_decoding()
     
     # Suppress FFmpeg stderr output (these AV1 hardware errors are harmless - FFmpeg falls back to software)
     import sys
@@ -444,20 +482,25 @@ def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any
     
     try:
         # Temporarily redirect stderr to suppress FFmpeg AV1 hardware warnings
+        # FFmpeg will try hardware first, fail, then AUTOMATICALLY fall back to software - these are just warnings
         sys.stderr = suppressed_stderr
         
-        # OpenCV will use software decoding due to environment variables set earlier
-        # FFmpeg may still try hardware first and log warnings, but will fall back to software
+        # OpenCV will use software decoding due to environment variables
+        # Even if FFmpeg tries hardware first and logs warnings, it AUTOMATICALLY falls back to software
+        # This is FFmpeg's built-in behavior - it always has software decoding as a fallback
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             return frames_gray
         
         try:
+            frames_read = 0
             for frame_idx in chunk:
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
                 ret, frame = cap.read()
                 if not ret or frame is None:
                     continue
+                
+                frames_read += 1
                 
                 # Resize frame
                 frame_resized = cv2.resize(frame, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
@@ -470,6 +513,12 @@ def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any
                     gray = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2GRAY)
                 
                 frames_gray.append(gray)
+            
+            # If we read frames successfully, FFmpeg's automatic fallback worked
+            # (The AV1 warnings are harmless - FFmpeg fell back to software automatically)
+            if frames_read == 0 and len(chunk) > 0:
+                # This would indicate an actual problem, not just warnings
+                pass  # Will return empty list, which is handled by caller
         finally:
             cap.release()
     finally:
@@ -950,6 +999,7 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
         if render_device:
             log_func(f"Using render device: {render_device}")
         log_func("Configuring hardware acceleration for Intel Arc AV1 decoding...")
+        log_func("Note: If hardware acceleration fails, FFmpeg will AUTOMATICALLY fall back to software decoding")
         enable_intel_arc_hardware_acceleration(render_device)
     else:
         log_func(f"No Intel Arc GPU detected ({arc_info}), using software decoding")
@@ -1040,14 +1090,29 @@ def process_video(video_path: str, params: Dict[str, Any], log_func: Callable,
         if probe_success:
             log_func(f"WARNING: Video has valid stream at index {video_stream_index}, but decord cannot access it.")
         log_func("Attempting to use OpenCV as fallback (slower but more compatible)...")
-        # Force software decoding when using OpenCV fallback to avoid AV1 hardware errors
+        # CRITICAL: Force software decoding when using OpenCV fallback
+        # This MUST override any Intel Arc GPU hardware acceleration settings that were enabled earlier
+        log_func("Disabling all hardware acceleration for OpenCV fallback (including Intel Arc GPU)...")
         enable_software_decoding()
+        # Double-check that hardware acceleration is completely disabled
+        # Clear any Intel Arc GPU settings that might persist
+        if os.environ.get("LIBVA_DRIVER_NAME"):
+            log_func(f"Clearing LIBVA_DRIVER_NAME (was: '{os.environ.get('LIBVA_DRIVER_NAME')}')")
+            os.environ["LIBVA_DRIVER_NAME"] = ""
+        if os.environ.get("FFMPEG_HWACCEL") != "none":
+            log_func(f"Setting FFMPEG_HWACCEL to 'none' (was: '{os.environ.get('FFMPEG_HWACCEL')}')")
+            os.environ["FFMPEG_HWACCEL"] = "none"
+        # Remove any device-specific settings
+        os.environ.pop("LIBVA_DRIVER_DEVICE", None)
+        os.environ.pop("VAAPI_DEVICE", None)
         use_opencv_fallback = True
 
     # Get video properties
     if use_opencv_fallback:
         # Use OpenCV to get video properties
-        # Software decoding is already enabled above
+        # Ensure software decoding is enforced (safety check)
+        enable_software_decoding()
+        
         # Suppress FFmpeg stderr warnings during property reading
         import sys
         import io
