@@ -1,0 +1,70 @@
+name: Funscript Haven
+description: Generates funscript files from video scenes using optical flow analysis. Tag scenes with 'FunscriptHaven_Process' to queue them for processing.
+version: 1.0.0
+url: http://github.com/haven-hvn
+exec:
+  - python
+  - "{pluginDir}/funscript_flow.py"
+interface: raw
+tasks:
+  - name: Process Tagged Scenes
+    description: Process all scenes tagged with 'FunscriptHaven_Process' and generate funscript files
+    defaultArgs:
+      mode: process_scenes
+settings:
+  trigger_tag:
+    displayName: Trigger Tag
+    description: Tag name that triggers processing (add this tag to scenes you want to process)
+    type: STRING
+  complete_tag:
+    displayName: Completion Tag
+    description: Tag name added when processing completes successfully (leave empty to disable)
+    type: STRING
+  error_tag:
+    displayName: Error Tag
+    description: Tag name added when an error occurs during processing
+    type: STRING
+  threads:
+    displayName: Threads
+    description: Number of threads for optical flow computation
+    type: NUMBER
+  detrend_window:
+    displayName: Detrend Window (seconds)
+    description: Controls drift removal aggressiveness. Higher values work better for stable cameras (1-10)
+    type: NUMBER
+  norm_window:
+    displayName: Normalization Window (seconds)
+    description: Time window to calibrate motion range. Shorter values amplify motion
+    type: NUMBER
+  batch_size:
+    displayName: Batch Size (frames)
+    description: Number of frames to process per batch. Higher values are faster but use more RAM
+    type: NUMBER
+  overwrite:
+    displayName: Overwrite Existing
+    description: Overwrite existing funscript files
+    type: BOOLEAN
+  keyframe_reduction:
+    displayName: Keyframe Reduction
+    description: Enable keyframe reduction to reduce file size while maintaining quality
+    type: BOOLEAN
+  pov_mode:
+    displayName: POV Mode
+    description: Improves stability for POV videos
+    type: BOOLEAN
+  balance_global:
+    displayName: Balance Global Motion
+    description: Try to cancel out camera motion. Disable for scenes with no camera movement
+    type: BOOLEAN
+  multi_axis:
+    displayName: Multi-Axis Output
+    description: Generate additional funscript files for secondary axes (Roll, Pitch, Twist, Surge, Sway)
+    type: BOOLEAN
+  multi_axis_intensity:
+    displayName: Multi-Axis Intensity
+    description: Intensity of secondary axis motion (0.0 - 1.0)
+    type: NUMBER
+  add_marker:
+    displayName: Add Marker on Complete
+    description: Add a scene marker when funscript generation completes
+    type: BOOLEAN
