@@ -501,21 +501,43 @@ def fetch_frames_opencv(video_path: str, chunk: List[int], params: Dict[str, Any
             frames_read = 0
             frames_failed = 0
             
-            # Try reading frames - OpenCV should use software decoding via FFmpeg's automatic fallback
-            for frame_idx in chunk:
-                # Set frame position
-                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            # For AV1 videos, seeking can be unreliable. Try sequential reading if seeking fails
+            # Sort chunk indices to read sequentially when possible
+            sorted_chunk = sorted(chunk)
+            current_pos = -1
+            
+            for frame_idx in sorted_chunk:
+                # Try seeking first
+                if current_pos != frame_idx - 1:
+                    # Need to seek
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                    current_pos = frame_idx
+                else:
+                    # Sequential read - more reliable for AV1
+                    current_pos += 1
                 
                 # Try reading frame - FFmpeg will automatically use software if hardware fails
                 ret, frame = cap.read()
                 if not ret or frame is None:
                     frames_failed += 1
-                    # Try reading the frame again - sometimes the first read fails
-                    ret, frame = cap.read()
-                    if not ret or frame is None:
-                        continue
+                    # If seeking failed, try sequential reading from start
+                    if current_pos != frame_idx:
+                        # Reset and read sequentially
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                        for i in range(frame_idx + 1):
+                            ret, frame = cap.read()
+                            if not ret or frame is None:
+                                break
+                        if not ret or frame is None:
+                            continue
+                    else:
+                        # Already sequential, just try one more read
+                        ret, frame = cap.read()
+                        if not ret or frame is None:
+                            continue
                 
                 frames_read += 1
+                current_pos = frame_idx
                 
                 # Resize frame
                 frame_resized = cv2.resize(frame, (target_width, target_height), interpolation=cv2.INTER_LINEAR)
