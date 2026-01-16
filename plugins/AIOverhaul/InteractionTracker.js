@@ -817,8 +817,18 @@ class InteractionTracker {
     handlePageContext(ctx) {
         if (!ctx)
             return;
-        if (!ctx.isDetailView || !ctx.entityId)
+        // When leaving detail views, allow future entries (even same entity) to re-fire
+        if (!ctx.isDetailView || !ctx.entityId) {
+            this.lastDetailKey = null;
+            // Clear scene context so subsequent scene visits don't reuse stale ids
+            this.lastScenePageEntered = null;
+            if (this.currentScene) {
+                this.cleanupVideoElement(this.currentScene.video);
+                this.detachVideoJsWatcher(this.currentScene);
+                this.currentScene = undefined;
+            }
             return;
+        }
         const key = ctx.page + ':' + ctx.entityId;
         if (key === this.lastDetailKey)
             return;
@@ -1248,12 +1258,14 @@ class InteractionTracker {
         const delay = attempt === 0 ? 0 : Math.min(600, 80 + attempt * 80);
         const handle = window.setTimeout(() => {
             this.playerReinstrumentTimers.delete(player);
-            const success = this.instrumentSceneWithVideoJs(sceneId, { player, attempt });
+            const targetSceneId = this.resolveSceneIdFromContext() || sceneId;
+            // If navigation switched scenes, avoid applying the old scene id
+            const success = this.instrumentSceneWithVideoJs(targetSceneId, { player, attempt });
             if (success) {
                 this.pendingVideoJsPlayers.delete(player);
             }
             else if (attempt < 6) {
-                this.queuePlayerReinstrument(sceneId, player, attempt + 1);
+                this.queuePlayerReinstrument(targetSceneId, player, attempt + 1);
             }
         }, delay);
         this.playerReinstrumentTimers.set(player, handle);
@@ -1354,10 +1366,15 @@ class InteractionTracker {
         }
         this.currentScene = state;
         this.cleanupVideoElement(video);
-        const onPlay = () => {
+        const beginPlayback = () => {
             var _a, _b, _c, _d;
+            if (state.lastPlayTs != null)
+                return; // already marked playing
             const snapshot = this.getPlaybackSnapshot(state);
-            state.lastPlayTs = Date.now();
+            // If we attached mid-autoplay with no segments yet, backfill start time from current position
+            const now = Date.now();
+            const backfill = snapshot.position !== undefined && snapshot.position > 0.5 && state.segments.length === 0;
+            state.lastPlayTs = backfill ? now - snapshot.position * 1000 : now;
             if (snapshot.position !== undefined)
                 state.lastPosition = snapshot.position;
             this.trackInternal('scene_watch_start', 'scene', sceneId, {
@@ -1365,6 +1382,8 @@ class InteractionTracker {
                 duration: (_d = (_c = snapshot.duration) !== null && _c !== void 0 ? _c : state.duration) !== null && _d !== void 0 ? _d : (isFinite(video.duration) ? video.duration : undefined)
             });
         };
+        const onPlay = () => { beginPlayback(); };
+        const onPlaying = () => { beginPlayback(); };
         const onPause = () => {
             var _a, _b, _c, _d;
             const added = this.captureSegment();
@@ -1416,12 +1435,14 @@ class InteractionTracker {
                 state.duration = video.duration;
         };
         video.addEventListener('play', onPlay);
+        video.addEventListener('playing', onPlaying);
         video.addEventListener('pause', onPause);
         video.addEventListener('ended', onEnded);
         video.addEventListener('timeupdate', onTimeUpdate);
         video.addEventListener('loadedmetadata', onLoaded);
         video._aiInteractionCleanup = () => {
             video.removeEventListener('play', onPlay);
+            video.removeEventListener('playing', onPlaying);
             video.removeEventListener('pause', onPause);
             video.removeEventListener('ended', onEnded);
             video.removeEventListener('timeupdate', onTimeUpdate);
@@ -1429,11 +1450,15 @@ class InteractionTracker {
         };
         if (state.player)
             this.attachVideoJsWatcher(state, sceneId, state.player);
+        const triggerIfAlreadyPlaying = () => {
+            if (!video.isConnected)
+                return;
+            if (!video.paused || (isFinite(video.currentTime) && video.currentTime > 0))
+                beginPlayback();
+        };
+        triggerIfAlreadyPlaying();
         if (!video.paused) {
-            setTimeout(() => {
-                if (video.isConnected && !video.paused)
-                    onPlay();
-            }, 0);
+            setTimeout(() => { triggerIfAlreadyPlaying(); }, 0);
         }
     }
     trackImageView(imageId, opts) {
