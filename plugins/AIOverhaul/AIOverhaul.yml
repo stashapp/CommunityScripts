@@ -1,6 +1,6 @@
 name: AIOverhaul
 description: AI Overhaul for Stash with a full plugin engine included to install and manage asynchronous stash plugins for AI or other purposes.
-version: 0.9.1
+version: 0.9.2
 url: https://discourse.stashapp.cc/t/aioverhaul/4847
 ui:
   javascript:
@@ -26,6 +26,9 @@ ui:
       - http://localhost:4153
       - ws://localhost:4153
       - https://localhost:4153
+      - http://127.0.0.1:4153
+      - ws://127.0.0.1:4153
+      - https://127.0.0.1:4153
       # Add additional urls here for the stash-ai-server if your browser is not on the same host
 interface: raw
 exec:
