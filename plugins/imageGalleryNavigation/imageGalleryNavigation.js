@@ -275,6 +275,63 @@
         // Init filter type field.
         imageFilter[cObj.type] = {};
 
+        // Parse boolean type fields.
+        if (cObj["value"] == "true" || cObj["value"] == "false") {
+          imageFilter[cObj.type] = (cObj["value"] == "true");
+          return;
+        }
+
+        if (cObj.type == "orientation") {
+          imageFilter[cObj.type]["value"] = cObj["value"].map(value => value.toUpperCase());
+          return;
+        }
+
+        if (cObj.type == "resolution") {
+          imageFilter[cObj.type]["modifier"] = cObj["modifier"];
+          switch (cObj["value"]) {
+            case "144p":
+              imageFilter[cObj.type]["value"] = "VERY_LOW";
+              break;
+            case "240p":
+              imageFilter[cObj.type]["value"] = "LOW";
+              break;
+            case "360p":
+              imageFilter[cObj.type]["value"] = "R360P";
+              break;
+            case "480p":
+              imageFilter[cObj.type]["value"] = "STANDARD";
+              break;
+            case "720p":
+              imageFilter[cObj.type]["value"] = "WEB_HD";
+              break;
+            case "720p":
+              imageFilter[cObj.type]["value"] = "STANDARD_HD";
+              break;
+            case "1080p":
+              imageFilter[cObj.type]["value"] = "FULL_HD";
+              break;
+            case "1440p":
+              imageFilter[cObj.type]["value"] = "QUAD_HD";
+              break;
+            case "4k":
+              imageFilter[cObj.type]["value"] = "FOUR_K";
+              break;
+            case "5k":
+              imageFilter[cObj.type]["value"] = "FIVE_K";
+              break;
+            case "6k":
+              imageFilter[cObj.type]["value"] = "SIX_K";
+              break;
+            case "7k":
+              imageFilter[cObj.type]["value"] = "SEVEN_K";
+              break;
+            case "8k":
+              imageFilter[cObj.type]["value"] = "EIGHT_K";
+              break;
+          }
+          return;
+        }
+
         // Get all keys (except for "type").
         var keys = Object.keys(cObj);
         keys.splice(keys.indexOf("type"), 1);
@@ -285,7 +342,21 @@
             // Special parsing for object type "value" fields (used where there's possibly a value and value2)
             var keys2 = Object.keys(cObj[keyName]);
             keys2.forEach((keyName2) => {
-              imageFilter[cObj.type][keyName2] = cObj[keyName][keyName2];
+              if (keyName2 == "items") {
+                // Parse tag values.
+                imageFilter[cObj.type]["value"] = []
+                cObj[keyName][keyName2].forEach((keyValue) => {
+                  imageFilter[cObj.type]["value"].push(keyValue.id);
+                });
+              } else if (keyName2 == "excluded") {
+                // Parse excluded tags.
+                imageFilter[cObj.type]["excludes"] = []
+                cObj[keyName][keyName2].forEach((keyValue) => {
+                  imageFilter[cObj.type]["excludes"].push(keyValue.id);
+                });
+              } else {
+                imageFilter[cObj.type][keyName2] = cObj[keyName][keyName2];
+              }
             });
           } else {
             imageFilter[cObj.type][keyName] = cObj[keyName];
