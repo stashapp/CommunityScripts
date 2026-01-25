@@ -1,0 +1,22 @@
+name: A Haven VLM Connector
+# requires: PythonDepManager
+description: Tag videos with Vision-Language Models using any OpenAI-compatible VLM endpoint
+version: 1.0.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/AHavenVLMConnector
+exec:
+  - python
+  - "{pluginDir}/haven_vlm_connector.py"
+interface: raw
+tasks:
+  - name: Tag Videos
+    description: Run VLM analysis on videos with VLM_TagMe tag
+    defaultArgs:
+      mode: tag_videos
+  - name: Collect Incorrect Markers and Images
+    description: Collects data from markers and images that were VLM tagged but were manually marked with VLM_Incorrect due to the VLM making a mistake. This will collect the data and output as a file which can be used to improve the VLM models.
+    defaultArgs:
+      mode: collect_incorrect_markers
+  - name: Find Marker Settings
+    description: Find Optimal Marker Settings based on a video that has manually tuned markers and has been processed by the VLM previously. Only 1 video should have VLM_TagMe before running.
+    defaultArgs:
+      mode: find_marker_settings 

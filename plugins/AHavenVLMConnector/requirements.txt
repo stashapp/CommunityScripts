@@ -1,0 +1,8 @@
+# Core dependencies managed by PythonDepManager
+# These are automatically handled by the plugin's dependency management system
+# PythonDepManager will ensure the correct versions are installed
+
+# Development and testing dependencies
+coverage>=7.0.0
+pytest>=7.0.0
+pytest-cov>=4.0.0
