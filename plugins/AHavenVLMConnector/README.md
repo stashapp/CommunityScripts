@@ -1,5 +1,7 @@
 # A Haven VLM Connector
 
+https://discourse.stashapp.cc/t/haven-vlm-connector/5464
+
 A StashApp plugin for Vision-Language Model (VLM) based content tagging and analysis. This plugin is designed with a **local-first philosophy**, empowering users to run analysis on their own hardware (using CPU or GPU) and their local network. It also supports cloud-based VLM endpoints for additional flexibility. The Haven VLM Engine provides advanced automatic content detection and tagging, delivering superior accuracy compared to traditional image classification methods.
 
 ## Features
