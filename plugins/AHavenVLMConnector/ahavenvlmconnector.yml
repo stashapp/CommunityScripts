@@ -1,4 +1,4 @@
-name: A Haven VLM Connector
+name: Haven VLM Connector
 # requires: PythonDepManager
 description: Tag videos with Vision-Language Models using any OpenAI-compatible VLM endpoint
 version: 1.0.0
