@@ -1,0 +1,110 @@
+# requires: PythonDepManager
+name: Stash2Plex
+description: Sync metadata from Stash to Plex with queue-based reliability
+version: 1.1.4
+url: https://github.com/trek-e/Stash2Plex
+
+exec:
+  - python3
+  - "{pluginDir}/Stash2Plex.py"
+
+interface: raw
+
+hooks:
+  - name: Sync Scene to Plex
+    description: Syncs scene metadata to Plex when a scene is manually updated
+    triggeredBy:
+      - Scene.Update.Post
+
+tasks:
+  - name: Sync All Scenes to Plex
+    description: Force sync all scenes to Plex (use sparingly - may take a long time)
+    defaultArgs:
+      mode: all
+  - name: Sync Recent Scenes to Plex
+    description: Sync scenes updated in the last 24 hours
+    defaultArgs:
+      mode: recent
+
+settings:
+  plex_url:
+    displayName: Plex URL
+    description: "URL of your Plex server (e.g., http://localhost:32400)"
+    type: STRING
+  plex_token:
+    displayName: Plex Token
+    description: "Your Plex authentication token (X-Plex-Token)"
+    type: STRING
+  plex_library:
+    displayName: Plex Library
+    description: "Name of Plex library to sync (e.g., 'Adult'). Leave empty to search all libraries."
+    type: STRING
+  enabled:
+    displayName: Enabled
+    description: "Enable or disable the plugin (default: true)"
+    type: BOOLEAN
+  max_retries:
+    displayName: Max Retries
+    description: "Maximum retry attempts for failed syncs (default: 5)"
+    type: NUMBER
+  poll_interval:
+    displayName: Poll Interval
+    description: "Seconds between queue polls (default: 30)"
+    type: NUMBER
+  strict_matching:
+    displayName: Strict Matching
+    description: "Skip sync when multiple Plex matches found (default: true)"
+    type: BOOLEAN
+  preserve_plex_edits:
+    displayName: Preserve Plex Edits
+    description: "Skip fields that already have values in Plex (default: false)"
+    type: BOOLEAN
+  connect_timeout:
+    displayName: Connect Timeout
+    description: "Plex connection timeout in seconds (default: 5)"
+    type: NUMBER
+  read_timeout:
+    displayName: Read Timeout
+    description: "Plex read timeout in seconds (default: 30)"
+    type: NUMBER
+  # ----- Field Sync Settings -----
+  sync_master:
+    displayName: "Enable Field Sync"
+    description: "Master toggle - when OFF, no metadata fields are synced"
+    type: BOOLEAN
+  sync_studio:
+    displayName: "Sync Studio"
+    description: "Sync studio name from Stash to Plex"
+    type: BOOLEAN
+  sync_summary:
+    displayName: "Sync Summary"
+    description: "Sync description/details from Stash to Plex"
+    type: BOOLEAN
+  sync_tagline:
+    displayName: "Sync Tagline"
+    description: "Sync tagline from Stash to Plex"
+    type: BOOLEAN
+  sync_date:
+    displayName: "Sync Date"
+    description: "Sync release date from Stash to Plex"
+    type: BOOLEAN
+  sync_performers:
+    displayName: "Sync Performers"
+    description: "Sync performers as actors in Plex"
+    type: BOOLEAN
+  sync_tags:
+    displayName: "Sync Tags"
+    description: "Sync tags as genres in Plex"
+    type: BOOLEAN
+  sync_poster:
+    displayName: "Sync Poster"
+    description: "Sync poster image from Stash to Plex"
+    type: BOOLEAN
+  sync_background:
+    displayName: "Sync Background"
+    description: "Sync background/fanart image from Stash to Plex"
+    type: BOOLEAN
+  sync_collection:
+    displayName: "Sync Collection"
+    description: "Add items to Plex collection based on studio name"
+    type: BOOLEAN
