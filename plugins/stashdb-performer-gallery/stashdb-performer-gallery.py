@@ -15,6 +15,34 @@ request_s = requests.Session()
 stash_boxes = {}
 scrapers = {}
 
+FRAGMENT_IMAGE = """
+    id
+    title
+    visual_files {
+        ... on ImageFile {
+            id
+            path
+        }
+        ... on VideoFile {
+            id
+            path
+        }
+    }
+    paths {
+        image
+        thumbnail
+    }
+    galleries {
+        id
+    }
+    tags {
+        id
+    }
+    performers {
+        id
+    }
+"""
+
 
 def processImages(img):
     log.debug("image: %s" % (img,))
@@ -458,10 +486,10 @@ if "mode" in json_input["args"]:
 elif "hookContext" in json_input["args"]:
     id = json_input["args"]["hookContext"]["id"]
     if json_input["args"]["hookContext"]["type"] == "Image.Create.Post":
-        img = stash.find_image(image_in=id)
+        img = stash.find_image(image_in=id, fragment=FRAGMENT_IMAGE)
         processImages(img)
     if json_input["args"]["hookContext"]["type"] == "Image.Update.Post":
-        img = stash.find_image(image_in=id)
+        img = stash.find_image(image_in=id, fragment=FRAGMENT_IMAGE)
         if tag_performer_image in [x["id"] for x in img["tags"]]:
             setPerformerPicture(img)
     if json_input["args"]["hookContext"]["type"] == "Performer.Update.Post":
