@@ -1,0 +1,31 @@
+name: SceneRename
+description: "Renames scene files to 'Studio #Code [Resolution] - Title.ext'. Studio name is required (files without one are skipped). Code and resolution are optional. Colons in titles become commas. Triggers on scene update or via manual task. Enable Dry Run to preview changes in scenerename.log before renaming."
+version: 1.0.1
+url: https://discourse.stashapp.cc/t/add-secondary-performer-image/3996
+settings:
+  dryRun:
+    displayName: Dry Run
+    description: "Enable to preview renames in the log without actually renaming files."
+    type: BOOLEAN
+  debugTracing:
+    displayName: Debug Tracing
+    description: "Enable verbose debug logging to scenerename.log"
+    type: BOOLEAN
+exec:
+  - python
+  - "{pluginDir}/scenerename.py"
+interface: raw
+hooks:
+  - name: SceneRenameHook
+    description: Renames scene file on update.
+    triggeredBy:
+      - Scene.Update.Post
+tasks:
+  - name: Rename Last Updated Scene
+    description: Renames the most recently updated scene file.
+    defaultArgs:
+      mode: rename_last
+  - name: Dry Run Last Updated Scene
+    description: Logs what the rename would be without changing files.
+    defaultArgs:
+      mode: dry_run_last
