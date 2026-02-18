@@ -373,23 +373,19 @@
       const stashIDs = performer.stash_ids || [];
       const stashIDCount = Array.isArray(stashIDs) ? stashIDs.length : 0;
       
-      // Find card-popovers and add button
-      const cardPopovers = card.querySelector(".card-popovers.btn-group") || 
-                          card.querySelector(".card-popovers") ||
-                          card.querySelector('[role="group"].btn-group');
-      
-      if (cardPopovers && !cardPopovers.querySelector(".stash-id-count")) {
-        addStashIDButton(cardPopovers, stashIDCount);
+      // Only show if count is greater than 0
+      if (stashIDCount > 0) {
+        // Find card-popovers and add button
+        const cardPopovers = card.querySelector(".card-popovers.btn-group") || 
+                            card.querySelector(".card-popovers") ||
+                            card.querySelector('[role="group"].btn-group');
+        
+        if (cardPopovers && !cardPopovers.querySelector(".stash-id-count")) {
+          addStashIDButton(cardPopovers, stashIDCount);
+        }
       }
     } catch (error) {
-      // On error, show 0 count
-      const cardPopovers = card.querySelector(".card-popovers.btn-group") || 
-                          card.querySelector(".card-popovers") ||
-                          card.querySelector('[role="group"].btn-group');
-      
-      if (cardPopovers && !cardPopovers.querySelector(".stash-id-count")) {
-        addStashIDButton(cardPopovers, 0);
-      }
+      // On error, don't show anything (silent fail)
     }
   }
 
