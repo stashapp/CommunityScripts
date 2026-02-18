@@ -44,7 +44,7 @@
   const RATING_BANNER_3D_STYLE =
     ".grid-card{overflow:unset}.detail-group .rating-banner-3d,.rating-banner{display:none}.grid-card:hover .rating-banner-3d{opacity:0;transition:opacity .5s}.rating-banner-3d{height:110px;left:-6px;overflow:hidden;position:absolute;top:-6px;width:110px}.rating-banner-3d span{box-shadow:0 5px 4px rgb(0 0 0 / 50%);position:absolute;display:block;width:170px;padding:10px 5px 10px 0;background-color:#ff6a07;color:#fff;font:700 1rem/1 Lato,sans-serif;text-shadow:0 1px 1px rgba(0,0,0,.2);text-transform:uppercase;text-align:center;letter-spacing:1px;right:-20px;top:24px;transform:rotate(-45deg)}.rating-banner-3d::before{top:0;right:0;position:absolute;z-index:-1;content:'';display:block;border:5px solid #a34405;border-top-color:transparent;border-left-color:transparent}.rating-banner-3d::after{bottom:0;left:0;position:absolute;z-index:-1;content:'';display:block;border:5px solid #963e04}";
   const STASH_ID_ICON_STYLE =
-    ".stash-id-icon{position:absolute;top:0.3rem;left:0.5rem;z-index:10;width:1.2rem;height:1.2rem;background-color:#007bff;border:2px solid #fff;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center}.stash-id-icon svg{width:0.8rem;height:0.8rem;fill:#fff}";
+    ".stash-id-count{display:inline-flex;align-items:center;flex-direction:row}.stash-id-count-number{display:inline-block;margin-right:0.25rem}.stash-id-icon{display:inline-flex;align-items:center}.stash-id-icon svg{width:0.875rem;height:0.875rem;fill:currentColor;color:#fff}";
 
   /**
    * Element to inject custom CSS styles.
@@ -213,9 +213,34 @@
       maybeAddFileCount(card, stashData, isContentCard);
       maybeAddDimensionToBanner(card);
       if (cardClass === "performer-card") {
-        maybeAddStashIDIcon(card, stashData).catch((err) => {
-          console.warn("[cjCardTweaks] Error adding stash ID icon", err);
-        });
+        maybeAddStashIDIcon(card, stashData);
+        
+        // Also set up a MutationObserver to watch for card-popovers being added
+        if (SETTINGS.stashIDIcon && !card.querySelector(".stash-id-count")) {
+          const observer = new MutationObserver((mutations) => {
+            const cardPopovers = card.querySelector(".card-popovers.btn-group") || 
+                                 card.querySelector(".card-popovers") ||
+                                 card.querySelector('[role="group"].btn-group');
+            if (cardPopovers && !cardPopovers.querySelector(".stash-id-count")) {
+              const link = card.querySelector(".thumbnail-section > a");
+              if (link) {
+                const id = new URL(link.href).pathname.split("/").pop();
+                const idNum = parseInt(id, 10);
+                // Query GraphQL for stash IDs
+                queryStashIDs(card, id, idNum);
+                observer.disconnect();
+              }
+            }
+          });
+          
+          observer.observe(card, {
+            childList: true,
+            subtree: true
+          });
+          
+          // Disconnect after 5 seconds to avoid memory leaks
+          setTimeout(() => observer.disconnect(), 5000);
+        }
       }
     });
   }
@@ -281,12 +306,35 @@
   }
 
   /**
-   * Fetch performer data via GraphQL to get stash_ids
+   * Add Stash ID count and icon to performer cards in the card-popovers btn-group
    *
-   * @param {number} performerId - Performer ID (integer from local database)
-   * @returns {Promise<Object|null>} Performer data with stash_ids, or null if not found
+   * @param {Element} card - Card element from cards list.
+   * @param {Object} stashData - Data fetched from the GraphQL interceptor. e.g. stash.performers.
    */
-  async function fetchPerformerStashIDs(performerId) {
+  function maybeAddStashIDIcon(card, stashData) {
+    if (!SETTINGS.stashIDIcon) return;
+
+    // Verify this function was not run twice on the same card
+    const existingCount = card.querySelector(".stash-id-count");
+    if (existingCount) return;
+
+    const link = card.querySelector(".thumbnail-section > a");
+    if (!link) return;
+
+    const id = new URL(link.href).pathname.split("/").pop();
+    const idNum = parseInt(id, 10);
+    
+    // Query GraphQL for stash IDs
+    queryStashIDs(card, id, idNum);
+  }
+
+  /**
+   * Query GraphQL for performer stash IDs
+   * @param {Element} card - Card element
+   * @param {string} id - Performer ID as string
+   * @param {number} idNum - Performer ID as number
+   */
+  async function queryStashIDs(card, id, idNum) {
     const query = `
       query FindPerformer($id: ID!) {
         findPerformer(id: $id) {
@@ -294,68 +342,79 @@
           stash_ids {
             endpoint
             stash_id
-            updated_at
           }
         }
       }
     `;
-
+    
+    const variables = {
+      id: idNum
+    };
+    
     try {
-      const response = await fetch("/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          query,
-          variables: { id: performerId },
-        }),
+          query: query,
+          variables: variables
+        })
       });
-
+      
       const result = await response.json();
-      if (result.data && result.data.findPerformer) {
-        return result.data.findPerformer;
+      
+      if (result.errors) return;
+      
+      const performer = result.data?.findPerformer;
+      if (!performer) return;
+      
+      const stashIDs = performer.stash_ids || [];
+      const stashIDCount = Array.isArray(stashIDs) ? stashIDs.length : 0;
+      
+      // Find card-popovers and add button
+      const cardPopovers = card.querySelector(".card-popovers.btn-group") || 
+                          card.querySelector(".card-popovers") ||
+                          card.querySelector('[role="group"].btn-group');
+      
+      if (cardPopovers && !cardPopovers.querySelector(".stash-id-count")) {
+        addStashIDButton(cardPopovers, stashIDCount);
       }
-      return null;
-    } catch (err) {
-      console.warn("[cjCardTweaks] Failed to fetch performer stash_ids", err);
-      return null;
+    } catch (error) {
+      // On error, show 0 count
+      const cardPopovers = card.querySelector(".card-popovers.btn-group") || 
+                          card.querySelector(".card-popovers") ||
+                          card.querySelector('[role="group"].btn-group');
+      
+      if (cardPopovers && !cardPopovers.querySelector(".stash-id-count")) {
+        addStashIDButton(cardPopovers, 0);
+      }
     }
   }
 
   /**
-   * Add Stash ID icon to performer cards that have stash IDs
-   *
-   * @param {Element} card - Card element from cards list.
-   * @param {Object} stashData - Data fetched from the GraphQL interceptor. e.g. stash.performers.
+   * Helper function to add the stash ID button to the card-popovers
    */
-  async function maybeAddStashIDIcon(card, stashData) {
-    if (!SETTINGS.stashIDIcon) return;
+  function addStashIDButton(cardPopovers, stashIDCount) {
+    // Check if already added
+    if (cardPopovers.querySelector(".stash-id-count")) return;
 
-    // Verify this function was not run twice on the same card
-    const existingIcon = card.querySelector(".stash-id-icon");
-    if (existingIcon) return;
+    // Box-open icon SVG (StashApp logo style - open box)
+    const boxIconSVG = `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="box-open" class="svg-inline--fa fa-box-open" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M58.9 42.1c3-6.1 9.6-9.6 16.3-8.7L320 64 564.8 33.4c6.7-.8 13.3 2.7 16.3 8.7l41.7 83.4c9 17.9-.6 39.6-19.8 45.1L439.6 217.3c-13.9 4-28.8-1.9-36.2-14.3L320 64 236.6 203c-7.4 12.4-22.3 18.3-36.2 14.3L37.1 170.6c-19.3-5.5-28.8-27.2-19.8-45.1L58.9 42.1zM321.1 128l54.9 91.4c14.9 24.8 44.6 36.6 72.5 28.6L576 211.6v167c0 22-15 41.2-36.4 46.6l-204.1 51c-10.2 2.6-20.9 2.6-31 0l-204.1-51C79 419.7 64 400.5 64 378.5v-167L191.6 248c27.8 8 57.6-3.8 72.5-28.6L318.9 128h2.2z"></path></svg>`;
 
-    const link = card.querySelector(".thumbnail-section > a");
-    if (!link) return;
-
-    // Extract performer ID from URL (e.g., /performers/123 -> "123")
-    const performerIdStr = new URL(link.href).pathname.split("/").pop();
-    const performerId = parseInt(performerIdStr, 10);
-    if (!performerId || isNaN(performerId)) return;
-
-    // Fetch performer data via GraphQL to get stash_ids
-    const performer = await fetchPerformerStashIDs(performerId);
-    if (!performer) return;
-
-    // Check if performer has stash IDs
-    const stashIDs = performer.stash_ids || [];
-    if (!Array.isArray(stashIDs) || stashIDs.length === 0) return;
-
-    // Box icon SVG
-    const boxIconSVG = `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="box" class="svg-inline--fa fa-box" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M208 352l-64 0c-8.8 0-16-7.2-16-16s7.2-16 16-16l64 0c8.8 0 16 7.2 16 16s-7.2 16-16 16zm128 0l-64 0c-8.8 0-16-7.2-16-16s7.2-16 16-16l64 0c8.8 0 16 7.2 16 16s-7.2 16-16 16zM512 64c0-35.3-28.7-64-64-64L64 0C28.7 0 0 28.7 0 64L0 224l512 0 0-160zM48 128c-8.8 0-16 7.2-16 16s7.2 16 16 16l32 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-32 0zm96 0c-8.8 0-16 7.2-16 16s7.2 16 16 16l32 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-32 0zm96 0c-8.8 0-16 7.2-16 16s7.2 16 16 16l32 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-32 0zm96 0c-8.8 0-16 7.2-16 16s7.2 16 16 16l32 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-32 0zm96 0c-8.8 0-16 7.2-16 16s7.2 16 16 16l32 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-32 0zM0 448c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-192L0 256l0 192z"></path></svg>`;
-
-    const el = createElementFromHTML(
-      `<span class="stash-id-icon" title="Has ${stashIDs.length} Stash ID${stashIDs.length > 1 ? 's' : ''}">${boxIconSVG}</span>`
+    // Create a wrapper div similar to the tag-count structure
+    const wrapper = document.createElement("div");
+    
+    // Create button with count FIRST, then icon (as requested)
+    const button = createElementFromHTML(
+      `<button type="button" class="minimal stash-id-count btn btn-primary" title="Has ${stashIDCount} Stash ID${stashIDCount !== 1 ? 's' : ''}">
+        <span class="stash-id-count-number">${stashIDCount}</span>
+        <span class="stash-id-icon">${boxIconSVG}</span>
+      </button>`
     );
-    link.parentElement.appendChild(el);
+    
+    wrapper.appendChild(button);
+    cardPopovers.appendChild(wrapper);
   }
 })();
