@@ -213,7 +213,9 @@
       maybeAddFileCount(card, stashData, isContentCard);
       maybeAddDimensionToBanner(card);
       if (cardClass === "performer-card") {
-        maybeAddStashIDIcon(card, stashData);
+        maybeAddStashIDIcon(card, stashData).catch((err) => {
+          console.warn("[cjCardTweaks] Error adding stash ID icon", err);
+        });
       }
     });
   }
@@ -279,12 +281,53 @@
   }
 
   /**
+   * Fetch performer data via GraphQL to get stash_ids
+   *
+   * @param {number} performerId - Performer ID (integer from local database)
+   * @returns {Promise<Object|null>} Performer data with stash_ids, or null if not found
+   */
+  async function fetchPerformerStashIDs(performerId) {
+    const query = `
+      query FindPerformer($id: ID!) {
+        findPerformer(id: $id) {
+          id
+          stash_ids {
+            endpoint
+            stash_id
+            updated_at
+          }
+        }
+      }
+    `;
+
+    try {
+      const response = await fetch("/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query,
+          variables: { id: performerId },
+        }),
+      });
+
+      const result = await response.json();
+      if (result.data && result.data.findPerformer) {
+        return result.data.findPerformer;
+      }
+      return null;
+    } catch (err) {
+      console.warn("[cjCardTweaks] Failed to fetch performer stash_ids", err);
+      return null;
+    }
+  }
+
+  /**
    * Add Stash ID icon to performer cards that have stash IDs
    *
    * @param {Element} card - Card element from cards list.
    * @param {Object} stashData - Data fetched from the GraphQL interceptor. e.g. stash.performers.
    */
-  function maybeAddStashIDIcon(card, stashData) {
+  async function maybeAddStashIDIcon(card, stashData) {
     if (!SETTINGS.stashIDIcon) return;
 
     // Verify this function was not run twice on the same card
@@ -294,13 +337,17 @@
     const link = card.querySelector(".thumbnail-section > a");
     if (!link) return;
 
-    const id = new URL(link.href).pathname.split("/").pop();
-    const data = stashData[id];
+    // Extract performer ID from URL (e.g., /performers/123 -> "123")
+    const performerIdStr = new URL(link.href).pathname.split("/").pop();
+    const performerId = parseInt(performerIdStr, 10);
+    if (!performerId || isNaN(performerId)) return;
 
-    if (!data) return;
+    // Fetch performer data via GraphQL to get stash_ids
+    const performer = await fetchPerformerStashIDs(performerId);
+    if (!performer) return;
 
-    // Check if performer has stash IDs (stash_ids or stashIDs)
-    const stashIDs = data.stash_ids || data.stashIDs || [];
+    // Check if performer has stash IDs
+    const stashIDs = performer.stash_ids || [];
     if (!Array.isArray(stashIDs) || stashIDs.length === 0) return;
 
     // Box icon SVG
