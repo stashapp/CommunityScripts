@@ -99,7 +99,7 @@
 
   /**
    * Handles gallery cards to specific paths in Stash. 
-   * 
+   *
    * The supported paths are:
    * - /galleries
    * - /performers/{id}/galleries
