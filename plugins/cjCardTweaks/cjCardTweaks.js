@@ -98,7 +98,7 @@
   }
 
   /**
-   * Handles gallery cards to specific paths in Stash.
+   * Handles gallery cards to specific paths in Stash. 
    *
    * The supported paths are:
    * - /galleries
