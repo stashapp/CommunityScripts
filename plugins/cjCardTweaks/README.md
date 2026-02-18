@@ -20,3 +20,8 @@ Adds an additional dimension to the rating banners.
 ![unnamed_2](https://github.com/user-attachments/assets/f505417d-ed0c-40c4-9c78-647081a41307)
 
 Modify the performer cards to use a traditional profile design
+
+### Stash ID icon
+![unnamed_3](https://github.com/user-attachments/assets/181fe3cd-b3e5-437d-8ded-7e48f2c0e446)
+
+Adds a box icon to performer cards that have one or more Stash IDs (GUIDs) attached. The icon appears in the top-left corner of the performer card thumbnail and displays a tooltip showing the count of Stash IDs when hovered. This helps quickly identify performers that are linked to external Stash databases.
