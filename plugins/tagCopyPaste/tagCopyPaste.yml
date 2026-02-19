@@ -1,7 +1,7 @@
 name: tagCopyPaste
 # requires: CommunityScriptsUILibrary
 description: Adds Copy/Paste buttons to Tags field.
-version: 0.4
+version: 0.5
 url: https://discourse.stashapp.cc/t/tagcopypaste/1858
 settings:
   createIfNotExists:
@@ -10,7 +10,7 @@ settings:
     type: BOOLEAN
   requireConfirmation:
     displayName: Require Confirmation
-    description: If enabled, user needs to confirm paste before changes are saved.
+    description: If enabled, user needs to confirm new tags being created.
     type: BOOLEAN
 ui:
   requires:
