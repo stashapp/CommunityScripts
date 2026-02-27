@@ -25,3 +25,7 @@ settings:
     displayName: Performer profile cards
     description: "Tweaks performer cards to use a traditional profile design."
     type: BOOLEAN
+  stashIDIcon:
+    displayName: Stash ID icon
+    description: "Adds a Stash ID icon to the performer cards."
+    type: BOOLEAN
