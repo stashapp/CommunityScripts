@@ -3,6 +3,7 @@
 /*Credit: fl0w#9497 */
 
 /* === MORE BLUR === */
+
 /* scene */
 .scene-card-preview,
 .vjs-poster,
@@ -34,11 +35,13 @@ img.performer,
 /* tag */
 .tag-card-image
 
+
 {
 filter: blur(30px);
 }
 
 /* === LESS BLUR === */
+
 /* common */
 .card-section-title,
 
@@ -48,6 +51,7 @@ filter: blur(30px);
 h3.scene-header,
 .studio-logo,
 .image-thumbnail,
+.TruncatedText.scene-card__description,
 
 /* image */
 h3.image-header,
@@ -57,20 +61,26 @@ h3.image-header,
 
 /* gallery */
 h3.gallery-header,
+.TruncatedText.gallery-card__description,
 
 /* studio */
 .studio-details .logo,
 .studio-details > div > h2,
+.studio-card__details,
+.studio-parent-studios,
 
 /* tag */
 .logo-container > .logo,
-.logo-container > h2
+.logo-container > h2,
+.TruncatedText.tag-description,
+.tag-parent-tags
 
 {
 filter: blur(2px);
 }
 
 /* === UNBLUR ON HOVER === */
+
 /* common */
 .thumbnail-section:hover *,
 .card:hover .card-section-title,
@@ -87,6 +97,7 @@ div:hover > .scene-header,
 .scene-card-preview:hover,
 .scrubber-item:hover,
 .scene-image:hover,
+.TruncatedText.scene-card__description:hover,
 
 /* image */
 .image-image:hover,
@@ -100,6 +111,7 @@ div:hover > .image-header,
 /* gallery */
 div:hover > .gallery-header,
 table > tbody > tr > td:hover > a > img.w-100,
+.TruncatedText.gallery-card__description:hover,
 
 /* performer */
 img.performer:hover,
@@ -107,10 +119,16 @@ img.performer:hover,
 /* studio */ 
 .studio-details .logo:hover,
 .studio-details:hover > div > h2,
+.studio-card__details:hover,
+.studio-parent-studios:hover,
+
 
 /* tag */
 .logo-container > .logo:hover,
-.logo-container:hover > h2
+.logo-container:hover > h2,
+.TruncatedText.tag-description:hover,
+.tag-parent-tags:hover
+
 {
 filter: blur(0px);
 }

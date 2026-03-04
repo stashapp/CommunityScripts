@@ -9,6 +9,7 @@ https://discourse.stashapp.cc/t/sfw-switch/4658
   - Gray = Blur disabled
 - Toggling the button blurs cover images and other content.
 - Hovering over an image temporarily removes the blur.
+- Public Additional Plugins support. Add your plugin to the additional_plugins.css file for additional compatibility.
 
 ## Screenshots
 
