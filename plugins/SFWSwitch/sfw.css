@@ -34,6 +34,17 @@ img.performer,
 /* tag */
 .tag-card-image
 
+/* Stash Battle */
+.pwr-scene-image-container,
+.pwr-scene-image-container,
+.pwr-hover-preview,
+.pwr-scene-image-container .pwr-scene-image,
+
+/* HotOrNot */
+.hon-performer-image,
+.hon-scene-image,
+.hon-image-image-container,
+.hon-image-image
 {
 filter: blur(30px);
 }
@@ -111,6 +122,17 @@ img.performer:hover,
 /* tag */
 .logo-container > .logo:hover,
 .logo-container:hover > h2
+
+/* StashBattle */
+.pwr-scene-image-container:hover,
+.pwr-scene-image-container:hover .pwr-hover-preview,
+.pwr-scene-image-container:hover .pwr-scene-image,
+
+/* HotOrNot */
+.hon-performer-image:hover,
+.hon-scene-image:hover,
+.hon-image-image-container:hover,
+.hon-image-image:hover
 {
 filter: blur(0px);
 }
