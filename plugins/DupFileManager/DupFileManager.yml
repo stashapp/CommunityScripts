@@ -1,7 +1,7 @@
 name: DupFileManager
 description: Manages duplicate files.
 version: 1.0.0
-url: https://github.com/David-Maisonave/Axter-Stash/tree/main/plugins/DupFileManager
+url: https://discourse.stashapp.cc/t/dupfilemanager/1331
 ui:
   javascript:
     - DupFileManager.js

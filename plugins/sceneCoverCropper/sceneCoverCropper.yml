@@ -1,7 +1,8 @@
 name: Scene Cover Cropper
-description: Crop Scene Cover Images
 # requires: CommunityScriptsUILibrary
+description: Crop Scene Cover Images
 version: 1.0
+url: https://discourse.stashapp.cc/t/scene-cover-cropper/1388
 ui:
   requires:
     - CommunityScriptsUILibrary

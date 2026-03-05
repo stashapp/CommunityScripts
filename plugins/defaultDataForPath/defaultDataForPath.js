@@ -208,9 +208,11 @@ query findImage($id: ID) {\
 function getGalleryPath(ID) {
   var query =
     "\
-query findGallery($id: ID) {\
+query findGallery($id: ID!) {\
     findGallery(id: $id) {\
-        path\
+        folder {\
+            path\
+        }\
     }\
 }";
 
@@ -224,7 +226,7 @@ query findGallery($id: ID) {\
     return null;
   }
 
-  var path = findGallery.path;
+  var path = findGallery.folder.path;
   return path;
 }
 

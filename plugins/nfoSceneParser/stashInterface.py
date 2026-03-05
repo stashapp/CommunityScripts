@@ -149,6 +149,7 @@ class StashInterface:
             "date": scene_data["date"],
             "rating100": scene_data["rating"],
             "urls": scene_data["urls"],
+            "studio_id": scene_data["studio_id"],
             "code": scene_data["code"],
             "performer_ids": scene_data["performer_ids"],
             "tag_ids": scene_data["tag_ids"],

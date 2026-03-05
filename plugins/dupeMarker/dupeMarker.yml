@@ -1,7 +1,7 @@
 name: Dupe Marker Detector
 description: Finds and marks duplicate markers
 version: 0.2
-url: https://github.com/stashapp/CommunityScripts/
+url: https://discourse.stashapp.cc/t/dupe-marker-detector/1375
 exec:
   - python
   - "{pluginDir}/dupeMarker.py"

@@ -1,6 +1,7 @@
 name: Theme - Plex
 description: Plex Theme for Stash by Fidelio 2020
 version: 1.0.5
+url: https://discourse.stashapp.cc/t/plex/1426
 ui:
   css:
     - Theme-Plex.css

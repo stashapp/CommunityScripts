@@ -1,6 +1,7 @@
 name: Theme - colorPalette
 description: Based on the default theme, change the overall color of the page by setting the hue value. Make minor changes to the remaining styles.
 version: 0.1
+url: https://discourse.stashapp.cc/t/colorpalette/1420
 ui:
   requires:
     - CommunityScriptsUILibrary

@@ -1,9 +1,9 @@
 name: Thumbnail Previews
 description: Displays preview videos on thumbnail cards.
 version: 0.1
+url: https://discourse.stashapp.cc/t/thumbnail-previews/1947
 ui:
   javascript:
     - ThumbPreviews.js
-# You might need to require CommunityScriptsUILibrary if using csLib
   requires:
    - CommunityScriptsUILibrary 

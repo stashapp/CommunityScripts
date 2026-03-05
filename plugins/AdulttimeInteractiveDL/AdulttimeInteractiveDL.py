@@ -86,7 +86,7 @@ def get_download():
     log.info(f"Plugin Cachepath {cachepath} ")
 
     # adulttime.com
-    # jerkbuddies.com
+    # jerk-buddies.com
     # adulttime.studio
     # oopsie.tube
     # adulttimepilots.com
@@ -103,7 +103,7 @@ def get_download():
         f={
             "url": {
                 "modifier": "MATCHES_REGEX",
-                "value": "howwomenorgasm\\.com|switch\\.com|getupclose\\.com|milfoverload\\.net|dareweshare\\.net|jerkbuddies\\.com|adulttime\\.studio|adulttime\\.com|oopsie\\.tube|adulttimepilots\\.com|kissmefuckme\\.net|youngerloverofmine\\.com",
+                "value": "howwomenorgasm\\.com|switch\\.com|getupclose\\.com|milfoverload\\.net|dareweshare\\.net|jerk-buddies\\.com|adulttime\\.studio|adulttime\\.com|oopsie\\.tube|adulttimepilots\\.com|kissmefuckme\\.net|youngerloverofmine\\.com",
             }
         },
         fragment=SLIM_SCENE_FRAGMENT,

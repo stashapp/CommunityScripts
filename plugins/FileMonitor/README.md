@@ -2,10 +2,27 @@
 
 https://discourse.stashapp.cc/t/filemonitor/1333
 
+Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
+
 FileMonitor is a [Stash](https://github.com/stashapp/stash) plugin with the following two main features:
 
 - Updates Stash when any file changes occurs in the Stash library.
 - **Task Scheduler**: Runs scheduled task based on the scheduler configuration in **filemonitor_config.py**.
+
+## Content
+- [Starting FileMonitor from the UI](#Starting-FileMonitor-from-the-UI)
+- [Using FileMonitor as a script](#Using-FileMonitor-as-a-script)
+- [Task Scheduler](#Task-Scheduler)
+- [Requirements](#Requirements)
+- [Installation](#Installation)
+- [Options](#Options)
+- [Docker](#Docker)
+  - [Single Stash Docker Installation](#Single-Stash-Docker-Installation)
+  - [Multiple Stash Docker Configuration](#Multiple-Stash-Docker-Configuration)
+  - [Stash Docker Installer](#Stash-Docker-Installer)
+- [Bugs and Feature Request](#Bugs-and-Feature-Request)
+  - [Future Planned Features or Fixes](#Future-Planned-Features-or-Fixes)
+- [Discourse](#Discourse)
 
 ## Starting FileMonitor from the UI
 
@@ -178,15 +195,6 @@ That's it!!!
   - The other options are self explanatory from the UI.
 - Additional options available in filemonitor_config.py. The options are well documented in the commented code.
 
-## Bugs and Feature Request
-
-Please use the following link to report FileMonitor bugs:
-[FileMonitor Bug Report](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Plugin_Bug&projects=&template=bug_report_plugin.yml&title=%F0%9F%AA%B2%5BFileMonitor%5D+Your_Short_title)
-
-Please use the following link to report FileMonitor Feature Request:[FileMonitor Feature Reques](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Enhancement&projects=&template=feature_request_plugin.yml&title=%F0%9F%92%A1%EF%B8%8F%5BEnhancement%5D%3A%5BFileMonitor%5D+Your_Short_title)
-
-Please do **NOT** use the feature request to include any problems associated with errors. Instead use the bug report for error issues.
-
 ## Docker
 
 ### Single Stash Docker Installation
@@ -268,6 +276,22 @@ python filemonitor.py --url http://localhost:9999 --docker "C:\Users\MyUser\AppD
 
 If you need help installing Stash Docker, use the Stash Docker installer in the following link: (https://github.com/David-Maisonave/Axter-Stash/tree/main/Docker)
 
-## Future Planned Features or Fixes
+## Bugs and Feature Request
 
+Please use the following link to report FileMonitor bugs:
+[FileMonitor Bug Report](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Plugin_Bug&projects=&template=bug_report_plugin.yml&title=%F0%9F%AA%B2%5BFileMonitor%5D+Your_Short_title)
+
+Please use the following link to report FileMonitor Feature Request:[FileMonitor Feature Reques](https://github.com/David-Maisonave/Axter-Stash/issues/new?assignees=&labels=Enhancement&projects=&template=feature_request_plugin.yml&title=%F0%9F%92%A1%EF%B8%8F%5BEnhancement%5D%3A%5BFileMonitor%5D+Your_Short_title)
+
+Please do **NOT** use the feature request to include any problems associated with errors. Instead use the bug report for error issues.
+
+### Future Planned Features or Fixes
 - Have the FileMonitor running status ICON update the icon without having to go to the Settings->Tools->FileMonitor page. Planned for version 1.2.0.
+
+### Discourse
+[Discourse-FileMonitor](https://discourse.stashapp.cc/t/filemonitor/1333)
+
+**Note:**
+- The author of this plugin does **not** monitor Discourse. Please post any (**G-Rated**) bugs, feature request, help-request to the following link: [Issues](https://github.com/David-Maisonave/Axter-Stash/issues/new/choose).
+- The [Discourse link](https://discourse.stashapp.cc/t/filemonitor/1333) should be use for discussion that would be inappropriate in GitHub.
+

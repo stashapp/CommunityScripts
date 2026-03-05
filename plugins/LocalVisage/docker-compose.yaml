@@ -1,0 +1,14 @@
+services:
+  stash:
+    image: stashapp/stash:LocalVisage
+    container_name: stash
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+    - "7860:7860"
+    - "9999:9999"
+    volumes:
+      - "./config:/appdata"
+      - "./data:/data"

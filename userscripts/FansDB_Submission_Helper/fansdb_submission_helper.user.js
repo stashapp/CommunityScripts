@@ -8,7 +8,7 @@
 // @match       https://fansdb.cc/drafts/*
 // @match       https://fansdb.cc/performers/*/edit
 // @match       https://fansdb.cc/performers/add
-// @homepageURL https://github.com/stashapp/CommunityScripts/tree/main/userscripts/FansDB_Submission_Helper
+// @homepageURL https://discourse.stashapp.cc/t/fansdb-submission-helper/42
 // @downloadURL https://raw.githubusercontent.com/stashapp/CommunityScripts/main/userscripts/FansDB_Submission_Helper/fansdb_submission_helper.user.js
 // @updateURL   https://raw.githubusercontent.com/stashapp/CommunityScripts/main/userscripts/FansDB_Submission_Helper/fansdb_submission_helper.user.js
 // ==/UserScript==

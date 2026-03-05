@@ -2,83 +2,32 @@
 
 This repository contains plugins, themes, userscripts and other utility scripts created by the Stash community.
 
-More extensive list of plugins and other projects for Stash is available [on our documentation site](https://docs.stashapp.cc/plugins).
+## Community support
 
-## Join Our Community
+- **Forum:** [discourse.stashapp.cc](https://discourse.stashapp.cc) - Primary place for community support, feature requests, and discussions.
+- **Discord:** [discord.gg/2TsNFKt](https://discord.gg/2TsNFKt) - Real-time chat and community support.
+- **Lemmy:** [discuss.online/c/stashapp](https://discuss.online/c/stashapp) - Community discussions.
 
-We are excited to announce that we have a new home for support, feature requests, and discussions related to Stash and its associated projects. Join our community on the [Discourse forum](https://discourse.stashapp.cc) to connect with other users, share your ideas, and get help from fellow enthusiasts.
+## Host your own plugins
+
+We have a GitHub template available for those that prefer hosting on their own with step-by-step instructions to get started.
+
+Repository: https://github.com/stashapp/plugins-repo-template
 
 ## Plugins
 
 > [!NOTE]
-> More plugins are available at [https://docs.stashapp.cc/plugins](https://docs.stashapp.cc/plugins).
-
-### Installing via manager
-
-Plugins can be installed and managed from the **Settings** > **Plugins** page.
-
-Plugins are installed using the **Available Plugins** section. The **Community (stable)** source is configured by default.  
-Source is located at `https://stashapp.github.io/CommunityScripts/stable/index.yml`.
-
-Installed plugins can be updated or uninstalled from the **Installed Plugins** section.
-
-### Installing manually
-
-By default, Stash looks for plugin configurations in the plugins sub-directory of the directory where the stash config.yml is read. This will either be the `%USERPROFILE%\.stash\plugins` on Windows or `/root/.stash/plugins` on Unix systems (Mac, Linux, etc.) or the current working directory.
-
-Plugins are added by adding configuration yaml files (format: `pluginName.yml`) to the plugins directory.
-
-Loaded plugins can be viewed in the **Settings** > **Plugins** page. After plugins are added, removed or edited while Stash is running, they can be reloaded by clicking **Reload plugins** button.
+> More plugins are available at [discourse.stashapp.cc](https://discourse.stashapp.cc/c/plugins/18).
 
 ## Themes
 
 > [!NOTE]
-> More themes are available at [https://docs.stashapp.cc/themes](https://docs.stashapp.cc/themes).
+> More themes are available at [discourse.stashapp.cc](https://discourse.stashapp.cc/tags/c/plugins/18/none/theme).
 
-### Installing via manager
-
-Plugins can be installed and managed from the **Settings** > **Plugins** page.
-
-Plugins are installed using the **Available Plugins** section. The **Community (stable)** source is configured by default.  
-Source is located at `https://stashapp.github.io/CommunityScripts/stable/index.yml`.
-
-Installed plugins can be updated or uninstalled from the **Installed Plugins** section.
-
-### Installing via Custom CSS
-
-1. Find a theme from the list and copy the content of .css file.
-1. In Stash, go to **Settings** > **Interface** and scroll down to **Custom CSS** heading.
-1. Make sure **Custom CSS enabled** is checked.
-1. Click on **Edit** under **Custom CSS** and then paste the CSS code into the text box.
-1. You will need to force-reload **Shift+F5** in order to see the theme.
-
-## Userscripts
+## Other projects
 
 > [!NOTE]
-> More userscripts are available at [https://docs.stashapp.cc/userscripts](https://docs.stashapp.cc/userscripts).
-
-### Browser extension
-
-To install the userscript you will need a browser extension such as:
- 
-- [Violentmonkey](https://violentmonkey.github.io)
-- [Tampermonkey](https://www.tampermonkey.net)
-- [Greasemonkey](https://www.greasespot.net)
-
-### Installing
-
-1. Go to [userscripts directory](https://github.com/stashapp/CommunityScripts/tree/main/userscripts).
-2. Find the usersccript you want to install.
-3. Select the `.user.js` file.
-4. Click `Raw` button. It should either autoamtically prompt your browser extension or you will need to manually copy all the content and create new userscript in the extension yourself.  
-![image](https://github.com/user-attachments/assets/62dd4258-a4fc-4610-8103-9a3fc7e396a9)
-
-## Scripts
-
-> [!NOTE]
-> More scripts are available at [https://docs.stashapp.cc/scripts](https://docs.stashapp.cc/scripts).
-
-To install/run a script follow the install instructions listed in individual README files.
+> More community projects are available at [discourse.stashapp.cc](https://discourse.stashapp.cc/c/plugins/other-projects/15).
 
 ## Contributing
 

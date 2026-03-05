@@ -3,7 +3,7 @@ from stashapi.stashapp import StashInterface
 import sys
 import json
 from pathlib import Path
-import os
+import subprocess
 
 settings = {"hash_type": "oshash", "transcodes_dir": "/generated/transcodes/"}
 
@@ -18,12 +18,18 @@ def run_ffmpeg(file, hash):
                 dest,
             )
         )
-        command = (
-            "ffmpeg -f lavfi -i color=c=blue:s=1280x720 -i %s  -shortest -fflags +shortest %s"
-            % (file, dest)
-        )
+        command = [
+            "ffmpeg",
+            "-loglevel", "error",
+            "-f", "lavfi",
+            "-i", "color=c=blue:s=1280x720",
+            "-i", file,
+            "-shortest",
+            "-fflags", "+shortest",
+            dest,
+        ]
         log.debug("about to run command: %s " % (command,))
-        os.system(command)
+        subprocess.run(command)
     else:
         log.debug(
             "transcode already exists %s - %s"
@@ -59,7 +65,6 @@ FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()
 
-log.debug(config)
 settings["transcodes_dir"] = config["general"]["generatedPath"]
 settings["hash_type"] = config["general"]["videoFileNamingAlgorithm"].lower()
 log.debug(settings)

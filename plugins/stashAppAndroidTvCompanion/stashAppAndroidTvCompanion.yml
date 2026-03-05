@@ -1,7 +1,7 @@
 name: StashAppAndroidTV Companion
 description: A companion plugin for StashAppAndroidTV
 version: 0.0.1
-url: https://github.com/damontecres/StashAppAndroidTV-Companion
+url: https://discourse.stashapp.cc/t/stashappandroidtv-companion/1409
 
 exec:
   - python

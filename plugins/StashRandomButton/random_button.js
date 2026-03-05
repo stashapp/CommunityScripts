@@ -19,7 +19,7 @@
 
   async function randomGlobal(entity, idField, redirectPrefix, internalFilter) {
     const realEntityPlural = getPlural(entity);
-    let filter = { per_page: 1 };
+    let filter = { per_page: 1, sort: "random" };
     let variables = { filter };
     let filterArg = "";
     let filterVar = "";
@@ -45,7 +45,7 @@
     if (!totalCount) { alert("No results found."); return; }
 
     const randomIndex = Math.floor(Math.random() * totalCount);
-    let itemVars = { filter: { per_page: 1, page: randomIndex + 1 } };
+    let itemVars = { filter: { per_page: 1, page: randomIndex + 1, sort: "random" } };
     if (internalFilter) itemVars.internal_filter = internalFilter;
     const itemQuery = `
       query Find${realEntityPlural}($filter: FindFilterType${filterArg}) {

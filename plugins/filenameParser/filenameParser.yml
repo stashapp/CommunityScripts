@@ -1,7 +1,7 @@
 name: Filename parser
 description: Parses filename into studio, date, performers and title
-url:
 version: 0.1
+url: https://discourse.stashapp.cc/t/filename-parser/1378
 exec:
   - filenameParser.js
 interface: js

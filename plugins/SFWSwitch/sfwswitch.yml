@@ -1,0 +1,10 @@
+name: SFW Switch
+description: Add a button to blur covers and images.
+version: 1.4
+url: https://discourse.stashapp.cc/t/sfw-switch/4658
+ui:
+  javascript:
+  - sfw.js
+  css:
+  - sfw.css
+  - additional_plugins.css

@@ -1,6 +1,7 @@
 name: Addtional Files Deleter
 description: Deletes addtional files assosiated with an image or scene object. Which will usually have identical PHashes for scenes or Checksum for images. Unless is a scene manually merged. Apply ignore tag to scene/image object for plugin to bypass.
 version: 0.1
+url: https://discourse.stashapp.cc/t/addtional-files-deleter/1337
 exec:
   - python
   - "{pluginDir}/deleter.py"

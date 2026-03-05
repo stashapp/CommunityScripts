@@ -38,7 +38,6 @@ div.dropdown-menu {
   background-color: var(--nav-color) !important;
 }
 .card {
-  background-color: #30404d;
   border-radius: 3px;
   box-shadow:
     0 0 0 1px rgba(16, 22, 26, 0.4),
@@ -253,7 +252,7 @@ option {
 .modal-header,
 .modal-body,
 .modal-footer {
-  background-color: #30404d;
+  background-color: --var(--card-color);
   color: #f5f8fa;
   background-repeat: no-repeat;
   background-size: cover;
@@ -533,4 +532,31 @@ button.minimal {
 }
 .video-js .vjs-play-progress {
   background-color: #e5a00d;
+}
+.filtered-list-toolbar {
+  background-color: var(--body-color);
+}
+.sidebar-pane .sidebar {
+  background-color: var(--body-color);
+  border-right: 1px solid var(--nav-color);
+}
+.sidebar-section {
+  border-bottom: 1px solid var(--nav-color);
+}
+.sidebar-toggle-button-container .sidebar-toggle-button {
+  border: 1px solid var(--tag-color);
+  border-left: none;
+}
+.clearable-text-field, .clearable-text-field:active, .clearable-text-field:focus {
+  background-color: var(--nav-color);
+  border-color: var(--tag-color);
+}
+.form-control:focus {
+  box-shadow: 0 0 0 .2rem rgba(68, 68, 68, .25);
+}
+.package-manager table thead {
+  background-color: var(--nav-color);
+}
+a.bg-secondary:hover, a.bg-secondary:focus, button.bg-secondary:hover, button.bg-secondary:focus {
+  background-color: var(--nav-color) !important;
 }
