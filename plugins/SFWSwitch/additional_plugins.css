@@ -1,0 +1,65 @@
+/* [Global changes] Blur NSFW images and unblur on mouse over */
+
+/*Credit: fl0w#9497 */
+
+/* === MORE BLUR === */
+
+/* Stash Battle */
+.pwr-scene-image-container,
+.pwr-scene-image-container,
+.pwr-hover-preview,
+.pwr-scene-image-container .pwr-scene-image,
+
+/* HotOrNot */
+.hon-performer-image,
+.hon-scene-image,
+.hon-image-image-container,
+.hon-image-image,
+
+/* O Stats */
+.custom-stats-row .stats-element img,
+#on-this-day-section [style*="position: relative; height: 400px"]
+{
+filter: blur(30px);
+}
+
+/* === LESS BLUR === */
+
+/* StashBattle */
+.pwr-scene-info,
+
+/* HotOrNot */
+.hon-performer-info.hon-scene-info,
+
+/* O Stats */
+.custom-stats-row .stats-element,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"] img,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"] img + div,
+#on-this-day-section > div:last-child
+{
+filter: blur(2px);
+}
+
+/* StashBattle */
+.pwr-scene-image-container:hover,
+.pwr-scene-image-container:hover .pwr-hover-preview,
+.pwr-scene-image-container:hover .pwr-scene-image,
+.pwr-scene-info:hover,
+
+/* HotOrNot */
+.hon-performer-image:hover,
+.hon-scene-image:hover,
+.hon-image-image-container:hover,
+.hon-image-image:hover,
+.hon-performer-info.hon-scene-info:hover,
+
+/* O Stats */
+.custom-stats-row .stats-element:hover,
+.custom-stats-row .stats-element:hover img,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"]:hover img,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"]:hover img + div,
+#on-this-day-section > div:last-child:hover,
+#on-this-day-section [style*="position: relative; height: 400px"]:hover 
+{
+filter: blur(0px);
+}
