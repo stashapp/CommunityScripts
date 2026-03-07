@@ -1,3 +1,6 @@
+let sfw_mediaObserver = null;
+let sfw_playListener = null;
+
 function sfw_mode() {
     const stash_css = sfwswitch_findstashcss();
     const button = document.getElementById("plugin_sfw");
@@ -6,10 +9,14 @@ function sfw_mode() {
 
     const sfwState = localStorage.getItem("sfw_mode") === "true";
 
-    // Apply saved state to the stylesheet
     stash_css.disabled = !sfwState;
 
-    // Update button color
+    if (sfwState) {
+        sfw_mute_all_media();
+    } else {
+        sfw_unmute_all_media();
+    }
+
     button.style.color = sfwState ? "#5cff00" : "#f5f8fa";
 }
 
@@ -45,6 +52,72 @@ function sfwswitch_createbutton() {
     setTimeout(() => clearInterval(intervalId), 10000);
 }
 
+function sfw_forceMute(media) {
+    media.muted = true;
+    media.defaultMuted = true;
+    media.volume = 0;
+}
+
+function sfw_mute_all_media() {
+
+    // Mute existing media
+    document.querySelectorAll("audio, video").forEach(sfw_forceMute);
+
+    // Mute media when it starts playing
+    if (!sfw_playListener) {
+        sfw_playListener = function(e) {
+            if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
+                sfw_forceMute(e.target);
+            }
+        };
+
+        document.addEventListener("play", sfw_playListener, true);
+    }
+
+    // Watch for new media nodes
+    if (!sfw_mediaObserver) {
+
+        sfw_mediaObserver = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+
+                    if (node.tagName === "VIDEO" || node.tagName === "AUDIO") {
+                        sfw_forceMute(node);
+                    }
+
+                    if (node.querySelectorAll) {
+                        node.querySelectorAll("video, audio").forEach(sfw_forceMute);
+                    }
+
+                });
+            });
+        });
+
+        sfw_mediaObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+}
+
+function sfw_unmute_all_media() {
+
+    document.querySelectorAll("audio, video").forEach(media => {
+        media.muted = false;
+        media.volume = 1;
+    });
+
+    if (sfw_mediaObserver) {
+        sfw_mediaObserver.disconnect();
+        sfw_mediaObserver = null;
+    }
+
+    if (sfw_playListener) {
+        document.removeEventListener("play", sfw_playListener, true);
+        sfw_playListener = null;
+    }
+}
+
 function sfwswitch_switcher() {
     const stash_css = sfwswitch_findstashcss();
     if (!stash_css) {
@@ -52,15 +125,22 @@ function sfwswitch_switcher() {
         return;
     }
 
-    // Toggle stylesheet
     stash_css.disabled = !stash_css.disabled;
 
-    // Save new state to localStorage
-    localStorage.setItem("sfw_mode", !stash_css.disabled);
+    const enabled = !stash_css.disabled;
+
+    localStorage.setItem("sfw_mode", enabled);
+
+    if (enabled) {
+        sfw_mute_all_media();
+    } else {
+        sfw_unmute_all_media();
+    }
 
     const button = document.getElementById("plugin_sfw");
-    button.style.color = stash_css.disabled ? "#f5f8fa" : "#5cff00";
-    console.log(`SFW mode ${stash_css.disabled ? "disabled" : "enabled"}`);
+    button.style.color = enabled ? "#5cff00" : "#f5f8fa";
+
+    console.log(`SFW mode ${enabled ? "enabled" : "disabled"}`);
 }
 
 function sfwswitch_findstashcss() {

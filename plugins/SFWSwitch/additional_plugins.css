@@ -18,7 +18,10 @@
 
 /* O Stats */
 .custom-stats-row .stats-element img,
-#on-this-day-section [style*="position: relative; height: 400px"]
+#on-this-day-section [style*="position: relative; height: 400px"],
+
+/* Sprite Tab */
+.sprite-cell
 {
 filter: blur(30px);
 }
@@ -52,6 +55,9 @@ filter: blur(2px);
 .hon-image-image-container:hover,
 .hon-image-image:hover,
 .hon-performer-info.hon-scene-info:hover,
+
+/* Sprite Tab */
+.sprite-cell:hover,
 
 /* O Stats */
 .custom-stats-row .stats-element:hover,
