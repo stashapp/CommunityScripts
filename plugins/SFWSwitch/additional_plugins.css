@@ -22,6 +22,7 @@
 
 /* Sprite Tab */
 .sprite-cell
+#on-this-day-section [style*="position: relative; height: 400px"]
 {
 filter: blur(30px);
 }
