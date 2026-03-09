@@ -1,5 +1,5 @@
 name: SFW Switch
-description: Add a button to blur covers and images.
+description: A full feature SFW plugin with additional plugin support and audio handling.
 version: 1.5
 url: https://discourse.stashapp.cc/t/sfw-switch/4658
 ui:
