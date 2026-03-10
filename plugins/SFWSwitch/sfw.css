@@ -25,6 +25,7 @@
 .studio-parent-studios,
 .detail-item-value,
 .studio-name,
+.stats-element,
 .queue-scene-details
 {
 filter: blur(2px);
@@ -40,7 +41,6 @@ filter: blur(2px);
 .group-card img,
 .performer-card img,
 .studio-card img,
-.m-sm-auto,
 .scene-cover,
 .scene-player-container {
     display: block;
@@ -58,7 +58,7 @@ filter: blur(2px);
 .group-card:hover img,
 .performer-card:hover img,
 .studio-card:hover img,
-.m-sm-auto:hover,
+.stats-element:hover,
 .card-section-title:hover,
 .TruncatedText.tag-description:hover,
 .TruncatedText.gallery-card__description:hover,
