@@ -41,10 +41,10 @@ blacklisted_tags = ["HD", "4K", "Now in HD", "1080p Video", "4k Video"]
 reload_tag = "_NFO_RELOAD"
 
 # Creates missing entities in stash's database (or not)
-create_missing_performers = True
-create_missing_studios = True
-create_missing_tags = True
-create_missing_movies = True
+create_missing_performers = False
+create_missing_studios = False
+create_missing_tags = False
+create_missing_movies = False
 
 # Choose which field should be parsed into user rating
 # and if it should be multiplied by a factor.

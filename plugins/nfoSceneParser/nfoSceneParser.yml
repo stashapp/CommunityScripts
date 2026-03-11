@@ -11,6 +11,7 @@ hooks:
     description: Fills scene data on creation
     triggeredBy:
       - Scene.Create.Post
+      - Image.Create.Post
 tasks:
   - name: "Reload tagged scenes"
     description: Reload all scenes that have specific "marker" tag (see plugin's config.py)

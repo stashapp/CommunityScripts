@@ -1,0 +1,18 @@
+id: nfoSceneParser
+name: nfoSceneParser
+metadata:
+  description: Fills scene data from NFO or filename pattern
+version: 1.5.0-43feb59
+date: "2025-12-20 01:59:59"
+requires: []
+source_repository: https://stashapp.github.io/CommunityScripts/stable/index.yml
+files:
+- abstractParser.py
+- config.py
+- stashInterface.py
+- log.py
+- nfoSceneParser.yml
+- reParser.py
+- nfoSceneParser.py
+- README.md
+- nfoParser.py

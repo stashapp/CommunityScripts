@@ -15,17 +15,45 @@ class StashInterface:
         self._fragment_server = self._fragment["server_connection"]
         self._plugin_dir = self._fragment_server["PluginDir"]
         hook_ctx = self._fragment["args"].get("hookContext")
+        self._hook_type = None
+        self._scene_id = None
+        self._image_id = None
+        self._target_id = None
         if hook_ctx:
-            self._hook_type = hook_ctx.get("type")
-            self._scene_id = hook_ctx.get("id")
-        else:
-            self._scene_id = None
+            raw_hook_type = (hook_ctx.get("type") or "").lower()
+            if "image" in raw_hook_type:
+                self._hook_type = "image"
+            elif "scene" in raw_hook_type:
+                self._hook_type = "scene"
+            else:
+                self._hook_type = raw_hook_type
+            # Accept common variants for IDs in hook context
+            self._target_id = hook_ctx.get("id") \
+                or hook_ctx.get("scene_id") \
+                or hook_ctx.get("sceneId") \
+                or hook_ctx.get("image_id") \
+                or hook_ctx.get("imageId")
+            if self._hook_type == "image":
+                self._image_id = self._target_id or hook_ctx.get("image_id") or hook_ctx.get("imageId")
+            else:
+                # Default to scenes for backward compatibility / unknown types.
+                self._scene_id = self._target_id or hook_ctx.get("scene_id") or hook_ctx.get("sceneId")
         self._path_rewrite = self._fragment["args"].get("pathRewrite")
+        target_type = self._hook_type or "scene"
         log.LogDebug(
-            f"Starting nfoSceneParser plugin for scene {self._scene_id}")
+            f"Starting nfoSceneParser plugin for {target_type} {self._target_id}")
 
     def get_scene_id(self):
         return self._scene_id
+
+    def get_image_id(self):
+        return self._image_id
+
+    def get_target_id(self):
+        return self._target_id
+
+    def get_hook_type(self):
+        return self._hook_type or "scene"
 
     def get_mode(self):
         return self._mode
@@ -96,6 +124,58 @@ class StashInterface:
                 self._path_rewrite[0], self._path_rewrite[1])
         return result.get("findScene")
 
+    def gql_findImage(self, image_id):
+        query = """
+        query FindImage($id: ID!) {
+            findImage(id: $id) {
+                id
+                title
+                details
+                urls
+                date
+                rating: rating100
+                organized
+                paths {
+                    image
+                }
+                visual_files {
+                    ... on BaseFile {
+                        path
+                    }
+                }
+                tags {
+                    id
+                    name
+                }
+            }
+        }
+        """
+        variables = {
+            "id": image_id
+        }
+        result = self.__gql_call(query, variables)
+        # Apply optional path rewrite for testing environments
+        image = result.get("findImage") or {}
+        if self._path_rewrite is not None and image.get("paths"):
+            image_paths = image["paths"]
+            # paths may be a dict (ImagePathsType) or list (legacy schemas)
+            if isinstance(image_paths, dict):
+                for key, value in image_paths.items():
+                    if isinstance(value, str):
+                        image_paths[key] = value.replace(
+                            self._path_rewrite[0], self._path_rewrite[1])
+            else:
+                for path_entry in image_paths:
+                    if path_entry.get("image"):
+                        path_entry["image"] = path_entry["image"].replace(
+                            self._path_rewrite[0], self._path_rewrite[1])
+        if self._path_rewrite is not None and image.get("visual_files"):
+            for vf in image["visual_files"]:
+                if vf.get("path"):
+                    vf["path"] = vf["path"].replace(
+                        self._path_rewrite[0], self._path_rewrite[1])
+        return result.get("findImage")
+
     def gql_findScenes(self, tag_id=None):
         query = """
         query FindScenes($scene_filter: SceneFilterType, $filter: FindFilterType) {
@@ -133,6 +213,65 @@ class StashInterface:
             }
         result = self.__gql_call(query, variables)
         return result.get("findScenes")
+
+    def gql_findImages(self, tag_id=None):
+        query = """
+        query FindImages($image_filter: ImageFilterType, $filter: FindFilterType) {
+            findImages(image_filter: $image_filter, filter: $filter) {
+                count
+                images {
+                    id
+                    organized
+                    tags {
+                        id
+                        name
+                    }
+                }
+            }
+        }
+        """
+        base_filter = {
+            "direction": "ASC",
+            "page": 1,
+            "per_page": -1,
+            "sort": "updated_at"
+        }
+        image_filter = None
+        if tag_id:
+            image_filter = {
+                "tags": {
+                    "value": [tag_id],
+                    "modifier": "INCLUDES"
+                }
+            }
+        variables = {
+            "image_filter": image_filter,
+            "filter": base_filter
+        }
+        result = self.__gql_call(query, variables)
+        images_data = result.get("findImages") or {}
+        images_list = images_data.get("images") or []
+        if tag_id:
+            # Ensure tag filter by id in case backend ignores the filter (older schemas)
+            images_list = [image for image in images_list if any(
+                (tag.get("id") == tag_id) for tag in (image.get("tags") or [])
+            )]
+            # Fallback: retry without GraphQL filter and filter client-side if nothing found
+            if not images_list:
+                variables = {
+                    "image_filter": None,
+                    "filter": base_filter
+                }
+                fallback_result = self.__gql_call(query, variables)
+                fallback_data = fallback_result.get("findImages") or {}
+                images_list = [image for image in (fallback_data.get("images") or []) if any(
+                    (tag.get("id") == tag_id) for tag in (image.get("tags") or [])
+                )]
+                images_data["count"] = len(images_list)
+        if tag_id:
+            images_data["images"] = images_list
+            images_data["count"] = len(images_list)
+        return images_data
 
     def gql_updateScene(self, scene_id, scene_data):
         query = """
@@ -178,6 +317,31 @@ class StashInterface:
         }
         result = self.__gql_call(query, variables)
         return result.get("sceneUpdate")
+
+    def gql_updateImage(self, image_id, image_data):
+        query = """
+        mutation imageUpdate($input: ImageUpdateInput!) {
+            imageUpdate(input: $input) {
+                id
+            }
+        }
+        """
+        input_data = {
+            "id": image_id,
+            "title": image_data["title"],
+            "details": image_data["details"],
+            "date": image_data["date"],
+            "rating100": image_data["rating"],
+            "urls": image_data["urls"],
+            "tag_ids": image_data["tag_ids"],
+        }
+        if image_data.get("organized") is not None:
+            input_data.update({"organized": image_data["organized"]})
+        variables = {
+            "input": input_data
+        }
+        result = self.__gql_call(query, variables)
+        return result.get("imageUpdate")
 
     def gql_performerCreate(self, name):
         query = """

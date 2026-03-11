@@ -165,6 +165,15 @@ class NfoParser(AbstractParser):
                 clean_nfo_content = nfo.read().strip()
             # Tolerance: replace illegal "&nbsp;"
             clean_nfo_content = clean_nfo_content.replace("&nbsp;", " ")
+            # Tolerance: replace illegal "&" if it's not followed by a valid XML entity
+            clean_nfo_content = re.sub(r"&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[a-fA-F0-9]+);)", "&amp;", clean_nfo_content)
+            # Tolerance: escape unescaped < and > (not part of a tag or special XML structure)
+            tag_regex = r"(<[a-zA-Z_/](?:[^>\"\']|\"[^\"]*\"|\'[^\']*\')*>|<!\[CDATA\[.*?\]\]>|<!--.*?-->|<\?.*?\?>|<!DOCTYPE.*?>)"
+            parts = re.split(tag_regex, clean_nfo_content, flags=re.S)
+            clean_nfo_content = "".join([
+                p.replace("<", "&lt;").replace(">", "&gt;") if not re.match(tag_regex, p, flags=re.S) else p
+                for p in parts
+            ])
             self._nfo_root = xml.fromstring(clean_nfo_content)
         except Exception as e:
             log.LogError(
