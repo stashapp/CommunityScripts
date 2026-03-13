@@ -1,0 +1,13 @@
+id: GroupAutoScraper
+name: GroupAutoScraper
+metadata:
+  description: Automatically re-scrape groups that have an Adult Empire URL to pickup tags and studio for the group.
+version: 1.1.0
+date: "2026-03-13 00:00:00"
+requires: []
+source_repository: https://stashapp.github.io/CommunityScripts/stable/index.yml
+files:
+  - GroupAutoScraper.yml
+  - autoScraper.py
+  - README.md
+
