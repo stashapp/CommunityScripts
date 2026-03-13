@@ -42,6 +42,7 @@ filter: blur(2px);
 .performer-card img,
 .studio-card img,
 .scene-cover,
+.detail-header-image,
 .scene-player-container {
     display: block;
     filter: blur(30px);
@@ -71,6 +72,7 @@ filter: blur(2px);
 .studio-name:hover,
 .scene-cover:hover,
 .queue-scene-details:hover,
+.detail-header-image:hover,
 .scene-player-container:hover {
     filter: blur(0);
 }
