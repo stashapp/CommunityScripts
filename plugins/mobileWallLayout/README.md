@@ -1,5 +1,7 @@
 # Mobile Wall Layout
 
+https://discourse.stashapp.cc/t/mobile-wall-layout/6160
+
 Makes the wall-mode gallery render as a single full-width column on mobile
 devices, on the **Markers** (`/scenes/markers`) and **Images** (`/images`) pages.
 

@@ -4,6 +4,7 @@ description: >
   single full-width column on mobile devices (phones in portrait or landscape,
   up to ~960px wide). Tablets and desktops are unaffected.
 version: 1.0
+url: https://discourse.stashapp.cc/t/mobile-wall-layout/6160
 ui:
   javascript:
     - mobileWallLayout.js
