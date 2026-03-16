@@ -36,14 +36,26 @@ Groups without any URL, or with non-AdultDVD Empire URLs, are ignored without er
 
    - `plugins/CJ_CommunityScripts/plugins/GroupAutoScraper/`
 
-2. Ensure the following files exist in this directory:
+2. Install Python dependencies. From this plugin's directory run:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   This installs:
+
+   - `requests`
+   - `stashapp-tools` (which provides the `stashapi` package used by the plugin)
+
+3. Ensure the following files exist in this directory:
 
    - `manifest`
    - `GroupAutoScraper.yml`
    - `autoScraper.py`
    - `README.md`
+   - `requirements.txt`
 
-3. In Stash, open **Settings → Plugins** and reload or restart Stash so the plugin is detected.
+4. In Stash, open **Settings → Plugins** and reload or restart Stash so the plugin is detected.
 
 You should then see **GroupAutoScraper** listed with a hook that triggers on `Group.Create.Post`.
 
@@ -57,5 +69,5 @@ This plugin intentionally uses the **server connection information provided by S
 As a result:
 
 - **No API keys or URLs need to be hard-coded or edited in the script.**
-- The plugin should work across environments as long as it is installed in the correct plugins directory.
+- The plugin should work across environments as long as it is installed in the correct plugins directory and the Python dependencies are installed.
 
