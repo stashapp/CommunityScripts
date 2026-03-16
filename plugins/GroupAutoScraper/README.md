@@ -34,7 +34,7 @@ Groups without any URL, or with non-AdultDVD Empire URLs, are ignored without er
 
 1. Copy this folder to your Stash plugins directory, typically:
 
-   - `plugins/CJ_CommunityScripts/plugins/GroupAutoScraper/`
+   - `plugins/CommunityScripts/plugins/GroupAutoScraper/`
 
 2. Install Python dependencies. From this plugin's directory run:
 
