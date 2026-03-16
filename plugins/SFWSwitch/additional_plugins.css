@@ -13,8 +13,10 @@
 /* HotOrNot */
 .hon-performer-image,
 .hon-scene-image,
+.hon-selection-image,
 .hon-image-image-container,
 .hon-image-image,
+
 
 /* O Stats */
 .custom-stats-row .stats-element img,
@@ -22,7 +24,6 @@
 
 /* Sprite Tab */
 .sprite-cell
-#on-this-day-section [style*="position: relative; height: 400px"]
 {
 filter: blur(30px);
 }
@@ -33,6 +34,7 @@ filter: blur(30px);
 .pwr-scene-info,
 
 /* HotOrNot */
+.hon-selection-name,
 .hon-performer-info.hon-scene-info,
 
 /* O Stats */
@@ -56,6 +58,8 @@ filter: blur(2px);
 .hon-image-image-container:hover,
 .hon-image-image:hover,
 .hon-performer-info.hon-scene-info:hover,
+.hon-selection-card:hover .hon-selection-image,
+.hon-selection-name:hover,
 
 /* Sprite Tab */
 .sprite-cell:hover,

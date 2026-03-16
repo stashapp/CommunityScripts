@@ -1,23 +1,48 @@
 let sfw_mediaObserver = null;
 let sfw_playListener = null;
+let sfw_extraListeners = null; 
 
-function sfw_mode() {
+async function getSfwConfig() {
+    try {
+        const response = await fetch('/graphql', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: `{
+                    configuration {
+                        plugins
+                    }
+                }`
+            }),
+        });
+        const result = await response.json();
+        const pluginSettings = result.data.configuration.plugins.sfwswitch;
+        return pluginSettings?.audio_setting === true;
+    } catch (e) {
+        console.error("SFW Switch: Could not fetch config", e);
+        return false;
+    }
+}
+async function sfw_mode() {
     const stash_css = sfwswitch_findstashcss();
     const button = document.getElementById("plugin_sfw");
 
     if (!stash_css) return;
 
     const sfwState = localStorage.getItem("sfw_mode") === "true";
+    const audioMuteEnabled = await getSfwConfig();
 
     stash_css.disabled = !sfwState;
 
-    if (sfwState) {
+    if (sfwState && audioMuteEnabled) {
         sfw_mute_all_media();
     } else {
         sfw_unmute_all_media();
     }
 
-    button.style.color = sfwState ? "#5cff00" : "#f5f8fa";
+    if (button) {
+        button.style.color = sfwState ? "#5cff00" : "#f5f8fa";
+    }
 }
 
 function sfwswitch_createbutton() {
@@ -52,18 +77,17 @@ function sfwswitch_createbutton() {
     setTimeout(() => clearInterval(intervalId), 10000);
 }
 
+// Function to strictly handle the muted state
 function sfw_forceMute(media) {
+    if (!media) return;
     media.muted = true;
-    media.defaultMuted = true;
-    media.volume = 0;
 }
 
 function sfw_mute_all_media() {
-
-    // Mute existing media
+    // Initial sweep
     document.querySelectorAll("audio, video").forEach(sfw_forceMute);
 
-    // Mute media when it starts playing
+    // Global event listener for play, seek, and volume changes
     if (!sfw_playListener) {
         sfw_playListener = function(e) {
             if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
@@ -72,75 +96,71 @@ function sfw_mute_all_media() {
         };
 
         document.addEventListener("play", sfw_playListener, true);
+        document.addEventListener("volumechange", sfw_playListener, true);
+        document.addEventListener("loadeddata", sfw_playListener, true);
+        document.addEventListener("seeking", sfw_playListener, true);
     }
 
-    // Watch for new media nodes
+    // MutationObserver for content loaded via AJAX/Dynamic updates
     if (!sfw_mediaObserver) {
-
         sfw_mediaObserver = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
+            for (const mutation of mutations) {
                 mutation.addedNodes.forEach(node => {
-
                     if (node.tagName === "VIDEO" || node.tagName === "AUDIO") {
                         sfw_forceMute(node);
-                    }
-
-                    if (node.querySelectorAll) {
+                    } else if (node.querySelectorAll) {
                         node.querySelectorAll("video, audio").forEach(sfw_forceMute);
                     }
-
                 });
-            });
+            }
         });
-
-        sfw_mediaObserver.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
+        sfw_mediaObserver.observe(document.body, { childList: true, subtree: true });
     }
 }
 
 function sfw_unmute_all_media() {
-
+    // Unmute existing media
     document.querySelectorAll("audio, video").forEach(media => {
         media.muted = false;
-        media.volume = 1;
     });
 
+    // Clean up observer
     if (sfw_mediaObserver) {
         sfw_mediaObserver.disconnect();
         sfw_mediaObserver = null;
     }
 
+
     if (sfw_playListener) {
         document.removeEventListener("play", sfw_playListener, true);
+        document.removeEventListener("volumechange", sfw_playListener, true);
+        document.removeEventListener("loadeddata", sfw_playListener, true);
+        document.removeEventListener("seeking", sfw_playListener, true);
         sfw_playListener = null;
     }
 }
 
-function sfwswitch_switcher() {
+async function sfwswitch_switcher() {
     const stash_css = sfwswitch_findstashcss();
-    if (!stash_css) {
-        console.error("SFW stylesheet not found.");
-        return;
-    }
+    if (!stash_css) return;
 
     stash_css.disabled = !stash_css.disabled;
-
     const enabled = !stash_css.disabled;
 
     localStorage.setItem("sfw_mode", enabled);
 
-    if (enabled) {
+    const audioMuteEnabled = await getSfwConfig();
+
+    if (enabled && audioMuteEnabled) {
         sfw_mute_all_media();
     } else {
         sfw_unmute_all_media();
     }
 
     const button = document.getElementById("plugin_sfw");
-    button.style.color = enabled ? "#5cff00" : "#f5f8fa";
-
-    console.log(`SFW mode ${enabled ? "enabled" : "disabled"}`);
+    if (button) {
+        button.style.color = enabled ? "#5cff00" : "#f5f8fa";
+    }
 }
 
 function sfwswitch_findstashcss() {
