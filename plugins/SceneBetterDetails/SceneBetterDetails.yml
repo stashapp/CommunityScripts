@@ -1,7 +1,0 @@
-name: SceneBetterDetails
-description: Improve rendering of scene details text by preserving line breaks.
-version: 1.0.1
-url: https://github.com/Stash-KennyG/CommunityScripts
-ui:
-  javascript:
-    - SceneBetterDetails.js
