@@ -42,6 +42,7 @@ filter: blur(2px);
 .performer-card img,
 .studio-card img,
 .scene-cover,
+.image-container img,
 .detail-header-image,
 .scene-player-container {
     display: block;
@@ -60,6 +61,7 @@ filter: blur(2px);
 .performer-card:hover img,
 .studio-card:hover img,
 .stats-element:hover,
+.image-container:hover img,
 .card-section-title:hover,
 .TruncatedText.tag-description:hover,
 .TruncatedText.gallery-card__description:hover,
