@@ -1,5 +1,7 @@
 # GroupAutoScraper
 
+https://discourse.stashapp.cc/t/groupautoscraper/6196
+
 Automatically re-scrape groups that have a supported URL and merge the scraped data back into the group.
 
 ## What it does
