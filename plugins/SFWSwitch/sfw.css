@@ -77,4 +77,5 @@ filter: blur(2px);
 .detail-header-image:hover,
 .scene-player-container:hover {
     filter: blur(0);
+	transition: filter 0.25s ease;
 }
