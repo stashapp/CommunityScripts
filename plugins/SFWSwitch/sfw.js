@@ -119,18 +119,7 @@ function sfw_mute_all_media() {
 }
 
 function sfw_unmute_all_media() {
-    // Unmute existing media
-    document.querySelectorAll("audio, video").forEach(media => {
-        media.muted = false;
-    });
-
-    // Clean up observer
-    if (sfw_mediaObserver) {
-        sfw_mediaObserver.disconnect();
-        sfw_mediaObserver = null;
-    }
-
-
+    // 1. Remove listeners FIRST to prevent them from firing during the unmute loop
     if (sfw_playListener) {
         document.removeEventListener("play", sfw_playListener, true);
         document.removeEventListener("volumechange", sfw_playListener, true);
@@ -138,12 +127,24 @@ function sfw_unmute_all_media() {
         document.removeEventListener("seeking", sfw_playListener, true);
         sfw_playListener = null;
     }
+
+    if (sfw_mediaObserver) {
+        sfw_mediaObserver.disconnect();
+        sfw_mediaObserver = null;
+    }
+
+    // 2. Unmute existing media
+    document.querySelectorAll("audio, video").forEach(media => {
+        media.muted = false;
+        // Optional: media.volume = 1.0; // Use if volume was also forced to 0
+    });
 }
 
 async function sfwswitch_switcher() {
     const stash_css = sfwswitch_findstashcss();
     if (!stash_css) return;
 
+    // Toggle the CSS
     stash_css.disabled = !stash_css.disabled;
     const enabled = !stash_css.disabled;
 
@@ -151,10 +152,20 @@ async function sfwswitch_switcher() {
 
     const audioMuteEnabled = await getSfwConfig();
 
+    // Logic Check: If we just disabled SFW, we MUST run unmute immediately
     if (enabled && audioMuteEnabled) {
         sfw_mute_all_media();
     } else {
+        // This clears observers and sets muted = false
         sfw_unmute_all_media();
+        
+        // CRITICAL: Force a pause/reset on any media that might be stuck in a background buffer
+        document.querySelectorAll("audio, video").forEach(media => {
+            if (media.paused && media.muted) {
+                // If it was supposed to be stopped, make sure it stays stopped
+                media.muted = false; 
+            }
+        });
     }
 
     const button = document.getElementById("plugin_sfw");

@@ -1,81 +1,168 @@
-/* Container*/
-.tag-card,
-.scene-card,
-.image-card,
-.gallery-card,
+
+/* === MORE BLUR === */
+/* common */
+.thumbnail-container img,
+.detail-header-image,
+
+/* scene */
+.scene-player-container,
+.scene-cover,
+.scene-card-preview,
+.scrubber-item,
+.scene-image,
+.scene-card img,
+.wall-item-media,
+.marker-wall,
+
+/* image */
+.image-card img,
+.image-container img,
+.image-thumbnail,
+.Lightbox-carousel,
+
+/* group */
+.group-card-image,
+.group-images,
 .group-card,
-.thumbnail-container,
-.gallery-cover,
-.performer-card,
-.studio-card {
-    position: relative;
-    display: inline-block;
+
+/* gallery */
+.gallery-image,
+.gallery-card-image,
+.gallery-card img,
+.gallery-cover img,
+.gallery,
+
+/* performer */
+.performer-card img,
+
+/* studio */
+.studio-card-image,
+.studio-card img,
+
+/* tag */
+.tag-card img
+{
+
+    filter: blur(30px);
+    transition: filter 0.25s ease;
 }
 
 /* === LESS BLUR === */
 
 /* common */
 .card-section-title,
-.TruncatedText.tag-description,
-.TruncatedText.gallery-card__description,
-.TruncatedText.image-card__description,
-.TruncatedText.scene-card__description,
-.tag-name,
 .detail-item-value.description,
-.studio-parent-studios,
 .detail-item-value,
+.TruncatedText,
+
+/* scene */
+.scene-studio-overlay,
+.scene-header > h3,
+h3.scene-header,
+.TruncatedText.scene-card__description,
+.queue-scene-details,
+
+/* performer */
+.performer-name,
+.card-section,
+.name-data,
+.aliases-data,
+
+/* gallery */
+.gallery-header.no-studio,
+.TruncatedText.gallery-card__description,
+
+
+/* studio */
 .studio-name,
-.stats-element,
-.queue-scene-details
+.studio-overlay a,
+.studio-logo,
+.studio-parent-studios,
+
+/* group */
+.group-details > div > h2,
+
+/* image */
+h3.image-header,
+.Lightbox-carousel:hover,
+.TruncatedText.image-card__description,
+
+/* tag */
+.TruncatedText.tag-description,
+.tag-item.tag-link.badge.badge-secondary,
+.tag-name
+
 {
 filter: blur(2px);
 }
 
-/* Only the image gets blurred */
-.tag-card img,
-.scene-card img,
-.image-card img,
-.gallery-card img,
-.thumbnail-container img,
-.gallery-cover img,
-.group-card img,
-.performer-card img,
-.studio-card img,
-.scene-cover,
-.image-container img,
-.detail-header-image,
-.scene-player-container {
-    display: block;
-    filter: blur(30px);
-    transition: filter 0.25s ease;
-}
 
-/* Hover unblurs */
-.tag-card:hover img,
-.scene-card:hover img,
-.image-card:hover img,
-.gallery-card:hover img,
+/* === UNBLUR ON HOVER === */
+
+/* common */
+.detail-item-value:hover,
+.scene-cover:hover,
 .thumbnail-container:hover img,
-.gallery-cover:hover img,
-.group-card:hover img,
-.performer-card:hover img,
-.studio-card:hover img,
-.stats-element:hover,
-.image-container:hover img,
 .card-section-title:hover,
 .TruncatedText.tag-description:hover,
-.TruncatedText.gallery-card__description:hover,
-.TruncatedText.image-card__description:hover,
-.TruncatedText.scene-card__description:hover,
-.tag-name:hover,
 .detail-item-value.description:hover,
-.studio-parent-studios:hover,
-.detail-item-value:hover,
-.studio-name:hover,
-.scene-cover:hover,
+.TruncatedText:hover,
+
+/* scene */
+.scene-player-container:hover,
+.scene-card-preview:hover,
 .queue-scene-details:hover,
+.scene-card:hover img,
+.TruncatedText.scene-card__description:hover,
+.scene-player-container:hover,
+.scene-header:hover > h3,
+div:hover > .scene-header,
+.wall-item-media:hover,
+.marker-wall:hover,
+
+/* image */
 .detail-header-image:hover,
-.scene-player-container:hover {
+div:hover > .image-header,
+.image-card:hover img,
+.image-container:hover img,
+.image-thumbnail:hover,
+.TruncatedText.image-card__description:hover,
+
+
+/* group */
+.group-card:hover img,
+
+/* gallery */
+.gallery-header.no-studio,
+.gallery-card:hover img,
+.gallery-cover:hover img,
+.gallery-image:hover,
+.gallery-card-image:hover,
+.gallery:hover,
+.TruncatedText.gallery-card__description:hover,
+
+/* performer */
+.performer-card-image:hover,
+.performer-name:hover,
+.card-section:hover,
+.name-data:hover,
+.aliases-data:hover,
+
+/* studio */ 
+.studio-name:hover,
+.studio-overlay:hover a,
+.studio-card:hover img,
+.studio-parent-studios:hover,
+.studio-logo:hover,
+
+
+/* tag */
+.tag-card:hover img,
+.tag-item.tag-link.badge.badge-secondary:hover,
+.tag-name:hover
+{
     filter: blur(0);
 	transition: filter 0.25s ease;
 }
+
+/*Credit: fl0w#9497 */
