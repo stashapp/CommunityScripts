@@ -3,6 +3,7 @@
 /* common */
 .thumbnail-container img,
 .detail-header-image,
+.wall-item-gallery,
 
 /* scene */
 .scene-player-container,
@@ -12,13 +13,13 @@
 .scene-image,
 .scene-card img,
 .wall-item-media,
-.marker-wall,
+.wall-item.show-title,
 
 /* image */
 .image-card img,
-.image-container img,
 .image-thumbnail,
 .Lightbox-carousel,
+.react-photo-gallery--gallery img,
 
 /* group */
 .group-card-image,
@@ -30,7 +31,8 @@
 .gallery-card-image,
 .gallery-card img,
 .gallery-cover img,
-.gallery,
+.GalleryWallCard.GalleryWallCard-portrait,
+.GalleryWallCard.GalleryWallCard-landscape,
 
 /* performer */
 .performer-card img,
@@ -61,6 +63,7 @@
 h3.scene-header,
 .TruncatedText.scene-card__description,
 .queue-scene-details,
+.marker-wall,
 
 /* performer */
 .performer-name,
@@ -102,7 +105,7 @@ filter: blur(2px);
 /* common */
 .detail-item-value:hover,
 .scene-cover:hover,
-.thumbnail-container:hover img,
+
 .card-section-title:hover,
 .TruncatedText.tag-description:hover,
 .detail-item-value.description:hover,
@@ -119,14 +122,16 @@ filter: blur(2px);
 div:hover > .scene-header,
 .wall-item-media:hover,
 .marker-wall:hover,
+.wall-item.show-title:hover,
 
 /* image */
 .detail-header-image:hover,
 div:hover > .image-header,
 .image-card:hover img,
-.image-container:hover img,
+.react-photo-gallery--gallery img:hover,
 .image-thumbnail:hover,
 .TruncatedText.image-card__description:hover,
+.wall-item:hover img,
 
 
 /* group */
@@ -138,8 +143,9 @@ div:hover > .image-header,
 .gallery-cover:hover img,
 .gallery-image:hover,
 .gallery-card-image:hover,
-.gallery:hover,
 .TruncatedText.gallery-card__description:hover,
+.GalleryWallCard.GalleryWallCard-portrait:hover,
+.GalleryWallCard.GalleryWallCard-landscape:hover,
 
 /* performer */
 .performer-card-image:hover,
