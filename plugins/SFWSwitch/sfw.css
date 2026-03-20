@@ -23,8 +23,6 @@
 
 /* group */
 .group-card-image,
-.group-images,
-.group-card,
 
 /* gallery */
 .gallery-image,
@@ -153,6 +151,7 @@ div:hover > .image-header,
 .card-section:hover,
 .name-data:hover,
 .aliases-data:hover,
+.performer-card img:hover,
 
 /* studio */ 
 .studio-name:hover,
