@@ -12,15 +12,22 @@
 
 /* HotOrNot */
 .hon-performer-image,
+.hon-performer-card,
 .hon-scene-image,
+.hon-selection-image,
 .hon-image-image-container,
 .hon-image-image,
 
+
 /* O Stats */
 .custom-stats-row .stats-element img,
-#on-this-day-section [style*="position: relative; height: 400px"]
+#on-this-day-section [style*="position: relative; height: 400px"],
+
+/* Sprite Tab */
+.sprite-cell
 {
-filter: blur(30px);
+	filter: blur(30px);
+	transition: filter 0.25s ease;
 }
 
 /* === LESS BLUR === */
@@ -29,6 +36,7 @@ filter: blur(30px);
 .pwr-scene-info,
 
 /* HotOrNot */
+.hon-selection-name,
 .hon-performer-info.hon-scene-info,
 
 /* O Stats */
@@ -37,7 +45,8 @@ filter: blur(30px);
 #on-this-day-section [style*="display: flex"][style*="cursor: pointer"] img + div,
 #on-this-day-section > div:last-child
 {
-filter: blur(2px);
+	filter: blur(2px);
+	transition: filter 0.25s ease;
 }
 
 /* StashBattle */
@@ -48,10 +57,17 @@ filter: blur(2px);
 
 /* HotOrNot */
 .hon-performer-image:hover,
+.hon-performer-card:hover,
 .hon-scene-image:hover,
 .hon-image-image-container:hover,
 .hon-image-image:hover,
 .hon-performer-info.hon-scene-info:hover,
+.hon-selection-card:hover,
+.hon-selection-name:hover,
+.hon-selection-image:hover,
+
+/* Sprite Tab */
+.sprite-cell:hover,
 
 /* O Stats */
 .custom-stats-row .stats-element:hover,
