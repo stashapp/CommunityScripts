@@ -34,8 +34,6 @@ ui:
       - 'self'
       - http://localhost:4153
       - https://localhost:4153
-      - http://www.gstatic.com
-      - https://www.gstatic.com
       - 'unsafe-inline'
       - 'unsafe-eval'
       # Allow plugin JavaScript files to be loaded from the backend server
