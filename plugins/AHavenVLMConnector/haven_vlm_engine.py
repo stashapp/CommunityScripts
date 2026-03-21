@@ -22,7 +22,9 @@ from vlm_engine.config_models import (
 import haven_vlm_config as config
 
 # Configure logging
-logging.basicConfig(level=logging.CRITICAL)
+logging.basicConfig(
+    level=logging.WARNING, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -87,12 +89,29 @@ class HavenVLMEngine:
         self.engine_config: Optional[EngineConfig] = None
         self._initialized = False
 
+    def _configure_logging(self) -> None:
+        """Configure logging levels based on plugin config."""
+        vlm_config = config.config.vlm_engine_config
+        trace_enabled = vlm_config.get("trace_logging", False)
+
+        if trace_enabled:
+            logging.basicConfig(
+                level=logging.DEBUG,
+                format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            )
+            logging.getLogger("logger").setLevel(logging.DEBUG)
+            logging.getLogger("multiplexer_llm").setLevel(logging.DEBUG)
+            logger.debug("Trace logging enabled for vlm-engine and multiplexer-llm")
+        else:
+            logger.setLevel(logging.WARNING)
+
     async def initialize(self) -> None:
         """Initialize the VLM Engine with configuration"""
         if self._initialized:
             return
 
         try:
+            self._configure_logging()
             logger.info("Initializing Haven VLM Engine...")
             
             # Convert config dict to EngineConfig objects
@@ -176,7 +195,8 @@ class HavenVLMEngine:
             active_ai_models=vlm_config["active_ai_models"],
             pipelines=pipelines,
             models=models,
-            category_config=vlm_config["category_config"]
+            category_config=vlm_config["category_config"],
+            loglevel="DEBUG" if vlm_config.get("trace_logging", False) else "WARNING",
         )
 
     async def process_video(
