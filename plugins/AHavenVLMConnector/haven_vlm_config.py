@@ -13,6 +13,7 @@ import yaml
 # VLM Engine Configuration
 VLM_ENGINE_CONFIG = {
     "active_ai_models": ["vlm_multiplexer_model"],
+  "trace_logging": True,
     "pipelines": {
         "video_pipeline_dynamic": {
             "inputs": [
