@@ -34,7 +34,7 @@ try:
         "stashapi:stashapp-tools==0.2.58",
         "aiohttp==3.12.13",
         "pydantic==2.12.5",
-        "vlm-engine==0.9.4",
+        "vlm-engine==0.9.5",
         "pyyaml==6.0.2"
     )
     
