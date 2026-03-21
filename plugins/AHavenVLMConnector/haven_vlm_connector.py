@@ -35,7 +35,7 @@ try:
         "stashapi:stashapp-tools==0.2.58",
         "aiohttp==3.12.13",
         "pydantic==2.12.5",
-        "vlm-engine==0.9.6",
+        "vlm-engine==1.0.0",
         "pyyaml==6.0.2",
     )
 
@@ -355,11 +355,20 @@ async def __tag_video(scene: Dict[str, Any]) -> None:
                 total_prog = sum(video_progress.values()) / total_tasks
 
                 stats = vlm_engine.vlm_engine.get_performance_stats()
-                last_rt = stats.get("last_response_time", 0.0)
-                fps = 1.0 / last_rt if last_rt > 0 else 0.0
+                total_frames = stats.get("total_frames_processed", 0)
+                elapsed_seconds = stats.get("elapsed_time", 0.0)
 
+                log.info(f"[Throughput] total_frames: {total_frames}")
+                log.info(f"[Throughput] elapsed_seconds: {elapsed_seconds:.2f}")
+
+                if elapsed_seconds > 0:
+                    fpm = (total_frames / elapsed_seconds) * 60.0
+                else:
+                    fpm = 0.0
+
+                log.info(f"[Throughput] calculated_fpm: {fpm:.1f}")
                 log.info(
-                    f"[FPS] Frame ~{(p / 100) * 100:.0f}: {fps:.2f} fps | progress: {p}%"
+                    f"[Throughput] Frame ~{(p / 100) * 100:.0f}: {fpm:.1f} FPM | progress: {p}%"
                 )
                 log.progress(total_prog)
 
