@@ -19,6 +19,7 @@
 .image-card img,
 .image-thumbnail,
 .Lightbox-carousel,
+.image-image,
 .react-photo-gallery--gallery img,
 
 /* group */
@@ -130,6 +131,7 @@ div:hover > .image-header,
 .image-thumbnail:hover,
 .TruncatedText.image-card__description:hover,
 .wall-item:hover img,
+.image-image:hover,
 
 
 /* group */

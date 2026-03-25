@@ -18,6 +18,9 @@
 .hon-image-image-container,
 .hon-image-image,
 
+/* Deck Viewer */
+.swiper-zoom-container,
+.gallery-cover-link,
 
 /* O Stats */
 .custom-stats-row .stats-element img,
@@ -35,6 +38,10 @@
 /* StashBattle */
 .pwr-scene-info,
 
+/* Deck Viewer */
+.gallery-cover-title,
+.gallery-performers,
+
 /* HotOrNot */
 .hon-selection-name,
 .hon-performer-info.hon-scene-info,
@@ -48,6 +55,12 @@
 	filter: blur(2px);
 	transition: filter 0.25s ease;
 }
+
+/* Deck Viewer */
+.swiper-zoom-container:hover,
+.gallery-cover-link:hover,
+.gallery-cover-title:hover,
+.gallery-performers:hover,
 
 /* StashBattle */
 .pwr-scene-image-container:hover,
