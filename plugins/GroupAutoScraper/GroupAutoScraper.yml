@@ -1,0 +1,13 @@
+name: GroupAutoScraper
+description: Automatically re-scrape groups that have an Adult Empire URL to pickup tags and studio for the group.
+version: 1.1.0
+url: https://discourse.stashapp.cc/t/groupautoscraper/6196
+exec:
+  - python
+  - "{pluginDir}/autoScraper.py"
+interface: raw
+hooks:
+  - name: hook_group_auto_scraper
+    description: Re-scrape group on create when it has a URL.
+    triggeredBy:
+      - Group.Create.Post
