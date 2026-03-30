@@ -619,11 +619,13 @@
             }, [onSceneClicked]);
             // Render scene in queue list format (matching the Queue tab exactly)
             const renderQueueScene = useCallback((scene, index) => {
-                var _a, _b, _c;
-                const title = scene.title || `Scene ${scene.id}`;
-                const studio = ((_a = scene.studio) === null || _a === void 0 ? void 0 : _a.name) || '';
-                const performers = ((_b = scene.performers) === null || _b === void 0 ? void 0 : _b.map(p => p.name).join(', ')) || '';
-                const screenshot = (_c = scene.paths) === null || _c === void 0 ? void 0 : _c.screenshot;
+                var _a, _b, _c, _d, _e;
+                const filepath = ((_b = (_a = scene.files) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.path) || '';
+                const filename = filepath ? filepath.replace(/\\/g, '/').split('/').pop() || '' : '';
+                const title = scene.title || filename || `Scene ${scene.id}`;
+                const studio = ((_c = scene.studio) === null || _c === void 0 ? void 0 : _c.name) || '';
+                const performers = ((_d = scene.performers) === null || _d === void 0 ? void 0 : _d.map(p => p.name).join(', ')) || '';
+                const screenshot = (_e = scene.paths) === null || _e === void 0 ? void 0 : _e.screenshot;
                 const date = scene.date || scene.created_at || '';
                 return React.createElement('li', {
                     key: scene.id,
@@ -647,10 +649,11 @@
                         className: 'queue-scene-details'
                     }, [
                         React.createElement('span', { key: 'title', className: 'queue-scene-title' }, title),
+                        filepath ? React.createElement('span', { key: 'filepath', className: 'queue-scene-filepath', title: filepath, style: { fontSize: '0.75em', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '300px', display: 'block' } }, filepath) : null,
                         React.createElement('span', { key: 'studio', className: 'queue-scene-studio' }, studio),
                         React.createElement('span', { key: 'performers', className: 'queue-scene-performers' }, performers),
                         React.createElement('span', { key: 'date', className: 'queue-scene-date' }, date)
-                    ])
+                    ].filter(Boolean))
                 ])));
             }, [handleSceneClick]);
             // Render recommender selector when recommenders are available
