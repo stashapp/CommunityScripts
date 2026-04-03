@@ -13,16 +13,17 @@ making marker previews and images easy to scroll through on a phone.
 
 ## Behaviour
 
-- Applies only when `window.innerWidth ≤ 960px` — covers all current phones
-  including large flagships in landscape (e.g. iPhone 16 Pro Max: 932px,
-  Galaxy S24 Ultra: 915px), while excluding tablets (iPad mini landscape: 1024px).
+- Applies only on **touch-screen devices** (`pointer: coarse`) — correctly
+  targets phones and tablets without triggering on narrow desktop browser windows.
 - Activates and deactivates automatically as you navigate between pages.
-- Re-evaluates on orientation change (portrait ↔ landscape).
-- Has no effect on desktop or tablet viewports.
+- Has no effect on desktop or mouse-driven viewports.
 
 ## Implementation note
 
-The fix injects a `<style>` tag with `!important` rules rather than setting
-inline styles via JavaScript. This is necessary because `react-photo-gallery`
-continuously recalculates and re-applies its own inline styles; a CSS rule with
-`!important` wins unconditionally regardless of render timing.
+The fix injects a `<style>` tag with `!important` rules wrapped in a
+`@media (pointer: coarse)` query, rather than setting inline styles via
+JavaScript or checking `window.innerWidth` at runtime. This is necessary
+because `react-photo-gallery` continuously recalculates and re-applies its own
+inline styles; a CSS rule with `!important` wins unconditionally regardless of
+render timing. Using `pointer: coarse` instead of a pixel-width threshold
+prevents the fix from activating on narrow desktop windows.

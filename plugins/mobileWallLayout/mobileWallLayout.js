@@ -24,39 +24,42 @@
 // inline styles regardless of render timing, avoiding the race condition that
 // JS-based inline overrides suffer from.
 //
-// The 960px threshold covers all current phones including large flagships in
-// landscape (e.g. iPhone 16 Pro Max: 932px, Galaxy S24 Ultra: 915px) while
-// excluding tablets (iPad mini landscape: 1024px). The resize listener ensures
-// the fix is applied/removed correctly on orientation change.
+// Device targeting uses `pointer: coarse` (touchscreens) rather than a pixel
+// width threshold. A width-only check (e.g. <= 960px) also triggers on narrow
+// desktop windows; pointer coarseness correctly identifies touch devices
+// regardless of window size, and CSS media queries re-evaluate automatically on
+// any relevant change — no JS resize listener needed.
 
 var _imagesStyleTag = null;
 
 // Uses !important throughout so these rules win over react-photo-gallery's
 // inline `style="position:absolute; top:Xpx; left:Ypx"` attributes.
+// Wrapped in a pointer:coarse media query so the rules are inert on desktop.
 var _IMAGES_CSS = [
-    'div.react-photo-gallery--gallery {',
-    '    display: block !important;',
-    '}',
-    '.wall-item {',
-    '    position: relative !important;',  /* pull items back into normal flow */
-    '    width:    100%   !important;',
-    '    height:   auto   !important;',
-    '    top:      auto   !important;',    /* neutralise calculated pixel offsets */
-    '    left:     auto   !important;',
-    '    display:  block  !important;',
-    '    margin-bottom: 10px !important;',
-    '}',
-    '.wall-item img, .wall-item video {',
-    '    width:       100%    !important;',
-    '    height:      auto    !important;',
-    '    object-fit:  contain !important;',
+    '@media (pointer: coarse) {',
+    '    div.react-photo-gallery--gallery {',
+    '        display: block !important;',
+    '    }',
+    '    .wall-item {',
+    '        position: relative !important;',  /* pull items back into normal flow */
+    '        width:    100%   !important;',
+    '        height:   auto   !important;',
+    '        top:      auto   !important;',    /* neutralise calculated pixel offsets */
+    '        left:     auto   !important;',
+    '        display:  block  !important;',
+    '        margin-bottom: 10px !important;',
+    '    }',
+    '    .wall-item img, .wall-item video {',
+    '        width:       100%    !important;',
+    '        height:      auto    !important;',
+    '        object-fit:  contain !important;',
+    '    }',
     '}'
 ].join('\n');
 
 function updateImagesPageFix() {
     var href = window.location.href;
-    var onTargetPage = (href.includes('/images') || href.includes('scenes/markers'))
-        && window.innerWidth <= 960;
+    var onTargetPage = href.includes('/images') || href.includes('scenes/markers');
 
     if (onTargetPage && !_imagesStyleTag) {
         // Entering images or markers page — inject the fix
@@ -78,9 +81,6 @@ function updateImagesPageFix() {
 
 var observer = new MutationObserver(updateImagesPageFix);
 observer.observe(document.body, { childList: true, subtree: true });
-
-// Re-evaluate on orientation change (portrait ↔ landscape)
-window.addEventListener('resize', updateImagesPageFix);
 
 // Run immediately for whichever page is loaded first
 updateImagesPageFix();
