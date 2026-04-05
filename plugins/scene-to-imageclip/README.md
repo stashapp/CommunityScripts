@@ -1,5 +1,7 @@
 # Scene to ImageClip Converter
 
+https://discourse.stashapp.cc/t/scene-to-imageclip-converter/6558
+
 Turn tagged scenes into Stash image clips — the looping, zoomable kind — by renaming their files to `.vclip` and migrating metadata automatically.
 
 ## How it works

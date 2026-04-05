@@ -1,7 +1,7 @@
 name: Scene to ImageClip Converter
 description: Converts scenes tagged 'imageclip' into Stash image clips by normalizing tag variants and renaming files to use the .vclip extension.
 version: "1.1"
-url: ""
+url: https://discourse.stashapp.cc/t/scene-to-imageclip-converter/6558
 exec:
   - python3
   - "{pluginDir}/scene_to_imageclip.py"

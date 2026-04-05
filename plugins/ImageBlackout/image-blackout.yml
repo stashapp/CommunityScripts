@@ -1,6 +1,7 @@
 name: Image Blackout (100% Work Safe)
 description: Toggle button to completely hide all images, videos, hovers, scrubber sprites, tags, and AI previews
 version: 1.0
+url: https://discourse.stashapp.cc/t/image-blackout-100-work-safe/6557
 ui:
   javascript:
     - image-blackout.js
