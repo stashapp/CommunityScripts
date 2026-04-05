@@ -1,12 +1,5 @@
 name: Scene to ImageClip Converter
-description: >
-  Converts scenes tagged 'imageclip' into Stash image-clip entities.
-  Automatically adds .vclip to image_extensions, reconciles tag name variants
-  (imageclip / image clip / image_clip / image-clip / Image Clip / ImageClip)
-  into a single canonical tag with aliases, then renames each scene file from
-  video.mp4 to video.mp4.vclip. Run a library scan after to reclassify.
-  Requires: create_image_clip_from_videos: true in config.yml, and
-  excludeimage: false on any library paths containing the files.
+description: Converts scenes tagged 'imageclip' into Stash image clips by normalizing tag variants and renaming files to use the .vclip extension.
 version: "1.1"
 url: ""
 exec:
