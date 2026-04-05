@@ -1,0 +1,23 @@
+name: Scene to ImageClip Converter
+description: Converts scenes tagged 'imageclip' into Stash image clips by normalizing tag variants and renaming files to use the .vclip extension.
+version: "1.1"
+url: ""
+exec:
+  - python3
+  - "{pluginDir}/scene_to_imageclip.py"
+interface: raw
+tasks:
+  - name: Rename imageclip Scenes to .vclip
+    description: >
+      Adds .vclip to image_extensions, reconciles imageclip tag variants,
+      and renames tagged scene files to filename.ext.vclip.
+      Run a library scan afterward to reclassify as image clips.
+    defaultArgs:
+      mode: rename
+  - name: Transfer metadata and clean up original scenes
+    description: >
+      For each .vclip image clip, copies metadata (tags, rating, performers,
+      studio, title, details, date) from the original scene entry and removes
+      the scene from the database. Run after renaming files and scanning.
+    defaultArgs:
+      mode: transfer
