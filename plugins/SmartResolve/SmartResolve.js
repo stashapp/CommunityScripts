@@ -563,6 +563,15 @@
     }
   }
 
+  function shouldRefreshAfterSync() {
+    var p = parseParams();
+    var distance = Number(p && p.distance) || 0;
+    var durationDiff = Number(p && p.durationDiff);
+    if (!Number.isFinite(durationDiff)) durationDiff = 1;
+    // Near-dupe mode can make duplicate query expensive; let user refresh manually.
+    return !(distance > 0 && durationDiff > 1);
+  }
+
   function visibleGroups(groups) {
     var p = parseParams();
     var start = (p.page - 1) * p.size;
@@ -1271,8 +1280,11 @@
     btn.onclick = async function () {
       setProcessingIndicator("spinner");
       try {
-        // Always refresh after SPA table changes (pagination/deletes) to avoid stale state.
-        await loadDuplicateGroups();
+        // Reuse already-loaded groups for this page/filter; only fetch when cache is missing/stale.
+        if (!state.groups || state.lastBadgePageKey !== currentPageKey()) {
+          await loadDuplicateGroups();
+          state.lastBadgePageKey = currentPageKey();
+        }
         // Use URL page-size for indicator mode. If absent/unparseable, assume 20.
         var pageSize = parseParams().size || 20;
         if (pageSize > 20) {
@@ -2428,7 +2440,9 @@
         var input = buildSceneUpdateInput(target, sources, opt);
         await inlineRemoteCoverImages(input);
         await runSceneUpdate(input);
-        await refreshPlanAndDecorations();
+        if (shouldRefreshAfterSync()) {
+          await refreshPlanAndDecorations();
+        }
         ensureStashIdBadges();
         if (autoCb.checked) {
           var m = {};

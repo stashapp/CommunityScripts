@@ -1,6 +1,6 @@
 name: Smart Resolver
 description: Scene Duplicate Checker helper with Smart Select and mergeless Sync Data.  Rules are processed in order to determine a primary keep candidate. Protection rules are then processed to determine if the non-primary scene should be marked for deletion.
-version: 1.0.01
+version: 1.0.02
 url: https://github.com/Stash-KennyG/CommunityScripts/tree/main/plugins/DuplicateResolver
 ui:
   javascript:
