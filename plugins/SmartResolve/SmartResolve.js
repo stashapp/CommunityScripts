@@ -1280,11 +1280,8 @@
     btn.onclick = async function () {
       setProcessingIndicator("spinner");
       try {
-        // Reuse already-loaded groups for this page/filter; only fetch when cache is missing/stale.
-        if (!state.groups || state.lastBadgePageKey !== currentPageKey()) {
-          await loadDuplicateGroups();
-          state.lastBadgePageKey = currentPageKey();
-        }
+        // Always refresh to avoid stale state after SPA table changes (pagination/deletes).
+        await loadDuplicateGroups();
         // Use URL page-size for indicator mode. If absent/unparseable, assume 20.
         var pageSize = parseParams().size || 20;
         if (pageSize > 20) {
