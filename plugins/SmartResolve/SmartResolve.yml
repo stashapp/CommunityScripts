@@ -1,0 +1,96 @@
+name: Smart Resolver
+description: Scene Duplicate Checker helper with Smart Select and mergeless Sync Data.  Rules are processed in order to determine a primary keep candidate. Protection rules are then processed to determine if the non-primary scene should be marked for deletion.
+version: 1.0.02
+url: https://github.com/Stash-KennyG/CommunityScripts/tree/main/plugins/DuplicateResolver
+ui:
+  javascript:
+    - SmartResolve.js
+  css:
+    - SmartResolve.css
+settings:
+  autoCheckAfterSync:
+    displayName: After Sync, mark source scenes for deletion
+    description: >-
+      Successfully synced source scenes are marked by default after sync.
+    type: BOOLEAN
+  ignoreRule01TotalPixels:
+    displayName: Ignore 01 - Most Total pixels
+    description: When enabled, will not eliminate candidate with lower total pixels than the highest width*height (1% tolerance).
+    type: BOOLEAN
+  ignoreRule02Framerate:
+    displayName: Ignore 02 - Highest Framerate
+    description: When enabled, will not eliminate candidate with lower framerate than the highest file framerate.
+    type: BOOLEAN
+  ignoreRule03Codec:
+    displayName: Ignore 03 - Codec tier
+    description: When enabled, will not eliminate candidate with lower codec quality tier (AV1 > H265 > H264 > others).
+    type: BOOLEAN
+  ignoreRule04Duration:
+    displayName: Ignore 04 - Longest Duration
+    description: When enabled, will not eliminate candidate with shorter duration than the longest duration (rounded to nearest second).
+    type: BOOLEAN
+  ignoreRule05SmallerSize:
+    displayName: Ignore 05 - Smaller file size
+    description: When enabled, will not eliminate candidate with larger file size than the smallest (tollerance max(1MB or 1%)).
+    type: BOOLEAN
+  ignoreRule05bUpgradeToken:
+    displayName: Ignore 05b - Upgrade token preference
+    description: When enabled, will not eliminate candidate with primary file path containing "upgrade".
+    type: BOOLEAN
+  ignoreRule06OlderDate:
+    displayName: Ignore 06 - Older date
+    description: When enabled, will not eliminate candidate with later scene date than the oldest scene date (null is latest).
+    type: BOOLEAN
+  ignoreRule07MoreGroups:
+    displayName: Ignore 07 - More groups
+    description: When enabled, will not eliminate candidate with fewer group associations than the most groups.
+    type: BOOLEAN
+  ignoreRule08HasStashId:
+    displayName: Ignore 08 - Has stash ID
+    description: When enabled, will not eliminate candidate with fewer stash IDs than the most stash IDs.
+    type: BOOLEAN
+  ignoreRule09MorePerformers:
+    displayName: Ignore 09 - More performers
+    description: When enabled, will not eliminate candidate with fewer performer associations than the most performer associations.
+    type: BOOLEAN
+  ignoreRule10MoreMarkers:
+    displayName: Ignore 10 - More markers
+    description: When enabled, will not eliminate candidate with fewer scene markers than the most scene markers.
+    type: BOOLEAN
+  ignoreRule11MoreTags:
+    displayName: Ignore 11 - More tags
+    description: When enabled, will not eliminate candidate with fewer tags than the most tags.
+    type: BOOLEAN
+  ignoreRule12LessAssociatedFiles:
+    displayName: Ignore 12 - Less associated files
+    description: When enabled, will not eliminate candidate with more associated file entries than the least associated file entries.
+    type: BOOLEAN
+  ignoreRule13MoreMetadataCardinality:
+    displayName: Ignore 13 - Metadata cardinality
+    description: When enabled, will not eliminate candidate with fewer total populated metadata elements than the most.
+    type: BOOLEAN
+  unprotectAOCount:
+    displayName: Unprotect O-count
+    description: When enabled, will permit marking for deletion scenes with O-count > 0.
+    type: BOOLEAN
+  unprotectBGroupAssociation:
+
+    displayName: Unprotect Group association containment
+    description: When enabled, will permit marking for deletion scenes with group associations not present on the primary candidate.
+    type: BOOLEAN
+  unprotectCPerformerMismatch:
+    displayName: Unprotect Performer mismatch
+    description: When enabled, will permit marking for deletion scenes with performer associations not present on the primary candidate.
+    type: BOOLEAN
+  unprotectDTagLossGt1NonStashed:
+    displayName: Unprotect Tag loss >1 (non-stashed)
+    description: When enabled, will permit marking unstashed scenes for deletion with more than 1 less tags than the primary candidate.
+    type: BOOLEAN
+  unprotectEOlderDate:
+    displayName: Unprotect Older date
+    description: When enabled, will permit marking for deletion scenes with an older date than the primary candidate.
+    type: BOOLEAN
+  unprotectFIgnoreSmartResolveTag:
+    displayName: Unprotect Ignore:Smart Resolve tag
+    description: When enabled, will permit marking for deletion scenes tagged "Ignore:Smart Resolve".
+    type: BOOLEAN

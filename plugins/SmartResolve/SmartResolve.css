@@ -1,0 +1,387 @@
+#duplicate-resolver-toolbar {
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bs-secondary-bg, rgba(0, 0, 0, 0.15));
+  border-radius: 0.25rem;
+  border: 1px solid var(--bs-border-color, rgba(255, 255, 255, 0.12));
+}
+
+#duplicate-resolver-toolbar .dr-toolbar-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+#duplicate-resolver-toolbar .dr-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+#duplicate-resolver-toolbar .dr-btn-row:empty {
+  display: none;
+  margin: 0;
+}
+
+#scene-duplicate-checker .dr-core-actions {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin-left: 0.4rem;
+}
+
+#scene-duplicate-checker .dr-processing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--bs-body-color, #d7dbe0);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+#scene-duplicate-checker .dr-processing-spinner {
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--bs-info, #7cc7ff);
+  border-radius: 50%;
+  animation: dr-spin 0.8s linear infinite;
+}
+
+#scene-duplicate-checker .dr-processing-bar {
+  width: 80px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#scene-duplicate-checker .dr-processing-bar-fill {
+  display: block;
+  width: 40px;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(124, 199, 255, 0.2) 0%,
+    rgba(124, 199, 255, 0.95) 50%,
+    rgba(124, 199, 255, 0.2) 100%
+  );
+  animation: dr-progress-slide 1s ease-in-out infinite;
+}
+
+@keyframes dr-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dr-progress-slide {
+  0% {
+    transform: translateX(-40px);
+  }
+  100% {
+    transform: translateX(80px);
+  }
+}
+
+/* Keep duplicate rows compact and prevent action/icon wrapping. */
+#scene-duplicate-checker table.duplicate-checker-table td.scene-details .btn-group {
+  flex-wrap: nowrap !important;
+}
+
+#scene-duplicate-checker table.duplicate-checker-table td.scene-details,
+#scene-duplicate-checker table.duplicate-checker-table td:last-child {
+  white-space: nowrap;
+}
+
+#scene-duplicate-checker .dr-inline-reason {
+  font-size: calc(1em + 2pt);
+  color: var(--bs-warning, #ffd54a);
+}
+
+#scene-duplicate-checker table.duplicate-checker-table tbody tr.dr-unresolved-highlight {
+  background: rgba(255, 0, 0, 0.08) !important;
+}
+
+#scene-duplicate-checker .dr-stashid-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+#scene-duplicate-checker .dr-stashid-btn.dr-stashid-btn-link {
+  cursor: pointer;
+}
+
+#scene-duplicate-checker .dr-stashid-box-icon {
+  width: 0.95em;
+  height: 0.95em;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#duplicate-resolver-toolbar .dr-drawer {
+  margin-top: 0.15rem;
+}
+
+#duplicate-resolver-toolbar .dr-drawer-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0 !important;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border: 0;
+  box-shadow: none;
+}
+
+#duplicate-resolver-toolbar .dr-drawer-toggle:hover,
+#duplicate-resolver-toolbar .dr-drawer-toggle:focus {
+  text-decoration: underline;
+}
+
+#duplicate-resolver-toolbar .dr-drawer-panel {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--bs-border-color, rgba(255, 255, 255, 0.12));
+}
+
+#duplicate-resolver-toolbar .dr-drawer-toolbar {
+  margin-bottom: 0.5rem;
+}
+
+#duplicate-resolver-toolbar .dr-preview {
+  font-size: 0.875rem;
+  max-height: 14rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  margin: 0;
+  padding: 0.5rem;
+  background: var(--bs-body-bg, #1a1a1a);
+  border-radius: 0.25rem;
+}
+
+#duplicate-resolver-toolbar .dr-preview .dr-match-link {
+  color: var(--bs-info, #7cc7ff);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.duplicate-resolver-sync-btn {
+  margin-left: 0.35rem !important;
+}
+
+#duplicate-resolver-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-modal {
+  background: var(--bs-secondary-bg, #30404d);
+  color: var(--bs-body-color, #eee);
+  border: 1px solid var(--bs-border-color, rgba(255, 255, 255, 0.18));
+  border-radius: 0.35rem;
+  max-width: 60rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+}
+
+#duplicate-resolver-modal-overlay h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-modal-header {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+  margin: -1rem -1.25rem 0.75rem;
+  padding: 0.7rem 1rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-modal-options {
+  margin: 0.75rem 0;
+}
+
+#duplicate-resolver-modal-overlay .dr-modal-options label {
+  display: block;
+  margin: 0.25rem 0;
+  cursor: pointer;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-title {
+  display: block;
+  margin: 0.1rem 0 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+#duplicate-resolver-modal-overlay .dr-opt-hint {
+  font-size: 0.82rem;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+#duplicate-resolver-modal-overlay .dr-sync-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0.75rem 0 1rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-sync-compare .dr-col {
+  background: var(--bs-secondary-bg, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--bs-border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.6rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-sync-compare h4 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+#duplicate-resolver-modal-overlay .dr-sync-compare p {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-row {
+  border-top: 1px solid var(--bs-border-color, rgba(255, 255, 255, 0.08));
+  padding-top: 0.55rem;
+  margin-top: 0.55rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-desc {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin: 0.15rem 0 0.35rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-col {
+  background: transparent;
+  border-radius: 0.18rem;
+  padding: 0.35rem 0.45rem;
+  min-height: 3rem;
+  height: auto;
+}
+
+#duplicate-resolver-modal-overlay .dr-list-control {
+  width: 100%;
+}
+
+#duplicate-resolver-modal-overlay .dr-list-control .input-group + .input-group {
+  margin-top: 0.3rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-chip {
+  max-width: 100%;
+  padding: 0.10rem 0.35rem;
+  border-radius: 0.14rem;
+  line-height: 1.15;
+  font-size: 0.84rem;
+  font-weight: 400;
+  border: 0;
+  background-color: #b9c4cd;
+  color: #21313f;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-col .input-group {
+  align-items: stretch;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-col .input-group .dr-list-control {
+  flex: 1 1 auto;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-col .form-control,
+#duplicate-resolver-modal-overlay .dr-field-col .scene-description {
+  min-height: calc(1.5em + 0.75rem + 2px);
+}
+
+#duplicate-resolver-modal-overlay .dr-empty {
+  font-size: 0.74rem;
+  opacity: 0.75;
+}
+
+#duplicate-resolver-modal-overlay .dr-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-field-col .input-group-prepend .btn {
+  min-width: 2.2rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-cover-value {
+  min-width: 0;
+}
+
+#duplicate-resolver-modal-overlay .dr-cover-frame {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.18rem;
+  padding: 0.35rem;
+  text-align: center;
+}
+
+#duplicate-resolver-modal-overlay .dr-cover-thumb {
+  display: block;
+  max-height: 180px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: 0.12rem;
+}
+
+#duplicate-resolver-modal-overlay .dr-cover-caption {
+  font-size: 0.72rem;
+  opacity: 0.8;
+  margin-top: 0.3rem;
+  text-align: center;
+}
+
+#duplicate-resolver-modal-overlay .dr-cover-placeholder {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  padding: 0.35rem 0.25rem;
+  margin-bottom: 0.25rem;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 0.12rem;
+  text-align: center;
+}
