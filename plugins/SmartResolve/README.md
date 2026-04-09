@@ -1,5 +1,7 @@
 # Smart Resolve
 
+https://discourse.stashapp.cc/t/smart-resolver/6680
+
 UI plugin for Stash’s **Scene Duplicate Checker** (`Settings → Tools → Scene Duplicate Checker`).
 
 ## What it does
