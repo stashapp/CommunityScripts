@@ -1,0 +1,9 @@
+name: Group Details
+description: Adds group-card metrics for filtered duration and average vertical resolution.
+version: 0.1.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/GroupDetails
+ui:
+  javascript:
+    - GroupDetails.js
+  css:
+    - GroupDetails.css

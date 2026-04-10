@@ -1,0 +1,20 @@
+.group-card .card-popovers .gd-stat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.5rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.9rem;
+  line-height: 1.1;
+  color: var(--text, #d5dbe3);
+  opacity: 0.95;
+  white-space: nowrap;
+}
+
+.group-card .card-popovers .gd-stat-left {
+  margin-right: 0.25rem;
+}
+
+.group-card .card-popovers .gd-stat-right {
+  margin-left: 0.25rem;
+}
