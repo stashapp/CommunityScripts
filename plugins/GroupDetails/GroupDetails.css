@@ -11,7 +11,8 @@
   flex: 1 1 100%;
   box-sizing: border-box;
   column-gap: 0.35rem;
-  padding: 0.15rem 0.1rem;
+  /* Inset from card edge so stats are not flush against chrome */
+  padding: 0.15rem 2px;
 }
 
 .group-card .card-popovers .gd-metrics-row .gd-stat-left {

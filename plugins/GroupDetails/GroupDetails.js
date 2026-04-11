@@ -10,6 +10,7 @@
     "    id " +
     "    scenes { " +
     "      id " +
+    "      title " +
     "      files { duration height } " +
     "      groups { group { id } scene_index } " +
     "    } " +
@@ -141,11 +142,29 @@
     return maxHeight;
   }
 
+  function formatDuration(totalSeconds) {
+    var s = Math.max(0, Math.round(Number(totalSeconds) || 0));
+    var hrs = Math.floor(s / 3600);
+    var mins = Math.floor((s % 3600) / 60);
+    var secs = s % 60;
+    return hrs + ":" + String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+  }
+
+  function formatSceneTooltipLine(sceneIndex, title, durationSec) {
+    var idxLabel =
+      sceneIndex == null || sceneIndex === "" ? "null" : String(sceneIndex);
+    var t = String(title || "").replace(/\s+/g, " ").trim();
+    if (!t) t = "(no title)";
+    return "[" + idxLabel + "] " + t + " " + formatDuration(durationSec);
+  }
+
   function computeMetrics(groupId, scenes, includeAllScenes) {
     var totalDurationSec = 0;
     var verticalSum = 0;
     var verticalCount = 0;
     var list = scenes || [];
+    var durationLines = [];
+    var resolutionLines = [];
 
     for (var i = 0; i < list.length; i++) {
       var scene = list[i];
@@ -154,21 +173,38 @@
 
       var duration = getSceneDurationSeconds(scene);
       totalDurationSec += duration;
+      durationLines.push(
+        formatSceneTooltipLine(idx, scene && scene.title, duration)
+      );
 
       if (duration > 600) {
         var height = getSceneVerticalPixels(scene);
         if (height > 0) {
           verticalSum += height;
           verticalCount += 1;
+          resolutionLines.push(
+            formatSceneTooltipLine(idx, scene && scene.title, duration)
+          );
         }
       }
     }
+
+    var durationTooltip =
+      durationLines.length > 0
+        ? durationLines.join("\n")
+        : "No scenes in scope.";
+    var resolutionTooltip =
+      resolutionLines.length > 0
+        ? resolutionLines.join("\n")
+        : "No scenes over 600s with height data.";
 
     return {
       totalDurationSec: Math.round(totalDurationSec),
       averageVerticalPixels:
         verticalCount > 0 ? Math.round(verticalSum / verticalCount) : null,
       verticalSampleCount: verticalCount,
+      durationTooltip: durationTooltip,
+      resolutionTooltip: resolutionTooltip,
     };
   }
 
@@ -201,14 +237,6 @@
       });
     state.inFlightByGroupId.set(key, p);
     return p;
-  }
-
-  function formatDuration(totalSeconds) {
-    var s = Math.max(0, Math.round(Number(totalSeconds) || 0));
-    var hrs = Math.floor(s / 3600);
-    var mins = Math.floor((s % 3600) / 60);
-    var secs = s % 60;
-    return hrs + ":" + String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
   }
 
   function formatVerticalPixels(avgHeight) {
@@ -245,23 +273,17 @@
     var oldRight = popovers.querySelector(".gd-stat-right");
     if (oldRight && oldRight.parentNode) oldRight.parentNode.removeChild(oldRight);
 
-    var durationTitle = state.includeAllScenes
-      ? "Total duration for all scenes in this group"
-      : "Total duration for scenes with scene_index null or 0..89";
     var durationNode = buildStatNode(
       "gd-stat-left-" + Date.now(),
       formatDuration(metrics.totalDurationSec),
-      durationTitle
+      metrics.durationTooltip || ""
     );
     durationNode.classList.add("gd-stat-left");
 
-    var resTitle = state.includeAllScenes
-      ? "Average vertical resolution (scenes with duration > 600s), all scenes in group"
-      : "Average vertical resolution for eligible scenes with duration > 600s";
     var resolutionNode = buildStatNode(
       "gd-stat-right-" + Date.now(),
       formatVerticalPixels(metrics.averageVerticalPixels),
-      resTitle
+      metrics.resolutionTooltip || ""
     );
     resolutionNode.classList.add("gd-stat-right");
 

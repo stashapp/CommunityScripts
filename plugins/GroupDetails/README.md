@@ -37,3 +37,12 @@ Total duration is the sum of eligible scene durations and is displayed as `H:MM:
 ## Data source
 
 The plugin fetches group scene data through GraphQL (`findGroup`) and computes metrics in-browser. It does not rely on card DOM text parsing.
+
+## Tooltips
+
+Hovering the duration or resolution values shows a multi-line list of contributing scenes, one per line:
+
+`[scene_index] Title H:MM:SS`
+
+Null `scene_index` is shown as `[null]`. Missing titles appear as `(no title)`.
+The duration chip lists every scene in the duration scope; the resolution chip lists only scenes counted toward the `> 600s` average (with non-zero height).
