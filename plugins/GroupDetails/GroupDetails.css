@@ -2,29 +2,38 @@
   flex-wrap: wrap;
 }
 
-/* Full-width row: duration at left edge, scene count centered, resolution at right edge */
+/* Stacked layout: line1 = duration + scene count; line2 = resolution (so extra chips stay on their own row). */
 .group-card .card-popovers .gd-metrics-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  flex: 1 1 100%;
+  box-sizing: border-box;
+  gap: 0.12rem;
+  padding: 0.15rem 2px;
+}
+
+.group-card .card-popovers .gd-metrics-line1 {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100%;
-  flex: 1 1 100%;
-  box-sizing: border-box;
-  column-gap: 0.35rem;
-  /* Inset from card edge so stats are not flush against chrome */
-  padding: 0.15rem 2px;
 }
 
-.group-card .card-popovers .gd-metrics-row .gd-stat-left {
+.group-card .card-popovers .gd-metrics-line1 .gd-stat-left {
   justify-self: start;
 }
 
-.group-card .card-popovers .gd-metrics-row .scene-count {
+.group-card .card-popovers .gd-metrics-line1 .scene-count {
   justify-self: center;
 }
 
-.group-card .card-popovers .gd-metrics-row .gd-stat-right {
-  justify-self: end;
+.group-card .card-popovers .gd-metrics-line2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
 }
 
 .group-card .card-popovers .gd-stat {

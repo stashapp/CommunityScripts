@@ -25,6 +25,7 @@
     cacheByGroupId: new Map(),
     inFlightByGroupId: new Map(),
     includeAllScenes: false,
+    tooltipDelegateBound: false,
   };
 
   async function gql(query, variables) {
@@ -245,12 +246,41 @@
     return String(Math.round(n)) + "p";
   }
 
+  function applySceneListTooltip(el, tip) {
+    var s = tip == null ? "" : String(tip);
+    if (s.length > 0) {
+      el.setAttribute("data-gd-full-title", s);
+      el.setAttribute("title", s);
+    } else {
+      el.removeAttribute("data-gd-full-title");
+      el.removeAttribute("title");
+    }
+  }
+
+  function ensureTooltipRefreshDelegate() {
+    if (state.tooltipDelegateBound) return;
+    state.tooltipDelegateBound = true;
+    document.addEventListener(
+      "pointerenter",
+      function (ev) {
+        var raw = ev.target;
+        var el = raw && raw.nodeType === 1 ? raw : raw && raw.parentElement;
+        if (!el || !el.closest) return;
+        var host = el.closest("[data-gd-full-title]");
+        if (!host) return;
+        var full = host.getAttribute("data-gd-full-title");
+        if (full != null) host.setAttribute("title", full);
+      },
+      true
+    );
+  }
+
   function buildStatNode(id, text, title) {
     var el = document.createElement("span");
     el.id = id;
     el.className = "gd-stat";
     el.textContent = text;
-    if (title) el.title = title;
+    applySceneListTooltip(el, title);
     return el;
   }
 
@@ -291,10 +321,17 @@
     row.className = "gd-metrics-row";
     row.setAttribute("role", "presentation");
 
+    var line1 = document.createElement("div");
+    line1.className = "gd-metrics-line1";
+    var line2 = document.createElement("div");
+    line2.className = "gd-metrics-line2";
+
     popovers.insertBefore(row, sceneCount);
-    row.appendChild(durationNode);
-    row.appendChild(sceneCount);
-    row.appendChild(resolutionNode);
+    line1.appendChild(durationNode);
+    line1.appendChild(sceneCount);
+    line2.appendChild(resolutionNode);
+    row.appendChild(line1);
+    row.appendChild(line2);
   }
 
   async function decorateGroupCard(card) {
@@ -342,6 +379,7 @@
       detachObserver();
       return false;
     }
+    ensureTooltipRefreshDelegate();
     var root = document.getElementById(ROOT_ID);
     if (!root) return false;
 

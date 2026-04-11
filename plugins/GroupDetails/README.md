@@ -2,10 +2,10 @@
 
 `Group Details` is a UI plugin for Stash group pages.
 
-It adds two computed metrics to each group card's stats row, flanking the scene-count element:
+It adds two computed metrics to each group card's stats area:
 
-- Left: total duration (`H:MM:SS`)
-- Right: average vertical resolution (`###p`)
+- **Top line:** total duration (`H:MM:SS`) on the left, native scene-count chip centered.
+- **Second line:** average vertical resolution (`###p`) right-aligned, below the first line so tag/group chips on further lines are not squeezed horizontally.
 
 ## Filtering rules
 
@@ -46,3 +46,7 @@ Hovering the duration or resolution values shows a multi-line list of contributi
 
 Null `scene_index` is shown as `[null]`. Missing titles appear as `(no title)`.
 The duration chip lists every scene in the duration scope; the resolution chip lists only scenes counted toward the `> 600s` average (with non-zero height).
+
+## Updates not showing?
+
+Stash loads UI plugins from a fixed URL (`/plugin/GroupDetails/javascript`). After you change plugin files, do a **full page reload** (F5 or Ctrl+Shift+R) so the browser fetches the new script (the server ETag changes when file content changes). In-app navigation alone can keep an older script in memory, so you may still see old tooltip text until you reload.
