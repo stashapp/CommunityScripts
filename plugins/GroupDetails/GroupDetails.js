@@ -3,6 +3,7 @@
 (function () {
   var ROOT_ID = "root";
   var ROUTE_PREFIX = "/groups";
+  var PLUGIN_ID = "GroupDetails";
   var GROUP_METRICS_QUERY =
     "query GroupDetailsMetrics($id: ID!) {" +
     "  findGroup(id: $id) {" +
@@ -22,6 +23,7 @@
     applyingDomEnhancements: false,
     cacheByGroupId: new Map(),
     inFlightByGroupId: new Map(),
+    includeAllScenes: false,
   };
 
   async function gql(query, variables) {
@@ -81,6 +83,44 @@
     return Number.isFinite(n) && n >= 0 && n <= 89;
   }
 
+  function readBoolSetting(raw, fallback) {
+    if (raw === true || raw === "true") return true;
+    if (raw === false || raw === "false") return false;
+    return fallback;
+  }
+
+  async function loadPluginSettings() {
+    try {
+      var data = await gql("query GdCfg { configuration { plugins } }");
+      var plug = data.configuration && data.configuration.plugins;
+      var cfg = null;
+      if (plug && typeof plug === "object") {
+        cfg = plug[PLUGIN_ID] || null;
+        if (!cfg) {
+          var k = Object.keys(plug).find(function (key) {
+            return String(key).toLowerCase() === String(PLUGIN_ID).toLowerCase();
+          });
+          if (k) cfg = plug[k];
+        }
+      }
+      var next = false;
+      if (cfg && typeof cfg === "object") {
+        next = readBoolSetting(cfg.includeAllScenes, false);
+      }
+      if (next !== state.includeAllScenes) {
+        state.includeAllScenes = next;
+        state.cacheByGroupId.clear();
+        state.inFlightByGroupId.clear();
+      }
+    } catch (e) {
+      state.includeAllScenes = false;
+    }
+  }
+
+  function metricsCacheKey(groupId) {
+    return String(groupId) + ":" + (state.includeAllScenes ? "1" : "0");
+  }
+
   function getSceneDurationSeconds(scene) {
     var files = (scene && scene.files) || [];
     var maxDur = 0;
@@ -101,7 +141,7 @@
     return maxHeight;
   }
 
-  function computeMetrics(groupId, scenes) {
+  function computeMetrics(groupId, scenes, includeAllScenes) {
     var totalDurationSec = 0;
     var verticalSum = 0;
     var verticalCount = 0;
@@ -110,7 +150,7 @@
     for (var i = 0; i < list.length; i++) {
       var scene = list[i];
       var idx = sceneIndexForGroup(scene, groupId);
-      if (!isEligibleSceneIndex(idx)) continue;
+      if (!includeAllScenes && !isEligibleSceneIndex(idx)) continue;
 
       var duration = getSceneDurationSeconds(scene);
       totalDurationSec += duration;
@@ -135,26 +175,31 @@
   async function fetchMetricsForGroup(groupId) {
     var data = await gql(GROUP_METRICS_QUERY, { id: String(groupId) });
     var group = data && data.findGroup;
-    return computeMetrics(groupId, (group && group.scenes) || []);
+    return computeMetrics(
+      groupId,
+      (group && group.scenes) || [],
+      state.includeAllScenes
+    );
   }
 
   async function getMetricsForGroup(groupId) {
     if (!groupId) return null;
     var gid = String(groupId);
-    if (state.cacheByGroupId.has(gid)) return state.cacheByGroupId.get(gid);
-    if (state.inFlightByGroupId.has(gid)) return state.inFlightByGroupId.get(gid);
+    var key = metricsCacheKey(gid);
+    if (state.cacheByGroupId.has(key)) return state.cacheByGroupId.get(key);
+    if (state.inFlightByGroupId.has(key)) return state.inFlightByGroupId.get(key);
 
     var p = fetchMetricsForGroup(gid)
       .then(function (metrics) {
-        state.cacheByGroupId.set(gid, metrics);
-        state.inFlightByGroupId.delete(gid);
+        state.cacheByGroupId.set(key, metrics);
+        state.inFlightByGroupId.delete(key);
         return metrics;
       })
       .catch(function (e) {
-        state.inFlightByGroupId.delete(gid);
+        state.inFlightByGroupId.delete(key);
         throw e;
       });
-    state.inFlightByGroupId.set(gid, p);
+    state.inFlightByGroupId.set(key, p);
     return p;
   }
 
@@ -189,28 +234,45 @@
     var sceneCount = popovers.querySelector(".scene-count");
     if (!sceneCount) return;
 
+    var oldRow = popovers.querySelector(".gd-metrics-row");
+    if (oldRow) {
+      var sc = oldRow.querySelector(".scene-count");
+      if (sc) popovers.insertBefore(sc, oldRow);
+      oldRow.parentNode.removeChild(oldRow);
+    }
     var oldLeft = popovers.querySelector(".gd-stat-left");
     if (oldLeft && oldLeft.parentNode) oldLeft.parentNode.removeChild(oldLeft);
     var oldRight = popovers.querySelector(".gd-stat-right");
     if (oldRight && oldRight.parentNode) oldRight.parentNode.removeChild(oldRight);
 
+    var durationTitle = state.includeAllScenes
+      ? "Total duration for all scenes in this group"
+      : "Total duration for scenes with scene_index null or 0..89";
     var durationNode = buildStatNode(
       "gd-stat-left-" + Date.now(),
       formatDuration(metrics.totalDurationSec),
-      "Total duration for scenes with scene_index null or 0..89"
+      durationTitle
     );
     durationNode.classList.add("gd-stat-left");
 
+    var resTitle = state.includeAllScenes
+      ? "Average vertical resolution (scenes with duration > 600s), all scenes in group"
+      : "Average vertical resolution for eligible scenes with duration > 600s";
     var resolutionNode = buildStatNode(
       "gd-stat-right-" + Date.now(),
       formatVerticalPixels(metrics.averageVerticalPixels),
-      "Average vertical resolution for those scenes with duration > 600s"
+      resTitle
     );
     resolutionNode.classList.add("gd-stat-right");
 
-    popovers.insertBefore(durationNode, sceneCount);
-    if (sceneCount.nextSibling) popovers.insertBefore(resolutionNode, sceneCount.nextSibling);
-    else popovers.appendChild(resolutionNode);
+    var row = document.createElement("div");
+    row.className = "gd-metrics-row";
+    row.setAttribute("role", "presentation");
+
+    popovers.insertBefore(row, sceneCount);
+    row.appendChild(durationNode);
+    row.appendChild(sceneCount);
+    row.appendChild(resolutionNode);
   }
 
   async function decorateGroupCard(card) {
@@ -262,7 +324,12 @@
     if (!root) return false;
 
     if (state.attachedRoot === root && state.observer) {
-      applyDomEnhancements();
+      loadPluginSettings()
+        .then(function () {})
+        .catch(function () {})
+        .finally(function () {
+          applyDomEnhancements();
+        });
       return true;
     }
 
@@ -277,7 +344,12 @@
     state.observer = obs;
     state.attachedRoot = root;
 
-    applyDomEnhancements();
+    loadPluginSettings()
+      .then(function () {})
+      .catch(function () {})
+      .finally(function () {
+        applyDomEnhancements();
+      });
     return true;
   }
 
