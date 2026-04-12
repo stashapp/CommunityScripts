@@ -159,19 +159,46 @@
     return "[" + idxLabel + "] " + t + " " + formatDuration(durationSec);
   }
 
+  /** For ordering only: missing index sorts like 90. */
+  function sceneIndexSortKey(idx) {
+    if (idx == null || idx === "") return 90;
+    var n = Number(idx);
+    return Number.isFinite(n) ? n : 90;
+  }
+
   function computeMetrics(groupId, scenes, includeAllScenes) {
     var totalDurationSec = 0;
     var verticalSum = 0;
     var verticalCount = 0;
     var list = scenes || [];
-    var durationLines = [];
+    var rows = [];
 
     for (var i = 0; i < list.length; i++) {
       var scene = list[i];
       var idx = sceneIndexForGroup(scene, groupId);
       if (!includeAllScenes && !isEligibleSceneIndex(idx)) continue;
-
       var duration = getSceneDurationSeconds(scene);
+      rows.push({ scene: scene, idx: idx, duration: duration });
+    }
+
+    rows.sort(function (a, b) {
+      var ka = sceneIndexSortKey(a.idx);
+      var kb = sceneIndexSortKey(b.idx);
+      if (ka !== kb) return ka - kb;
+      var da = Number(a.duration) || 0;
+      var db = Number(b.duration) || 0;
+      if (db !== da) return db - da;
+      var ida = String((a.scene && a.scene.id) || "");
+      var idb = String((b.scene && b.scene.id) || "");
+      return ida < idb ? -1 : ida > idb ? 1 : 0;
+    });
+
+    var durationLines = [];
+    for (var j = 0; j < rows.length; j++) {
+      var row = rows[j];
+      var scene = row.scene;
+      var idx = row.idx;
+      var duration = row.duration;
       totalDurationSec += duration;
       durationLines.push(
         formatSceneTooltipLine(idx, scene && scene.title, duration)
@@ -197,7 +224,7 @@
     var resolutionTooltip =
       avgPx == null || verticalCount < 1
         ? "Resolution average: \u2014"
-        : "Resolution average: " + avgPx + "px";
+        : "Resolution average: " + avgPx + "p";
 
     return {
       totalDurationSec: Math.round(totalDurationSec),
@@ -221,6 +248,9 @@
   // bucket always gets a distinct glyph. Stash’s PluginApi FA exports are
   // incomplete (tree-shaken), which made every tier fall through to the same
   // fallback. Pro-only names (SD/HD/4K rectangle) are not bundled in Free.
+  // Tier order: display, film, gauge-high (HD-ish), maximize. Deliberately not
+  // using faExpand for HD: same bucket (e.g. 1080p) correctly reuses one icon,
+  // but expand reads like “fullscreen” and is often confused with a bug.
   var BUNDLED_RESOLUTION_ICONS = [
     {
       w: 576,
@@ -235,10 +265,10 @@
         "M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM48 368v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V368c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zm368-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V368c0-8.8-7.2-16-16-16H416zM48 240v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zm368-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H416zM48 112v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zM416 96c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H416zM160 128v64c0 17.7 14.3 32 32 32H320c17.7 0 32-14.3 32-32V128c0-17.7-14.3-32-32-32H192c-17.7 0-32 14.3-32 32zm32 160c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H320c17.7 0 32-14.3 32-32V320c0-17.7-14.3-32-32-32H192z",
     },
     {
-      w: 448,
+      w: 512,
       h: 512,
       d:
-        "M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z",
+        "M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z",
     },
     {
       w: 512,

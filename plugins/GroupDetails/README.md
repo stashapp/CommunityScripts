@@ -7,7 +7,7 @@ It adds two computed metrics to each group card's stats area:
 - **Top line:** total duration (`H:MM:SS`) on the left, native scene-count chip centered.
 - **Second line:** resolution **bucket icon** (inline SVG from Font Awesome **Free** solid paths) right-aligned, below the first line so tag/group chips are not squeezed horizontally. Hover shows `Resolution average: Npx` (or `—` if none).
 
-Buckets use average **vertical pixel height** of contributing scenes: **`<480`**, **`<720`**, **`≤1081`**, **`>1081`**. Icons are **display**, **film**, **expand**, **maximize** (FA 6.5.2 free-solid), chosen so each tier is visually distinct. Stash’s `PluginApi` Font Awesome export is incomplete for plugins, and Pro-only glyphs (regular SD/HD/4K marks) are not in Free, so icons are **not** loaded from `PluginApi`.
+Buckets use average **vertical pixel height** of contributing scenes: **`<480`**, **`<720`**, **`≤1081`**, **`>1081`**. Icons are **display**, **film**, **gauge-high**, **maximize** (FA 6.5.2 free-solid). Groups in the **same** height bucket reuse the **same** icon (for example, both ~1080p averages use the HD-bucket glyph). Stash’s `PluginApi` Font Awesome export is incomplete for plugins, and Pro-only glyphs (regular SD/HD/4K marks) are not in Free, so icons are **not** loaded from `PluginApi`.
 
 ## Filtering rules
 
