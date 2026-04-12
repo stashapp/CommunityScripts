@@ -42,14 +42,15 @@ The plugin fetches group scene data through GraphQL (`findGroup`) and computes m
 
 ## Tooltips
 
-Hovering the duration or resolution values shows a multi-line list of contributing scenes, one per line:
+**Duration chip:** every eligible scene included in the **total duration** sum, one line per scene:
 
 `[scene_index] Title H:MM:SS`
 
-Null `scene_index` is shown as `[null]`. Missing titles appear as `(no title)`.
-The duration chip lists every scene in the duration scope; the resolution chip lists only scenes counted toward the `> 600s` average (with non-zero height).
+**Resolution icon:** how the **average vertical height** was computed (sum of each qualifying scene’s tallest file height, divided by count), plus one line per scene that **entered the average** (with `max file height` and duration on that line).
 
-The resolution **icon** sits inside a wrapper; inner SVG uses `pointer-events: none` so hover targets the wrapper and the native `title` tooltip (scene list + average height header) appears reliably in Chrome.
+Null `scene_index` is shown as `[null]`. Missing titles appear as `(no title)`.
+
+The resolution **icon** sits inside a wrapper; inner SVG uses `pointer-events: none` so hover targets the wrapper and the native `title` tooltip appears reliably in Chrome.
 
 ## Updates not showing?
 

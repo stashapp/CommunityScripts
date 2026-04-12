@@ -159,13 +159,36 @@
     return "[" + idxLabel + "] " + t + " " + formatDuration(durationSec);
   }
 
+  function formatResolutionSampleLine(
+    sceneIndex,
+    title,
+    durationSec,
+    heightPx
+  ) {
+    var idxLabel =
+      sceneIndex == null || sceneIndex === "" ? "null" : String(sceneIndex);
+    var t = String(title || "").replace(/\s+/g, " ").trim();
+    if (!t) t = "(no title)";
+    var hp = Math.round(Number(heightPx) || 0);
+    return (
+      "[" +
+      idxLabel +
+      "] " +
+      t +
+      "  max file height " +
+      hp +
+      "px  duration " +
+      formatDuration(durationSec)
+    );
+  }
+
   function computeMetrics(groupId, scenes, includeAllScenes) {
     var totalDurationSec = 0;
     var verticalSum = 0;
     var verticalCount = 0;
     var list = scenes || [];
     var durationLines = [];
-    var resolutionLines = [];
+    var resolutionSampleLines = [];
 
     for (var i = 0; i < list.length; i++) {
       var scene = list[i];
@@ -183,32 +206,47 @@
         if (height > 0) {
           verticalSum += height;
           verticalCount += 1;
-          resolutionLines.push(
-            formatSceneTooltipLine(idx, scene && scene.title, duration)
+          resolutionSampleLines.push(
+            formatResolutionSampleLine(
+              idx,
+              scene && scene.title,
+              duration,
+              height
+            )
           );
         }
       }
     }
 
+    var durationHeader =
+      "Scenes included in total duration (same scene_index rules as the chip):\n";
     var durationTooltip =
       durationLines.length > 0
-        ? durationLines.join("\n")
-        : "No scenes in scope.";
+        ? durationHeader + durationLines.join("\n")
+        : "No eligible scenes for total duration.";
     var avgPx =
       verticalCount > 0 ? Math.round(verticalSum / verticalCount) : null;
-    var resHead =
-      avgPx != null
-        ? "Average height: " +
-          avgPx +
-          "px (" +
-          resolutionBucketSummary(avgPx) +
-          ")\n"
-        : "";
-    var resolutionBody =
-      resolutionLines.length > 0
-        ? resolutionLines.join("\n")
-        : "No scenes over 600s with height data.";
-    var resolutionTooltip = resHead + resolutionBody;
+    var resolutionTooltip;
+    if (avgPx == null || verticalCount < 1) {
+      resolutionTooltip =
+        "Resolution average is not shown: no scenes qualify (need duration > 600s, non-zero file height, and the same scene_index rules as total duration).";
+    } else {
+      var sumHeights = verticalSum;
+      resolutionTooltip =
+        "Resolution average: " +
+        avgPx +
+        "px (" +
+        resolutionBucketSummary(avgPx) +
+        " bucket)\n" +
+        "Calculation: round((" +
+        Math.round(sumHeights) +
+        " sum of max file heights) / " +
+        verticalCount +
+        " scenes).\n" +
+        "Only scenes with duration > 600s and height > 0 are averaged (scene_index rules apply).\n" +
+        "Scenes in the average:\n" +
+        resolutionSampleLines.join("\n");
+    }
 
     return {
       totalDurationSec: Math.round(totalDurationSec),
