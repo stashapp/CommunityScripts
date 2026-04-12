@@ -262,7 +262,7 @@
     if (h <= 0) return -1;
     if (h < 480) return 0;
     if (h < 720) return 1;
-    if (h < 1081) return 2;
+    if (h <= 1081) return 2;
     return 3;
   }
 
@@ -270,100 +270,55 @@
     var t = resolutionBucketTier(avgHeightPx);
     if (t === 0) return "<480p";
     if (t === 1) return "<720p";
-    if (t === 2) return "<1081p";
-    return ">1080p";
+    if (t === 2) return "\u22641081p";
+    return ">1081p";
   }
 
-  function getPluginFaLib(useRegular) {
-    var P =
-      typeof window !== "undefined" &&
-      window.PluginApi &&
-      window.PluginApi.libraries;
-    if (!P) return null;
-    return useRegular ? P.FontAwesomeRegular : P.FontAwesomeSolid;
-  }
-
-  function createSvgFromFaIconDef(def) {
-    if (!def || typeof def !== "object" || !def.icon) return null;
-    try {
-      var pack = def.icon;
-      var w = Number(pack[0]) || 512;
-      var h = Number(pack[1]) || 512;
-      var pathParts = pack[4];
-      var svg = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "svg"
-      );
-      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
-      svg.setAttribute("class", "fa-icon gd-resolution-fa");
-      svg.setAttribute("focusable", "false");
-      svg.setAttribute("aria-hidden", "true");
-      if (Array.isArray(pathParts)) {
-        for (var i = 0; i < pathParts.length; i++) {
-          var d = pathParts[i];
-          if (typeof d !== "string") continue;
-          var p = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path"
-          );
-          p.setAttribute("fill", "currentColor");
-          p.setAttribute("d", d);
-          svg.appendChild(p);
-        }
-      } else if (typeof pathParts === "string") {
-        var p2 = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path"
-        );
-        p2.setAttribute("fill", "currentColor");
-        p2.setAttribute("d", pathParts);
-        svg.appendChild(p2);
-      } else {
-        return null;
-      }
-      if (!svg.querySelector("path")) return null;
-      return svg;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  var RESOLUTION_BUCKET_ICON_TRIES = [
-    [
-      { reg: false, name: "faDisplay" },
-      { reg: false, name: "faTv" },
-      { reg: false, name: "faMobileScreenButton" },
-    ],
-    [
-      { reg: true, name: "faStandardDefinition" },
-      { reg: false, name: "faFilm" },
-      { reg: false, name: "faVideo" },
-    ],
-    [
-      { reg: true, name: "faHighDefinition" },
-      { reg: false, name: "faClapperboard" },
-      { reg: false, name: "faExpand" },
-    ],
-    [
-      { reg: true, name: "faRectangle4k" },
-      { reg: false, name: "faMaximize" },
-      { reg: false, name: "faExpand" },
-    ],
+  // Inlined svgPathData from @fortawesome/free-solid-svg-icons@6.5.2 so each
+  // bucket always gets a distinct glyph. Stash’s PluginApi FA exports are
+  // incomplete (tree-shaken), which made every tier fall through to the same
+  // fallback. Pro-only names (SD/HD/4K rectangle) are not bundled in Free.
+  var BUNDLED_RESOLUTION_ICONS = [
+    {
+      w: 576,
+      h: 512,
+      d:
+        "M64 0C28.7 0 0 28.7 0 64V352c0 35.3 28.7 64 64 64H240l-10.7 32H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H346.7L336 416H512c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM512 64V352H64V64H512z",
+    },
+    {
+      w: 512,
+      h: 512,
+      d:
+        "M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM48 368v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V368c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zm368-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V368c0-8.8-7.2-16-16-16H416zM48 240v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zm368-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H416zM48 112v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zM416 96c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H416zM160 128v64c0 17.7 14.3 32 32 32H320c17.7 0 32-14.3 32-32V128c0-17.7-14.3-32-32-32H192c-17.7 0-32 14.3-32 32zm32 160c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H320c17.7 0 32-14.3 32-32V320c0-17.7-14.3-32-32-32H192z",
+    },
+    {
+      w: 448,
+      h: 512,
+      d:
+        "M32 32C14.3 32 0 46.3 0 64v96c0 17.7 14.3 32 32 32s32-14.3 32-32V96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7 14.3 32 32 32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H64V352zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32h64v64c0 17.7 14.3 32 32 32s32-14.3 32-32V64c0-17.7-14.3-32-32-32H320zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32v64H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c17.7 0 32-14.3 32-32V352z",
+    },
+    {
+      w: 512,
+      h: 512,
+      d:
+        "M200 32H56C42.7 32 32 42.7 32 56V200c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l40-40 79 79-79 79L73 295c-6.9-6.9-17.2-8.9-26.2-5.2S32 302.3 32 312V456c0 13.3 10.7 24 24 24H200c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-40-40 79-79 79 79-40 40c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H456c13.3 0 24-10.7 24-24V312c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2l-40 40-79-79 79-79 40 40c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V56c0-13.3-10.7-24-24-24H312c-9.7 0-18.5 5.8-22.2 14.8s-1.7 19.3 5.2 26.2l40 40-79 79-79-79 40-40c6.9-6.9 8.9-17.2 5.2-26.2S209.7 32 200 32z",
+    },
   ];
 
-  var RESOLUTION_BUCKET_FALLBACK_TEXT = ["<480", "SD", "HD", "4K"];
-
-  function pickFaDefForTier(tier) {
-    var tries = RESOLUTION_BUCKET_ICON_TRIES[tier];
-    if (!tries) return null;
-    for (var i = 0; i < tries.length; i++) {
-      var spec = tries[i];
-      var lib = getPluginFaLib(!!spec.reg);
-      if (!lib) continue;
-      var def = lib[spec.name];
-      if (def) return def;
-    }
-    return null;
+  function createResolutionTierSvg(tier) {
+    var b = BUNDLED_RESOLUTION_ICONS[tier];
+    if (!b || typeof b.d !== "string") return null;
+    var NS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + b.w + " " + b.h);
+    svg.setAttribute("class", "fa-icon gd-resolution-fa");
+    svg.setAttribute("focusable", "false");
+    svg.setAttribute("aria-hidden", "true");
+    var path = document.createElementNS(NS, "path");
+    path.setAttribute("fill", "currentColor");
+    path.setAttribute("d", b.d);
+    svg.appendChild(path);
+    return svg;
   }
 
   function buildResolutionBucket(id, avgPixels, resolutionTooltip) {
@@ -379,13 +334,13 @@
       return wrap;
     }
     var tier = resolutionBucketTier(h);
-    var def = pickFaDefForTier(tier);
-    var svg = def ? createSvgFromFaIconDef(def) : null;
+    wrap.setAttribute("data-gd-resolution-tier", String(tier));
+    var svg = createResolutionTierSvg(tier);
     if (svg) wrap.appendChild(svg);
     else {
       var fb = document.createElement("span");
       fb.className = "gd-res-bucket-fallback";
-      fb.textContent = RESOLUTION_BUCKET_FALLBACK_TEXT[tier] || "?";
+      fb.textContent = ["<480", "SD", "HD", "4K"][tier] || "?";
       wrap.appendChild(fb);
     }
     applySceneListTooltip(wrap, tip);
