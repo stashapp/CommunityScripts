@@ -249,8 +249,8 @@
     if (!def || typeof def !== "object" || !def.icon) return null;
     try {
       var pack = def.icon;
-      var w = pack[0];
-      var h = pack[1];
+      var w = Number(pack[0]) || 512;
+      var h = Number(pack[1]) || 512;
       var pathParts = pack[4];
       var svg = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -332,10 +332,12 @@
     var wrap = document.createElement("span");
     wrap.id = id;
     wrap.className = "gd-stat gd-res-bucket";
+    wrap.setAttribute("role", "img");
+    var tip = resolutionTooltip || "";
     var h = avgPixels == null ? NaN : Math.round(Number(avgPixels));
     if (!Number.isFinite(h) || h <= 0) {
       wrap.textContent = "\u2014";
-      applySceneListTooltip(wrap, resolutionTooltip || "");
+      applySceneListTooltip(wrap, tip);
       return wrap;
     }
     var tier = resolutionBucketTier(h);
@@ -348,7 +350,7 @@
       fb.textContent = RESOLUTION_BUCKET_FALLBACK_TEXT[tier] || "?";
       wrap.appendChild(fb);
     }
-    applySceneListTooltip(wrap, resolutionTooltip || "");
+    applySceneListTooltip(wrap, tip);
     return wrap;
   }
 

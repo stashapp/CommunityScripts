@@ -49,6 +49,8 @@ Hovering the duration or resolution values shows a multi-line list of contributi
 Null `scene_index` is shown as `[null]`. Missing titles appear as `(no title)`.
 The duration chip lists every scene in the duration scope; the resolution chip lists only scenes counted toward the `> 600s` average (with non-zero height).
 
+The resolution **icon** sits inside a wrapper; inner SVG uses `pointer-events: none` so hover targets the wrapper and the native `title` tooltip (scene list + average height header) appears reliably in Chrome.
+
 ## Updates not showing?
 
 Stash loads UI plugins from a fixed URL (`/plugin/GroupDetails/javascript`). After you change plugin files, do a **full page reload** (F5 or Ctrl+Shift+R) so the browser fetches the new script (the server ETag changes when file content changes). In-app navigation alone can keep an older script in memory, so you may still see old tooltip text until you reload.

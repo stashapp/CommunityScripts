@@ -42,6 +42,12 @@
   justify-content: center;
   min-height: 1.15em;
   line-height: 1;
+  /* Let hover hit the wrapper so the native `title` tooltip on .gd-res-bucket shows (SVG children do not inherit it). */
+  cursor: help;
+}
+
+.group-card .card-popovers .gd-res-bucket > * {
+  pointer-events: none;
 }
 
 .group-card .card-popovers .gd-resolution-fa {
