@@ -159,36 +159,12 @@
     return "[" + idxLabel + "] " + t + " " + formatDuration(durationSec);
   }
 
-  function formatResolutionSampleLine(
-    sceneIndex,
-    title,
-    durationSec,
-    heightPx
-  ) {
-    var idxLabel =
-      sceneIndex == null || sceneIndex === "" ? "null" : String(sceneIndex);
-    var t = String(title || "").replace(/\s+/g, " ").trim();
-    if (!t) t = "(no title)";
-    var hp = Math.round(Number(heightPx) || 0);
-    return (
-      "[" +
-      idxLabel +
-      "] " +
-      t +
-      "  max file height " +
-      hp +
-      "px  duration " +
-      formatDuration(durationSec)
-    );
-  }
-
   function computeMetrics(groupId, scenes, includeAllScenes) {
     var totalDurationSec = 0;
     var verticalSum = 0;
     var verticalCount = 0;
     var list = scenes || [];
     var durationLines = [];
-    var resolutionSampleLines = [];
 
     for (var i = 0; i < list.length; i++) {
       var scene = list[i];
@@ -206,14 +182,6 @@
         if (height > 0) {
           verticalSum += height;
           verticalCount += 1;
-          resolutionSampleLines.push(
-            formatResolutionSampleLine(
-              idx,
-              scene && scene.title,
-              duration,
-              height
-            )
-          );
         }
       }
     }
@@ -226,27 +194,10 @@
         : "No eligible scenes for total duration.";
     var avgPx =
       verticalCount > 0 ? Math.round(verticalSum / verticalCount) : null;
-    var resolutionTooltip;
-    if (avgPx == null || verticalCount < 1) {
-      resolutionTooltip =
-        "Resolution average is not shown: no scenes qualify (need duration > 600s, non-zero file height, and the same scene_index rules as total duration).";
-    } else {
-      var sumHeights = verticalSum;
-      resolutionTooltip =
-        "Resolution average: " +
-        avgPx +
-        "px (" +
-        resolutionBucketSummary(avgPx) +
-        " bucket)\n" +
-        "Calculation: round((" +
-        Math.round(sumHeights) +
-        " sum of max file heights) / " +
-        verticalCount +
-        " scenes).\n" +
-        "Only scenes with duration > 600s and height > 0 are averaged (scene_index rules apply).\n" +
-        "Scenes in the average:\n" +
-        resolutionSampleLines.join("\n");
-    }
+    var resolutionTooltip =
+      avgPx == null || verticalCount < 1
+        ? "Resolution average: \u2014"
+        : "Resolution average: " + avgPx + "px";
 
     return {
       totalDurationSec: Math.round(totalDurationSec),
@@ -264,14 +215,6 @@
     if (h < 720) return 1;
     if (h <= 1081) return 2;
     return 3;
-  }
-
-  function resolutionBucketSummary(avgHeightPx) {
-    var t = resolutionBucketTier(avgHeightPx);
-    if (t === 0) return "<480p";
-    if (t === 1) return "<720p";
-    if (t === 2) return "\u22641081p";
-    return ">1081p";
   }
 
   // Inlined svgPathData from @fortawesome/free-solid-svg-icons@6.5.2 so each

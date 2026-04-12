@@ -5,7 +5,7 @@
 It adds two computed metrics to each group card's stats area:
 
 - **Top line:** total duration (`H:MM:SS`) on the left, native scene-count chip centered.
-- **Second line:** resolution **bucket icon** (inline SVG from Font Awesome **Free** solid paths) right-aligned, below the first line so tag/group chips are not squeezed horizontally. Hover for average height, bucket label, and per-scene lines.
+- **Second line:** resolution **bucket icon** (inline SVG from Font Awesome **Free** solid paths) right-aligned, below the first line so tag/group chips are not squeezed horizontally. Hover shows `Resolution average: Npx` (or `—` if none).
 
 Buckets use average **vertical pixel height** of contributing scenes: **`<480`**, **`<720`**, **`≤1081`**, **`>1081`**. Icons are **display**, **film**, **expand**, **maximize** (FA 6.5.2 free-solid), chosen so each tier is visually distinct. Stash’s `PluginApi` Font Awesome export is incomplete for plugins, and Pro-only glyphs (regular SD/HD/4K marks) are not in Free, so icons are **not** loaded from `PluginApi`.
 
@@ -46,7 +46,7 @@ The plugin fetches group scene data through GraphQL (`findGroup`) and computes m
 
 `[scene_index] Title H:MM:SS`
 
-**Resolution icon:** how the **average vertical height** was computed (sum of each qualifying scene’s tallest file height, divided by count), plus one line per scene that **entered the average** (with `max file height` and duration on that line).
+**Resolution icon:** hover shows `Resolution average: Npx`, or `Resolution average: —` when no scenes qualify for the average (same duration, height, and scene_index rules as in **Resolution rule**).
 
 Null `scene_index` is shown as `[null]`. Missing titles appear as `(no title)`.
 
