@@ -194,19 +194,162 @@
       durationLines.length > 0
         ? durationLines.join("\n")
         : "No scenes in scope.";
-    var resolutionTooltip =
+    var avgPx =
+      verticalCount > 0 ? Math.round(verticalSum / verticalCount) : null;
+    var resHead =
+      avgPx != null
+        ? "Average height: " +
+          avgPx +
+          "px (" +
+          resolutionBucketSummary(avgPx) +
+          ")\n"
+        : "";
+    var resolutionBody =
       resolutionLines.length > 0
         ? resolutionLines.join("\n")
         : "No scenes over 600s with height data.";
+    var resolutionTooltip = resHead + resolutionBody;
 
     return {
       totalDurationSec: Math.round(totalDurationSec),
-      averageVerticalPixels:
-        verticalCount > 0 ? Math.round(verticalSum / verticalCount) : null,
+      averageVerticalPixels: avgPx,
       verticalSampleCount: verticalCount,
       durationTooltip: durationTooltip,
       resolutionTooltip: resolutionTooltip,
     };
+  }
+
+  function resolutionBucketTier(avgHeightPx) {
+    var h = Math.round(Number(avgHeightPx) || 0);
+    if (h <= 0) return -1;
+    if (h < 480) return 0;
+    if (h < 720) return 1;
+    if (h < 1081) return 2;
+    return 3;
+  }
+
+  function resolutionBucketSummary(avgHeightPx) {
+    var t = resolutionBucketTier(avgHeightPx);
+    if (t === 0) return "<480p";
+    if (t === 1) return "<720p";
+    if (t === 2) return "<1081p";
+    return ">1080p";
+  }
+
+  function getPluginFaLib(useRegular) {
+    var P =
+      typeof window !== "undefined" &&
+      window.PluginApi &&
+      window.PluginApi.libraries;
+    if (!P) return null;
+    return useRegular ? P.FontAwesomeRegular : P.FontAwesomeSolid;
+  }
+
+  function createSvgFromFaIconDef(def) {
+    if (!def || typeof def !== "object" || !def.icon) return null;
+    try {
+      var pack = def.icon;
+      var w = pack[0];
+      var h = pack[1];
+      var pathParts = pack[4];
+      var svg = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg"
+      );
+      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+      svg.setAttribute("class", "fa-icon gd-resolution-fa");
+      svg.setAttribute("focusable", "false");
+      svg.setAttribute("aria-hidden", "true");
+      if (Array.isArray(pathParts)) {
+        for (var i = 0; i < pathParts.length; i++) {
+          var d = pathParts[i];
+          if (typeof d !== "string") continue;
+          var p = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          p.setAttribute("fill", "currentColor");
+          p.setAttribute("d", d);
+          svg.appendChild(p);
+        }
+      } else if (typeof pathParts === "string") {
+        var p2 = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "path"
+        );
+        p2.setAttribute("fill", "currentColor");
+        p2.setAttribute("d", pathParts);
+        svg.appendChild(p2);
+      } else {
+        return null;
+      }
+      if (!svg.querySelector("path")) return null;
+      return svg;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  var RESOLUTION_BUCKET_ICON_TRIES = [
+    [
+      { reg: false, name: "faDisplay" },
+      { reg: false, name: "faTv" },
+      { reg: false, name: "faMobileScreenButton" },
+    ],
+    [
+      { reg: true, name: "faStandardDefinition" },
+      { reg: false, name: "faFilm" },
+      { reg: false, name: "faVideo" },
+    ],
+    [
+      { reg: true, name: "faHighDefinition" },
+      { reg: false, name: "faClapperboard" },
+      { reg: false, name: "faExpand" },
+    ],
+    [
+      { reg: true, name: "faRectangle4k" },
+      { reg: false, name: "faMaximize" },
+      { reg: false, name: "faExpand" },
+    ],
+  ];
+
+  var RESOLUTION_BUCKET_FALLBACK_TEXT = ["<480", "SD", "HD", "4K"];
+
+  function pickFaDefForTier(tier) {
+    var tries = RESOLUTION_BUCKET_ICON_TRIES[tier];
+    if (!tries) return null;
+    for (var i = 0; i < tries.length; i++) {
+      var spec = tries[i];
+      var lib = getPluginFaLib(!!spec.reg);
+      if (!lib) continue;
+      var def = lib[spec.name];
+      if (def) return def;
+    }
+    return null;
+  }
+
+  function buildResolutionBucket(id, avgPixels, resolutionTooltip) {
+    var wrap = document.createElement("span");
+    wrap.id = id;
+    wrap.className = "gd-stat gd-res-bucket";
+    var h = avgPixels == null ? NaN : Math.round(Number(avgPixels));
+    if (!Number.isFinite(h) || h <= 0) {
+      wrap.textContent = "\u2014";
+      applySceneListTooltip(wrap, resolutionTooltip || "");
+      return wrap;
+    }
+    var tier = resolutionBucketTier(h);
+    var def = pickFaDefForTier(tier);
+    var svg = def ? createSvgFromFaIconDef(def) : null;
+    if (svg) wrap.appendChild(svg);
+    else {
+      var fb = document.createElement("span");
+      fb.className = "gd-res-bucket-fallback";
+      fb.textContent = RESOLUTION_BUCKET_FALLBACK_TEXT[tier] || "?";
+      wrap.appendChild(fb);
+    }
+    applySceneListTooltip(wrap, resolutionTooltip || "");
+    return wrap;
   }
 
   async function fetchMetricsForGroup(groupId) {
@@ -238,12 +381,6 @@
       });
     state.inFlightByGroupId.set(key, p);
     return p;
-  }
-
-  function formatVerticalPixels(avgHeight) {
-    var n = Number(avgHeight);
-    if (!Number.isFinite(n) || n <= 0) return "n/a";
-    return String(Math.round(n)) + "p";
   }
 
   function applySceneListTooltip(el, tip) {
@@ -310,9 +447,9 @@
     );
     durationNode.classList.add("gd-stat-left");
 
-    var resolutionNode = buildStatNode(
+    var resolutionNode = buildResolutionBucket(
       "gd-stat-right-" + Date.now(),
-      formatVerticalPixels(metrics.averageVerticalPixels),
+      metrics.averageVerticalPixels,
       metrics.resolutionTooltip || ""
     );
     resolutionNode.classList.add("gd-stat-right");

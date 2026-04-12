@@ -36,6 +36,31 @@
   width: 100%;
 }
 
+.group-card .card-popovers .gd-res-bucket {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.15em;
+  line-height: 1;
+}
+
+.group-card .card-popovers .gd-resolution-fa {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
+.group-card .card-popovers .gd-metrics-line2 .gd-resolution-fa.fa-icon {
+  margin: 0;
+}
+
+.group-card .card-popovers .gd-res-bucket-fallback {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0.95;
+}
+
 .group-card .card-popovers .gd-stat {
   display: inline-flex;
   align-items: center;

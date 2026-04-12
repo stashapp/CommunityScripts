@@ -5,7 +5,9 @@
 It adds two computed metrics to each group card's stats area:
 
 - **Top line:** total duration (`H:MM:SS`) on the left, native scene-count chip centered.
-- **Second line:** average vertical resolution (`###p`) right-aligned, below the first line so tag/group chips on further lines are not squeezed horizontally.
+- **Second line:** resolution **bucket icon** (from Stash’s Font Awesome packs via `PluginApi`) right-aligned, below the first line so tag/group chips are not squeezed horizontally. Hover for average height, bucket label, and per-scene lines.
+
+Buckets use average **vertical pixel height** of contributing scenes: **`<480`**, **`<720`**, **`<1081`**, **`≥1081`**. The plugin tries Pro-style icon names (`faStandardDefinition`, `faHighDefinition`, `faRectangle4k`) first; Stash only bundles **Free** icons, so **solid/regular fallbacks** (display/TV, film, clapperboard/expand, maximize) are used when those exports are missing.
 
 ## Filtering rules
 
