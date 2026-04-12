@@ -16,7 +16,9 @@ By default, both metrics only consider scenes whose `scene_index` for the curren
 - `null`, or
 - an integer in the inclusive range `0..89`
 
-This excludes common trailer/bonus/out-of-band indices such as `-1`, `90`, `99`, etc.
+**Exception:** if the group has **exactly one** scene in the GraphQL `scenes` list, that scene is **always** included (no `scene_index` filter), so single-scene groups are not blanked by an odd index.
+
+Otherwise this excludes common trailer/bonus/out-of-band indices such as `-1`, `90`, `99`, etc.
 
 ### Plugin setting: Include all scenes
 

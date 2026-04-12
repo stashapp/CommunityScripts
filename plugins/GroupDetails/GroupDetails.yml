@@ -1,6 +1,6 @@
 name: Group Details
 description: Adds group-card metrics for filtered duration and average vertical resolution.
-version: 0.1.13
+version: 0.1.14
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/GroupDetails
 ui:
   javascript:
@@ -12,5 +12,6 @@ settings:
     displayName: Include all scenes
     description: >-
       When enabled, duration and average resolution include every scene linked to the group.
-      When disabled (default), scenes are limited to those with scene_index null or 0..89 for this group.
+      When disabled (default), scenes are limited to those with scene_index null or 0..89 for this group,
+      except when the group has only one scene (that scene is always included).
     type: BOOLEAN

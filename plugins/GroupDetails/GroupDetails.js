@@ -171,12 +171,14 @@
     var verticalSum = 0;
     var verticalCount = 0;
     var list = scenes || [];
+    var applySceneIndexFilter =
+      !includeAllScenes && list.length !== 1;
     var rows = [];
 
     for (var i = 0; i < list.length; i++) {
       var scene = list[i];
       var idx = sceneIndexForGroup(scene, groupId);
-      if (!includeAllScenes && !isEligibleSceneIndex(idx)) continue;
+      if (applySceneIndexFilter && !isEligibleSceneIndex(idx)) continue;
       var duration = getSceneDurationSeconds(scene);
       rows.push({ scene: scene, idx: idx, duration: duration });
     }
