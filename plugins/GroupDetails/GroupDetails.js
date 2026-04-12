@@ -187,7 +187,7 @@
     }
 
     var durationHeader =
-      "Scenes included in total duration (same scene_index rules as the chip):\n";
+      "Scenes in total duration:\n";
     var durationTooltip =
       durationLines.length > 0
         ? durationHeader + durationLines.join("\n")
