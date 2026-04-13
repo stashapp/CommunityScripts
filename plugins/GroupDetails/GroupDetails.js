@@ -288,7 +288,6 @@
       PLUGIN_BASE_URL + safeName,
       "/plugin/" + PLUGIN_ID + "/assets/" + safeName,
       "/plugin/" + PLUGIN_ID + "/" + safeName,
-      fileName,
     ];
   }
 
