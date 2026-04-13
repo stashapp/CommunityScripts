@@ -87,3 +87,12 @@ bash build.sh
 ## Updates Not Showing?
 
 After editing plugin files, perform a **full page reload** (F5 / Ctrl+Shift+R). In-app navigation can keep an older script in memory.
+
+## Gen AI Assisted Plugin Authorship
+This plugin was generated with the help of Generative AI (Cursor).
+
+Per the draft guidelines of [#678]
+- ✅ LLM use is openly disclosed.
+- ✅ Code is reviewed by a human.
+- ✅ Human testing and validation was performed.
+- ✅ You take full responsibility for the code (including license compliance).
