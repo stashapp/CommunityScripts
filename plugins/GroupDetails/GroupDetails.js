@@ -152,11 +152,11 @@
   }
 
   function formatSceneTooltipLine(sceneIndex, title, durationSec) {
-    var idxLabel =
-      sceneIndex == null || sceneIndex === "" ? "null" : String(sceneIndex);
     var t = String(title || "").replace(/\s+/g, " ").trim();
     if (!t) t = "(no title)";
-    return "[" + idxLabel + "] " + t + " " + formatDuration(durationSec);
+    var hasIndex = !(sceneIndex == null || sceneIndex === "");
+    if (hasIndex) return String(sceneIndex) + ". " + t + " " + formatDuration(durationSec);
+    return t + " " + formatDuration(durationSec);
   }
 
   /** For ordering only: missing index sorts like 90. */

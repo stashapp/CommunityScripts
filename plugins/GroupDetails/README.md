@@ -1,59 +1,89 @@
 # Group Details
 
-`Group Details` is a UI plugin for Stash group pages.
+`Group Details` is a UI plugin for Stash group card.
 
-It adds two computed metrics to each group card's stats area:
+## Screenshot
 
-- **Top line:** total duration (`H:MM:SS`) on the left, native scene-count chip centered.
-- **Second line:** resolution **bucket icon** (inline SVG from Font Awesome **Free** solid paths) right-aligned, below the first line so tag/group chips are not squeezed horizontally. Hover shows `Resolution average: Npx` (or `—` if none).
+![Group Details screenshot](./screenshot.png)
 
-Buckets use average **vertical pixel height** of contributing scenes: **`<480`**, **`<720`**, **`≤1081`**, **`>1081`**. Icons are **display**, **film**, **gauge-high**, **maximize** (FA 6.5.2 free-solid). Groups in the **same** height bucket reuse the **same** icon (for example, both ~1080p averages use the HD-bucket glyph). Stash’s `PluginApi` Font Awesome export is incomplete for plugins, and Pro-only glyphs (regular SD/HD/4K marks) are not in Free, so icons are **not** loaded from `PluginApi`.
+## What It Adds
 
-## Filtering rules
+- **Date line:** appends total duration (`H:MM:SS`) to the right side of the date row.
+- **Chip list:** appends a resolution chip (PNG badge) to the end of `.card-popovers`.
+- **Tooltips:** duration and resolution both expose native `title` tooltips.
 
-By default, both metrics only consider scenes whose `scene_index` for the current group is:
+## Data Source
+
+Metrics are computed in-browser from GraphQL `findGroup` scene data (`id`, `title`, `files { duration height }`, `groups { group { id } scene_index }`).
+
+## Scene Filtering
+
+When **Include all scenes** is disabled (default), scenes are included only if `scene_index` is:
 
 - `null`, or
-- an integer in the inclusive range `0..89`
+- an integer in `0..89`
 
-**Exception:** if the group has **exactly one** scene in the GraphQL `scenes` list, that scene is **always** included (no `scene_index` filter), so single-scene groups are not blanked by an odd index.
+Exception: if the group has exactly **one scene**, scene-index filtering is bypassed for that group.
 
-Otherwise this excludes common trailer/bonus/out-of-band indices such as `-1`, `90`, `99`, etc.
+When **Include all scenes** is enabled, all returned scenes are included regardless of `scene_index`.
 
-### Plugin setting: Include all scenes
+![Group Details Settings screenshot](./details.png)
 
-In **Settings → Plugins → Group Details**, enable **Include all scenes** to skip the `scene_index` filter and use every scene returned for the group. The **`duration > 600` seconds** rule for the average resolution metric still applies in both modes.
+## Sorting
 
-After changing this setting, reload the group page (or navigate away and back) so metrics refresh.
+Duration tooltip scene lines are sorted by:
 
-## Resolution rule
+1. `scene_index` ascending (`null` sorts as `90`)
+2. duration descending
+3. scene `id` ascending (stable tie-break)
 
-Average resolution is based on vertical pixels (`height`) with an additional duration filter:
+## Duration Metric
 
-- Include only eligible scenes where `duration > 600` seconds.
-- Compute as `round(sum(height) / count)`.
-- Display as `NNNp` (for example, `720p`).
+- Uses each included scene's **max file duration**.
+- Card value is total duration displayed as `H:MM:SS`.
+- Tooltip lists every included scene as:
+  - `N. Title H:MM:SS` when `scene_index` is present
+  - `Title H:MM:SS` when `scene_index` is null
 
-## Duration rule
+## Resolution Metric
 
-Total duration is the sum of eligible scene durations and is displayed as `H:MM:SS`.
+Average resolution uses vertical pixels (`height`) from each included scene's tallest file:
 
-## Data source
+- For groups with **exactly one total file**, the duration gate is bypassed.
+- Otherwise, only scenes with `duration > 600` are eligible.
+- Resolution average is `round(sum(height) / count)`.
+- Tooltip format is:
+  - `Resolution Average: <N>p`
+  - or `Resolution Average: —` when no eligible average exists.
 
-The plugin fetches group scene data through GraphQL (`findGroup`) and computes metrics in-browser. It does not rely on card DOM text parsing.
+Resolution chip empty/dash behavior:
 
-## Tooltips
+- If there are no files (or single-file case with unusable height): render nothing.
+- If `totalFileCount > 1` and no eligible average: render `—`.
 
-**Duration chip:** every eligible scene included in the **total duration** sum, one line per scene:
+## Resolution Badge Mapping
 
-`[scene_index] Title H:MM:SS`
+The plugin picks a PNG badge using a 2% tolerance (`>= 98%` of target resolution):
 
-**Resolution icon:** hover shows `Resolution average: Npx`, or `Resolution average: —` when no scenes qualify for the average (same duration, height, and scene_index rules as in **Resolution rule**).
+- `< 234` -> `144p.png`
+- then highest match from:
+  - `240`, `360`, `480`, `720`, `1080`, `1440 (2k)`, `2160 (4k)`, `2880 (5k)`, `3160 (6k)`, `4320 (8k)`
 
-Null `scene_index` is shown as `[null]`. Missing titles appear as `(no title)`.
+## Assets And Build
 
-The resolution **icon** sits inside a wrapper; inner SVG uses `pointer-events: none` so hover targets the wrapper and the native `title` tooltip appears reliably in Chrome.
+Badges are authored as PNG files in `assets/` and embedded into `images.js` as base64 data URIs.
 
-## Updates not showing?
+- Source files: `plugins/GroupDetails/assets/*.png`
+- Generated file: `plugins/GroupDetails/images.js`
 
-Stash loads UI plugins from a fixed URL (`/plugin/GroupDetails/javascript`). After you change plugin files, do a **full page reload** (F5 or Ctrl+Shift+R) so the browser fetches the new script (the server ETag changes when file content changes). In-app navigation alone can keep an older script in memory, so you may still see old tooltip text until you reload.
+Regenerate `images.js` after changing PNGs:
+
+```bash
+bash build.sh
+```
+
+`build.sh` reads `assets/*.png`, sorts filenames deterministically, and rewrites `images.js`.
+
+## Updates Not Showing?
+
+After editing plugin files, perform a **full page reload** (F5 / Ctrl+Shift+R). In-app navigation can keep an older script in memory.

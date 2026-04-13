@@ -1,6 +1,6 @@
 name: Group Details
 description: Adds group-card metrics for filtered duration and average vertical resolution.
-version: 0.1.27
+version: 0.2.0
 url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/GroupDetails
 ui:
   javascript:
@@ -8,18 +8,7 @@ ui:
     - GroupDetails.js
   css:
     - GroupDetails.css
-  assets:
-    /144p.png: assets/144p.png
-    /240p.png: assets/240p.png
-    /360p.png: assets/360p.png
-    /480p.png: assets/480p.png
-    /720p.png: assets/720p.png
-    /1080p.png: assets/1080p.png
-    /2k.png: assets/2k.png
-    /4k.png: assets/4k.png
-    /5k.png: assets/5k.png
-    /6k.png: assets/6k.png
-    /8k.png: assets/8k.png
+
 settings:
   includeAllScenes:
     displayName: Include all scenes
