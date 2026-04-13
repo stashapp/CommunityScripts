@@ -170,6 +170,7 @@
     var totalDurationSec = 0;
     var verticalSum = 0;
     var verticalCount = 0;
+    var totalFileCount = 0;
     var list = scenes || [];
     var applySceneIndexFilter =
       !includeAllScenes && list.length !== 1;
@@ -195,6 +196,12 @@
       return ida < idb ? -1 : ida > idb ? 1 : 0;
     });
 
+    for (var fc = 0; fc < rows.length; fc++) {
+      var filesForCount = (rows[fc].scene && rows[fc].scene.files) || [];
+      totalFileCount += filesForCount.length;
+    }
+    var bypassDurationFilterForResolution = totalFileCount === 1;
+
     var durationLines = [];
     for (var j = 0; j < rows.length; j++) {
       var row = rows[j];
@@ -206,7 +213,7 @@
         formatSceneTooltipLine(idx, scene && scene.title, duration)
       );
 
-      if (duration > 600) {
+      if (bypassDurationFilterForResolution || duration > 600) {
         var height = getSceneVerticalPixels(scene);
         if (height > 0) {
           verticalSum += height;
@@ -232,6 +239,7 @@
       totalDurationSec: Math.round(totalDurationSec),
       averageVerticalPixels: avgPx,
       verticalSampleCount: verticalCount,
+      totalFileCount: totalFileCount,
       durationTooltip: durationTooltip,
       resolutionTooltip: resolutionTooltip,
     };
@@ -288,7 +296,7 @@
     return img;
   }
 
-  function buildResolutionBucket(id, avgPixels, resolutionTooltip) {
+  function buildResolutionBucket(id, avgPixels, resolutionTooltip, totalFileCount) {
     var wrap = document.createElement("span");
     wrap.id = id;
     wrap.className = "gd-stat gd-res-bucket";
@@ -296,8 +304,14 @@
     var tip = resolutionTooltip || "";
     var h = avgPixels == null ? NaN : Math.round(Number(avgPixels));
     if (!Number.isFinite(h) || h <= 0) {
-      wrap.textContent = "\u2014";
-      applySceneListTooltip(wrap, tip);
+      if ((Number(totalFileCount) || 0) > 1) {
+        wrap.textContent = "\u2014";
+        applySceneListTooltip(wrap, tip);
+      } else {
+        // No files (or only one file with no usable height): render nothing.
+        wrap.textContent = "";
+        applySceneListTooltip(wrap, "");
+      }
       return wrap;
     }
     var spec = pickResolutionPngSpec(h);
@@ -414,7 +428,8 @@
     var resolutionNode = buildResolutionBucket(
       "gd-stat-right-" + Date.now(),
       metrics.averageVerticalPixels,
-      metrics.resolutionTooltip || ""
+      metrics.resolutionTooltip || "",
+      metrics.totalFileCount
     );
     resolutionNode.classList.add("gd-stat-right");
 
