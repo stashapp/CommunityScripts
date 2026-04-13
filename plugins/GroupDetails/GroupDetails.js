@@ -399,6 +399,45 @@
     return el;
   }
 
+  function findDateLineInCard(card) {
+    if (!card || !card.querySelectorAll) return null;
+    var re = /^\d{4}-\d{2}-\d{2}$/;
+    var nodes = card.querySelectorAll("time, small, span, div, p");
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      if (!el || !el.textContent) continue;
+      if (el.closest && el.closest(".card-popovers")) continue;
+      if (el.querySelector && el.querySelector(".gd-date-duration")) continue;
+      var raw = String(el.textContent || "").trim();
+      if (re.test(raw)) return el;
+    }
+    return null;
+  }
+
+  function mountDurationOnDateLine(card, durationNode) {
+    if (!card || !durationNode) return false;
+    var old = card.querySelectorAll(".gd-date-duration");
+    for (var i = 0; i < old.length; i++) {
+      if (old[i] && old[i].parentNode) old[i].parentNode.removeChild(old[i]);
+    }
+    var line = findDateLineInCard(card);
+    if (!line) return false;
+
+    line.classList.add("gd-date-line");
+    var textSpan = line.querySelector(".gd-date-text");
+    if (!textSpan) {
+      var original = String(line.textContent || "").trim();
+      line.textContent = "";
+      textSpan = document.createElement("span");
+      textSpan.className = "gd-date-text";
+      textSpan.textContent = original;
+      line.appendChild(textSpan);
+    }
+    durationNode.classList.add("gd-date-duration");
+    line.appendChild(durationNode);
+    return true;
+  }
+
   function injectMetricsIntoCard(card, metrics) {
     if (!card || !metrics) return;
     var popovers = card.querySelector(".card-popovers");
@@ -413,17 +452,15 @@
       if (sc) popovers.insertBefore(sc, oldRow);
       oldRow.parentNode.removeChild(oldRow);
     }
-    var oldLeft = popovers.querySelector(".gd-stat-left");
-    if (oldLeft && oldLeft.parentNode) oldLeft.parentNode.removeChild(oldLeft);
     var oldRight = popovers.querySelector(".gd-stat-right");
     if (oldRight && oldRight.parentNode) oldRight.parentNode.removeChild(oldRight);
 
     var durationNode = buildStatNode(
-      "gd-stat-left-" + Date.now(),
+      "gd-stat-duration-" + Date.now(),
       formatDuration(metrics.totalDurationSec),
       metrics.durationTooltip || ""
     );
-    durationNode.classList.add("gd-stat-left");
+    durationNode.classList.add("gd-duration");
 
     var resolutionNode = buildResolutionBucket(
       "gd-stat-right-" + Date.now(),
@@ -443,11 +480,12 @@
     line2.className = "gd-metrics-line2";
 
     popovers.insertBefore(row, sceneCount);
-    line1.appendChild(durationNode);
     line1.appendChild(sceneCount);
     line2.appendChild(resolutionNode);
     row.appendChild(line1);
     row.appendChild(line2);
+
+    mountDurationOnDateLine(card, durationNode);
   }
 
   async function decorateGroupCard(card) {

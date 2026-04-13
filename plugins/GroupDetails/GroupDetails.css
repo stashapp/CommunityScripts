@@ -16,13 +16,9 @@
 
 .group-card .card-popovers .gd-metrics-line1 {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr;
   align-items: center;
   width: 100%;
-}
-
-.group-card .card-popovers .gd-metrics-line1 .gd-stat-left {
-  justify-self: start;
 }
 
 .group-card .card-popovers .gd-metrics-line1 .scene-count {
@@ -76,4 +72,30 @@
   color: var(--text, #d5dbe3);
   opacity: 0.95;
   white-space: nowrap;
+}
+
+.group-card .gd-date-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.group-card .gd-date-text {
+  min-width: 0;
+}
+
+.group-card .gd-date-duration {
+  margin-left: 0.5rem;
+  margin-right: 0;
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
+  padding: 0;
+  justify-content: flex-end;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+  color: inherit;
+  opacity: inherit;
+  cursor: help;
 }
