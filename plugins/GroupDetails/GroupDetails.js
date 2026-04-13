@@ -213,7 +213,7 @@
         formatSceneTooltipLine(idx, scene && scene.title, duration)
       );
 
-      if (bypassDurationFilterForResolution || duration > 600) {
+      if (bypassDurationFilterForResolution || duration > 360) {
         var height = getSceneVerticalPixels(scene);
         if (height > 0) {
           verticalSum += height;

@@ -50,7 +50,7 @@ Duration tooltip scene lines are sorted by:
 Average resolution uses vertical pixels (`height`) from each included scene's tallest file:
 
 - For groups with **exactly one total file**, the duration gate is bypassed.
-- Otherwise, only scenes with `duration > 600` are eligible.
+- Otherwise, only scenes with `duration > 360` are eligible.
 - Resolution average is `round(sum(height) / count)`.
 - Tooltip format is:
   - `Resolution Average: <N>p`
