@@ -4,15 +4,6 @@
   var ROOT_ID = "root";
   var ROUTE_PREFIX = "/groups";
   var PLUGIN_ID = "GroupDetails";
-  var PLUGIN_BASE_URL = (function () {
-    try {
-      var s = document.currentScript && document.currentScript.src;
-      if (s) {
-        return s.replace(/\/javascript(?:\?.*)?$/, "/");
-      }
-    } catch (e) {}
-    return "/plugin/" + PLUGIN_ID + "/";
-  })();
   var GROUP_METRICS_QUERY =
     "query GroupDetailsMetrics($id: ID!) {" +
     "  findGroup(id: $id) {" +
@@ -281,29 +272,26 @@
     return LOWEST_RESOLUTION_PNG;
   }
 
-  function getResolutionPngSrcCandidates(fileName) {
-    var safeName = encodeURIComponent(String(fileName || ""));
-    return [
-      PLUGIN_BASE_URL + "assets/" + safeName,
-      PLUGIN_BASE_URL + safeName,
-      "/plugin/" + PLUGIN_ID + "/assets/" + safeName,
-      "/plugin/" + PLUGIN_ID + "/" + safeName,
-    ];
+  function getEmbeddedResolutionImage(fileName) {
+    var map =
+      typeof window !== "undefined" && window.GroupDetailsImages
+        ? window.GroupDetailsImages
+        : null;
+    if (!map) return "";
+    var key = String(fileName || "");
+    var uri = map[key];
+    return typeof uri === "string" ? uri : "";
   }
 
   function createResolutionPng(spec) {
     if (!spec || !spec.file) return null;
+    var src = getEmbeddedResolutionImage(spec.file);
+    if (!src) return null;
     var img = document.createElement("img");
-    var candidates = getResolutionPngSrcCandidates(spec.file);
-    var idx = 0;
     img.className = "gd-resolution-png";
     img.alt = spec.label;
     img.setAttribute("aria-hidden", "true");
-    img.src = candidates[idx];
-    img.addEventListener("error", function () {
-      idx += 1;
-      if (idx < candidates.length) img.src = candidates[idx];
-    });
+    img.src = src;
     return img;
   }
 
