@@ -50,14 +50,12 @@
   pointer-events: none;
 }
 
-.group-card .card-popovers .gd-resolution-fa {
-  width: 1em;
+.group-card .card-popovers .gd-resolution-png {
   height: 1em;
-  vertical-align: -0.125em;
-}
-
-.group-card .card-popovers .gd-metrics-line2 .gd-resolution-fa.fa-icon {
-  margin: 0;
+  width: auto;
+  max-width: 2.4em;
+  display: block;
+  object-fit: contain;
 }
 
 .group-card .card-popovers .gd-res-bucket-fallback {

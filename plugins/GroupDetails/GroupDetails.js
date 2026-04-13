@@ -225,8 +225,8 @@
       verticalCount > 0 ? Math.round(verticalSum / verticalCount) : null;
     var resolutionTooltip =
       avgPx == null || verticalCount < 1
-        ? "Resolution average: \u2014"
-        : "Resolution average: " + avgPx + "p";
+        ? "Resolution Average: \u2014"
+        : "Resolution Average: " + avgPx + "p";
 
     return {
       totalDurationSec: Math.round(totalDurationSec),
@@ -237,63 +237,55 @@
     };
   }
 
-  function resolutionBucketTier(avgHeightPx) {
+  var RESOLUTION_PNG_LADDER = [
+    { value: 4320, label: "8k", file: "8k.png" },
+    { value: 3160, label: "6k", file: "6k.png" },
+    { value: 2880, label: "5k", file: "5k.png" },
+    { value: 2160, label: "4k", file: "4k.png" },
+    { value: 1440, label: "2k", file: "2k.png" },
+    { value: 1080, label: "1080p", file: "1080p.png" },
+    { value: 720, label: "720p", file: "720p.png" },
+    { value: 480, label: "480p", file: "480p.png" },
+    { value: 360, label: "360p", file: "360p.png" },
+    { value: 240, label: "240p", file: "240p.png" },
+  ];
+  var LOWEST_RESOLUTION_PNG = { value: 144, label: "144p", file: "144p.png" };
+  var RESOLUTION_MATCH_RATIO = 0.98; // 2% tolerance
+  var LOWEST_RESOLUTION_CUTOFF = 234;
+
+  function pickResolutionPngSpec(avgHeightPx) {
     var h = Math.round(Number(avgHeightPx) || 0);
-    if (h <= 0) return -1;
-    if (h < 480) return 0;
-    if (h < 720) return 1;
-    if (h <= 1081) return 2;
-    return 3;
+    if (!Number.isFinite(h) || h <= 0) return null;
+    if (h < LOWEST_RESOLUTION_CUTOFF) return LOWEST_RESOLUTION_PNG;
+    for (var i = 0; i < RESOLUTION_PNG_LADDER.length; i++) {
+      var spec = RESOLUTION_PNG_LADDER[i];
+      if (h >= Math.round(spec.value * RESOLUTION_MATCH_RATIO)) return spec;
+    }
+    return LOWEST_RESOLUTION_PNG;
   }
 
-  // Inlined svgPathData from @fortawesome/free-solid-svg-icons@6.5.2 so each
-  // bucket always gets a distinct glyph. Stash’s PluginApi FA exports are
-  // incomplete (tree-shaken), which made every tier fall through to the same
-  // fallback. Pro-only names (SD/HD/4K rectangle) are not bundled in Free.
-  // Tier order: display, film, gauge-high (HD-ish), maximize. Deliberately not
-  // using faExpand for HD: same bucket (e.g. 1080p) correctly reuses one icon,
-  // but expand reads like “fullscreen” and is often confused with a bug.
-  var BUNDLED_RESOLUTION_ICONS = [
-    {
-      w: 576,
-      h: 512,
-      d:
-        "M64 0C28.7 0 0 28.7 0 64V352c0 35.3 28.7 64 64 64H240l-10.7 32H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H346.7L336 416H512c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM512 64V352H64V64H512z",
-    },
-    {
-      w: 512,
-      h: 512,
-      d:
-        "M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM48 368v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V368c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zm368-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V368c0-8.8-7.2-16-16-16H416zM48 240v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zm368-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V240c0-8.8-7.2-16-16-16H416zM48 112v32c0 8.8 7.2 16 16 16H96c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16zM416 96c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V112c0-8.8-7.2-16-16-16H416zM160 128v64c0 17.7 14.3 32 32 32H320c17.7 0 32-14.3 32-32V128c0-17.7-14.3-32-32-32H192c-17.7 0-32 14.3-32 32zm32 160c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H320c17.7 0 32-14.3 32-32V320c0-17.7-14.3-32-32-32H192z",
-    },
-    {
-      w: 512,
-      h: 512,
-      d:
-        "M0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM256 416c35.3 0 64-28.7 64-64c0-17.4-6.9-33.1-18.1-44.6L366 161.7c5.3-12.1-.2-26.3-12.3-31.6s-26.3 .2-31.6 12.3L257.9 288c-.6 0-1.3 0-1.9 0c-35.3 0-64 28.7-64 64s28.7 64 64 64zM176 144a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM96 288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm352-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z",
-    },
-    {
-      w: 512,
-      h: 512,
-      d:
-        "M200 32H56C42.7 32 32 42.7 32 56V200c0 9.7 5.8 18.5 14.8 22.2s19.3 1.7 26.2-5.2l40-40 79 79-79 79L73 295c-6.9-6.9-17.2-8.9-26.2-5.2S32 302.3 32 312V456c0 13.3 10.7 24 24 24H200c9.7 0 18.5-5.8 22.2-14.8s1.7-19.3-5.2-26.2l-40-40 79-79 79 79-40 40c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H456c13.3 0 24-10.7 24-24V312c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2l-40 40-79-79 79-79 40 40c6.9 6.9 17.2 8.9 26.2 5.2s14.8-12.5 14.8-22.2V56c0-13.3-10.7-24-24-24H312c-9.7 0-18.5 5.8-22.2 14.8s-1.7 19.3 5.2 26.2l40 40-79 79-79-79 40-40c6.9-6.9 8.9-17.2 5.2-26.2S209.7 32 200 32z",
-    },
-  ];
+  function getResolutionPngSrcCandidates(fileName) {
+    return [
+      "/plugin/" + PLUGIN_ID + "/assets/" + fileName,
+      "/plugin/" + PLUGIN_ID + "/" + fileName,
+      fileName,
+    ];
+  }
 
-  function createResolutionTierSvg(tier) {
-    var b = BUNDLED_RESOLUTION_ICONS[tier];
-    if (!b || typeof b.d !== "string") return null;
-    var NS = "http://www.w3.org/2000/svg";
-    var svg = document.createElementNS(NS, "svg");
-    svg.setAttribute("viewBox", "0 0 " + b.w + " " + b.h);
-    svg.setAttribute("class", "fa-icon gd-resolution-fa");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("aria-hidden", "true");
-    var path = document.createElementNS(NS, "path");
-    path.setAttribute("fill", "currentColor");
-    path.setAttribute("d", b.d);
-    svg.appendChild(path);
-    return svg;
+  function createResolutionPng(spec) {
+    if (!spec || !spec.file) return null;
+    var img = document.createElement("img");
+    var candidates = getResolutionPngSrcCandidates(spec.file);
+    var idx = 0;
+    img.className = "gd-resolution-png";
+    img.alt = spec.label;
+    img.setAttribute("aria-hidden", "true");
+    img.src = candidates[idx];
+    img.addEventListener("error", function () {
+      idx += 1;
+      if (idx < candidates.length) img.src = candidates[idx];
+    });
+    return img;
   }
 
   function buildResolutionBucket(id, avgPixels, resolutionTooltip) {
@@ -308,14 +300,16 @@
       applySceneListTooltip(wrap, tip);
       return wrap;
     }
-    var tier = resolutionBucketTier(h);
-    wrap.setAttribute("data-gd-resolution-tier", String(tier));
-    var svg = createResolutionTierSvg(tier);
-    if (svg) wrap.appendChild(svg);
+    var spec = pickResolutionPngSpec(h);
+    if (spec) {
+      wrap.setAttribute("data-gd-resolution-tier", spec.label);
+    }
+    var img = createResolutionPng(spec);
+    if (img) wrap.appendChild(img);
     else {
       var fb = document.createElement("span");
       fb.className = "gd-res-bucket-fallback";
-      fb.textContent = ["<480", "SD", "HD", "4K"][tier] || "?";
+      fb.textContent = h + "p";
       wrap.appendChild(fb);
     }
     applySceneListTooltip(wrap, tip);
