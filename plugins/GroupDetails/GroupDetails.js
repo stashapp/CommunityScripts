@@ -453,16 +453,11 @@
     if (!card || !metrics) return;
     var popovers = card.querySelector(".card-popovers");
     if (!popovers) return;
-
     var sceneCount = popovers.querySelector(".scene-count");
     if (!sceneCount) return;
 
     var oldRow = popovers.querySelector(".gd-metrics-row");
-    if (oldRow) {
-      var sc = oldRow.querySelector(".scene-count");
-      if (sc) popovers.insertBefore(sc, oldRow);
-      oldRow.parentNode.removeChild(oldRow);
-    }
+    if (oldRow && oldRow.parentNode) oldRow.parentNode.removeChild(oldRow);
     var oldRight = popovers.querySelector(".gd-stat-right");
     if (oldRight && oldRight.parentNode) oldRight.parentNode.removeChild(oldRight);
 
@@ -480,21 +475,8 @@
       metrics.totalFileCount
     );
     resolutionNode.classList.add("gd-stat-right");
-
-    var row = document.createElement("div");
-    row.className = "gd-metrics-row";
-    row.setAttribute("role", "presentation");
-
-    var line1 = document.createElement("div");
-    line1.className = "gd-metrics-line1";
-    var line2 = document.createElement("div");
-    line2.className = "gd-metrics-line2";
-
-    popovers.insertBefore(row, sceneCount);
-    line1.appendChild(sceneCount);
-    line2.appendChild(resolutionNode);
-    row.appendChild(line1);
-    row.appendChild(line2);
+    resolutionNode.classList.add("chip");
+    popovers.appendChild(resolutionNode);
 
     mountDurationOnDateLine(card, durationNode);
   }
