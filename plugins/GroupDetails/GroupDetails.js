@@ -4,6 +4,15 @@
   var ROOT_ID = "root";
   var ROUTE_PREFIX = "/groups";
   var PLUGIN_ID = "GroupDetails";
+  var PLUGIN_BASE_URL = (function () {
+    try {
+      var s = document.currentScript && document.currentScript.src;
+      if (s) {
+        return s.replace(/\/javascript(?:\?.*)?$/, "/");
+      }
+    } catch (e) {}
+    return "/plugin/" + PLUGIN_ID + "/";
+  })();
   var GROUP_METRICS_QUERY =
     "query GroupDetailsMetrics($id: ID!) {" +
     "  findGroup(id: $id) {" +
@@ -273,9 +282,12 @@
   }
 
   function getResolutionPngSrcCandidates(fileName) {
+    var safeName = encodeURIComponent(String(fileName || ""));
     return [
-      "/plugin/" + PLUGIN_ID + "/assets/" + fileName,
-      "/plugin/" + PLUGIN_ID + "/" + fileName,
+      PLUGIN_BASE_URL + "assets/" + safeName,
+      PLUGIN_BASE_URL + safeName,
+      "/plugin/" + PLUGIN_ID + "/assets/" + safeName,
+      "/plugin/" + PLUGIN_ID + "/" + safeName,
       fileName,
     ];
   }
