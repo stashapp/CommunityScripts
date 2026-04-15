@@ -104,6 +104,11 @@
   position: relative;
 }
 
+.group-card,
+.group-card .card-popovers {
+  overflow: visible;
+}
+
 .group-card .card-popovers .gd-performer-count .btn {
   pointer-events: none;
 }
@@ -116,7 +121,7 @@
   z-index: 40;
   display: block;
   width: max-content;
-  max-width: 32rem;
+  max-width: min(32rem, calc(100vw - 1.5rem));
   max-height: 360px;
   overflow: visible;
   opacity: 0;
@@ -138,15 +143,15 @@
   flex-wrap: wrap;
   justify-content: center;
   align-content: flex-start;
-  gap: 0.5rem;
+  gap: 0.45rem;
   overflow: auto;
   max-height: 360px;
-  padding: 0.55rem 0.55rem 0.35rem;
+  padding: 0.55rem 0.6rem 0.55rem;
 }
 
 .group-card .card-popovers .gd-performer-image {
-  width: 100px;
-  height: 100px;
+  width: 96px;
+  height: 120px;
   border-radius: 0.25rem;
   object-fit: cover;
   object-position: top;
@@ -154,29 +159,33 @@
 }
 
 .group-card .card-popovers .gd-performer-item {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  vertical-align: top;
-  margin: 5px;
+  width: 96px;
+  margin: 0;
 }
 
-.group-card .card-popovers .gd-performer-item .performer-tag {
-  display: inline-block;
-  margin: 0 auto;
+.group-card .card-popovers .gd-performer-item .gd-performer-thumb {
+  display: block;
+  width: 96px;
   text-decoration: none;
 }
 
 .group-card .card-popovers .gd-performer-name {
-  display: block;
-  max-width: 110px;
+  display: inline-block;
+  max-width: 100%;
   margin: 0.2rem auto 0;
-  padding: 0;
+  padding: 0.06rem 0.42rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   line-height: 1.2;
   text-align: center;
-  color: inherit;
+  border-radius: 0.25rem;
+  background: #d7e4f1;
+  color: #1a2330;
   text-decoration: none;
 }
