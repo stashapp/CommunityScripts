@@ -371,6 +371,54 @@
     return "/" + p;
   }
 
+  function wirePerformerPopoverHover(trigger, popover) {
+    if (!trigger || !popover) return;
+    var enterDelayMs = 200;
+    var leaveDelayMs = 200;
+    var enterTimer = null;
+    var leaveTimer = null;
+
+    function openSoon() {
+      if (leaveTimer) {
+        clearTimeout(leaveTimer);
+        leaveTimer = null;
+      }
+      if (trigger.classList.contains("gd-open")) return;
+      if (enterTimer) clearTimeout(enterTimer);
+      enterTimer = setTimeout(function () {
+        trigger.classList.add("gd-open");
+        enterTimer = null;
+      }, enterDelayMs);
+    }
+
+    function closeSoon() {
+      if (enterTimer) {
+        clearTimeout(enterTimer);
+        enterTimer = null;
+      }
+      if (leaveTimer) clearTimeout(leaveTimer);
+      leaveTimer = setTimeout(function () {
+        trigger.classList.remove("gd-open");
+        leaveTimer = null;
+      }, leaveDelayMs);
+    }
+
+    function onEnter() {
+      openSoon();
+    }
+
+    function onLeave() {
+      closeSoon();
+    }
+
+    trigger.addEventListener("mouseenter", onEnter);
+    trigger.addEventListener("mouseleave", onLeave);
+    popover.addEventListener("mouseenter", onEnter);
+    popover.addEventListener("mouseleave", onLeave);
+    trigger.addEventListener("focusin", onEnter);
+    trigger.addEventListener("focusout", onLeave);
+  }
+
   function buildPerformerChip(id, performers) {
     var list = Array.isArray(performers) ? performers : [];
     if (list.length === 0) return null;
@@ -411,26 +459,38 @@
     wrap.appendChild(btn);
 
     var pop = document.createElement("div");
-    pop.className = "gd-performer-popover";
+    pop.className = "gd-performer-popover popover bs-popover-bottom hover-popover-content";
+    var arrow = document.createElement("div");
+    arrow.className = "arrow";
+    pop.appendChild(arrow);
+    var body = document.createElement("div");
+    body.className = "popover-body";
     for (var i = 0; i < list.length; i++) {
       var perf = list[i];
-      var item = document.createElement(perf.id ? "a" : "div");
-      item.className = "gd-performer-item";
-      if (perf.id) item.href = "/performers/" + encodeURIComponent(String(perf.id));
+      var item = document.createElement("div");
+      item.className = "gd-performer-item performer-tag-container row";
+      var thumbLink = document.createElement(perf.id ? "a" : "div");
+      thumbLink.className = "performer-tag col m-auto zoom-2";
+      if (perf.id) thumbLink.href = "/performers/" + encodeURIComponent(String(perf.id));
       var img = document.createElement("img");
-      img.className = "gd-performer-image";
+      img.className = "gd-performer-image image-thumbnail";
       img.alt = perf.name;
       var src = normalizePerformerImageUrl(perf.imagePath);
       if (src) img.src = src;
       else img.src = "/images/wall-item/performer";
-      var name = document.createElement("span");
-      name.className = "gd-performer-name";
+      thumbLink.appendChild(img);
+
+      var name = document.createElement(perf.id ? "a" : "span");
+      name.className = "gd-performer-name d-block";
       name.textContent = perf.name;
-      item.appendChild(img);
+      if (perf.id) name.href = "/performers/" + encodeURIComponent(String(perf.id));
+      item.appendChild(thumbLink);
       item.appendChild(name);
-      pop.appendChild(item);
+      body.appendChild(item);
     }
+    pop.appendChild(body);
     wrap.appendChild(pop);
+    wirePerformerPopoverHover(wrap, pop);
     return wrap;
   }
 
