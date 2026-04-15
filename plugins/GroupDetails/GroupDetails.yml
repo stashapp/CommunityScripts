@@ -1,0 +1,25 @@
+name: Group Details
+description: Adds group-card metrics for filtered duration and average vertical resolution.
+version: 0.2.3
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/GroupDetails
+ui:
+  javascript:
+    - images.js
+    - GroupDetails.js
+  css:
+    - GroupDetails.css
+
+settings:
+  includeAllScenes:
+    displayName: Include all scenes
+    description: >-
+      When enabled, duration and average resolution include every scene linked to the group.
+      When disabled (default), scenes are limited to those with scene_index null or 0..89 for this group,
+      except when the group has only one scene (that scene is always included).
+    type: BOOLEAN
+  includePerformers:
+    displayName: Include performers
+    description: >-
+      When enabled, appends a performer-count chip to group cards and shows a performer image/name popover
+      built from the union of performers across included scenes in the group.
+    type: BOOLEAN

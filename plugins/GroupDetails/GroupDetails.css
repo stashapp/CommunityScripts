@@ -1,0 +1,191 @@
+.group-card .card-popovers {
+  flex-wrap: wrap;
+}
+
+/* Stacked layout: line1 = duration + scene count; line2 = resolution (so extra chips stay on their own row). */
+.group-card .card-popovers .gd-metrics-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  flex: 1 1 100%;
+  box-sizing: border-box;
+  gap: 0.12rem;
+  padding: 0.15rem 2px;
+}
+
+.group-card .card-popovers .gd-metrics-line1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  width: 100%;
+}
+
+.group-card .card-popovers .gd-metrics-line1 .scene-count {
+  justify-self: center;
+}
+
+.group-card .card-popovers .gd-metrics-line2 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.group-card .card-popovers .gd-res-bucket {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.15em;
+  line-height: 1;
+  /* Let hover hit the wrapper so the native `title` tooltip on .gd-res-bucket shows (SVG children do not inherit it). */
+  cursor: help;
+}
+
+.group-card .card-popovers .gd-res-bucket > * {
+  pointer-events: none;
+}
+
+.group-card .card-popovers .gd-resolution-png {
+  height: 1em;
+  width: auto;
+  max-width: 2.4em;
+  display: block;
+  object-fit: contain;
+}
+
+.group-card .card-popovers .gd-res-bucket-fallback {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0.95;
+}
+
+.group-card .card-popovers .gd-stat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.2rem 0.15rem;
+  font-size: 0.9rem;
+  line-height: 1.1;
+  color: var(--text, #d5dbe3);
+  opacity: 0.95;
+  white-space: nowrap;
+}
+
+.group-card .gd-date-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.group-card .gd-date-text {
+  min-width: 0;
+}
+
+.group-card .gd-date-duration {
+  margin-left: 0.5rem;
+  margin-right: 0;
+  margin-inline-start: 0.5rem;
+  margin-inline-end: 0;
+  padding: 0;
+  justify-content: flex-end;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+  color: inherit;
+  opacity: inherit;
+  cursor: help;
+}
+
+.group-card .card-popovers .gd-performer-count {
+  position: relative;
+}
+
+.group-card,
+.group-card .card-popovers {
+  overflow: visible;
+}
+
+.group-card .card-popovers .gd-performer-count .btn {
+  pointer-events: none;
+}
+
+.group-card .card-popovers .gd-performer-popover {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 0.35rem);
+  transform: translate(-50%, 0.2rem);
+  z-index: 40;
+  display: block;
+  width: max-content;
+  max-width: min(32rem, calc(100vw - 1.5rem));
+  max-height: 360px;
+  overflow: visible;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 180ms;
+}
+
+.group-card .card-popovers .gd-performer-count.gd-open .gd-performer-popover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+  transition-delay: 0ms;
+}
+
+.group-card .card-popovers .gd-performer-popover .popover-body {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 0.45rem;
+  overflow: auto;
+  max-height: 360px;
+  padding: 0.55rem 0.6rem 0.55rem;
+}
+
+.group-card .card-popovers .gd-performer-image {
+  width: 96px;
+  height: 120px;
+  border-radius: 0.25rem;
+  object-fit: cover;
+  object-position: top;
+  background: #324252;
+}
+
+.group-card .card-popovers .gd-performer-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 96px;
+  margin: 0;
+}
+
+.group-card .card-popovers .gd-performer-item .gd-performer-thumb {
+  display: block;
+  width: 96px;
+  text-decoration: none;
+}
+
+.group-card .card-popovers .gd-performer-name {
+  display: inline-block;
+  max-width: 100%;
+  margin: 0.2rem auto 0;
+  padding: 0.06rem 0.42rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.76rem;
+  line-height: 1.2;
+  text-align: center;
+  border-radius: 0.25rem;
+  background: #d7e4f1;
+  color: #1a2330;
+  text-decoration: none;
+}
