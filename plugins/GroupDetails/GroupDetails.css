@@ -114,8 +114,8 @@
   top: calc(100% + 0.35rem);
   z-index: 40;
   display: none;
-  min-width: 360px;
-  max-width: 520px;
+  min-width: 320px;
+  max-width: 560px;
   max-height: 360px;
   overflow: auto;
   padding: 0.55rem 0.55rem 0.35rem;
@@ -123,12 +123,12 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(27, 34, 43, 0.98);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 0.5rem 0.45rem;
+  text-align: center;
+  white-space: normal;
 }
 
 .group-card .card-popovers .gd-performer-count:hover .gd-performer-popover {
-  display: grid;
+  display: block;
 }
 
 .group-card .card-popovers .gd-performer-image {
@@ -140,11 +140,12 @@
 }
 
 .group-card .card-popovers .gd-performer-item {
-  position: relative;
-  display: block;
-  min-width: 0;
+  display: inline-block;
+  width: 96px;
+  margin: 0.25rem;
   text-decoration: none;
   text-align: center;
+  vertical-align: top;
 }
 
 .group-card .card-popovers .gd-performer-name {
