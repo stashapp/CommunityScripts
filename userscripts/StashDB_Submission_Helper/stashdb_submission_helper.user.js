@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name        StashDB Submission Helper
-// @author      mmenanno
-// @version     0.7
-// @description Adds button to add all unmatched aliases, measurements, and urls to a performer.
+// @author      mmenanno, Emilo
+// @version     0.8
+// @description Adds button to add all unmatched aliases, measurements, and urls to a performer and scene.
 // @icon        https://raw.githubusercontent.com/stashapp/stash/develop/ui/v2.5/public/favicon.png
 // @namespace   https://github.com/mmenanno
 // @match       https://stashdb.org/drafts/*
@@ -279,7 +279,7 @@ const urlPatterns = [
   // Sougouwiki
   // Stripchat
   {
-    pattern: /(https?:\/\/www.thenude.com\/[^?]+\.htm)/,
+    pattern: /(https?:\/\/www.thenude.(?:com|eu)\/[^?]+\.htm)/,
     site: "theNude",
   },
   // ThePornDB
@@ -336,7 +336,7 @@ function urlSite(url) {
     }
   }
 
-  return "Studio Profile";
+  return pageType() == "Performer" ? "Studio Profile" : "Studio";
 }
 
 function siteMatch(url, selections) {
@@ -366,6 +366,10 @@ function addUrl(url) {
   const addButton = urlInput.children[3];
 
   const selection = siteMatch(url, selections);
+  if (!selection) {
+    console.warn("Invalid selection");
+    return;
+  }
   setNativeValue(selections, selection.value);
   setNativeValue(inputField, url);
   if (addButton.disabled) {
@@ -525,16 +529,27 @@ function performerEditPage() {
 }
 
 function sceneEditPage() {
-  return;
+  const urlsValues = unmatchedTargetValue("Urls");
+  if (urlsValues != null) {
+    const unmatchedUrls = urlsValues.split(", ");
+    if (unmatchedUrls) {
+      const umatchedUrlsElement = unmatchedTargetElement("Urls");
+      makeUrlLink(umatchedUrlsElement);
+    }
+    const urlsElement = unmatchedTargetButton("Urls");
+    createUrlsButton(unmatchedUrls, urlsElement);
+  }
 }
+
+const formSelector = ".NarrowPage form";
 
 function pageType() {
   return document
-    .querySelector(".NarrowPage form")
+    .querySelector(formSelector)
     .className.replace("Form", "");
 }
 
-waitForElm(aliasInputSelector).then(() => {
+waitForElm(formSelector).then(() => {
   if (pageType() == "Performer") {
     performerEditPage();
   } else if (pageType() == "Scene") {
