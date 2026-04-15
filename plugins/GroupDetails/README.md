@@ -1,5 +1,7 @@
 # Group Details
 
+https://discourse.stashapp.cc/t/group-details/6819
+
 `Group Details` is a UI plugin for Stash group card.
 
 ## Screenshot
