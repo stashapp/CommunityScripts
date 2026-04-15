@@ -115,37 +115,48 @@
   z-index: 40;
   display: none;
   min-width: 220px;
-  max-width: 320px;
-  max-height: 300px;
+  max-width: 340px;
+  max-height: 320px;
   overflow: auto;
-  padding: 0.4rem;
-  border-radius: 0.35rem;
+  padding: 0.45rem;
+  border-radius: 0.45rem;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(20, 23, 28, 0.98);
+  background: rgba(27, 34, 43, 0.98);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 0.35rem;
 }
 
 .group-card .card-popovers .gd-performer-count:hover .gd-performer-popover {
-  display: block;
-}
-
-.group-card .card-popovers .gd-performer-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem;
+  display: grid;
 }
 
 .group-card .card-popovers .gd-performer-image {
-  width: 48px;
-  height: 64px;
+  width: 100%;
+  height: 96px;
   border-radius: 0.25rem;
   object-fit: cover;
   background: #26313f;
 }
 
+.group-card .card-popovers .gd-performer-item {
+  position: relative;
+  display: block;
+  min-width: 0;
+  text-decoration: none;
+}
+
 .group-card .card-popovers .gd-performer-name {
-  font-size: 0.82rem;
-  line-height: 1.1;
-  color: var(--text, #d5dbe3);
+  position: absolute;
+  left: 0.25rem;
+  right: 0.25rem;
+  bottom: 0.25rem;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  line-height: 1.05;
+  text-align: center;
 }
