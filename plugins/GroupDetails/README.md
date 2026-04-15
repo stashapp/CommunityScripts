@@ -71,18 +71,32 @@ The plugin picks a PNG badge using a 2% tolerance (`>= 98%` of target resolution
 
 ## Assets And Build
 
-Badges are authored as PNG files in `assets/` and embedded into `images.js` as base64 data URIs.
+Badges are authored as PNG files in `assets/` and embedded into `images.js` as base64 data URIs.  The image.js provides base64 data back to the plugin and users can ultimately swap a logo on their plugin for further customiation if desired.
+`images.js` is generated output and should not be hand-edited.
 
 - Source files: `plugins/GroupDetails/assets/*.png`
 - Generated file: `plugins/GroupDetails/images.js`
+- Build script: `plugins/GroupDetails/build.sh`
 
-Regenerate `images.js` after changing PNGs:
+### Regenerating `images.js`
+
+From `plugins/GroupDetails/`:
 
 ```bash
 bash build.sh
 ```
 
-`build.sh` reads `assets/*.png`, sorts filenames deterministically, and rewrites `images.js`.
+What `build.sh` does:
+
+- validates that `assets/` exists and contains at least one `*.png`
+- reads `assets/*.png`
+- sorts filenames deterministically (stable diffs)
+- rewrites `images.js` with `window.GroupDetailsImages = { ... }`
+
+Commit both:
+
+- the changed PNG files in `assets/`
+- the regenerated `images.js`
 
 ## Updates Not Showing?
 
