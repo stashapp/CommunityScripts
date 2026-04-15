@@ -10,11 +10,12 @@
 
 - **Date line:** appends total duration (`H:MM:SS`) to the right side of the date row.
 - **Chip list:** appends a resolution chip (PNG badge) to the end of `.card-popovers`.
-- **Tooltips:** duration and resolution both expose native `title` tooltips.
+- **Performer chip (optional):** when enabled, appends a performer-count chip with a hover popover.
+- **Tooltips/popovers:** duration and resolution expose native `title` tooltips; performer chip opens a delayed hover popover.
 
 ## Data Source
 
-Metrics are computed in-browser from GraphQL `findGroup` scene data (`id`, `title`, `files { duration height }`, `groups { group { id } scene_index }`).
+Metrics are computed in-browser from GraphQL `findGroup` scene data (`id`, `title`, `files { duration height }`, `performers { id name image_path }`, `groups { group { id } scene_index }`).
 
 ## Scene Filtering
 
@@ -28,6 +29,18 @@ Exception: if the group has exactly **one scene**, scene-index filtering is bypa
 When **Include all scenes** is enabled, all returned scenes are included regardless of `scene_index`.
 
 ![Group Details Settings screenshot](./details.png)
+
+## Performer Metric (Optional)
+
+When **Include performers** is enabled:
+
+- The plugin builds a union of performers across all scenes included by the same filtering rules used for duration/resolution.
+- A performer-count chip (`user` icon + count) is appended to `.card-popovers`.
+- Hovering the chip opens a performer drawer styled to match Stash scene-card behavior:
+  - centered popover aligned to the chip
+  - fixed-size performer tiles with image + name badge
+  - centered wrapping rows (including centered final row)
+- Hover behavior uses delayed open/close timing (`~200ms` enter and leave) and fade transitions to mimic native feel.
 
 ## Sorting
 
