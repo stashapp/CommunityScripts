@@ -468,9 +468,9 @@
     for (var i = 0; i < list.length; i++) {
       var perf = list[i];
       var item = document.createElement("div");
-      item.className = "gd-performer-item performer-tag-container row";
+      item.className = "gd-performer-item";
       var thumbLink = document.createElement(perf.id ? "a" : "div");
-      thumbLink.className = "performer-tag col m-auto zoom-2";
+      thumbLink.className = "gd-performer-thumb";
       if (perf.id) thumbLink.href = "/performers/" + encodeURIComponent(String(perf.id));
       var img = document.createElement("img");
       img.className = "gd-performer-image image-thumbnail";
