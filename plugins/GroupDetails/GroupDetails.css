@@ -110,8 +110,9 @@
 
 .group-card .card-popovers .gd-performer-popover {
   position: absolute;
-  right: 0;
+  left: 50%;
   top: calc(100% + 0.35rem);
+  transform: translateX(-50%);
   z-index: 40;
   display: none;
   min-width: 320px;
