@@ -5,7 +5,7 @@ https://discourse.stashapp.cc/t/stashdb-submission-helper/1417
 - Adds button to add all unmatched aliases to performer
 - Adds button to add all unmatched urls to performer
 - Adds button to add all unmatched measurements to performer (if they match expected formats)
-- Adds button to add all unmatches urls to scene
+- Adds button to add all unmatched urls to scene
 - Convert unmatched urls from regular strings to linked strings
 
 ## [**INSTALL USERSCRIPT**](https://raw.githubusercontent.com/stashapp/CommunityScripts/main/userscripts/StashDB_Submission_Helper/stashdb_submission_helper.user.js)
