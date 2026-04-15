@@ -415,16 +415,16 @@
     for (var i = 0; i < list.length; i++) {
       var perf = list[i];
       var item = document.createElement(perf.id ? "a" : "div");
-      item.className = "gd-performer-item performer-card";
+      item.className = "gd-performer-item";
       if (perf.id) item.href = "/performers/" + encodeURIComponent(String(perf.id));
       var img = document.createElement("img");
-      img.className = "gd-performer-image performer-card-image";
+      img.className = "gd-performer-image";
       img.alt = perf.name;
       var src = normalizePerformerImageUrl(perf.imagePath);
       if (src) img.src = src;
       else img.src = "/images/wall-item/performer";
       var name = document.createElement("span");
-      name.className = "gd-performer-name badge badge-secondary";
+      name.className = "gd-performer-name";
       name.textContent = perf.name;
       item.appendChild(img);
       item.appendChild(name);

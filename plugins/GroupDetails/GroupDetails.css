@@ -114,18 +114,17 @@
   top: calc(100% + 0.35rem);
   z-index: 40;
   display: none;
-  min-width: 220px;
-  max-width: 340px;
-  max-height: 320px;
+  min-width: 360px;
+  max-width: 520px;
+  max-height: 360px;
   overflow: auto;
-  padding: 0.45rem;
+  padding: 0.55rem 0.55rem 0.35rem;
   border-radius: 0.45rem;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(27, 34, 43, 0.98);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  display: none;
-  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
-  gap: 0.35rem;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.5rem 0.45rem;
 }
 
 .group-card .card-popovers .gd-performer-count:hover .gd-performer-popover {
@@ -134,10 +133,10 @@
 
 .group-card .card-popovers .gd-performer-image {
   width: 100%;
-  height: 96px;
+  height: 120px;
   border-radius: 0.25rem;
   object-fit: cover;
-  background: #26313f;
+  background: #324252;
 }
 
 .group-card .card-popovers .gd-performer-item {
@@ -145,18 +144,21 @@
   display: block;
   min-width: 0;
   text-decoration: none;
+  text-align: center;
 }
 
 .group-card .card-popovers .gd-performer-name {
-  position: absolute;
-  left: 0.25rem;
-  right: 0.25rem;
-  bottom: 0.25rem;
-  display: block;
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 0.2rem;
+  padding: 0.06rem 0.42rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.72rem;
-  line-height: 1.05;
+  font-size: 0.76rem;
+  line-height: 1.2;
   text-align: center;
+  border-radius: 0.25rem;
+  background: #d7e4f1;
+  color: #1a2330;
 }
