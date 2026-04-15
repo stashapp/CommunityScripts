@@ -12,6 +12,7 @@
     "      id " +
     "      title " +
     "      files { duration height } " +
+    "      performers { id name image_path } " +
     "      groups { group { id } scene_index } " +
     "    } " +
     "  }" +
@@ -25,6 +26,7 @@
     cacheByGroupId: new Map(),
     inFlightByGroupId: new Map(),
     includeAllScenes: false,
+    includePerformers: false,
     tooltipDelegateBound: false,
   };
 
@@ -106,21 +108,34 @@
         }
       }
       var next = false;
+      var nextPerformers = false;
       if (cfg && typeof cfg === "object") {
         next = readBoolSetting(cfg.includeAllScenes, false);
+        nextPerformers = readBoolSetting(cfg.includePerformers, false);
       }
-      if (next !== state.includeAllScenes) {
+      if (
+        next !== state.includeAllScenes ||
+        nextPerformers !== state.includePerformers
+      ) {
         state.includeAllScenes = next;
+        state.includePerformers = nextPerformers;
         state.cacheByGroupId.clear();
         state.inFlightByGroupId.clear();
       }
     } catch (e) {
       state.includeAllScenes = false;
+      state.includePerformers = false;
     }
   }
 
   function metricsCacheKey(groupId) {
-    return String(groupId) + ":" + (state.includeAllScenes ? "1" : "0");
+    return (
+      String(groupId) +
+      ":" +
+      (state.includeAllScenes ? "1" : "0") +
+      ":" +
+      (state.includePerformers ? "1" : "0")
+    );
   }
 
   function getSceneDurationSeconds(scene) {
@@ -203,6 +218,7 @@
     var bypassDurationFilterForResolution = totalFileCount === 1;
 
     var durationLines = [];
+    var performerById = new Map();
     for (var j = 0; j < rows.length; j++) {
       var row = rows[j];
       var scene = row.scene;
@@ -213,11 +229,26 @@
         formatSceneTooltipLine(idx, scene && scene.title, duration)
       );
 
-      if (bypassDurationFilterForResolution || duration > 600) {
+      if (bypassDurationFilterForResolution || duration > 360) {
         var height = getSceneVerticalPixels(scene);
         if (height > 0) {
           verticalSum += height;
           verticalCount += 1;
+        }
+      }
+
+      var perfs = (scene && scene.performers) || [];
+      for (var p = 0; p < perfs.length; p++) {
+        var perf = perfs[p];
+        if (!perf) continue;
+        var pid = String(perf.id || perf.name || "");
+        if (!pid) continue;
+        if (!performerById.has(pid)) {
+          performerById.set(pid, {
+            id: String(perf.id || ""),
+            name: String(perf.name || "").trim() || "(unknown performer)",
+            imagePath: String(perf.image_path || ""),
+          });
         }
       }
     }
@@ -242,6 +273,9 @@
       totalFileCount: totalFileCount,
       durationTooltip: durationTooltip,
       resolutionTooltip: resolutionTooltip,
+      performers: Array.from(performerById.values()).sort(function (a, b) {
+        return a.name.localeCompare(b.name);
+      }),
     };
   }
 
@@ -326,6 +360,76 @@
       wrap.appendChild(fb);
     }
     applySceneListTooltip(wrap, tip);
+    return wrap;
+  }
+
+  function normalizePerformerImageUrl(path) {
+    var p = String(path || "");
+    if (!p) return "";
+    if (/^https?:\/\//i.test(p)) return p;
+    if (p.indexOf("/") === 0) return p;
+    return "/" + p;
+  }
+
+  function buildPerformerChip(id, performers) {
+    var list = Array.isArray(performers) ? performers : [];
+    if (list.length === 0) return null;
+
+    var wrap = document.createElement("span");
+    wrap.id = id;
+    wrap.className = "gd-performer-count performer-count";
+    wrap.setAttribute("role", "img");
+    wrap.setAttribute("aria-label", "Performers: " + list.length);
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "minimal btn btn-primary";
+    btn.tabIndex = -1;
+    btn.setAttribute("aria-hidden", "true");
+
+    var icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("aria-hidden", "true");
+    icon.setAttribute("focusable", "false");
+    icon.setAttribute("data-prefix", "fas");
+    icon.setAttribute("data-icon", "user");
+    icon.setAttribute("class", "svg-inline--fa fa-user fa-icon");
+    icon.setAttribute("role", "img");
+    icon.setAttribute("viewBox", "0 0 448 512");
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute(
+      "d",
+      "M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"
+    );
+    path.setAttribute("fill", "currentColor");
+    icon.appendChild(path);
+
+    var count = document.createElement("span");
+    count.textContent = String(list.length);
+
+    btn.appendChild(icon);
+    btn.appendChild(count);
+    wrap.appendChild(btn);
+
+    var pop = document.createElement("div");
+    pop.className = "gd-performer-popover";
+    for (var i = 0; i < list.length; i++) {
+      var perf = list[i];
+      var item = document.createElement("div");
+      item.className = "gd-performer-item";
+      var img = document.createElement("img");
+      img.className = "gd-performer-image";
+      img.alt = perf.name;
+      var src = normalizePerformerImageUrl(perf.imagePath);
+      if (src) img.src = src;
+      else img.style.display = "none";
+      var name = document.createElement("div");
+      name.className = "gd-performer-name";
+      name.textContent = perf.name;
+      item.appendChild(img);
+      item.appendChild(name);
+      pop.appendChild(item);
+    }
+    wrap.appendChild(pop);
     return wrap;
   }
 
@@ -448,6 +552,8 @@
     if (oldRow && oldRow.parentNode) oldRow.parentNode.removeChild(oldRow);
     var oldRight = popovers.querySelector(".gd-stat-right");
     if (oldRight && oldRight.parentNode) oldRight.parentNode.removeChild(oldRight);
+    var oldPerf = popovers.querySelector(".gd-performer-count");
+    if (oldPerf && oldPerf.parentNode) oldPerf.parentNode.removeChild(oldPerf);
 
     var durationNode = buildStatNode(
       "gd-stat-duration-" + Date.now(),
@@ -464,6 +570,13 @@
     );
     resolutionNode.classList.add("gd-stat-right");
     resolutionNode.classList.add("chip");
+    if (state.includePerformers) {
+      var performerNode = buildPerformerChip(
+        "gd-performer-" + Date.now(),
+        metrics.performers
+      );
+      if (performerNode) popovers.appendChild(performerNode);
+    }
     popovers.appendChild(resolutionNode);
 
     mountDurationOnDateLine(card, durationNode);

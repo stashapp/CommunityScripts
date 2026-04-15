@@ -99,3 +99,53 @@
   opacity: inherit;
   cursor: help;
 }
+
+.group-card .card-popovers .gd-performer-count {
+  position: relative;
+}
+
+.group-card .card-popovers .gd-performer-count .btn {
+  pointer-events: none;
+}
+
+.group-card .card-popovers .gd-performer-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 40;
+  display: none;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: 300px;
+  overflow: auto;
+  padding: 0.4rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(20, 23, 28, 0.98);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.group-card .card-popovers .gd-performer-count:hover .gd-performer-popover {
+  display: block;
+}
+
+.group-card .card-popovers .gd-performer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+}
+
+.group-card .card-popovers .gd-performer-image {
+  width: 48px;
+  height: 64px;
+  border-radius: 0.25rem;
+  object-fit: cover;
+  background: #26313f;
+}
+
+.group-card .card-popovers .gd-performer-name {
+  font-size: 0.82rem;
+  line-height: 1.1;
+  color: var(--text, #d5dbe3);
+}
