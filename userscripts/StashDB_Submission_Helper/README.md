@@ -5,6 +5,7 @@ https://discourse.stashapp.cc/t/stashdb-submission-helper/1417
 - Adds button to add all unmatched aliases to performer
 - Adds button to add all unmatched urls to performer
 - Adds button to add all unmatched measurements to performer (if they match expected formats)
+- Adds button to add all unmatches urls to scene
 - Convert unmatched urls from regular strings to linked strings
 
 ## [**INSTALL USERSCRIPT**](https://raw.githubusercontent.com/stashapp/CommunityScripts/main/userscripts/StashDB_Submission_Helper/stashdb_submission_helper.user.js)
@@ -18,6 +19,9 @@ Installation requires a browser extension such as [Violentmonkey](https://violen
 ![demo gif](https://monosnap.com/image/p4pkcqrKWYp3V5quHl5LWOAZUG3oAP)
 
 ## Changelog
+
+### 0.8
+- Support scene URLS
 
 ### 0.7
 - Allow alias separator to also be `/` or ` or ` (space on either side of the or).
