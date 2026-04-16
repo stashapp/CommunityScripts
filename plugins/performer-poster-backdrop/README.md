@@ -11,6 +11,7 @@ Adds a blurred poster-style backdrop behind performer headers using the performe
 
 - Applies only to **Performer pages**
 - Uses the performer’s **poster image** as a background layer
+- When this plugin is active, Stash’s built-in performer **background image** (Settings → Interface → **Enable performer background image**) is hidden on that header so you only get one backdrop layer and the name block is not pushed down by a second stack.
 - Adjustable:
   - Opacity
   - Blur strength
