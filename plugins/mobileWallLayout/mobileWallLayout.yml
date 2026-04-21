@@ -1,10 +1,10 @@
-name: Mobile Wall Layout
+name: scrollFeed
 description: >
-  On the Markers and Images pages, forces the wall-mode gallery to render as a
-  single full-width column on mobile devices (phones in portrait or landscape,
-  up to ~960px wide). Tablets and desktops are unaffected.
-version: 1.0
-url: https://discourse.stashapp.cc/t/mobile-wall-layout/6160
+  A scrolling feed of your favorite marker clips, designed for private
+  one-handed mobile viewing. No scene navigation — just scroll for the next
+  clip. Pairs with the preview-cap patch (linked) for clip-length playback.
+version: 3.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/mobileWallLayout
 ui:
   javascript:
     - mobileWallLayout.js
