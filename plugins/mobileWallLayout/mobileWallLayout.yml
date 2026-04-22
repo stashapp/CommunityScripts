@@ -4,7 +4,7 @@ description: >
   one-handed mobile viewing. No scene navigation — just scroll for the next
   clip. Pairs with the preview-cap patch (linked) for clip-length playback.
 version: 3.0
-url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/mobileWallLayout
+url: https://discourse.stashapp.cc/t/mobile-wall-layout/6160
 ui:
   javascript:
     - mobileWallLayout.js

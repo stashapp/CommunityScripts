@@ -1,5 +1,7 @@
 # scrollFeed (mobileWallLayout)
 
+Discussion: https://discourse.stashapp.cc/t/mobile-wall-layout/6160
+
 Turns Stash's **Markers** (`/scenes/markers`) and **Images** (`/images`) wall
 into a scrollable mobile feed — full-width single-column layout, video
 play-on-visibility, and DOM-ordered loading that keeps the feed watchable
