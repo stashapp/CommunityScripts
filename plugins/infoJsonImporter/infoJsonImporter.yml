@@ -1,0 +1,21 @@
+name: "Info JSON Importer"
+description: "Imports metadata from yt-dlp .info.json files into Stash scenes. Reads title, date, description, tags and studio from .info.json files saved alongside your videos. Developed by David Smith © 2026."
+version: "1.0.0"
+url: ""
+
+exec:
+  - "python3"
+  - "{pluginDir}/infoJsonImporter.py"
+
+interface: raw
+
+tasks:
+  - name: "Import Info JSON"
+    description: "Scan all scenes for .info.json files and import their metadata into Stash."
+    execArgs:
+      - "--task=import"
+
+  - name: "Dry Run (preview only)"
+    description: "Preview what would be imported without making any changes to Stash."
+    execArgs:
+      - "--task=dryrun"
