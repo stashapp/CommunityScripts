@@ -163,22 +163,41 @@ async function sfwswitch_switcher() {
 
 function sfwswitch_findstashcss() {
     for (let i = 0; i < document.styleSheets.length; i++) {
-        const stylesheet = document.styleSheets[i];
-        if (stylesheet.href && stylesheet.href.includes("/plugin/sfwswitch/css")) {
-            return stylesheet;
+        const sheet = document.styleSheets[i];
+        try {
+            if (sheet.href && sheet.href.includes("/plugin/sfwswitch/css")) {
+                return sheet;
+            }
+        } catch (e) {
+            // Cross-origin access blocked - skip
         }
     }
     return null;
 }
 
-function sfw_init() {
+async function sfw_init() {
+    // Wait until the stylesheet is available
+    let retries = 0;
+    const maxRetries = 50; // ~5 seconds with 100ms delay
+
+    while (!sfwswitch_findstashcss() && retries < maxRetries) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+
     if (!document.getElementById("plugin_sfw")) {
         sfwswitch_createbutton();
     }
 }
 
+function sfw_start() {
+    setTimeout(() => {
+        sfw_init();
+    }, 0); 
+}
+
 if (document.readyState === "loading") {
-    window.addEventListener('DOMContentLoaded', sfw_init);
+    window.addEventListener("DOMContentLoaded", sfw_start);
 } else {
-    sfw_init();
+    sfw_start();
 }
