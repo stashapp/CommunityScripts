@@ -1,0 +1,96 @@
+/* [Global changes] Blur NSFW images and unblur on mouse over */
+
+/*Credit: fl0w#9497 */
+
+/* === MORE BLUR === */
+
+/* Stash Battle */
+.pwr-scene-image-container,
+.pwr-scene-image-container,
+.pwr-hover-preview,
+.pwr-scene-image-container .pwr-scene-image,
+
+/* Ascension */
+.hon-performer-image,
+.hon-performer-card,
+.hon-scene-image,
+.hon-selection-image,
+.hon-image-image-container,
+.hon-image-image,
+.hon-victory-image,
+
+/* Deck Viewer */
+.swiper-zoom-container,
+.gallery-cover-link,
+
+/* O Stats */
+.custom-stats-row .stats-element img,
+#on-this-day-section [style*="position: relative; height: 400px"],
+
+/* Sprite Tab */
+.sprite-cell
+{
+	filter: blur(30px);
+	transition: filter 0.25s ease;
+}
+
+/* === LESS BLUR === */
+
+/* StashBattle */
+.pwr-scene-info,
+
+/* Deck Viewer */
+.gallery-cover-title,
+.gallery-performers,
+
+/* HotOrNot */
+.hon-selection-name,
+.hon-performer-info.hon-scene-info,
+
+/* O Stats */
+.custom-stats-row .stats-element,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"] img,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"] img + div,
+#on-this-day-section > div:last-child
+{
+	filter: blur(2px);
+	transition: filter 0.25s ease;
+}
+
+/* Deck Viewer */
+.swiper-zoom-container:hover,
+.gallery-cover-link:hover,
+.gallery-cover-title:hover,
+.gallery-performers:hover,
+
+/* StashBattle */
+.pwr-scene-image-container:hover,
+.pwr-scene-image-container:hover .pwr-hover-preview,
+.pwr-scene-image-container:hover .pwr-scene-image,
+.pwr-scene-info:hover,
+
+/* Ascension */
+.hon-performer-image:hover,
+.hon-performer-card:hover,
+.hon-scene-image:hover,
+.hon-image-image-container:hover,
+.hon-image-image:hover,
+.hon-performer-info.hon-scene-info:hover,
+.hon-selection-card:hover,
+.hon-selection-name:hover,
+.hon-selection-image:hover,
+.hon-victory-image:hover,
+
+/* Sprite Tab */
+.sprite-cell:hover,
+
+/* O Stats */
+.custom-stats-row .stats-element:hover,
+.custom-stats-row .stats-element:hover img,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"]:hover img,
+#on-this-day-section [style*="display: flex"][style*="cursor: pointer"]:hover img + div,
+#on-this-day-section > div:last-child:hover,
+#on-this-day-section [style*="position: relative; height: 400px"]:hover 
+{
+filter: blur(0px);
+}
