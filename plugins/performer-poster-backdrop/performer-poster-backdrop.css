@@ -42,6 +42,15 @@
   overflow: hidden;
 }
 
+/*
+ * Stash core now renders BackgroundImage (.background-image-container) inside the same header.
+ * Our plugin replaces that behavior; leaving both causes a stacked/double header look and can
+ * push layout. Hide native backdrop whenever our hero is present.
+ */
+#performer-page .detail-header.full-width.pb-has-hero .background-image-container {
+  display: none !important;
+}
+
 /* Lift content above banner ONLY in the REAL header */
 #performer-page .detail-header.full-width > *:not(.pb-hero) {
   position: relative;

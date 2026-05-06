@@ -184,7 +184,7 @@
     },
     "TriggerType": {
       "type": "string",
-      "pattern": "^(Scene|SceneMarker|Image|Gallery|GalleryChapter|Movie|Performer|Studio|Tag)\\.(Create|Update|Destroy|Merge)\\.Post$",
+      "pattern": "^(Scene|SceneMarker|Image|Gallery|GalleryChapter|Movie|Group|Performer|Studio|Tag)\\.(Create|Update|Destroy|Merge)\\.Post$",
       "enum": [
         "Scene.Create.Post",
         "Scene.Update.Post",
@@ -209,6 +209,10 @@
         "Movie.Update.Post",
         "Movie.Destroy.Post",
         "Movie.Merge.Post",
+        "Group.Create.Post",
+        "Group.Update.Post",
+        "Group.Destroy.Post",
+        "Group.Merge.Post",
         "Performer.Create.Post",
         "Performer.Update.Post",
         "Performer.Destroy.Post",

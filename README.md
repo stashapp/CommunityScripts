@@ -33,6 +33,14 @@ Repository: https://github.com/stashapp/plugins-repo-template
 
 Submit a PR to add your plugin, theme, userscript and other utility script to the repository. 
 
+### LLM-assisted contributions
+
+LLM-assisted contributions are allowed under the following conditions:
+- LLM use is openly disclosed.
+- Code is reviewed by a human.
+- Human testing and validation was performed.
+- You take full responsibility for the code (including license compliance).
+
 ## Deprecation
 
 14-day notice and associated issue with the appropriate label will be created once plugins, themes, userscripts and other utility scripts are marked for deprecation to allow time for someone to take over the development.

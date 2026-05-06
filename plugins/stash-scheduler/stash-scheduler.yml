@@ -1,0 +1,149 @@
+name: Stash Scheduler
+description: Schedule automatic library scans with an optional identify pass after each scan.
+version: "0.6.0"
+url: https://discourse.stashapp.cc/t/stash-scheduler/7059
+
+exec:
+  - python3
+  - "{pluginDir}/stash_scheduler.py"
+
+interface: raw
+
+tasks:
+  - name: Start Scheduler
+    description: >
+      Start the background scheduler. It will run according to your configured
+      frequency settings and keep running until Stash is restarted or the task
+      is stopped. Start this once after configuring your schedule settings.
+    defaultArgs:
+      mode: start_scheduler
+
+  - name: Run Scan Now
+    description: >
+      Trigger a library scan immediately, then run Identify afterwards if
+      "Run Identify After Scan" is enabled in settings.
+    defaultArgs:
+      mode: run_now
+
+  - name: Force Scan + Identify Now
+    description: >
+      Force a full scan AND identify run immediately, regardless of the
+      "Run Identify After Scan" setting. Use this to test that everything
+      is working correctly.
+    defaultArgs:
+      mode: force_now
+
+  - name: Check Status
+    description: >
+      Show whether the scheduler daemon is running and display the last 30
+      lines of its log file. Useful for confirming the schedule loaded
+      correctly or diagnosing why a scan did not fire.
+    defaultArgs:
+      mode: check_status
+
+settings:
+  frequency:
+    displayName: Scan Frequency
+    description: >
+      How often to run the library scan.
+      Valid values: hourly, daily, weekly.
+      Hourly ignores the Time of Day setting.
+    type: STRING
+
+  time_of_day:
+    displayName: Time of Day (HH:MM)
+    description: >
+      The time to run the scan in 24-hour HH:MM format. Used for Daily and
+      Weekly schedules; ignored for Hourly. Examples: 02:00, 14:30, 20:45.
+      Defaults to 02:00 if not set.
+    type: STRING
+
+  day_of_week:
+    displayName: Day of Week (Weekly only)
+    description: >
+      The day of the week on which to run the scan when Frequency is set to
+      Weekly. Valid values: mon, tue, wed, thu, fri, sat, sun.
+      Defaults to sun if not set.
+    type: STRING
+
+  timezone:
+    displayName: Timezone
+    description: >
+      IANA timezone name used to interpret the Time of Day and Day of Week
+      settings. Examples: America/New_York, Europe/London, Asia/Tokyo,
+      Australia/Sydney. Leave blank to use UTC. Full list at
+      https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+    type: STRING
+
+  run_identify:
+    displayName: Run Identify After Scan
+    description: >
+      When enabled, an Identify task will automatically run after each scan
+      completes. Identify uses the sources and options configured under
+      Settings > Identify in Stash.
+    type: BOOLEAN
+
+  identify_timeout_minutes:
+    displayName: Scan Completion Timeout (minutes)
+    description: >
+      How long (in minutes) to wait for the scan to finish before running
+      Identify. If the scan takes longer than this, Identify is skipped for
+      that run. Only used when Run Identify After Scan is enabled.
+      Defaults to 120 if not set.
+    type: NUMBER
+
+  scanPaths:
+    displayName: Limit to Paths (one per line)
+    description: >
+      Restrict the scan (and the follow-up Identify, if enabled) to these
+      directories only. Enter one absolute path per line, or separate paths
+      with commas. Leave blank to scan and identify the full library.
+      Example: /media/new-imports
+    type: STRING
+
+  scanGenerateCovers:
+    displayName: Generate Covers
+    description: Generate cover images for scenes during scan.
+    type: BOOLEAN
+
+  scanGeneratePreviews:
+    displayName: Generate Video Previews
+    description: Generate video preview clips for scenes during scan.
+    type: BOOLEAN
+
+  scanGenerateImagePreviews:
+    displayName: Generate Image Previews
+    description: Generate image preview strips for scenes during scan.
+    type: BOOLEAN
+
+  scanGenerateSprites:
+    displayName: Generate Sprites
+    description: Generate sprite sheets (used for seek bar previews) during scan.
+    type: BOOLEAN
+
+  scanGeneratePhashes:
+    displayName: Generate Video Phashes
+    description: Generate perceptual hashes for video files during scan. Used for duplicate detection.
+    type: BOOLEAN
+
+  scanGenerateImagePhashes:
+    displayName: Generate Image Phashes
+    description: Generate perceptual hashes for image files during scan. Used for duplicate detection.
+    type: BOOLEAN
+
+  scanGenerateThumbnails:
+    displayName: Generate Image Thumbnails
+    description: Generate thumbnails for image files during scan.
+    type: BOOLEAN
+
+  scanGenerateClipPreviews:
+    displayName: Generate Image Clip Previews
+    description: Generate animated clip previews for image gallery files during scan.
+    type: BOOLEAN
+
+  rescan:
+    displayName: Force Rescan
+    description: >
+      Force a rescan of all files even if their modification time has not
+      changed. Useful after upgrading Stash or changing scan settings.
+    type: BOOLEAN

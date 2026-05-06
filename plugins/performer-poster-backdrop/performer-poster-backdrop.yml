@@ -1,6 +1,6 @@
 name: Performer Poster Backdrop
 description: Adds a blurred poster backdrop to performer pages.
-version: 1.0.3
+version: 1.1.0
 url: https://discourse.stashapp.cc/t/performer-poster-backdrop/4897
 
 ui:
