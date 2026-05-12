@@ -10,13 +10,14 @@
 .pwr-hover-preview,
 .pwr-scene-image-container .pwr-scene-image,
 
-/* HotOrNot */
+/* Ascension */
 .hon-performer-image,
 .hon-performer-card,
 .hon-scene-image,
 .hon-selection-image,
 .hon-image-image-container,
 .hon-image-image,
+.hon-victory-image,
 
 /* Deck Viewer */
 .swiper-zoom-container,
@@ -68,7 +69,7 @@
 .pwr-scene-image-container:hover .pwr-scene-image,
 .pwr-scene-info:hover,
 
-/* HotOrNot */
+/* Ascension */
 .hon-performer-image:hover,
 .hon-performer-card:hover,
 .hon-scene-image:hover,
@@ -78,6 +79,7 @@
 .hon-selection-card:hover,
 .hon-selection-name:hover,
 .hon-selection-image:hover,
+.hon-victory-image:hover,
 
 /* Sprite Tab */
 .sprite-cell:hover,

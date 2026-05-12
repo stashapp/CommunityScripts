@@ -23,13 +23,13 @@ async function getSfwConfig() {
         return false;
     }
 }
+
 async function sfw_mode() {
     const stash_css = sfwswitch_findstashcss();
     const button = document.getElementById("plugin_sfw");
-
     if (!stash_css) return;
-
-    const sfwState = localStorage.getItem("sfw_mode") === "true";
+    const rawState = localStorage.getItem("sfw_mode");
+    const sfwState = rawState === "true";
     const audioMuteEnabled = await getSfwConfig();
 
     stash_css.disabled = !sfwState;
@@ -69,7 +69,6 @@ function sfwswitch_createbutton() {
 
             document.getElementById(buttonId).addEventListener("click", sfwswitch_switcher);
 
-            // Initialize the button based on saved state
             sfw_mode();
         }
     }, 100);
@@ -77,17 +76,14 @@ function sfwswitch_createbutton() {
     setTimeout(() => clearInterval(intervalId), 10000);
 }
 
-// Function to strictly handle the muted state
 function sfw_forceMute(media) {
     if (!media) return;
     media.muted = true;
 }
 
 function sfw_mute_all_media() {
-    // Initial sweep
     document.querySelectorAll("audio, video").forEach(sfw_forceMute);
 
-    // Global event listener for play, seek, and volume changes
     if (!sfw_playListener) {
         sfw_playListener = function(e) {
             if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
@@ -101,7 +97,6 @@ function sfw_mute_all_media() {
         document.addEventListener("seeking", sfw_playListener, true);
     }
 
-    // MutationObserver for content loaded via AJAX/Dynamic updates
     if (!sfw_mediaObserver) {
         sfw_mediaObserver = new MutationObserver(mutations => {
             for (const mutation of mutations) {
@@ -119,7 +114,6 @@ function sfw_mute_all_media() {
 }
 
 function sfw_unmute_all_media() {
-    // 1. Remove listeners FIRST to prevent them from firing during the unmute loop
     if (sfw_playListener) {
         document.removeEventListener("play", sfw_playListener, true);
         document.removeEventListener("volumechange", sfw_playListener, true);
@@ -133,10 +127,8 @@ function sfw_unmute_all_media() {
         sfw_mediaObserver = null;
     }
 
-    // 2. Unmute existing media
     document.querySelectorAll("audio, video").forEach(media => {
         media.muted = false;
-        // Optional: media.volume = 1.0; // Use if volume was also forced to 0
     });
 }
 
@@ -144,7 +136,6 @@ async function sfwswitch_switcher() {
     const stash_css = sfwswitch_findstashcss();
     if (!stash_css) return;
 
-    // Toggle the CSS
     stash_css.disabled = !stash_css.disabled;
     const enabled = !stash_css.disabled;
 
@@ -152,17 +143,13 @@ async function sfwswitch_switcher() {
 
     const audioMuteEnabled = await getSfwConfig();
 
-    // Logic Check: If we just disabled SFW, we MUST run unmute immediately
     if (enabled && audioMuteEnabled) {
         sfw_mute_all_media();
     } else {
-        // This clears observers and sets muted = false
         sfw_unmute_all_media();
         
-        // CRITICAL: Force a pause/reset on any media that might be stuck in a background buffer
         document.querySelectorAll("audio, video").forEach(media => {
             if (media.paused && media.muted) {
-                // If it was supposed to be stopped, make sure it stays stopped
                 media.muted = false; 
             }
         });
@@ -176,13 +163,41 @@ async function sfwswitch_switcher() {
 
 function sfwswitch_findstashcss() {
     for (let i = 0; i < document.styleSheets.length; i++) {
-        const stylesheet = document.styleSheets[i];
-        if (stylesheet.href && stylesheet.href.includes("/plugin/sfwswitch/css")) {
-            return stylesheet;
+        const sheet = document.styleSheets[i];
+        try {
+            if (sheet.href && sheet.href.includes("/plugin/sfwswitch/css")) {
+                return sheet;
+            }
+        } catch (e) {
+            // Cross-origin access blocked - skip
         }
     }
     return null;
 }
 
-// Initialize button on page load
-sfwswitch_createbutton();
+async function sfw_init() {
+    // Wait until the stylesheet is available
+    let retries = 0;
+    const maxRetries = 50; // ~5 seconds with 100ms delay
+
+    while (!sfwswitch_findstashcss() && retries < maxRetries) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+
+    if (!document.getElementById("plugin_sfw")) {
+        sfwswitch_createbutton();
+    }
+}
+
+function sfw_start() {
+    setTimeout(() => {
+        sfw_init();
+    }, 0); 
+}
+
+if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", sfw_start);
+} else {
+    sfw_start();
+}
