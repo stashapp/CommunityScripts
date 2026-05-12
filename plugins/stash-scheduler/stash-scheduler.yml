@@ -1,6 +1,6 @@
 name: Stash Scheduler
 description: Schedule automatic library scans with an optional identify pass after each scan.
-version: "0.6.0"
+version: "0.10.0"
 url: https://github.com/stashapp/stash
 
 exec:
@@ -42,6 +42,16 @@ tasks:
       mode: check_status
 
 settings:
+  apiKey:
+    displayName: API Key
+    description: >
+      Stash API key for authenticating background scans. Required when
+      Settings > Security > "Require API key for local connections" is enabled,
+      or when accessing Stash over a network. Generate a key under
+      Settings > Security > API Keys, then paste it here. Leave blank if
+      Stash does not require authentication.
+    type: STRING
+
   frequency:
     displayName: Scan Frequency
     description: >
@@ -53,9 +63,10 @@ settings:
   time_of_day:
     displayName: Time of Day (HH:MM)
     description: >
-      The time to run the scan in 24-hour HH:MM format. Used for Daily and
-      Weekly schedules; ignored for Hourly. Examples: 02:00, 14:30, 20:45.
-      Defaults to 02:00 if not set.
+      One or more times to run the scan in 24-hour HH:MM format. Used for
+      Daily and Weekly schedules; ignored for Hourly. Separate multiple times
+      with commas or spaces. Examples: 02:00 — single daily run. 00:00, 06:00,
+      09:00, 16:00, 18:00 — five runs per day. Defaults to 02:00 if not set.
     type: STRING
 
   day_of_week:

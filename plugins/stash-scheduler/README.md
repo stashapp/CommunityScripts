@@ -81,8 +81,9 @@ Open **Settings → Plugins → Stash Scheduler** and set your preferences:
 
 | Setting | Description | Default |
 |---|---|---|
+| **API Key** | Stash API key for authenticating background scans. Required when "Require API key" is enabled in Stash's Security settings. Generate one under Settings > Security > API Keys. Leave blank if Stash does not require authentication. | *(none)* |
 | **Scan Frequency** | `hourly`, `daily`, or `weekly` | `daily` |
-| **Time of Day (HH:MM)** | Time to run the scan in 24-hour `HH:MM` format. Used by Daily and Weekly; ignored for Hourly. | `02:00` |
+| **Time of Day (HH:MM)** | One or more times to run the scan, in 24-hour `HH:MM` format. Separate multiple times with commas or spaces, e.g. `00:00, 06:00, 18:00`. Used by Daily and Weekly; ignored for Hourly. | `02:00` |
 | **Day of Week** | Day to scan when Frequency is Weekly. Use `mon`, `tue`, `wed`, `thu`, `fri`, `sat`, or `sun`. | `sun` |
 | **Timezone** | IANA timezone name for interpreting Time of Day and Day of Week. Examples: `America/New_York`, `Europe/London`, `Asia/Tokyo`. Leave blank for UTC. | `UTC` |
 | **Run Identify After Scan** | When enabled, runs an Identify task after each scan finishes successfully. | `false` |
@@ -294,6 +295,10 @@ All activity is written to the Stash log. To view it:
 
 | Version | Notes |
 |---|---|
+| 0.10.0 | Added API Key setting — required when Stash's "Require API key" security option is enabled |
+| 0.9.0 | Daemon now reloads settings from Stash on every scheduled run — changes to identify, paths, and scan flags take effect without restarting the scheduler |
+| 0.8.0 | Fixed identify not running after scan (null fields in GraphQL input); fixed daemon losing Stash connection after restart; added APScheduler error logging, hourly heartbeat, and next-fire-time logging; Check Status now shows 100 log lines |
+| 0.7.0 | Time of Day now accepts multiple times (comma or space separated) — each fires a separate scheduled scan |
 | 0.6.0 | Added "Limit to Paths" setting — scan and identify can now be restricted to specific directories |
 | 0.5.0 | Fixed identify-after-scan (null jobQueue crash); added 9 scan generation flag settings (covers, previews, sprites, phashes, thumbnails, clip previews, force rescan) |
 | 0.4.0 | Added Check Status task; daemon logs written to file (`/tmp/stash-scheduler-daemon.log`) |
