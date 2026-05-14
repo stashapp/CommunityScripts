@@ -1,0 +1,15 @@
+name: Tagi10n
+description: Display tag names in the given language.
+version: 0.0.1
+ui:
+  requires:
+    - CommunityScriptsUILibrary
+  javascript:
+    - https://cdn.jsdelivr.net/gh/dongfengweixiao/CommunityScripts@tagi10n1/plugins/Tagi10n/i10n/tag_zh_CN.js
+    - Tagi10n.js
+
+settings:
+  defaultLanguage:
+    displayName: Default Language
+    description: Default Language
+    type: STRING
