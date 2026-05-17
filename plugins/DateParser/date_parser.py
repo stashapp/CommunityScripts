@@ -45,9 +45,21 @@ def parse_date_candidate(string):
     return result
 
 
+GALLERY_FRAGMENT = """
+    id
+    title
+    date
+    files {
+        path
+    }
+    folder {
+        path
+    }
+"""
+
 def find_date_for_galleries(settings):
 
-    galleries = stash.find_galleries(f={"is_missing": "date"})
+    galleries = stash.find_galleries(f={"is_missing": "date"}, fragment=GALLERY_FRAGMENT)
 
     total = len(galleries)
 
@@ -58,13 +70,19 @@ def find_date_for_galleries(settings):
         acceptableDate = None
         
         for file in gallery.get("files", []):
-            if candidate := parse_date_candidate(file["path"]):
-                acceptableDate = candidate
+            file_path = file.get("path", "")
+            if file_path:
+                log.debug(f"Checking file path: {file_path}")
+                if candidate := parse_date_candidate(file_path):
+                    acceptableDate = candidate
         
         if "folder" in gallery and gallery["folder"]:
-            if "path" in gallery["folder"] and gallery["folder"]["path"]:
-                if candidate := parse_date_candidate(gallery["folder"]["path"]):
+            folder_path = gallery["folder"].get("path") or ""
+            if folder_path:
+                if candidate := parse_date_candidate(folder_path):
                     acceptableDate = candidate
+            else:
+                log.debug(f"Gallery ID {gallery.get('id')} has a folder entry but no path")
         
         if acceptableDate:
             log.info(
@@ -77,6 +95,8 @@ def find_date_for_galleries(settings):
             if settings['setTitle'] and not gallery.get("title") and acceptableDate[1]:
                 updateObject["title"] = acceptableDate[1]
             stash.update_gallery(updateObject)
+        else:
+            log.debug(f"Gallery ID ({gallery.get('id')}) - no date found in paths")
 
 
 if __name__ == "__main__":
