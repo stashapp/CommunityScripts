@@ -17,10 +17,10 @@ async function getSfwConfig() {
         });
         const result = await response.json();
         const pluginSettings = result.data.configuration.plugins.sfwswitch;
-        return pluginSettings?.audio_setting === true;
+        return { audioMute: pluginSettings?.audio_setting === true, neverUnblur: pluginSettings?.never_unblur === true };
     } catch (e) {
         console.error("SFW Switch: Could not fetch config", e);
-        return false;
+        return { audioMute: false, neverUnblur: false };
     }
 }
 
@@ -30,9 +30,10 @@ async function sfw_mode() {
     if (!stash_css) return;
     const rawState = localStorage.getItem("sfw_mode");
     const sfwState = rawState === "true";
-    const audioMuteEnabled = await getSfwConfig();
+    const { audioMute: audioMuteEnabled, neverUnblur } = await getSfwConfig();
 
     stash_css.disabled = !sfwState;
+    sfw_apply_never_unblur(sfwState && neverUnblur);
 
     if (sfwState && audioMuteEnabled) {
         sfw_mute_all_media();
@@ -141,7 +142,8 @@ async function sfwswitch_switcher() {
 
     localStorage.setItem("sfw_mode", enabled);
 
-    const audioMuteEnabled = await getSfwConfig();
+    const { audioMute: audioMuteEnabled, neverUnblur } = await getSfwConfig();
+    sfw_apply_never_unblur(enabled && neverUnblur);
 
     if (enabled && audioMuteEnabled) {
         sfw_mute_all_media();
@@ -158,6 +160,37 @@ async function sfwswitch_switcher() {
     const button = document.getElementById("plugin_sfw");
     if (button) {
         button.style.color = enabled ? "#5cff00" : "#f5f8fa";
+    }
+}
+
+const SFW_NEVER_UNBLUR_CSS = [
+    ".thumbnail-container img,.detail-header-image,.wall-item-gallery,",
+    ".scene-player-container,.scene-cover,.scene-card-preview,.scrubber-item,",
+    ".scene-image,.scene-card img,.wall-item-media,.wall-item.show-title,",
+    ".image-card img,.image-thumbnail,.Lightbox-carousel,.image-image,",
+    ".react-photo-gallery--gallery img,.group-card-image,.gallery-image,",
+    ".gallery-card-image,.gallery-card img,.gallery-cover img,",
+    ".GalleryWallCard.GalleryWallCard-portrait,.GalleryWallCard.GalleryWallCard-landscape,",
+    ".performer-card img,.studio-card-image,.studio-card img,.tag-card img",
+    "{filter:blur(30px)!important}",
+    ".card-section-title,.detail-item-value,.TruncatedText,.scene-studio-overlay,",
+    ".scene-header>h3,h3.scene-header,.queue-scene-details,.marker-wall,",
+    ".performer-name,.card-section,.name-data,.aliases-data,.gallery-header.no-studio,",
+    ".studio-name,.studio-overlay a,.studio-logo,.studio-parent-studios,",
+    ".group-details>div>h2,h3.image-header,.TruncatedText.image-card__description,",
+    ".TruncatedText.tag-description,.tag-item.tag-link.badge.badge-secondary,.tag-name",
+    "{filter:blur(2px)!important}",
+].join("");
+
+function sfw_apply_never_unblur(enabled) {
+    const existing = document.getElementById("sfw-never-unblur");
+    if (enabled && !existing) {
+        const style = document.createElement("style");
+        style.id = "sfw-never-unblur";
+        style.textContent = SFW_NEVER_UNBLUR_CSS;
+        document.head.appendChild(style);
+    } else if (!enabled && existing) {
+        existing.remove();
     }
 }
 
