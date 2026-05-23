@@ -1,6 +1,6 @@
 let sfw_mediaObserver = null;
 let sfw_playListener = null;
-let sfw_extraListeners = null; 
+let sfw_extraListeners = null;
 
 async function getSfwConfig() {
     try {
@@ -163,32 +163,28 @@ async function sfwswitch_switcher() {
     }
 }
 
-const SFW_NEVER_UNBLUR_CSS = [
-    ".thumbnail-container img,.detail-header-image,.wall-item-gallery,",
-    ".scene-player-container,.scene-cover,.scene-card-preview,.scrubber-item,",
-    ".scene-image,.scene-card img,.wall-item-media,.wall-item.show-title,",
-    ".image-card img,.image-thumbnail,.Lightbox-carousel,.image-image,",
-    ".react-photo-gallery--gallery img,.group-card-image,.gallery-image,",
-    ".gallery-card-image,.gallery-card img,.gallery-cover img,",
-    ".GalleryWallCard.GalleryWallCard-portrait,.GalleryWallCard.GalleryWallCard-landscape,",
-    ".performer-card img,.studio-card-image,.studio-card img,.tag-card img",
-    "{filter:blur(30px)!important}",
-    ".card-section-title,.detail-item-value,.TruncatedText,.scene-studio-overlay,",
-    ".scene-header>h3,h3.scene-header,.queue-scene-details,.marker-wall,",
-    ".performer-name,.card-section,.name-data,.aliases-data,.gallery-header.no-studio,",
-    ".studio-name,.studio-overlay a,.studio-logo,.studio-parent-studios,",
-    ".group-details>div>h2,h3.image-header,.TruncatedText.image-card__description,",
-    ".TruncatedText.tag-description,.tag-item.tag-link.badge.badge-secondary,.tag-name",
-    "{filter:blur(2px)!important}",
-].join("");
-
 function sfw_apply_never_unblur(enabled) {
     const existing = document.getElementById("sfw-never-unblur");
     if (enabled && !existing) {
-        const style = document.createElement("style");
-        style.id = "sfw-never-unblur";
-        style.textContent = SFW_NEVER_UNBLUR_CSS;
-        document.head.appendChild(style);
+        let css = "";
+        for (let s = 0; s < document.styleSheets.length; s++) {
+            const sheet = document.styleSheets[s];
+            try {
+                if (!sheet.href || !sheet.href.includes("/plugin/sfwswitch/css")) continue;
+                for (let i = 0; i < sheet.cssRules.length; i++) {
+                    const rule = sheet.cssRules[i];
+                    if (rule instanceof CSSStyleRule && !rule.selectorText.includes(":hover")) {
+                        css += `${rule.selectorText}{filter:${rule.style.filter}!important}`;
+                    }
+                }
+            } catch (e) {}
+        }
+        if (css) {
+            const style = document.createElement("style");
+            style.id = "sfw-never-unblur";
+            style.textContent = css;
+            document.head.appendChild(style);
+        }
     } else if (!enabled && existing) {
         existing.remove();
     }
