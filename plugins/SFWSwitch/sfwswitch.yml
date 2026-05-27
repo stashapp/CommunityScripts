@@ -1,6 +1,6 @@
 name: SFW Switch
-description: Add a button to blur covers and images.
-version: 1.8
+description: Add a button to the menu bar to blur images, text and optionally mute audio.
+version: 1.9
 url: https://discourse.stashapp.cc/t/sfw-switch/4658
 ui:
   javascript:
@@ -12,4 +12,8 @@ settings:
   audio_setting:
     displayName: Enable Sound Mute
     description: By default the plugin does not mute sound. Enabling this feature will have sound sources included when the SFW button is enabled.
+    type: BOOLEAN
+  never_unblur:
+    displayName: Never Unblur on Hover
+    description: Keep images blurred even when hovered.
     type: BOOLEAN

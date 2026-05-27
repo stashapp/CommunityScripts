@@ -1,6 +1,6 @@
 let sfw_mediaObserver = null;
 let sfw_playListener = null;
-let sfw_extraListeners = null; 
+let sfw_extraListeners = null;
 
 async function getSfwConfig() {
     try {
@@ -17,10 +17,10 @@ async function getSfwConfig() {
         });
         const result = await response.json();
         const pluginSettings = result.data.configuration.plugins.sfwswitch;
-        return pluginSettings?.audio_setting === true;
+        return { audioMute: pluginSettings?.audio_setting === true, neverUnblur: pluginSettings?.never_unblur === true };
     } catch (e) {
         console.error("SFW Switch: Could not fetch config", e);
-        return false;
+        return { audioMute: false, neverUnblur: false };
     }
 }
 
@@ -30,9 +30,10 @@ async function sfw_mode() {
     if (!stash_css) return;
     const rawState = localStorage.getItem("sfw_mode");
     const sfwState = rawState === "true";
-    const audioMuteEnabled = await getSfwConfig();
+    const { audioMute: audioMuteEnabled, neverUnblur } = await getSfwConfig();
 
     stash_css.disabled = !sfwState;
+    sfw_apply_never_unblur(sfwState && neverUnblur);
 
     if (sfwState && audioMuteEnabled) {
         sfw_mute_all_media();
@@ -141,7 +142,8 @@ async function sfwswitch_switcher() {
 
     localStorage.setItem("sfw_mode", enabled);
 
-    const audioMuteEnabled = await getSfwConfig();
+    const { audioMute: audioMuteEnabled, neverUnblur } = await getSfwConfig();
+    sfw_apply_never_unblur(enabled && neverUnblur);
 
     if (enabled && audioMuteEnabled) {
         sfw_mute_all_media();
@@ -158,6 +160,33 @@ async function sfwswitch_switcher() {
     const button = document.getElementById("plugin_sfw");
     if (button) {
         button.style.color = enabled ? "#5cff00" : "#f5f8fa";
+    }
+}
+
+function sfw_apply_never_unblur(enabled) {
+    const existing = document.getElementById("sfw-never-unblur");
+    if (enabled && !existing) {
+        let css = "";
+        for (let s = 0; s < document.styleSheets.length; s++) {
+            const sheet = document.styleSheets[s];
+            try {
+                if (!sheet.href || !sheet.href.includes("/plugin/sfwswitch/css")) continue;
+                for (let i = 0; i < sheet.cssRules.length; i++) {
+                    const rule = sheet.cssRules[i];
+                    if (rule instanceof CSSStyleRule && !rule.selectorText.includes(":hover")) {
+                        css += `${rule.selectorText}{filter:${rule.style.filter}!important}`;
+                    }
+                }
+            } catch (e) {}
+        }
+        if (css) {
+            const style = document.createElement("style");
+            style.id = "sfw-never-unblur";
+            style.textContent = css;
+            document.head.appendChild(style);
+        }
+    } else if (!enabled && existing) {
+        existing.remove();
     }
 }
 
