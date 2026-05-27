@@ -9,8 +9,10 @@ https://discourse.stashapp.cc/t/sfw-switch/4658
   - Gray = Blur disabled
 - Toggling the button blurs cover images and other content.
 - Hovering over an image temporarily removes the blur.
+- Optional toggle to also mute audio from scenes.
+- Optional toggle to not remove the blur on thumbnail hover.
 - Extends the blurring functionality to some community plugins. 
-  - Custom selectors should should be added to `additional_plugins.css` file.
+  - Custom selectors should be added to `additional_plugins.css` file.
 
 ## Screenshots
 
