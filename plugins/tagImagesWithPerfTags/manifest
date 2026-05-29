@@ -1,0 +1,13 @@
+id: tagImagesWithPerfTags
+name: Tag Images From Performer Tags
+metadata:
+  description: tags images with performer tags.
+version: 0.1-43feb59
+date: "2025-12-20 01:59:59"
+requires: []
+source_repository: https://stashapp.github.io/CommunityScripts/stable/index.yml
+files:
+- README.md
+- tagImagesWithPerfTags.py
+- tagImagesWithPerfTags.yml
+- requirements.txt
