@@ -1,4 +1,4 @@
-name: Tag images from galleries
+name: Tag Images from Galleries
 description: Tags images with tags of galleries.
 version: 1.1
 url: https://discourse.stashapp.cc/t/tag-galleries-from-images/3904
@@ -19,16 +19,16 @@ hooks:
 settings:
   excludeOrganized:
     displayName: Exclude galleries marked as organized
-    description: Do not automatically tag galleries if it is marked as organized
+    description: Do not automatically tag galleries if it is marked as organized.
     type: BOOLEAN
     
   excludeWithTag:
     displayName: Exclude galleries with tag from Hook
-    description: Do not automatically tag galleries if the gallery has this tag
+    description: Do not automatically tag galleries if the gallery has this tag.
     type: STRING
 
 tasks:
   - name: "Tag all images from galleries"
-    description: Loops through all galleries, and applies the tags of the gallery. Can take a long time on large db's.
+    description: Loops through all galleries, and applies the tags of the gallery. Can take a long time on large databases.
     defaultArgs:
       mode: processAll
