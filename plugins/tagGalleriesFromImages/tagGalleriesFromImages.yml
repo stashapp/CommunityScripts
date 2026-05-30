@@ -1,5 +1,5 @@
 name: Tag galleries from images
-description: tags galleries with tags of contained images.
+description: Tags galleries with tags of contained images.
 version: 1.0
 url: https://discourse.stashapp.cc/t/tag-galleries-from-images/3904
 exec:
@@ -8,7 +8,7 @@ exec:
 interface: raw
 
 hooks:
-  - name: update gallery
+  - name: Update gallery
     description: Will tag galleries with tags of contained images
     triggeredBy:
       - Gallery.Update.Post
@@ -17,15 +17,15 @@ hooks:
 settings:
   excludeOrganized:
     displayName: Exclude galleries marked as organized
-    description: Do not automatically tag galleries if it is marked as organized
+    description: Do not automatically tag galleries if it is marked as organized.
     type: BOOLEAN
   excludeWithTag:
     displayName: Exclude galleries with tag from Hook
-    description: Do not automatically tag galleries if the gallery has this tag
+    description: Do not automatically tag galleries if the gallery has this tag.
     type: STRING
 
 tasks:
   - name: "Tag all galleries"
-    description: Loops through all galleries, and applies the tags of the contained images. Can take a long time on large db's.
+    description: Loops through all galleries, and applies the tags of the contained images. Can take a long time on large databases.
     defaultArgs:
       mode: processAll
