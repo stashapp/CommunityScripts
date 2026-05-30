@@ -3,10 +3,6 @@ from stashapi.stashapp import StashInterface
 import sys
 import json
 
-PERFORMER_PAGE_SIZE = 100
-SCENE_UPDATE_BATCH = 1000
-
-
 def processAll():
     exclusion_marker_tag_id = None
     if settings["excludeSceneWithTag"] != "":
@@ -23,102 +19,88 @@ def processAll():
             "value": 0,
         },
     }
-    
-    try:
-        performersTotal = stash.find_performers(f=query, filter={"page": 0, "per_page": 1}, get_count=True)[0]
-    except Exception:
-        performersTotal = 0
+    performersTotal = stash.find_performers(f=query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
+    i = 0
+    while i < performersTotal:
+        log.progress((i / performersTotal))
         
-    processed = 0
-    page = 0
-    
-    while True:
-        if performersTotal > 0:
-            log.progress(min(processed / performersTotal, 1.0))
+        perf = stash.find_performers(f=query, filter={"page": i, "per_page": 1})
 
-        performers = stash.find_performers(
-            f=query, 
-            filter={"page": page, "per_page": PERFORMER_PAGE_SIZE},
-            fragment="id name tags { id name }"
-        )
-
-        if not performers:
-            log.info("Finished processing all performers.")
-            break
-
-        for perf in performers:
-            performer_tags_ids = [t["id"] for t in perf["tags"]]
-            performer_tags_names = [t["name"] for t in perf["tags"]]
-            
-            if not performer_tags_ids:
-                processed += 1
-                continue
+        performer_tags_ids = []
+        performer_tags_names = []
+        for performer_tag in perf[0]["tags"]:
+            performer_tags_ids.append(performer_tag["id"])
+            performer_tags_names.append(performer_tag["name"])
         
-            scene_query = {
-                "performers": {
-                    "value": [perf["id"]],
-                    "modifier": "INCLUDES_ALL"
-                }
+        scene_query = {
+            "performers": {
+                "value": [perf[0]["id"]],
+                "modifier": "INCLUDES_ALL"
             }
-            if settings['excludeSceneOrganized']:
-                scene_query["organized"] = False
-            if exclusion_marker_tag_id is not None:
-                 scene_query["tags"] = {
-                    "value": [exclusion_marker_tag_id],
-                    "modifier": "EXCLUDES"
-                }
+        }
+        if settings['excludeSceneOrganized']:
+            scene_query["organized"] = False
+        if exclusion_marker_tag_id is not None:
+             scene_query["tags"] = {
+                "value": [exclusion_marker_tag_id],
+                "modifier": "EXCLUDES"
+            }
 
-            performer_scenes = stash.find_scenes(f=scene_query, fragment='id')
-            if not performer_scenes:
-                processed += 1
-                continue
+        performer_scene_count = stash.find_scenes(f=scene_query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
+        
+        if performer_scene_count > 0:
+            log.info(f"updating {performer_scene_count} scenes of performer \"{ perf[0]['name']}\" with tags {performer_tags_names}")
 
-            performer_scene_ids = [scene['id'] for scene in performer_scenes]
-            tags_string = ", ".join(performer_tags_names)
-            context_msg = f"Performer: '{perf['name']}' | Tags: [{tags_string}]"
+            performer_scene_page_size = 100
+            performer_scene_page = 0
+            while performer_scene_page * performer_scene_page_size < performer_scene_count:
+                performer_scenes = stash.find_scenes(f=scene_query, filter={"page": performer_scene_page, "per_page": performer_scene_page_size}, fragment='id')
+                performer_scene_ids = [performer_scene['id'] for performer_scene in performer_scenes]
 
-            log.info(f"Bulk updating {len(performer_scene_ids)} scenes ({context_msg})")
-
-            for i in range(0, len(performer_scene_ids), SCENE_UPDATE_BATCH):
-                batch = performer_scene_ids[i:i + SCENE_UPDATE_BATCH]
                 stash.update_scenes(
                     {
-                        "ids": batch,
+                        "ids": performer_scene_ids,
                         "tag_ids": {"mode": "ADD", "ids": performer_tags_ids},
                     }
                 )
-            processed += 1
-        page += 1
+                performer_scene_page += 1
+
+        i = i + 1
 
 
-def processScene(scene: dict):
+def processScene(scene):
+    tags = []
+    performersIds = []
+    should_tag = True
     if settings["excludeSceneWithTag"] != "":
-        for tag in scene.get("tags", []):
+        for tag in scene["tags"]:
             if tag["name"] == settings["excludeSceneWithTag"]:
-                return
+                should_tag = False
+                break
     
-    if settings['excludeSceneOrganized'] and scene.get('organized'):
-        return
+    if settings['excludeSceneOrganized']:
+        if scene['organized']:
+            should_tag = False
 
-    target_tag_ids = []
-    for perf in scene.get("performers", []):
-        for tag in perf.get("tags", []):
-            target_tag_ids.append(tag["id"])
-
-    if not target_tag_ids:
-        return
-
-    stash.update_scenes({
-        "ids": [scene["id"]], 
-        "tag_ids": {"mode": "ADD", "ids": list(set(target_tag_ids))}
-    })
+    if should_tag:
+        for perf in scene["performers"]:
+            performersIds.append(perf["id"])
+        performers = []
+        for perfId in performersIds:
+            performers.append(stash.find_performer(perfId))
+        for perf in performers:
+            for tag in perf["tags"]:
+                tags.append(tag["id"])
+        stash.update_scenes({"ids": scene["id"], "tag_ids": {"mode": "ADD", "ids": tags}})
+        tags = []
+        performersIds = []
+        performers = []
 
 
 json_input = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()
-
 settings = {
     "excludeSceneWithTag": "",
     "excludeSceneOrganized": False
@@ -132,14 +114,12 @@ if "mode" in json_input["args"]:
         processAll()
 elif "hookContext" in json_input["args"]:
     id = json_input["args"]["hookContext"]["id"]
-    hook_type = json_input["args"]["hookContext"].get("type", "")
-    
     if (
-        (hook_type == "Scene.Update.Post" or hook_type == "Scene.Create.Post") 
-        and "inputFields" in json_input["args"]["hookContext"]
-        and len(json_input["args"]["hookContext"]["inputFields"]) > 1
+        (
+            json_input["args"]["hookContext"]["type"] == "Scene.Update.Post"
+                or "Scene.Create.Post"
+        ) and "inputFields" in json_input["args"]["hookContext"]
+        and len(json_input["args"]["hookContext"]["inputFields"]) > 2
     ):
-        # Enforce explicit studio object allocation inside our graphQL post-hook criteria
-        scene = stash.find_scene(id, fragment="id organized tags { name } performers { id tags { id } } studio { id }")
-        if scene:
-            processScene(scene)
+        scene = stash.find_scene(id, fragment="id organized tags {name} performers {id}")
+        processScene(scene)
