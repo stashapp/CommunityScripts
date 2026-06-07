@@ -147,6 +147,6 @@ elif "hookContext" in json_input["args"]:
         and len(json_input["args"]["hookContext"]["inputFields"]) > 1
     ):
         # Enforce explicit studio object allocation inside our graphQL post-hook criteria
-        scene = stash.find_scene(id, fragment="id organized tags { name } performers { id tags { id } } studio { id }")
+        scene = stash.find_scene(id, fragment="id organized tags { name } performers { id tags { id ignore_auto_tag } } studio { id }")
         if scene:
             processScene(scene)
