@@ -9,7 +9,7 @@ def processAll():
         exclussion_marker_tag = stash.find_tag(settings["excludeImageWithTag"])
         if exclussion_marker_tag is not None:
             exclusion_marker_tag_id = exclussion_marker_tag['id']
-    
+
     query = {
         "tags": {
             "modifier": "NOT_NULL",
@@ -23,15 +23,17 @@ def processAll():
     i = 0
     while i < performersTotal:
         log.progress((i / performersTotal))
-        
+
         perf = stash.find_performers(f=query, filter={"page": i, "per_page": 1})
 
         performer_tags_ids = []
         performer_tags_names = []
         for performer_tag in perf[0]["tags"]:
+            if settings["excludeTagWithIgnoreAutoTag"] and performer_tag["ignore_auto_tag"]:
+                continue
             performer_tags_ids.append(performer_tag["id"])
             performer_tags_names.append(performer_tag["name"])
-        
+
         image_query = {
             "performers": {
                 "value": [perf[0]["id"]],
@@ -47,7 +49,7 @@ def processAll():
             }
 
         performer_image_count = stash.find_images(f=image_query, filter={"page": 0, "per_page": 0}, get_count=True)[0]
-        
+
         if performer_image_count > 0:
             log.info(f"updating {performer_image_count} images of performer \"{ perf[0]['name']}\" with tags {performer_tags_names}")
 
@@ -77,7 +79,7 @@ def processImage(image):
             if tag["name"] == settings["excludeImageWithTag"]:
                 should_tag = False
                 break
-    
+
     if settings['excludeImageOrganized']:
         if image['organized']:
             should_tag = False
@@ -90,6 +92,8 @@ def processImage(image):
             performers.append(stash.find_performer(perfId))
         for perf in performers:
             for tag in perf["tags"]:
+                if settings["excludeTagWithIgnoreAutoTag"] and tag["ignore_auto_tag"]:
+                    continue
                 tags.append(tag["id"])
         stash.update_images({"ids": image["id"], "tag_ids": {"mode": "ADD", "ids": tags}})
         tags = []
