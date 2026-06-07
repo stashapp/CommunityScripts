@@ -23,6 +23,10 @@ settings:
     displayName: Exclude Scenes with Tag from Hook
     description: Do not automatically tag scenes with performer tags if the scene has this tag
     type: STRING
+  excludeTagWithIgnoreAutoTag:
+    displayName: Exclude Tags set to Ignore auto tag
+    description: Do not automatically tag scenes with performer tags that are set to Ignore auto tag
+    type: BOOLEAN
 
 tasks:
   - name: "Tag All Scenes"

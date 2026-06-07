@@ -13,7 +13,7 @@ def processAll():
         exclussion_marker_tag = stash.find_tag(settings["excludeSceneWithTag"])
         if exclussion_marker_tag is not None:
             exclusion_marker_tag_id = exclussion_marker_tag['id']
-    
+
     query = {
         "tags": {
             "modifier": "NOT_NULL",
@@ -23,21 +23,21 @@ def processAll():
             "value": 0,
         },
     }
-    
+
     try:
         performersTotal = stash.find_performers(f=query, filter={"page": 0, "per_page": 1}, get_count=True)[0]
     except Exception:
         performersTotal = 0
-        
+
     processed = 0
     page = 0
-    
+
     while True:
         if performersTotal > 0:
             log.progress(min(processed / performersTotal, 1.0))
 
         performers = stash.find_performers(
-            f=query, 
+            f=query,
             filter={"page": page, "per_page": PERFORMER_PAGE_SIZE},
             fragment="id name tags { id name }"
         )
@@ -47,13 +47,18 @@ def processAll():
             break
 
         for perf in performers:
-            performer_tags_ids = [t["id"] for t in perf["tags"]]
-            performer_tags_names = [t["name"] for t in perf["tags"]]
-            
+          performer_tags_ids = []
+          performer_tags_names = []
+          for performer_tag in perf[0]["tags"]:
+            if settings["excludeTagWithIgnoreAutoTag"] and performer_tag["ignore_auto_tag"]:
+                continue
+            performer_tags_ids.append(performer_tag["id"])
+            performer_tags_names.append(performer_tag["name"])
+
             if not performer_tags_ids:
                 processed += 1
                 continue
-        
+
             scene_query = {
                 "performers": {
                     "value": [perf["id"]],
@@ -96,20 +101,22 @@ def processScene(scene: dict):
         for tag in scene.get("tags", []):
             if tag["name"] == settings["excludeSceneWithTag"]:
                 return
-    
+
     if settings['excludeSceneOrganized'] and scene.get('organized'):
         return
 
     target_tag_ids = []
     for perf in scene.get("performers", []):
         for tag in perf.get("tags", []):
+            if settings["excludeTagWithIgnoreAutoTag"] and tag["ignore_auto_tag"]:
+                continue
             target_tag_ids.append(tag["id"])
 
     if not target_tag_ids:
         return
 
     stash.update_scenes({
-        "ids": [scene["id"]], 
+        "ids": [scene["id"]],
         "tag_ids": {"mode": "ADD", "ids": list(set(target_tag_ids))}
     })
 
@@ -133,9 +140,9 @@ if "mode" in json_input["args"]:
 elif "hookContext" in json_input["args"]:
     id = json_input["args"]["hookContext"]["id"]
     hook_type = json_input["args"]["hookContext"].get("type", "")
-    
+
     if (
-        (hook_type == "Scene.Update.Post" or hook_type == "Scene.Create.Post") 
+        (hook_type == "Scene.Update.Post" or hook_type == "Scene.Create.Post")
         and "inputFields" in json_input["args"]["hookContext"]
         and len(json_input["args"]["hookContext"]["inputFields"]) > 1
     ):
