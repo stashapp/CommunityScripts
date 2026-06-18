@@ -70,8 +70,11 @@
     return map;
   }
 
+  const HEADER_ACTIVE_CLASS = "pb-has-hero";
+
   function removeHero(el) {
     el?.querySelector("." + HERO_CLASS)?.remove();
+    el?.classList.remove(HEADER_ACTIVE_CLASS);
   }
 
   function upsertHero(header, url) {
@@ -81,6 +84,7 @@
       hero.className = HERO_CLASS;
       header.prepend(hero);
     }
+    header.classList.add(HEADER_ACTIVE_CLASS);
     hero.style.backgroundImage = `url("${url}")`;
     return hero;
   }
@@ -144,7 +148,10 @@
     if (!header || !isPerformerRoute()) return removeHero(header);
 
     const img = getPosterImg();
-    if (!img) return;
+    if (!img) {
+      removeHero(header);
+      return;
+    }
 
     const hero = upsertHero(header, img.currentSrc || img.src);
     apply(hero);

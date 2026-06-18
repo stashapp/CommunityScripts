@@ -1,0 +1,2 @@
+apscheduler>=3.10,<4
+stashapp-tools>=0.2.40

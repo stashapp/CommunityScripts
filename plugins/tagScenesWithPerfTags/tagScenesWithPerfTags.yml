@@ -1,6 +1,6 @@
 name: Tag Scenes From Performer Tags
-description: tags scenes with performer tags.
-version: 0.2.3
+description: Tags scenes with performer tags.
+version: 1.0
 url: https://discourse.stashapp.cc/t/tag-scenes-from-performer-tags/1413
 exec:
   - python
@@ -23,6 +23,10 @@ settings:
     displayName: Exclude Scenes with Tag from Hook
     description: Do not automatically tag scenes with performer tags if the scene has this tag
     type: STRING
+  excludeTagWithIgnoreAutoTag:
+    displayName: Exclude Tags set to Ignore auto tag
+    description: Do not automatically tag scenes with performer tags that are set to Ignore auto tag
+    type: BOOLEAN
 
 tasks:
   - name: "Tag All Scenes"

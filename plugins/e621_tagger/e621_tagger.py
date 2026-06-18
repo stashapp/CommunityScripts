@@ -11,6 +11,85 @@ from typing import List, Optional, Tuple
 
 MD5_RE = re.compile(r"^[a-f0-9]{32}$")
 
+IMAGE_FRAGMENT = """
+id
+organized
+visual_files {
+  ... on ImageFile {
+    id
+    path
+    basename
+    fingerprints {
+      type
+      value
+    }
+  }
+  ... on VideoFile {
+    id
+    path
+    basename
+    fingerprints {
+      type
+      value
+    }
+  }
+}
+tags {
+  id
+  name
+}
+"""
+
+SCENE_FRAGMENT = """
+id
+organized
+files {
+  id
+  path
+  basename
+  fingerprints {
+    type
+    value
+  }
+}
+tags {
+  id
+  name
+}
+"""
+
+
+def _update_image_minimal(stash: StashInterface, payload: dict) -> dict:
+    query = """
+    mutation ImageUpdate($input: ImageUpdateInput!) {
+        imageUpdate(input: $input) { id }
+    }
+    """
+    return stash.call_GQL(query, {"input": payload})
+
+
+def _update_scene_minimal(stash: StashInterface, payload: dict) -> dict:
+    query = """
+    mutation SceneUpdate($input: SceneUpdateInput!) {
+        sceneUpdate(input: $input) { id }
+    }
+    """
+    return stash.call_GQL(query, {"input": payload})
+
+
+def _extract_file_md5(file_data: dict) -> Optional[str]:
+    if not file_data:
+        return None
+    for fp in file_data.get("fingerprints") or []:
+        fp_type = (fp.get("type") or "").lower()
+        fp_value = fp.get("value") or ""
+        if fp_type == "md5" and MD5_RE.match(fp_value):
+            return fp_value
+    cs = file_data.get("checksum")
+    if cs and MD5_RE.match(cs):
+        return cs
+    return None
+
 
 def _build_filter(skip_tag_ids, exclude_organized):
     f = {}
@@ -31,7 +110,12 @@ def count_images(
 ) -> int:
     image_filter = _build_filter(skip_tag_ids, exclude_organized)
     pagination = {"page": 1, "per_page": 0, "sort": "created_at", "direction": "ASC"}
-    total, _ = client.find_images(f=image_filter, filter=pagination, get_count=True)
+    total, _ = client.find_images(
+        f=image_filter,
+        filter=pagination,
+        get_count=True,
+        fragment=IMAGE_FRAGMENT,
+    )
     return total
 
 
@@ -40,7 +124,12 @@ def count_scenes(
 ) -> int:
     scene_filter = _build_filter(skip_tag_ids, exclude_organized)
     pagination = {"page": 1, "per_page": 0, "sort": "created_at", "direction": "ASC"}
-    total, _ = client.find_scenes(f=scene_filter, filter=pagination, get_count=True)
+    total, _ = client.find_scenes(
+        f=scene_filter,
+        filter=pagination,
+        get_count=True,
+        fragment=SCENE_FRAGMENT,
+    )
     return total
 
 
@@ -59,7 +148,9 @@ def stream_images(
             "sort": "created_at",
             "direction": "ASC",
         }
-        images = client.find_images(f=base_filter, filter=pagination)
+        images = client.find_images(
+            f=base_filter, filter=pagination, fragment=IMAGE_FRAGMENT
+        )
         if not images:
             break
         log.info(f"Fetched image page {page} with {len(images)} images")
@@ -83,7 +174,9 @@ def stream_scenes(
             "sort": "created_at",
             "direction": "ASC",
         }
-        scenes = client.find_scenes(f=base_filter, filter=pagination)
+        scenes = client.find_scenes(
+            f=base_filter, filter=pagination, fragment=SCENE_FRAGMENT
+        )
         if not scenes:
             break
         log.info(f"Fetched scene page {page} with {len(scenes)} scenes")
@@ -95,26 +188,21 @@ def stream_scenes(
 def process_e621_post_for_item(
     stash: StashInterface, item_type: str, item_id: str, item_md5: str
 ) -> bool:
-    """
-    CHANGED: return boolean indicating whether the item was updated/marked (True) or left untouched (False).
-    This lets the caller (main loop) increment progress only when an item actually changed state.
-    """
-    # Fetch latest object to check tags
     if item_type == "image":
-        obj = stash.find_image(item_id)
+        obj = stash.find_image(item_id, fragment=IMAGE_FRAGMENT)
         already_tagged = any(t["name"] == "e621_tagged" for t in obj.get("tags", []))
         already_failed = any(
             t["name"] == "e621_tag_failed" for t in obj.get("tags", [])
         )
     else:
-        obj = stash.find_scene(item_id)
+        obj = stash.find_scene(item_id, fragment=SCENE_FRAGMENT)
         already_tagged = any(t["name"] == "e621_tagged" for t in obj.get("tags", []))
         already_failed = any(
             t["name"] == "e621_tag_failed" for t in obj.get("tags", [])
         )
 
     if already_tagged or already_failed:
-        return False  # nothing to do
+        return False
 
     try:
         time.sleep(0.5)
@@ -130,17 +218,17 @@ def process_e621_post_for_item(
         e621_tag_failed = get_or_create_tag(stash, "e621_tag_failed")
         fail_ids = [e621_tag_failed["id"]] + [t["id"] for t in obj.get("tags", [])]
         try:
+            payload = {"id": item_id, "tag_ids": list(set(fail_ids))}
             if item_type == "image":
-                stash.update_image({"id": item_id, "tag_ids": list(set(fail_ids))})
+                _update_image_minimal(stash, payload)
             else:
-                stash.update_scene({"id": item_id, "tag_ids": list(set(fail_ids))})
+                _update_scene_minimal(stash, payload)
             return True
         except Exception as e2:
             log.error(f"Failed to mark as failed: {str(e2)}")
             return False
 
     if not post_data:
-        # not found on e621: leave untouched so it can be retried later (or user may decide to mark failed)
         return False
 
     e621_tag = get_or_create_tag(stash, "e621_tagged")
@@ -177,10 +265,10 @@ def process_e621_post_for_item(
             "performer_ids": performer_ids,
         }
         if item_type == "image":
-            stash.update_image(update_payload)
-            log.info(f"Image updated: {item_id}")
+            _update_image_minimal(stash, update_payload)
+            log.debug(f"Image updated: {item_id}")
         else:
-            stash.update_scene(update_payload)
+            _update_scene_minimal(stash, update_payload)
             log.info(f"Scene updated: {item_id}")
         return True
     except Exception as e:
@@ -239,10 +327,7 @@ def get_or_create_performer(stash: StashInterface, name: str) -> dict:
 
 
 def scrape_image(client: StashInterface, image_id: str) -> bool:
-    """
-    PAGINATION: return True if item was updated/marked (so main loop can count progress).
-    """
-    image = client.find_image(image_id)
+    image = client.find_image(image_id, fragment=IMAGE_FRAGMENT)
     if not image or not image.get("visual_files"):
         return False
 
@@ -252,14 +337,12 @@ def scrape_image(client: StashInterface, image_id: str) -> bool:
 
     if MD5_RE.match(filename_md5):
         final_md5 = filename_md5
-        log.info(f"Using filename MD5 for image: {final_md5}")
+        log.debug(f"Using filename MD5 for image: {final_md5}")
     else:
-        if image.get("checksum"):
-            final_md5 = image["checksum"]
-            log.info(f"Using image checksum: {final_md5}")
-        elif image.get("md5"):
-            final_md5 = image["md5"]
-            log.info(f"Using image md5: {final_md5}")
+        file_md5 = _extract_file_md5(file_data)
+        if file_md5:
+            final_md5 = file_md5
+            log.debug(f"Using file fingerprint MD5 for image: {final_md5}")
         else:
             try:
                 md5_hash = hashlib.md5()
@@ -276,48 +359,39 @@ def scrape_image(client: StashInterface, image_id: str) -> bool:
 
 
 def scrape_scene(client: StashInterface, scene_id: str) -> bool:
-    """
-    PAGINATION: return True if item was updated/marked (so main loop can count progress).
-    """
-    scene = client.find_scene(scene_id)
+    scene = client.find_scene(scene_id, fragment=SCENE_FRAGMENT)
     if not scene:
         return False
 
     final_md5 = None
 
-    if scene.get("checksum") and MD5_RE.match(scene.get("checksum")):
-        final_md5 = scene.get("checksum")
-        log.info(f"Using scene checksum: {final_md5}")
-    elif scene.get("md5") and MD5_RE.match(scene.get("md5")):
-        final_md5 = scene.get("md5")
-        log.info(f"Using scene md5: {final_md5}")
+    files = scene.get("files") or scene.get("scene_files") or []
+    if not files:
+        log.error(f"No files found for scene {scene_id}; cannot compute md5")
+        return False
+
+    file_data = files[0]
+    file_md5 = _extract_file_md5(file_data)
+    if file_md5:
+        final_md5 = file_md5
+        log.info(f"Using file fingerprint MD5 for scene: {final_md5}")
     else:
-        files = scene.get("files") or scene.get("scene_files") or []
-        if files:
-            file_data = files[0]
-            if file_data.get("checksum") and MD5_RE.match(file_data.get("checksum")):
-                final_md5 = file_data.get("checksum")
-                log.info(f"Using file checksum for scene: {final_md5}")
-            else:
-                basename = file_data.get("basename", "")
-                filename_md5 = basename.split(".")[0] if basename else ""
-                if MD5_RE.match(filename_md5):
-                    final_md5 = filename_md5
-                    log.info(f"Using filename MD5 for scene: {final_md5}")
-                else:
-                    try:
-                        md5_hash = hashlib.md5()
-                        with open(file_data["path"], "rb") as f:
-                            for chunk in iter(lambda: f.read(65536), b""):
-                                md5_hash.update(chunk)
-                        final_md5 = md5_hash.hexdigest()
-                        log.info(f"Generated content MD5 for scene: {final_md5}")
-                    except Exception as e:
-                        log.error(f"Failed to generate MD5 for scene: {str(e)}")
-                        return False
+        basename = file_data.get("basename", "")
+        filename_md5 = basename.split(".")[0] if basename else ""
+        if MD5_RE.match(filename_md5):
+            final_md5 = filename_md5
+            log.info(f"Using filename MD5 for scene: {final_md5}")
         else:
-            log.error(f"No files found for scene {scene_id}; cannot compute md5")
-            return False
+            try:
+                md5_hash = hashlib.md5()
+                with open(file_data["path"], "rb") as f:
+                    for chunk in iter(lambda: f.read(65536), b""):
+                        md5_hash.update(chunk)
+                final_md5 = md5_hash.hexdigest()
+                log.info(f"Generated content MD5 for scene: {final_md5}")
+            except Exception as e:
+                log.error(f"Failed to generate MD5 for scene: {str(e)}")
+                return False
 
     return process_e621_post_for_item(client, "scene", scene_id, final_md5)
 
@@ -344,9 +418,9 @@ if __name__ == "__main__":
 
     per_page = 50
 
-    log.info("Counting images (no storage)...")
+    log.info("Counting images...")
     num_images = count_images(stash, skip_tag_ids, settings["ExcludeOrganized"])
-    log.info("Counting scenes (no storage)...")
+    log.info("Counting scenes...")
     num_scenes = count_scenes(stash, skip_tag_ids, settings["ExcludeOrganized"])
 
     total = (num_images + num_scenes) or 1
@@ -355,13 +429,13 @@ if __name__ == "__main__":
 
     processed_count = 0
     pass_num = 0
-    # Loop passes until a full pass processes zero items.
+    
     while True:
         pass_num += 1
         log.info(f"Starting scanning pass #{pass_num}")
         pass_processed = 0
 
-        # Scan images by pages
+        
         page = 1
         while True:
             pagination = {
@@ -370,7 +444,11 @@ if __name__ == "__main__":
                 "sort": "created_at",
                 "direction": "ASC",
             }
-            images = stash.find_images(f=_build_filter(skip_tag_ids, settings["ExcludeOrganized"]), filter=pagination)
+            images = stash.find_images(
+                f=_build_filter(skip_tag_ids, settings["ExcludeOrganized"]),
+                filter=pagination,
+                fragment=IMAGE_FRAGMENT,
+            )
             log.info(f"[pass {pass_num}] fetched image page {page}, count={len(images)}")
             if not images:
                 break
@@ -379,19 +457,16 @@ if __name__ == "__main__":
                 if not item_id:
                     log.error(f"[pass {pass_num}] image without id on page {page}")
                     continue
-
-                # Defensive fetch of current tags to avoid race conditions
-                current = stash.find_image(item_id)
+                
+                current = stash.find_image(item_id, fragment=IMAGE_FRAGMENT)
                 current_tag_ids = [t["id"] for t in current.get("tags", [])]
                 if any(tid in current_tag_ids for tid in skip_tag_ids):
-                    # Shouldn't usually happen because filter excluded them, but handle gracefully.
                     log.info(f"[pass {pass_num}] skipping image {item_id} - now has skip tag")
                     processed_count += 1
                     pass_processed += 1
                     log.progress(float(processed_count) / float(total))
                     continue
 
-                # Attempt to process; scrape_image now returns True if it updated/marked the item.
                 try:
                     updated = scrape_image(stash, item_id)
                 except Exception as e:
@@ -401,16 +476,14 @@ if __name__ == "__main__":
                 if updated:
                     processed_count += 1
                     pass_processed += 1
-                    log.info(f"[pass {pass_num}] processed image {item_id} (processed_count={processed_count})")
+                    log.debug(f"[pass {pass_num}] processed image {item_id} (processed_count={processed_count})")
                     log.progress(float(processed_count) / float(total))
-                # If not updated, it will remain in future passes. Continue scanning.
 
-            # If fewer than per_page results, we're at the end of current snapshot
             if len(images) < per_page:
                 break
             page += 1
 
-        # Scan scenes by pages
+        
         page = 1
         while True:
             pagination = {
@@ -419,7 +492,11 @@ if __name__ == "__main__":
                 "sort": "created_at",
                 "direction": "ASC",
             }
-            scenes = stash.find_scenes(f=_build_filter(skip_tag_ids, settings["ExcludeOrganized"]), filter=pagination)
+            scenes = stash.find_scenes(
+                f=_build_filter(skip_tag_ids, settings["ExcludeOrganized"]),
+                filter=pagination,
+                fragment=SCENE_FRAGMENT,
+            )
             log.info(f"[pass {pass_num}] fetched scene page {page}, count={len(scenes)}")
             if not scenes:
                 break
@@ -429,8 +506,7 @@ if __name__ == "__main__":
                     log.error(f"[pass {pass_num}] scene without id on page {page}")
                     continue
 
-                # Defensive fetch
-                current = stash.find_scene(item_id)
+                current = stash.find_scene(item_id, fragment=SCENE_FRAGMENT)
                 current_tag_ids = [t["id"] for t in current.get("tags", [])]
                 if any(tid in current_tag_ids for tid in skip_tag_ids):
                     log.info(f"[pass {pass_num}] skipping scene {item_id} - now has skip tag")
@@ -457,13 +533,10 @@ if __name__ == "__main__":
 
         log.info(f"Pass #{pass_num} finished. items processed this pass: {pass_processed}")
 
-        # If no items processed in a full pass, we're done
         if pass_processed == 0:
             log.info("No items processed in last pass; finishing scan.")
             break
 
-        # Small sleep to avoid hammering API and to let the DB settle between passes
         time.sleep(0.2)
 
-    # ensure progress finished
     log.progress(1.0)

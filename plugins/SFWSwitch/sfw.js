@@ -1,16 +1,49 @@
-function sfw_mode() {
+let sfw_mediaObserver = null;
+let sfw_playListener = null;
+let sfw_extraListeners = null;
+
+async function getSfwConfig() {
+    try {
+        const response = await fetch('/graphql', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: `{
+                    configuration {
+                        plugins
+                    }
+                }`
+            }),
+        });
+        const result = await response.json();
+        const pluginSettings = result.data.configuration.plugins.sfwswitch;
+        return { audioMute: pluginSettings?.audio_setting === true, neverUnblur: pluginSettings?.never_unblur === true };
+    } catch (e) {
+        console.error("SFW Switch: Could not fetch config", e);
+        return { audioMute: false, neverUnblur: false };
+    }
+}
+
+async function sfw_mode() {
     const stash_css = sfwswitch_findstashcss();
     const button = document.getElementById("plugin_sfw");
-
     if (!stash_css) return;
+    const rawState = localStorage.getItem("sfw_mode");
+    const sfwState = rawState === "true";
+    const { audioMute: audioMuteEnabled, neverUnblur } = await getSfwConfig();
 
-    const sfwState = localStorage.getItem("sfw_mode") === "true";
-
-    // Apply saved state to the stylesheet
     stash_css.disabled = !sfwState;
+    sfw_apply_never_unblur(sfwState && neverUnblur);
 
-    // Update button color
-    button.style.color = sfwState ? "#5cff00" : "#f5f8fa";
+    if (sfwState && audioMuteEnabled) {
+        sfw_mute_all_media();
+    } else {
+        sfw_unmute_all_media();
+    }
+
+    if (button) {
+        button.style.color = sfwState ? "#5cff00" : "#f5f8fa";
+    }
 }
 
 function sfwswitch_createbutton() {
@@ -37,7 +70,6 @@ function sfwswitch_createbutton() {
 
             document.getElementById(buttonId).addEventListener("click", sfwswitch_switcher);
 
-            // Initialize the button based on saved state
             sfw_mode();
         }
     }, 100);
@@ -45,33 +77,156 @@ function sfwswitch_createbutton() {
     setTimeout(() => clearInterval(intervalId), 10000);
 }
 
-function sfwswitch_switcher() {
-    const stash_css = sfwswitch_findstashcss();
-    if (!stash_css) {
-        console.error("SFW stylesheet not found.");
-        return;
+function sfw_forceMute(media) {
+    if (!media) return;
+    media.muted = true;
+}
+
+function sfw_mute_all_media() {
+    document.querySelectorAll("audio, video").forEach(sfw_forceMute);
+
+    if (!sfw_playListener) {
+        sfw_playListener = function(e) {
+            if (e.target.tagName === "VIDEO" || e.target.tagName === "AUDIO") {
+                sfw_forceMute(e.target);
+            }
+        };
+
+        document.addEventListener("play", sfw_playListener, true);
+        document.addEventListener("volumechange", sfw_playListener, true);
+        document.addEventListener("loadeddata", sfw_playListener, true);
+        document.addEventListener("seeking", sfw_playListener, true);
     }
 
-    // Toggle stylesheet
-    stash_css.disabled = !stash_css.disabled;
+    if (!sfw_mediaObserver) {
+        sfw_mediaObserver = new MutationObserver(mutations => {
+            for (const mutation of mutations) {
+                mutation.addedNodes.forEach(node => {
+                    if (node.tagName === "VIDEO" || node.tagName === "AUDIO") {
+                        sfw_forceMute(node);
+                    } else if (node.querySelectorAll) {
+                        node.querySelectorAll("video, audio").forEach(sfw_forceMute);
+                    }
+                });
+            }
+        });
+        sfw_mediaObserver.observe(document.body, { childList: true, subtree: true });
+    }
+}
 
-    // Save new state to localStorage
-    localStorage.setItem("sfw_mode", !stash_css.disabled);
+function sfw_unmute_all_media() {
+    if (sfw_playListener) {
+        document.removeEventListener("play", sfw_playListener, true);
+        document.removeEventListener("volumechange", sfw_playListener, true);
+        document.removeEventListener("loadeddata", sfw_playListener, true);
+        document.removeEventListener("seeking", sfw_playListener, true);
+        sfw_playListener = null;
+    }
+
+    if (sfw_mediaObserver) {
+        sfw_mediaObserver.disconnect();
+        sfw_mediaObserver = null;
+    }
+
+    document.querySelectorAll("audio, video").forEach(media => {
+        media.muted = false;
+    });
+}
+
+async function sfwswitch_switcher() {
+    const stash_css = sfwswitch_findstashcss();
+    if (!stash_css) return;
+
+    stash_css.disabled = !stash_css.disabled;
+    const enabled = !stash_css.disabled;
+
+    localStorage.setItem("sfw_mode", enabled);
+
+    const { audioMute: audioMuteEnabled, neverUnblur } = await getSfwConfig();
+    sfw_apply_never_unblur(enabled && neverUnblur);
+
+    if (enabled && audioMuteEnabled) {
+        sfw_mute_all_media();
+    } else {
+        sfw_unmute_all_media();
+        
+        document.querySelectorAll("audio, video").forEach(media => {
+            if (media.paused && media.muted) {
+                media.muted = false; 
+            }
+        });
+    }
 
     const button = document.getElementById("plugin_sfw");
-    button.style.color = stash_css.disabled ? "#f5f8fa" : "#5cff00";
-    console.log(`SFW mode ${stash_css.disabled ? "disabled" : "enabled"}`);
+    if (button) {
+        button.style.color = enabled ? "#5cff00" : "#f5f8fa";
+    }
+}
+
+function sfw_apply_never_unblur(enabled) {
+    const existing = document.getElementById("sfw-never-unblur");
+    if (enabled && !existing) {
+        let css = "";
+        for (let s = 0; s < document.styleSheets.length; s++) {
+            const sheet = document.styleSheets[s];
+            try {
+                if (!sheet.href || !sheet.href.includes("/plugin/sfwswitch/css")) continue;
+                for (let i = 0; i < sheet.cssRules.length; i++) {
+                    const rule = sheet.cssRules[i];
+                    if (rule instanceof CSSStyleRule && !rule.selectorText.includes(":hover")) {
+                        css += `${rule.selectorText}{filter:${rule.style.filter}!important}`;
+                    }
+                }
+            } catch (e) {}
+        }
+        if (css) {
+            const style = document.createElement("style");
+            style.id = "sfw-never-unblur";
+            style.textContent = css;
+            document.head.appendChild(style);
+        }
+    } else if (!enabled && existing) {
+        existing.remove();
+    }
 }
 
 function sfwswitch_findstashcss() {
     for (let i = 0; i < document.styleSheets.length; i++) {
-        const stylesheet = document.styleSheets[i];
-        if (stylesheet.href && stylesheet.href.includes("/plugin/sfwswitch/css")) {
-            return stylesheet;
+        const sheet = document.styleSheets[i];
+        try {
+            if (sheet.href && sheet.href.includes("/plugin/sfwswitch/css")) {
+                return sheet;
+            }
+        } catch (e) {
+            // Cross-origin access blocked - skip
         }
     }
     return null;
 }
 
-// Initialize button on page load
-sfwswitch_createbutton();
+async function sfw_init() {
+    // Wait until the stylesheet is available
+    let retries = 0;
+    const maxRetries = 50; // ~5 seconds with 100ms delay
+
+    while (!sfwswitch_findstashcss() && retries < maxRetries) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+
+    if (!document.getElementById("plugin_sfw")) {
+        sfwswitch_createbutton();
+    }
+}
+
+function sfw_start() {
+    setTimeout(() => {
+        sfw_init();
+    }, 0); 
+}
+
+if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", sfw_start);
+} else {
+    sfw_start();
+}

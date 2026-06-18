@@ -1,134 +1,175 @@
-/* [Global changes] Blur NSFW images and unblur on mouse over */
-
-/*Credit: fl0w#9497 */
 
 /* === MORE BLUR === */
+/* common */
+.thumbnail-container img,
+.detail-header-image,
+.wall-item-gallery,
 
 /* scene */
-.scene-card-preview,
-.vjs-poster,
-video,
+.scene-player-container,
 .scene-cover,
+.scene-card-preview,
 .scrubber-item,
 .scene-image,
+.scene-card img,
+.wall-item-media,
+.wall-item.show-title,
 
 /* image */
-.image-card-preview,
+.image-card img,
+.image-thumbnail,
+.Lightbox-carousel,
 .image-image,
-.gallery-image,
+.react-photo-gallery--gallery img,
 
 /* group */
 .group-card-image,
-.group-images,
 
 /* gallery */
+.gallery-image,
 .gallery-card-image,
-table > tbody > tr > td > a > img.w-100,
+.gallery-card img,
+.gallery-cover img,
+.GalleryWallCard.GalleryWallCard-portrait,
+.GalleryWallCard.GalleryWallCard-landscape,
 
 /* performer */
-.performer-card-image,
-img.performer,
+.performer-card img,
 
 /* studio */
 .studio-card-image,
+.studio-card img,
 
 /* tag */
-.tag-card-image
-
-
+.tag-card img
 {
-filter: blur(30px);
+
+    filter: blur(30px);
+    transition: filter 0.25s ease;
 }
 
 /* === LESS BLUR === */
 
 /* common */
 .card-section-title,
+.detail-item-value.description,
+.detail-item-value,
+.TruncatedText,
 
 /* scene */
 .scene-studio-overlay,
 .scene-header > h3,
 h3.scene-header,
-.studio-logo,
-.image-thumbnail,
 .TruncatedText.scene-card__description,
+.queue-scene-details,
+.marker-wall,
 
-/* image */
-h3.image-header,
+/* performer */
+.performer-name,
+.card-section,
+.name-data,
+.aliases-data,
+
+/* gallery */
+.gallery-header.no-studio,
+.TruncatedText.gallery-card__description,
+
+
+/* studio */
+.studio-name,
+.studio-overlay a,
+.studio-logo,
+.studio-parent-studios,
 
 /* group */
 .group-details > div > h2,
 
-/* gallery */
-h3.gallery-header,
-.TruncatedText.gallery-card__description,
-
-/* studio */
-.studio-details .logo,
-.studio-details > div > h2,
-.studio-card__details,
-.studio-parent-studios,
+/* image */
+h3.image-header,
+.Lightbox-carousel:hover,
+.TruncatedText.image-card__description,
 
 /* tag */
-.logo-container > .logo,
-.logo-container > h2,
 .TruncatedText.tag-description,
-.tag-parent-tags
+.tag-item.tag-link.badge.badge-secondary,
+.tag-name
 
 {
 filter: blur(2px);
 }
 
+
 /* === UNBLUR ON HOVER === */
 
 /* common */
-.thumbnail-section:hover *,
-.card:hover .card-section-title,
+.detail-item-value:hover,
+.scene-cover:hover,
+
+.card-section-title:hover,
+.TruncatedText.tag-description:hover,
+.detail-item-value.description:hover,
+.TruncatedText:hover,
 
 /* scene */
-.card:hover .scene-studio-overlay,
-.video-js:hover .vjs-poster,
-video:hover,
+.scene-player-container:hover,
+.scene-card-preview:hover,
+.queue-scene-details:hover,
+.scene-card:hover img,
+.TruncatedText.scene-card__description:hover,
+.scene-player-container:hover,
 .scene-header:hover > h3,
 div:hover > .scene-header,
-.studio-logo:hover,
-.scene-cover:hover,
-.image-thumbnail:hover,
-.scene-card-preview:hover,
-.scrubber-item:hover,
-.scene-image:hover,
-.TruncatedText.scene-card__description:hover,
+.wall-item-media:hover,
+.marker-wall:hover,
+.wall-item.show-title:hover,
 
 /* image */
-.image-image:hover,
+.detail-header-image:hover,
 div:hover > .image-header,
-.gallery-image:hover,
+.image-card:hover img,
+.react-photo-gallery--gallery img:hover,
+.image-thumbnail:hover,
+.TruncatedText.image-card__description:hover,
+.wall-item:hover img,
+.image-image:hover,
+
 
 /* group */
-.group-images:hover,
-.group-details > div > h2:hover,
+.group-card:hover img,
 
 /* gallery */
-div:hover > .gallery-header,
-table > tbody > tr > td:hover > a > img.w-100,
+.gallery-header.no-studio,
+.gallery-card:hover img,
+.gallery-cover:hover img,
+.gallery-image:hover,
+.gallery-card-image:hover,
 .TruncatedText.gallery-card__description:hover,
+.GalleryWallCard.GalleryWallCard-portrait:hover,
+.GalleryWallCard.GalleryWallCard-landscape:hover,
 
 /* performer */
-img.performer:hover,
+.performer-card-image:hover,
+.performer-name:hover,
+.card-section:hover,
+.name-data:hover,
+.aliases-data:hover,
+.performer-card img:hover,
 
 /* studio */ 
-.studio-details .logo:hover,
-.studio-details:hover > div > h2,
-.studio-card__details:hover,
+.studio-name:hover,
+.studio-overlay:hover a,
+.studio-card:hover img,
 .studio-parent-studios:hover,
+.studio-logo:hover,
 
 
 /* tag */
-.logo-container > .logo:hover,
-.logo-container:hover > h2,
-.TruncatedText.tag-description:hover,
-.tag-parent-tags:hover
-
+.tag-card:hover img,
+.tag-item.tag-link.badge.badge-secondary:hover,
+.tag-name:hover
 {
-filter: blur(0px);
+    filter: blur(0);
+	transition: filter 0.25s ease;
 }
+
+/*Credit: fl0w#9497 */

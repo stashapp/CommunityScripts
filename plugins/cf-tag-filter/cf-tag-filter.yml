@@ -1,0 +1,19 @@
+name: Custom Field Tag Filter
+description: Hide tags marked via a custom field from scene tag entry and scraping.
+version: 1.0.0
+url: https://discourse.stashapp.cc/t/custom-field-tag-filter/9542
+ui:
+  javascript:
+    - cf-tag-filter.js
+settings:
+  customFieldName:
+    displayName: Custom field name
+    description: Tags that have this custom field set are hidden from tag selection.
+    type: STRING
+  customFieldValue:
+    displayName: Custom field value (optional)
+    description: If set, only tags whose custom field equals this value are hidden. Leave empty to hide any tag that has the field set.
+    type: STRING
+  hideScrape:
+    displayName: Also hide marked tags from scraper results
+    type: BOOLEAN

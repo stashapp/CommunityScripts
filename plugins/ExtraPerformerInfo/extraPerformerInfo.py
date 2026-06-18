@@ -13,8 +13,8 @@ settings = {
     "wikidatExtraUrls":True,
     "awards": True,
     "otherInfo": True,
-    "createTag": True
-
+    "createTag": True,
+    "overwrite": False
 }
 
 
@@ -56,12 +56,14 @@ wikidata_field_properties={
     'P69':'Educated At',
     'P102':'Member of political party',
     'P551':'Residence',
-    'P3373': 'Sibling'
+    'P3373': 'Sibling',
+    'P26':'Spouse'
 }
 
 
 
 request_wd = requests.Session()
+request_wd.headers.update({'User-Agent': 'stash extra performer info (https://github.com/stashapp/CommunityScripts/; ) generic-library/0.0'})
 
 wd_properties={}
 tags_cache={}
@@ -70,9 +72,11 @@ def getWDPPropertyLabel(propertyId):
     if propertyId not in wd_properties:
         property_url = 'https://www.wikidata.org/wiki/Special:EntityData/%s.json' % (propertyId,)
         wd2 = request_wd.get(property_url)
+#        log.debug(wd2.status_code)
+#        log.debug(wd2.content)
 
         if wd2.status_code == 200:
-            log.debug(wd2.json())
+#            log.debug(wd2.json())
 #            data2 = wd2.json()['entities']
             for k,data2 in wd2.json()['entities'].items():
                 if 'en' in data2['labels']:
@@ -101,8 +105,9 @@ def processWikidata(performer,performer_update,url):
     api_url='https://www.wikidata.org/wiki/Special:EntityData/%s.json' % (wikidata_id,)
     log.debug('about to fetch wikidata url: %s for performer %s' % (api_url,performer['name'],))
     wd=request_wd.get(api_url)
+    log.debug(wd.status_code)
     if wd.status_code==200:
-#        log.debug(wd.json().keys())
+        log.debug(wd.json().keys())
 
         data2=wd.json()['entities']
         data=data2[next(iter(data2))]
@@ -154,33 +159,12 @@ def processWikidata(performer,performer_update,url):
                         elif prop == 'P1411':
                             award['type']='nominated'
 
-
+                        # Conferred by
                         if 'P1027' in award['wd']['claims'].keys():
                             award['conferred_wd']=getWDPPropertyLabel(award['wd']['claims']['P1027'][0]['mainsnak']['datavalue']['value']['id'])
                             award['conferred'] =award['conferred_wd']['label']
-                            if award['type']=='award received':
-                                if award['conferred'] not in award_totals:
-                                    award_totals[award['conferred']]=0
-                                award_totals[award['conferred']] =award_totals[award['conferred']] +1
-                                if settings['createTag']:
-                                    performer_update['tag_names'].append(
-                                            '[%s Award Winner]' % (award['conferred'],))
-
-                            else:
-                                if award['conferred'] not in nominated_totals:
-                                    nominated_totals[award['conferred']]=0
-                                nominated_totals[award['conferred']] =nominated_totals[award['conferred']] +1
-                                if settings['createTag']:
-                                    performer_update['tag_names'].append('[%s Award Nominated]' % (award['conferred'],))
                         else:
-                            if award['type']=='award received':
-                                if 'unknown' not in nominated_totals:
-                                    award_totals['unknown'] = 0
-                                award_totals['unknown'] = award_totals['unknown'] + 1
-                            else:
-                                if 'unknown' not in nominated_totals:
-                                    nominated_totals['unknown']=0
-                                nominated_totals['unknown'] =nominated_totals['unknown'] +1
+                            award['conferred'] = 'unknown'
 
 
                         # sublcass of, can be award for best scene
@@ -202,26 +186,51 @@ def processWikidata(performer,performer_update,url):
                                 if q=='P805':
                                     award['venue_wd'] = getWDPPropertyLabel(qv[0]['datavalue']['value']['id'])
                                     award['venue'] = award['venue_wd']['label']
-                                # Award Rationale
-                                if q=='P6208':
-                                    award['name']=qv[0]['datavalue']['value']['text']
+                                # P6208: Award Rationale
+                                # P1932: object named as
+                                if q in ('P6208','P6208'):
+                                    award['name']= qv[0]['datavalue']['value']['text']
+                                    if award.get('conferred','unknown')=='unknown':
+                                        award['conferred']=award['wd']['label']
 
 
+                        if 'conferred' in award:
+                            if award['type']=='award received':
+                                if award['conferred'] not in award_totals:
+                                    award_totals[award['conferred']]=0
+                                award_totals[award['conferred']] =award_totals[award['conferred']] +1
+                                if settings['createTag']:
+                                    performer_update['tag_names'].append(
+                                            '[%s Award Winner]' % (award['conferred'],))
+                            else:
+                                if award['conferred'] not in nominated_totals:
+                                    nominated_totals[award['conferred']]=0
+                                nominated_totals[award['conferred']] =nominated_totals[award['conferred']] +1
+                                if settings['createTag']:
+                                    performer_update['tag_names'].append('[%s Award Nominated]' % (award['conferred'],))
 
                         if award:
 #                            log.info('award: %s' % (award,))
                             if 'custom_fields' not in performer_update:
-                                performer_update['custom_fields']={'full':performer['custom_fields'].copy()}
+                                if settings["overwrite"]:
+                                    performer_update['custom_fields'] = {'full':{}}
+                                else:
+                                    performer_update['custom_fields']={'full':performer['custom_fields'].copy()}
 
                             award_name=award['name']
                             award['award_value']=award['name']
                             if 'venue' in award and 'time' in award:
                                 award['award_value']='%s - %s: %s' % (award['time'], award['venue'],award['name'],)
-                            elif 'time' in award:
-                                award['award_value']='%s:  %s' % (award['time'],award['name'],)
                             elif 'venue'  in award:
                                 award['award_value']='%s: %s' % (award['venue'],award['name'],)
-
+                            elif 'time' in award:
+                                if 'conferred' in award:
+                                    if award['conferred'] !='unknown':
+                                        award['award_value'] = '%s - %s: %s' % (award['time'],award['conferred'], award['name'],)
+                                    else:
+                                        award['award_value'] = '%s:  %s' % (award['time'], award['name'],)
+                                else:
+                                    award['award_value'] = '%s:  %s' % (award['time'], award['name'],)
 
                             if award['type']=='award received':
                                 won_award.append(award)
@@ -229,7 +238,6 @@ def processWikidata(performer,performer_update,url):
                                 award['award_value']='%s - Nominated' % award['award_value']
                                 nominated_award.append(award)
                             if award_name not in performer_update['custom_fields']['full']:
-
                                 performer_update['custom_fields']['full'][award_name]= award['award_value']
                                 performer_update['update'] = True
                             else:
@@ -251,40 +259,17 @@ def processWikidata(performer,performer_update,url):
                     ["%s: %s" % (k, v,) for k, v in nominated_totals.items()])
                 performer_update['update'] = True
             if won_award:
-#                performer_update['custom_fields']['full']['json_awards'] = json.dumps([x[for x in won_award])
                 performer_update['custom_fields']['full']['Awards Won'] = ', '.join(
                     [x['award_value'] for x in won_award])
                 if settings['createTag']:
                     performer_update['tag_names'].append('[Award Winner]')
                 performer_update['update'] = True
             if nominated_award:
-#                performer_update['custom_fields']['full']['json_nominated'] = json.dumps(nominated_award)
                 performer_update['custom_fields']['full']['Awards Nominated'] = ', '.join(
                     [x['award_value'] for x in nominated_award])
                 if settings['createTag']:
                     performer_update['tag_names'].append('[Award Nominated]')
                 performer_update['update'] = True
-                #         if settings['createTag']:
-                    #             if 'P31' in award['wd']['claims']:
-                    #                 for c in award['wd']['claims']['P31']:
-                    #                     log.debug('c  %s' % (c,))
-                    #                     # avn Award Q824540
-                    #                     if c['mainsnak']['datavalue']['value']['id']=='Q824540':
-                    #                         log.debug('---------------')
-                    #                         if prop=='P166':
-                    #                             performer_update['tag_names'].append('[AVN Award Winner]')
-                    #                             performer_update['update'] = True
-                    #                         elif prop=='P1411':
-                    #                             performer_update['tag_names'].append('[AVN Award Nominated]')
-                    #                             performer_update['update'] = True
-                    #
-                # if settings['createTag']:
-                #     if prop=='P166':
-                #         performer_update['tag_names'].append('[Award Winner]')
-                #         performer_update['update'] = True
-                #     elif prop=='P1411':
-                #         performer_update['tag_names'].append('[Award Nominated]')
-                #         performer_update['update'] = True
         if settings['otherInfo']:
             for claim, label in wikidata_field_properties.items():
                 if claim in data['claims']:
@@ -373,7 +358,7 @@ config = stash.get_configuration()["plugins"]
 
 if "extraPerformerInfo" in config:
     settings.update(config["extraPerformerInfo"])
-log.info("config: %s " % (settings,))
+log.debug("config: %s " % (settings,))
 
 
 if "mode" in json_input["args"]:
@@ -385,6 +370,9 @@ if "mode" in json_input["args"]:
             processPerformer(performer)
         else:
             processPerformers()
+    elif "processAllOverwrite" == PLUGIN_ARGS:
+        settings["overwrite"]=True
+        processPerformers()
 
 elif "hookContext" in json_input["args"]:
     id = json_input["args"]["hookContext"]["id"]

@@ -1,15 +1,4 @@
 {
-  "yaml.validate": true,
-  "yaml.disableAdditionalProperties": true,
-  "yaml.completion": true,
-  "yaml.extension.recommendations": true,
-  "yaml.hover": true,
-  "yaml.format.singleQuote": false,
-  "yaml.format.printWidth": 120,
-  "yaml.format.proseWrap": "always",
-  "yaml.schemas": {
-    "schema/plugin.schema.json": ["/plugins/**", "/themes/**"]
-  },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -18,5 +7,16 @@
   },
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "yaml.completion": true,
+  "yaml.disableAdditionalProperties": true,
+  "yaml.extension.recommendations": true,
+  "yaml.format.printWidth": 120,
+  "yaml.format.proseWrap": "always",
+  "yaml.format.singleQuote": false,
+  "yaml.hover": true,
+  "yaml.schemas": {
+    "./validator/plugin.schema.json": ["/plugins/**", "/themes/**"]
+  },
+  "yaml.validate": true
 }
