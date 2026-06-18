@@ -1,5 +1,7 @@
 # Custom Field Tag Filter
 
+https://discourse.stashapp.cc/t/custom-field-tag-filter/9542
+
 Hide "meta-tags" from manual tag entry (when editing scenes) and from scraper results. A tag is treated as a meta-tag when it has a specific **custom field** set on it.
 
 This is a self-contained alternative to the [`tag-filter`](https://github.com/feederbox826/plugins) plugin. The big difference: `tag-filter` stores the list of hidden tags in the **browser's localStorage**, so the list is lost when you clear your browser cache or open StashApp in a different browser. This plugin instead stores the marking **on the tag itself in the stash database** (via a custom field), so it is shared across browsers and survives cache clears.
