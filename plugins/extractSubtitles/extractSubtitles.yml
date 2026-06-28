@@ -1,7 +1,7 @@
 name: Extract Embedded Subtitles
 description: Extracts embedded text subtitle tracks from video files into external .srt files that Stash recognises and displays as captions.
 version: 0.1.0
-url: https://github.com/stashapp/stash/issues/3875
+url: https://discourse.stashapp.cc/t/extract-embedded-subtitles/10378
 exec:
   - python
   - "{pluginDir}/extractSubtitles.py"

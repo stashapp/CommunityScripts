@@ -1,5 +1,7 @@
 # Extract Embedded Subtitles
 
+https://discourse.stashapp.cc/t/extract-embedded-subtitles/10378
+
 A Stash plugin that pulls **embedded text subtitle tracks** out of your video files and writes them as external `.srt` sidecar files. Stash already displays external captions, so once the files exist they show up in the video player's caption menu—this just automates creating them.
 
 Addresses [stashapp/stash#3875](https://github.com/stashapp/stash/issues/3875).
