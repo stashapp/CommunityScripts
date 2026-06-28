@@ -44,14 +44,16 @@ settings:
   genreTagNames:
     displayName: Genre Tag Names
     description: >
-      Comma-separated Stash tag names to route into the MP4 genre atom (©gen)
-      instead of keywords. Case-insensitive. Example: Amateur, Teen, MILF
+      Comma-separated substrings — any tag whose name contains one of these
+      (case-insensitive) goes to the MP4 genre atom (©gen) instead of keywords.
+      Example: Amateur, Teen, MILF
     type: STRING
   ignoreTagNames:
     displayName: Ignored Tag Names
     description: >
-      Comma-separated Stash tag names to exclude from all metadata export.
-      Case-insensitive. Example: HD, 4K, VR
+      Comma-separated substrings — any tag whose name contains one of these
+      (case-insensitive) is excluded from all metadata export.
+      Example: HD, 4K, º
     type: STRING
   exportStashIds:
     displayName: Export Stash IDs

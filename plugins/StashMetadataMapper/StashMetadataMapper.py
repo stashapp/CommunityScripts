@@ -111,11 +111,16 @@ def get_settings(stash):
     return settings
 
 
-def _parse_tag_set(s):
-    """Parse a comma-separated setting into a lowercase set of tag names."""
+def _parse_tag_patterns(s):
+    """Parse a comma-separated setting into a list of lowercase substrings to match against tag names."""
     if not s:
-        return set()
-    return {t.strip().lower() for t in s.split(",") if t.strip()}
+        return []
+    return [t.strip().lower() for t in s.split(",") if t.strip()]
+
+
+def _tag_matches(name_lower, patterns):
+    """Return True if name_lower contains any of the patterns as a substring."""
+    return any(p in name_lower for p in patterns)
 
 
 def _endpoint_to_key(endpoint):
@@ -167,14 +172,15 @@ def build_metadata(scene, settings, stash):
 
     tags = scene.get("tags") or []
     if tags and (settings["exportTagsAsKeywords"] or settings["genreTagNames"]):
-        genre_set = _parse_tag_set(settings["genreTagNames"])
-        ignore_set = _parse_tag_set(settings["ignoreTagNames"])
+        genre_patterns = _parse_tag_patterns(settings["genreTagNames"])
+        ignore_patterns = _parse_tag_patterns(settings["ignoreTagNames"])
         genres, keywords = [], []
         for tag in tags:
             name = tag["name"]
-            if name.lower() in ignore_set:
+            nl = name.lower()
+            if ignore_patterns and _tag_matches(nl, ignore_patterns):
                 continue
-            if name.lower() in genre_set:
+            if genre_patterns and _tag_matches(nl, genre_patterns):
                 genres.append(name)
             elif settings["exportTagsAsKeywords"]:
                 keywords.append(name)
