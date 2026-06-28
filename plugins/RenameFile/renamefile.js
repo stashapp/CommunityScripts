@@ -72,30 +72,46 @@
 		}
     }
 
-    function wrapElement(element) {
-        var text = element.textContent.trim();
-        var anchor = document.createElement('a');
-        anchor.href = '#';
-        anchor.textContent = text;
-        anchor.classList.add('renamefile');
-        anchor.title = 'Click to append title to [Title] input field; OR ctrl-key & mouse click to copy title to clipboard; OR shift-key click to copy to [Title] input field; OR alt-key click to copy file URI to clipboard.';
-        anchor.addEventListener('click', function(event) {
-            event.preventDefault();
-            AppendTitleField(text, event);
-        });
-        element.innerHTML = '';
-        element.appendChild(anchor);
+    var TITLE_SELECTOR = '.scene-header div.TruncatedText';
+    var TOOLTIP = 'Click to append title to [Title] input field; OR ctrl-key & mouse click to copy title to clipboard; OR shift-key click to copy to [Title] input field; OR alt-key click to copy file URI to clipboard.';
+
+    // Use event delegation instead of replacing the title element. The scene
+    // title is a React-controlled component; restructuring its DOM (e.g.
+    // wrapping it in an <a>) detaches the text node React updates, so the title
+    // freezes on the previous scene when navigating with Next. By listening on
+    // document and reading the title at click time, we never touch React's DOM.
+    document.addEventListener('click', function(event) {
+        var title = event.target.closest(TITLE_SELECTOR);
+        if (!title) return;
+        event.preventDefault();
+        AppendTitleField(title.textContent.trim(), event);
+    });
+
+    // Non-destructive affordance: add the styling class and tooltip without
+    // touching the element's children, so React's text node stays intact.
+    function decorate(element) {
+        if (!element.classList.contains('renamefile')) {
+            element.classList.add('renamefile');
+        }
+        if (element.getAttribute('title') !== TOOLTIP) {
+            element.setAttribute('title', TOOLTIP);
+        }
     }
 
-    function handleMutations(mutationsList, observer) {
-        for(const mutation of mutationsList) {
-            for(const addedNode of mutation.addedNodes) {
-                if (addedNode.nodeType === Node.ELEMENT_NODE && addedNode.querySelector('.scene-header div.TruncatedText')) {
-                    wrapElement(addedNode.querySelector('.scene-header div.TruncatedText'));
-                }
+    function handleMutations(mutationsList) {
+        for (const mutation of mutationsList) {
+            for (const addedNode of mutation.addedNodes) {
+                if (addedNode.nodeType !== Node.ELEMENT_NODE) continue;
+                var title = addedNode.matches && addedNode.matches(TITLE_SELECTOR)
+                    ? addedNode
+                    : addedNode.querySelector && addedNode.querySelector(TITLE_SELECTOR);
+                if (title) decorate(title);
             }
         }
     }
     const observer = new MutationObserver(handleMutations);
     observer.observe(document.body, { childList: true, subtree: true });
+
+    var existing = document.querySelector(TITLE_SELECTOR);
+    if (existing) decorate(existing);
 })();
