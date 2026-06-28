@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stash MP4 Metadata Mapper — Phase 1.
+"""Stash MP4 Metadata Mapper — Phase 2.
 
 Reads scene metadata from Stash via GraphQL and writes it into MP4
 metadata atoms using mutagen. Supports batch export and hook-based
@@ -67,6 +67,7 @@ ATOM_LABELS = {
     "aART": "studio (album artist)",
     "©ART": "cast (artist)",
     "covr": "artwork",
+    "©gen": "genre",
     "keyw": "keywords",
 }
 
@@ -79,8 +80,13 @@ DEFAULT_SETTINGS = {
     "exportRating": True,
     "exportArtwork": True,
     "exportTagsAsKeywords": True,
+    "genreTagNames": "",
+    "ignoreTagNames": "",
     "exportStashIds": True,
 }
+
+# Settings that are strings, not booleans
+_STRING_SETTINGS = {"genreTagNames", "ignoreTagNames"}
 
 
 def log(msg, level="INFO"):
@@ -96,9 +102,20 @@ def get_settings(stash):
     config = stash.get_plugin_config()
     settings = dict(DEFAULT_SETTINGS)
     for key, value in config.items():
-        if key in settings:
+        if key not in settings:
+            continue
+        if key in _STRING_SETTINGS:
+            settings[key] = str(value) if value is not None else ""
+        else:
             settings[key] = bool(value)
     return settings
+
+
+def _parse_tag_set(s):
+    """Parse a comma-separated setting into a lowercase set of tag names."""
+    if not s:
+        return set()
+    return {t.strip().lower() for t in s.split(",") if t.strip()}
 
 
 def _endpoint_to_key(endpoint):
@@ -148,8 +165,23 @@ def build_metadata(scene, settings, stash):
             MP4FreeForm(str(scene["rating100"]).encode("utf-8"), AtomDataType.UTF8)
         ]
 
-    if settings["exportTagsAsKeywords"] and scene.get("tags"):
-        meta["keyw"] = ["; ".join(t["name"] for t in scene["tags"])]
+    tags = scene.get("tags") or []
+    if tags and (settings["exportTagsAsKeywords"] or settings["genreTagNames"]):
+        genre_set = _parse_tag_set(settings["genreTagNames"])
+        ignore_set = _parse_tag_set(settings["ignoreTagNames"])
+        genres, keywords = [], []
+        for tag in tags:
+            name = tag["name"]
+            if name.lower() in ignore_set:
+                continue
+            if name.lower() in genre_set:
+                genres.append(name)
+            elif settings["exportTagsAsKeywords"]:
+                keywords.append(name)
+        if genres:
+            meta["©gen"] = [", ".join(genres)]
+        if keywords:
+            meta["keyw"] = ["; ".join(keywords)]
 
     if settings["exportStashIds"]:
         meta["----:com.stash:id"] = [

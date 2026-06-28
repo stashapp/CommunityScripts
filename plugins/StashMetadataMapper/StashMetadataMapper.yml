@@ -39,8 +39,20 @@ settings:
     type: BOOLEAN
   exportTagsAsKeywords:
     displayName: Export Tags as Keywords
-    description: Write all scene tags to the MP4 keywords atom (keyw)
+    description: Write non-genre scene tags to the MP4 keywords atom (keyw)
     type: BOOLEAN
+  genreTagNames:
+    displayName: Genre Tag Names
+    description: >
+      Comma-separated Stash tag names to route into the MP4 genre atom (©gen)
+      instead of keywords. Case-insensitive. Example: Amateur, Teen, MILF
+    type: STRING
+  ignoreTagNames:
+    displayName: Ignored Tag Names
+    description: >
+      Comma-separated Stash tag names to exclude from all metadata export.
+      Case-insensitive. Example: HD, 4K, VR
+    type: STRING
   exportStashIds:
     displayName: Export Stash IDs
     description: Write the internal Stash ID and any StashDB/TPDB IDs as custom com.stash atoms
