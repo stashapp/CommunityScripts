@@ -60,8 +60,9 @@ ENDPOINT_ATOM_KEYS = {
 }
 
 ATOM_LABELS = {
+    "stik": "media kind (movie=9)",
     "©nam": "title",
-    "©cmt": "description",
+    "ldes": "long description",
     "©day": "date",
     "aART": "studio (album artist)",
     "©ART": "cast (artist)",
@@ -123,11 +124,13 @@ def build_metadata(scene, settings, stash):
     """Build a dict of MP4 atom key → value for the scene."""
     meta = {}
 
+    meta["stik"] = [9]  # Media kind: Movie — tells players to use video metadata fields
+
     if settings["exportTitle"] and scene.get("title"):
         meta["©nam"] = [scene["title"]]
 
     if settings["exportDescription"] and scene.get("details"):
-        meta["©cmt"] = [scene["details"]]
+        meta["ldes"] = [scene["details"]]
 
     if settings["exportDate"] and scene.get("date"):
         meta["©day"] = [scene["date"]]

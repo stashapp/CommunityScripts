@@ -15,7 +15,7 @@ settings:
     type: BOOLEAN
   exportDescription:
     displayName: Export Description
-    description: Write scene details to the MP4 comment atom (©cmt)
+    description: Write scene details to the MP4 long description atom (ldes)
     type: BOOLEAN
   exportDate:
     displayName: Export Date
