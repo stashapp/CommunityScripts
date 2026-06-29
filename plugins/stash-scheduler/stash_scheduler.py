@@ -142,6 +142,7 @@ def get_plugin_settings(stash, plugin_id="stash-scheduler"):
         "time_of_day": "02:00",
         "day_of_week": "sun",
         "timezone": "UTC",
+        "apiKey": "",
         "run_identify": False,
         "identify_timeout_minutes": 120,
         # Comma- or newline-separated list of paths to restrict scan + identify.
@@ -168,10 +169,11 @@ def get_plugin_settings(stash, plugin_id="stash-scheduler"):
     return defaults
 
 
-def _parse_time_of_day(raw, warn):
-    raw = str(raw).strip()
+def _parse_single_time(token, warn):
+    """Parse one HH:MM token. Returns (hour, minute) or None on error."""
+    token = str(token).strip()
     try:
-        parts = raw.split(":")
+        parts = token.split(":")
         if len(parts) != 2:
             raise ValueError("expected HH:MM")
         hh, mm = int(parts[0]), int(parts[1])
@@ -179,8 +181,26 @@ def _parse_time_of_day(raw, warn):
             raise ValueError(f"values out of range: {hh}:{mm:02d}")
         return hh, mm
     except (ValueError, TypeError) as exc:
-        warn(f"[Stash Scheduler] Invalid time_of_day {raw!r} ({exc}) — defaulting to 02:00.")
-        return 2, 0
+        warn(f"[Stash Scheduler] Invalid time {token!r} ({exc}) — skipping.")
+        return None
+
+
+def _parse_times_of_day(raw, warn):
+    """Parse comma/space/newline-separated HH:MM times.
+    Returns a deduplicated list of (hour, minute) tuples, sorted ascending.
+    Falls back to [(2, 0)] if nothing valid is found."""
+    import re as _re
+    tokens = [t for t in _re.split(r"[\s,]+", str(raw).strip()) if t]
+    results, seen = [], set()
+    for token in tokens:
+        parsed = _parse_single_time(token, warn)
+        if parsed is not None and parsed not in seen:
+            results.append(parsed)
+            seen.add(parsed)
+    if not results:
+        warn("[Stash Scheduler] No valid times found in time_of_day — defaulting to 02:00.")
+        return [(2, 0)]
+    return sorted(results)
 
 
 def validate_and_coerce_settings(settings, warn):
@@ -194,10 +214,11 @@ def validate_and_coerce_settings(settings, warn):
     settings["frequency"] = freq
 
     raw_time = settings.get("time_of_day", "02:00")
-    hour, minute = _parse_time_of_day(raw_time, warn)
-    settings["time_of_day"] = f"{hour:02d}:{minute:02d}"
-    settings["hour"] = hour
-    settings["minute"] = minute
+    times = _parse_times_of_day(raw_time, warn)
+    settings["times_of_day"] = times
+    settings["time_of_day"] = ", ".join(f"{h:02d}:{m:02d}" for h, m in times)
+    settings["hour"] = times[0][0]
+    settings["minute"] = times[0][1]
 
     dow = str(settings.get("day_of_week", "sun")).strip().lower()
     if dow not in VALID_DAYS:
@@ -233,6 +254,9 @@ def validate_and_coerce_settings(settings, warn):
             tz_raw = "UTC"
     settings["timezone"] = tz_raw
 
+    # apiKey — strip whitespace; empty string means no key (session auth)
+    settings["apiKey"] = str(settings.get("apiKey", "") or "").strip()
+
     # scanPaths — parse comma/newline-separated string into a clean list
     raw_paths = str(settings.get("scanPaths", "") or "")
     import re as _re
@@ -253,6 +277,16 @@ def validate_and_coerce_settings(settings, warn):
 # ---------------------------------------------------------------------------
 # Scan / Identify helpers (used by both plugin tasks and the daemon)
 # ---------------------------------------------------------------------------
+
+def _strip_nulls(obj):
+    """Recursively remove None/null values from a dict or list.
+    Required before forwarding a GraphQL query result back as mutation input —
+    Stash rejects null on required sub-fields."""
+    if isinstance(obj, dict):
+        return {k: _strip_nulls(v) for k, v in obj.items() if v is not None}
+    if isinstance(obj, list):
+        return [_strip_nulls(i) for i in obj]
+    return obj
 
 _SCAN_FLAGS = (
     "scanGenerateCovers",
@@ -333,9 +367,12 @@ def trigger_identify(stash_or_log, gql_fn, paths=None):
     paths_desc = f" (paths: {', '.join(paths)})" if paths else " (full library)"
     _log_info(stash_or_log, f"[Stash Scheduler] Triggering identify task{paths_desc}…")
     try:
-        identify_input = {"sources": identify["sources"]}
+        # Strip nulls: the query returns the full schema object including null
+        # sub-fields; forwarding those nulls into the mutation causes Stash to
+        # reject the request with a schema validation error.
+        identify_input = {"sources": _strip_nulls(identify["sources"])}
         if identify.get("options"):
-            identify_input["options"] = identify["options"]
+            identify_input["options"] = _strip_nulls(identify["options"])
         if paths:
             identify_input["paths"] = paths
         result = gql_fn(IDENTIFY_MUTATION, {"input": identify_input})
@@ -528,7 +565,7 @@ def daemon_alive():
         return False, None
 
 
-def tail_log(n=30):
+def tail_log(n=100):
     """Return the last n lines of the daemon log file as a string."""
     if not os.path.exists(LOG_FILE):
         return "(log file not found)"
@@ -572,46 +609,82 @@ def run_daemon():
         sys.exit(1)
 
     frequency = settings["frequency"]
-    hour = settings["hour"]
-    minute = settings["minute"]
+    times_of_day = settings["times_of_day"]
     day_of_week = settings["day_of_week"]
     timezone = settings["timezone"]
     run_identify = settings["run_identify"]
     identify_timeout = settings["identify_timeout_minutes"]
     scan_paths = settings.get("scan_paths") or []
 
-    # Build a simple GQL callable for the daemon (not stash.log-based)
-    def gql(query, variables=None):
-        return call_gql(stash, query, variables)
-
     def scheduled_job():
+        """Fired by APScheduler for each scheduled time slot."""
         log.info("Scheduled scan cycle firing.")
+        # Fresh connection each run — guards against stale sessions after a
+        # Stash restart.
         try:
-            job_id = trigger_scan(log, gql, settings)
+            fresh_stash = make_stash(cfg["server_connection"])
+            def gql(query, variables=None):
+                return call_gql(fresh_stash, query, variables)
         except Exception as exc:
-            log.error(f"Scan failed: {exc}")
+            log.error(f"Cannot connect to Stash for scheduled scan: {exc}")
             return
-        if run_identify:
+
+        # Reload operational settings live from Stash so changes to
+        # run_identify, scan_paths, scan flags, etc. take effect immediately
+        # without needing to restart the daemon.
+        try:
+            live_settings = validate_and_coerce_settings(
+                get_plugin_settings(fresh_stash),
+                lambda m: log.warning(m),
+            )
+            log.info(
+                f"Settings reloaded — identify: {'yes' if live_settings['run_identify'] else 'no'}, "
+                f"paths: {', '.join(live_settings.get('scan_paths') or []) or 'full library'}"
+            )
+        except Exception as exc:
+            log.warning(f"Could not reload settings from Stash — using startup settings: {exc}")
+            live_settings = settings
+
+        try:
+            job_id = trigger_scan(log, gql, live_settings)
+        except Exception as exc:
+            log.error(f"Scan trigger failed: {exc}")
+            return
+
+        if live_settings["run_identify"]:
+            live_timeout = live_settings["identify_timeout_minutes"]
+            live_paths = live_settings.get("scan_paths") or None
             threading.Thread(
                 target=wait_for_scan_and_identify,
-                args=(log, gql, job_id, identify_timeout, scan_paths or None),
+                args=(log, gql, job_id, live_timeout, live_paths),
                 daemon=True,
             ).start()
+
+    def heartbeat_job():
+        """Fires every hour so the log shows the daemon is still alive."""
+        log.info("[heartbeat] Daemon alive.")
 
     scheduler = BackgroundScheduler(timezone=timezone)
     job_kwargs = {"func": scheduled_job, "misfire_grace_time": 3600, "coalesce": True}
 
+    times_str = ", ".join(f"{h:02d}:{m:02d}" for h, m in times_of_day)
     if frequency == "hourly":
         scheduler.add_job(trigger="cron", minute=0, **job_kwargs)
         log.info(f"Schedule: every hour at :00 ({timezone})")
     elif frequency == "weekly":
-        scheduler.add_job(
-            trigger="cron", day_of_week=day_of_week, hour=hour, minute=minute, **job_kwargs
-        )
-        log.info(f"Schedule: weekly {day_of_week.upper()} at {hour:02d}:{minute:02d} ({timezone})")
+        for h, m in times_of_day:
+            scheduler.add_job(
+                trigger="cron", day_of_week=day_of_week, hour=h, minute=m, **job_kwargs
+            )
+        log.info(f"Schedule: weekly {day_of_week.upper()} at {times_str} ({timezone})")
     else:
-        scheduler.add_job(trigger="cron", hour=hour, minute=minute, **job_kwargs)
-        log.info(f"Schedule: daily at {hour:02d}:{minute:02d} ({timezone})")
+        for h, m in times_of_day:
+            scheduler.add_job(trigger="cron", hour=h, minute=m, **job_kwargs)
+        log.info(f"Schedule: daily at {times_str} ({timezone})")
+
+    # Hourly heartbeat so the log proves the daemon is ticking even between scans
+    scheduler.add_job(func=heartbeat_job, trigger="cron", minute=0,
+                      misfire_grace_time=3600, coalesce=True)
 
     log.info(f"Identify after scan: {'yes' if run_identify else 'no'}")
 
@@ -626,7 +699,21 @@ def run_daemon():
     else:
         log.info("Scan flags: none (bare scan)")
 
+    # Log APScheduler execution errors so silent job failures are visible
+    from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_MISSED
+    def _aps_listener(event):
+        if event.exception:
+            log.error(f"[APScheduler] Job {event.job_id} raised an exception: {event.exception}")
+        elif hasattr(event, 'scheduled_run_time') and not hasattr(event, 'retval'):
+            log.warning(f"[APScheduler] Job {event.job_id} missed its scheduled time.")
+    scheduler.add_listener(_aps_listener, EVENT_JOB_ERROR | EVENT_JOB_MISSED)
+
     scheduler.start()
+
+    # Log next fire times so the log confirms jobs are registered correctly
+    for job in scheduler.get_jobs():
+        if job.next_run_time:
+            log.info(f"Next fire for job '{job.id}': {job.next_run_time}")
     log.info("Daemon is running. Waiting for scheduled events…")
 
     stop = threading.Event()
@@ -682,7 +769,13 @@ def run_after_identify(job_id_arg, timeout_arg):
 # ---------------------------------------------------------------------------
 
 def task_start_scheduler(stash, server_connection, settings):
-    save_config(server_connection, settings)
+    # Inject the API key into the saved connection dict so every daemon GQL
+    # request includes it — required when Stash's "Require API key" is enabled.
+    conn = dict(server_connection)
+    api_key = settings.get("apiKey", "").strip()
+    if api_key:
+        conn["ApiKey"] = api_key
+    save_config(conn, settings)
     kill_existing_daemon()
     launch_detached("--daemon")
     freq = settings["frequency"]
@@ -727,7 +820,7 @@ def task_run_now(stash, settings, force_identify=False):
 def task_check_status(stash):
     alive, pid = daemon_alive()
     status_line = f"Daemon: RUNNING (PID {pid})" if alive else "Daemon: NOT RUNNING"
-    recent = tail_log(30)
+    recent = tail_log(100)
     output = f"{status_line}\nLog file: {LOG_FILE}\n\nRecent log ({LOG_FILE}):\n{recent}"
     stash.log.info(f"[Stash Scheduler] {status_line}")
     print(json.dumps({"output": output}))
