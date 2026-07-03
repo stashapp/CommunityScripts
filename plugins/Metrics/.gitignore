@@ -1,0 +1,8 @@
+node_modules/
+.env
+cache/
+assets/metrics-cache.json
+# Vendored UMD bundles are produced by `npm install` (postinstall). Keep the
+# placeholders committed so the plugin loads cleanly out of the box; users
+# replace them locally when they run npm install.
+!assets/lib/*.js

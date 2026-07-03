@@ -1,0 +1,22 @@
+{
+  "name": "stash-metrics-plugin",
+  "version": "1.0.0",
+  "description": "Comprehensive library analytics plugin for Stash — interactive dashboards, performer + tag insights, and runnable report tasks.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "node scripts/vendor-libs.js",
+    "vendor": "node scripts/vendor-libs.js",
+    "compute": "node backend/compute_metrics.js --mode=full-report",
+    "test": "node backend/test_aggregate.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.4",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "chartjs-chart-matrix": "^3.0.0",
+    "xlsx": "^0.18.5"
+  }
+}
