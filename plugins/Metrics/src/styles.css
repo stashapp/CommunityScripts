@@ -1,0 +1,984 @@
+/* Stash Metrics Plugin — dashboard styles.
+ * Designed against Stash's dark theme. Light theme falls back to a darkened
+ * canvas via prefers-color-scheme. */
+
+.metrics-page-host { padding: 16px 20px; }
+.metrics-root { font-family: inherit; color: #cfd6dc; }
+
+.metrics-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.metrics-head h1 {
+  margin: 0; font-size: 22px; letter-spacing: 0.2px;
+}
+.metrics-actions { display: flex; align-items: center; gap: 8px; }
+.metrics-actions .metrics-source {
+  color: #8e98a0; font-size: 12px; margin-right: 8px;
+}
+
+.metrics-tabs {
+  display: flex; gap: 4px; border-bottom: 1px solid #2b3338; margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.metrics-tab {
+  background: transparent; color: #cfd6dc; border: 0;
+  padding: 8px 14px; cursor: pointer; border-bottom: 2px solid transparent;
+  font-size: 14px;
+}
+.metrics-tab:hover { color: #fff; }
+.metrics-tab.active { color: #fff; border-bottom-color: #4f8ef7; }
+
+.metrics-filters {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-bottom: 14px; padding: 10px 12px;
+  background: #1c2126; border: 1px solid #2b3338; border-radius: 6px;
+}
+.metrics-filters label {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #a8b1b8; font-size: 12px;
+}
+.metrics-filters input {
+  background: #11151a; color: #e5e9ec; border: 1px solid #2b3338;
+  padding: 4px 8px; border-radius: 4px; min-width: 140px;
+}
+.metrics-filters input[type=checkbox] { min-width: 0; }
+.metrics-gender-filter {
+  display: inline-flex; align-items: center; gap: 6px 10px;
+  flex-wrap: wrap; padding-left: 8px;
+  border-left: 1px solid #2b3338;
+}
+.metrics-gender-label {
+  color: #a8b1b8; font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.metrics-gender-filter label {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: #cfd6dc; font-size: 12px; padding: 2px 4px;
+  border-radius: 4px; cursor: pointer;
+}
+.metrics-gender-filter label:hover { background: #2b3338; }
+
+.metrics-status { color: #8e98a0; margin: 12px 0; }
+.metrics-error {
+  background: #3a1f1f; border: 1px solid #6b2e2e; color: #f8cccc;
+  padding: 8px 12px; border-radius: 6px;
+}
+.metrics-empty {
+  color: #8e98a0; font-style: italic; padding: 12px 0;
+}
+
+.metrics-kpi-row {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin-bottom: 16px;
+}
+.metrics-kpi {
+  background: #1c2126; border: 1px solid #2b3338;
+  border-radius: 8px; padding: 12px 14px; min-height: 76px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.metrics-kpi-label { color: #8e98a0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
+.metrics-kpi-value { color: #fff; font-size: 22px; font-weight: 600; line-height: 1.2; }
+.metrics-kpi-sub { color: #8e98a0; font-size: 11px; margin-top: 2px; }
+
+.metrics-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+.metrics-card {
+  background: #1c2126; border: 1px solid #2b3338;
+  border-radius: 8px; padding: 12px 14px;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.metrics-card-title {
+  color: #cfd6dc; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.3px; margin-bottom: 8px;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+/* Only lock a fixed height when the card actually contains a Chart.js
+ * canvas. Chart.js's responsive: true measures its parent on every
+ * animation frame — without a bounded height it grows one pixel per
+ * frame and the card runs away. Non-canvas cards (tables, lists, JSON
+ * blobs, forms) auto-size to their content. */
+.metrics-card:has(> canvas) {
+  height: 340px;
+  overflow: hidden;
+}
+.metrics-card:has(> canvas) canvas {
+  /* min-height: 0 lets the canvas shrink inside the flex parent instead
+   * of demanding min-content and pushing the container. */
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: 100%;
+}
+
+/* Tag cloud */
+.metrics-tagcloud {
+  display: flex; flex-wrap: wrap; gap: 6px 10px;
+  padding: 6px 2px; max-height: 320px; overflow: auto;
+}
+.metrics-tag-pill {
+  text-decoration: none; padding: 2px 6px; border-radius: 4px;
+  background: #11151a; line-height: 1.3;
+}
+.metrics-tag-pill:hover { background: #2b3338; }
+
+/* Treemap (CSS flex strips) */
+.metrics-treemap {
+  display: flex; flex-wrap: wrap; align-items: stretch;
+  min-height: 260px; gap: 2px;
+}
+.metrics-treemap-cell {
+  position: relative; min-width: 80px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.metrics-treemap-cell-inner {
+  color: #11151a; text-align: center; padding: 4px;
+  font-weight: 600; mix-blend-mode: luminosity;
+}
+.metrics-treemap-cell-inner .name { display: block; font-size: 12px; }
+.metrics-treemap-cell-inner .val { display: block; font-size: 11px; opacity: 0.85; }
+
+/* Heatmap */
+.metrics-heatmap {
+  overflow: auto;
+}
+.metrics-heatmap-grid {
+  display: grid; gap: 2px; min-width: 480px;
+}
+.metrics-heatmap-corner,
+.metrics-heatmap-col-head,
+.metrics-heatmap-row-head {
+  background: #11151a; color: #a8b1b8; font-size: 11px;
+  padding: 4px 6px; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.metrics-heatmap-row-head { text-align: left; }
+.metrics-heatmap-cell {
+  font-size: 11px; color: #fff; text-align: center;
+  padding: 6px 4px; border-radius: 2px;
+}
+
+/* Network graph */
+.metrics-network-svg {
+  display: block; width: 100%; height: auto;
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(79,142,247,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 70%, rgba(62,207,142,0.05) 0%, transparent 50%),
+    linear-gradient(180deg, #14191f 0%, #0b0e12 100%);
+  border-radius: 8px;
+  border: 1px solid #2b3338;
+}
+.metrics-network-edges,
+.metrics-network-nodes { transition: opacity 0.15s; }
+
+.metrics-network-edge {
+  transition: opacity 0.15s, stroke-width 0.15s;
+}
+.metrics-network-node text {
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.metrics-network-circle {
+  cursor: pointer;
+  transition: r 0.12s ease, filter 0.12s ease;
+}
+.metrics-network-halo {
+  pointer-events: none;
+  transition: fill-opacity 0.15s;
+}
+.metrics-network-node:hover .metrics-network-circle {
+  filter: brightness(1.35) drop-shadow(0 0 8px currentColor);
+}
+.metrics-network-node:hover .metrics-network-halo {
+  fill-opacity: 0.35;
+}
+
+/* Focus mode: dim everything, then re-brighten the neighbourhood. */
+.metrics-network-focused .metrics-network-edge { opacity: 0.06; }
+.metrics-network-focused .metrics-network-edge.adjacent {
+  opacity: 1; stroke-width: 3;
+}
+.metrics-network-focused .metrics-network-node { opacity: 0.15; }
+.metrics-network-focused .metrics-network-node.adjacent { opacity: 1; }
+.metrics-network-focused .metrics-network-node.focused .metrics-network-halo {
+  fill-opacity: 0.5;
+}
+.metrics-network-focused .metrics-network-node.focused .metrics-network-circle {
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.metrics-network-legend {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  padding: 10px 4px 0; color: #8e98a0; font-size: 11px;
+}
+.metrics-network-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.metrics-network-legend .dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+}
+
+/* Ranking lists */
+.metrics-list { padding-left: 18px; margin: 0; }
+.metrics-list li { margin-bottom: 4px; line-height: 1.4; }
+.metrics-list-val { color: #8e98a0; font-size: 12px; margin-left: 6px; }
+
+/* Hierarchy list */
+.metrics-hierarchy { list-style: none; padding-left: 0; }
+.metrics-hierarchy > li { padding: 4px 0; border-bottom: 1px dashed #2b3338; }
+.metrics-hierarchy ul { list-style: disc; padding-left: 20px; color: #8e98a0; }
+.metrics-hierarchy-parent { color: #fff; font-weight: 600; }
+.metrics-hierarchy-parent .muted { color: #8e98a0; font-weight: 400; margin-left: 4px; }
+
+/* Stats page CTA */
+.metrics-stats-cta {
+  margin-top: 20px; text-align: center;
+}
+
+/* Correlation table */
+.metrics-card-sub {
+  color: #8e98a0; font-size: 11px; margin-bottom: 8px;
+}
+.metrics-table {
+  width: 100%; border-collapse: collapse; font-size: 12px;
+}
+.metrics-table th, .metrics-table td {
+  border-bottom: 1px solid #2b3338; padding: 4px 6px; text-align: left;
+}
+.metrics-table th { color: #8e98a0; font-weight: 600; }
+.metrics-parallel {
+  display: block; width: 100%; height: 380px;
+  background: #11151a; border-radius: 4px;
+}
+
+/* Preferences form */
+.metrics-form { display: flex; flex-direction: column; gap: 8px; }
+.metrics-form-cols {
+  display: grid; gap: 16px;
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 800px) {
+  .metrics-form-cols { grid-template-columns: 1fr; }
+}
+.metrics-form-col { display: flex; flex-direction: column; gap: 8px; }
+.metrics-form-row { display: flex; align-items: center; gap: 8px; }
+.metrics-form-label {
+  flex: 0 0 200px; color: #a8b1b8; font-size: 12px; margin: 0;
+}
+.metrics-form-input {
+  flex: 1; background: #11151a; color: #e5e9ec; border: 1px solid #2b3338;
+  padding: 5px 8px; border-radius: 4px; font-size: 12px;
+}
+.metrics-form-num { max-width: 100px; }
+.metrics-form-section {
+  margin-top: 12px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.6px; color: #8e98a0;
+}
+.metrics-form-actions {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+}
+.metrics-btn {
+  padding: 5px 12px; border-radius: 4px; cursor: pointer;
+  border: 1px solid #2b3338; background: #11151a; color: #cfd6dc;
+  font-size: 12px;
+}
+.metrics-btn.btn-primary { background: #4f8ef7; border-color: #4f8ef7; color: #fff; }
+.metrics-btn:hover { filter: brightness(1.15); }
+.metrics-weight-row { display: flex; flex: 1; align-items: center; gap: 8px; }
+.metrics-weight-row input[type=range] { flex: 1; }
+.metrics-weight-value {
+  display: inline-block; min-width: 28px; text-align: right;
+  font-variant-numeric: tabular-nums; color: #cfd6dc; font-size: 12px;
+}
+
+/* Matches list */
+.metrics-matches-cols {
+  display: grid; gap: 14px;
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 900px) {
+  .metrics-matches-cols { grid-template-columns: 1fr; }
+}
+.metrics-match-list {
+  display: flex; flex-direction: column; gap: 10px; max-height: 760px; overflow-y: auto;
+}
+.metrics-match-card {
+  background: #11151a; border: 1px solid #2b3338; border-radius: 6px;
+  padding: 8px 10px;
+}
+.metrics-match-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 4px;
+}
+.metrics-match-name {
+  color: #fff; text-decoration: none; font-weight: 600; font-size: 14px;
+}
+.metrics-match-name:hover { text-decoration: underline; }
+.metrics-match-score {
+  display: inline-block; min-width: 36px; text-align: center;
+  font-weight: 700; font-size: 13px; color: #11151a;
+  padding: 2px 6px; border-radius: 4px;
+}
+.metrics-match-tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+.metrics-badge {
+  display: inline-block; font-size: 11px; padding: 1px 6px;
+  border: 1px solid #2b3338; border-radius: 10px; color: #cfd6dc;
+}
+.metrics-match-meta { color: #a8b1b8; font-size: 11px; }
+.metrics-match-meta.muted { color: #6b7178; }
+.metrics-match-details summary { cursor: pointer; color: #4f8ef7; font-size: 11px; margin-top: 4px; }
+.metrics-match-breakdown {
+  list-style: none; padding: 4px 0 0; margin: 0; font-size: 11px;
+}
+.metrics-match-breakdown li {
+  display: flex; justify-content: space-between; padding: 2px 0;
+  border-bottom: 1px dashed #2b3338;
+}
+.metrics-match-breakdown li:last-child { border-bottom: 0; }
+
+/* Play tab — heatmap cells render denser than the default heatmap. */
+.metrics-playhist .metrics-heatmap-cell { font-size: 10px; padding: 4px 2px; min-height: 24px; }
+
+/* Sub-list lines under ranking entries */
+.metrics-list-sub { color: #8e98a0; font-size: 11px; margin-left: 22px; margin-top: 2px; }
+
+/* Archetype cluster cards */
+.metrics-cluster-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
+.metrics-cluster {
+  background: #11151a; border: 1px solid #2b3338; border-radius: 6px;
+  padding: 10px 12px;
+}
+.metrics-cluster-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 6px;
+}
+.metrics-cluster-name { color: #fff; font-weight: 600; font-size: 14px; }
+.metrics-cluster-size { color: #8e98a0; font-size: 12px; }
+.metrics-cluster-rep { margin-top: 6px; }
+.metrics-cluster-members li { font-size: 12px; }
+
+/* Similarity lookup */
+.metrics-similarity { display: flex; flex-direction: column; gap: 8px; }
+.metrics-similarity-suggest {
+  display: flex; flex-direction: column; gap: 2px;
+  max-height: 160px; overflow: auto;
+}
+.metrics-similarity-suggest-btn {
+  background: #11151a; border: 1px solid #2b3338; color: #cfd6dc;
+  border-radius: 4px; padding: 4px 8px; text-align: left; cursor: pointer; font-size: 12px;
+}
+.metrics-similarity-suggest-btn:hover { background: #2b3338; }
+.metrics-similarity-head { color: #8e98a0; font-size: 12px; margin-bottom: 4px; }
+.metrics-similarity-results .metrics-list-val { color: #8e98a0; }
+
+/* Diversity gauges */
+.metrics-gaps { display: flex; flex-direction: column; gap: 10px; }
+.metrics-gaps-coverage, .metrics-gaps-section { padding-top: 6px; }
+.metrics-gauge { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.metrics-gauge-label { flex: 0 0 110px; color: #cfd6dc; font-size: 12px; }
+.metrics-gauge-bar { flex: 1; background: #11151a; border: 1px solid #2b3338; border-radius: 4px; height: 10px; overflow: hidden; }
+.metrics-gauge-fill { display: block; height: 100%; }
+.metrics-gauge-val { flex: 0 0 44px; color: #cfd6dc; font-size: 11px; text-align: right; }
+
+/* Career timeline SVG */
+.metrics-careers { display: block; width: 100%; }
+.metrics-careers rect { transition: opacity 0.15s; }
+.metrics-careers rect:hover { opacity: 0.85; }
+
+/* Fantasy share bars */
+.metrics-fantasy-axis { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.metrics-fantasy-axis li {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cfd6dc;
+}
+.metrics-fantasy-axis li > span:first-child { flex: 0 0 110px; }
+.metrics-fantasy-axis .bar {
+  flex: 1; background: #11151a; border: 1px solid #2b3338;
+  border-radius: 4px; height: 9px; overflow: hidden;
+}
+.metrics-fantasy-axis .bar .fill { display: block; height: 100%; background: #4f8ef7; }
+.metrics-fantasy-axis .pct { flex: 0 0 36px; text-align: right; color: #8e98a0; font-size: 11px; }
+.metrics-fantasy-json {
+  background: #11151a; padding: 8px 10px; border-radius: 4px;
+  color: #cfd6dc; font-size: 11px; max-height: 260px; overflow: auto;
+  margin: 8px 0 0;
+}
+
+/* Fantasy Builder — guided-flow layout */
+.metrics-fantasy-hero {
+  background: linear-gradient(135deg, #1e2735 0%, #1c2126 100%);
+  border: 1px solid #4f8ef7;
+  padding: 20px 22px;
+  margin-bottom: 14px;
+}
+.metrics-fantasy-hero-badge {
+  display: inline-block; font-size: 10px; letter-spacing: 0.8px;
+  text-transform: uppercase; color: #4f8ef7; font-weight: 700;
+  padding: 3px 8px; border: 1px solid #4f8ef7; border-radius: 4px;
+  margin-bottom: 10px;
+}
+.metrics-fantasy-hero-title {
+  color: #fff; font-size: 20px; font-weight: 600; line-height: 1.3;
+  margin-bottom: 6px;
+}
+.metrics-fantasy-hero-sub { color: #a8b1b8; font-size: 13px; margin-bottom: 12px; }
+.metrics-fantasy-hero-list {
+  list-style: none; padding: 0; margin: 0 0 12px;
+  display: grid; gap: 4px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.metrics-fantasy-hero-list li {
+  color: #cfd6dc; font-size: 13px; line-height: 1.5;
+  padding: 2px 0;
+}
+.metrics-fantasy-hero-list b { color: #8e98a0; font-weight: 500; margin-right: 4px; }
+.metrics-fantasy-hero-help {
+  border-top: 1px dashed #2b3338; padding-top: 8px; margin-top: 4px;
+}
+.metrics-fantasy-hero-help summary {
+  cursor: pointer; color: #4f8ef7; font-size: 12px;
+}
+.metrics-fantasy-hero-help p {
+  margin: 6px 0 0; color: #a8b1b8; font-size: 12px; line-height: 1.5;
+}
+.metrics-fantasy-hero-help code {
+  background: #11151a; padding: 1px 4px; border-radius: 3px;
+  font-size: 11px;
+}
+
+/* Numbered step headers between sections */
+.metrics-section-header {
+  margin: 22px 0 10px; padding-bottom: 8px;
+  border-bottom: 1px solid #2b3338;
+}
+.metrics-section-step {
+  display: inline-block; font-size: 10px; letter-spacing: 0.6px;
+  text-transform: uppercase; color: #4f8ef7; font-weight: 700;
+  padding: 2px 7px; background: rgba(79, 142, 247, 0.12);
+  border-radius: 3px; margin-bottom: 6px;
+}
+.metrics-section-title {
+  color: #fff; font-size: 16px; font-weight: 600; margin-bottom: 2px;
+}
+.metrics-section-sub {
+  color: #a8b1b8; font-size: 12px; line-height: 1.5;
+}
+
+/* Fantasy action buttons — three big call-to-action cards */
+.metrics-fantasy-actions-card { padding: 16px 18px; }
+.metrics-fantasy-actions {
+  display: grid; gap: 10px; margin: 12px 0;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.metrics-btn-hero {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 4px; padding: 12px 16px; text-align: left;
+  border-radius: 6px; cursor: pointer; transition: transform 0.1s;
+}
+.metrics-btn-hero:hover { transform: translateY(-1px); filter: brightness(1.12); }
+.metrics-btn-hero .metrics-btn-title { font-size: 14px; font-weight: 600; }
+.metrics-btn-hero .metrics-btn-sub { font-size: 11px; opacity: 0.85; }
+.metrics-btn-hero.btn-primary { background: #4f8ef7; border: 1px solid #4f8ef7; color: #fff; }
+.metrics-btn-hero.btn-secondary { background: #11151a; border: 1px solid #2b3338; color: #cfd6dc; }
+.metrics-btn-saved { background: #3ecf8e !important; border-color: #3ecf8e !important; color: #11151a !important; }
+
+.metrics-fantasy-details {
+  margin-top: 4px; padding-top: 8px; border-top: 1px dashed #2b3338;
+}
+.metrics-fantasy-details summary {
+  cursor: pointer; color: #4f8ef7; font-size: 12px;
+}
+
+/* Fantasy tag stack — the "copy-paste-into-Stash-search" summary card */
+.metrics-tag-stack-summary {
+  border-left: 4px solid #3ecf8e;
+  padding-left: 18px;
+}
+.metrics-tag-stack-chips {
+  margin: 12px 0;
+  gap: 6px 8px;
+}
+.metrics-tag-stack-chips .metrics-tag-pill {
+  padding: 4px 10px;
+  border: 1px solid #2b3338;
+  background: #11151a;
+  font-size: 13px;
+  font-weight: 500;
+}
+.metrics-tag-stack-chips .metrics-tag-pill:hover {
+  background: #2b3338;
+  filter: brightness(1.2);
+}
+
+/* Library health ring */
+.metrics-health { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.metrics-health-ring {
+  position: relative; width: 160px; height: 160px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex: 0 0 160px;
+}
+.metrics-health-inner {
+  width: 124px; height: 124px; border-radius: 50%;
+  background: #1c2126; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: #fff;
+}
+.metrics-health-score { font-size: 32px; font-weight: 700; line-height: 1; }
+.metrics-health-grade { color: #8e98a0; font-size: 11px; margin-top: 4px; }
+.metrics-health-breakdown { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 4px; }
+
+/* Completion view */
+.metrics-completion {
+  display: grid; gap: 14px; grid-template-columns: 1fr 1fr; align-items: center;
+}
+.metrics-completion-shares { display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 800px) { .metrics-completion { grid-template-columns: 1fr; } }
+
+/* Scene recipes */
+.metrics-recipes li {
+  padding: 8px 10px; border: 1px solid #2b3338; border-radius: 6px;
+  margin-bottom: 6px; background: #11151a;
+}
+.metrics-recipe-head { color: #fff; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.metrics-list-sub.muted { color: #6b7178; font-style: italic; }
+
+/* --- v1.6 fun / spicy blocks --------------------------------------- */
+
+/* Personality hero card on Overview. */
+.metrics-personality-hero {
+  background: linear-gradient(135deg, #2a1c3a 0%, #1c2126 100%);
+  border: 1px solid #c98ef7;
+  padding: 20px 22px; margin-bottom: 14px;
+}
+.metrics-personality-badge {
+  display: inline-block; font-size: 10px; letter-spacing: 0.8px;
+  text-transform: uppercase; color: #c98ef7; font-weight: 700;
+  padding: 3px 8px; border: 1px solid #c98ef7; border-radius: 4px;
+  margin-bottom: 10px;
+}
+.metrics-personality-title {
+  color: #fff; font-size: 22px; font-weight: 700; line-height: 1.2;
+  margin-bottom: 8px;
+}
+.metrics-personality-traits {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+}
+.metrics-personality-trait {
+  background: rgba(201, 142, 247, 0.16);
+  border-color: #c98ef7 !important;
+  color: #f0e7fc !important;
+}
+.metrics-personality-list {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; gap: 4px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.metrics-personality-list li {
+  color: #cfd6dc; font-size: 13px; line-height: 1.5;
+  padding: 2px 0; position: relative; padding-left: 14px;
+}
+.metrics-personality-list li::before {
+  content: "•"; position: absolute; left: 0; top: 0;
+  color: #c98ef7;
+}
+
+/* Roulette (Play tab) — random pick button + result card. */
+.metrics-roulette { display: flex; flex-direction: column; gap: 10px; }
+.metrics-roulette-result {
+  padding: 10px 12px; background: #11151a;
+  border: 1px solid #2b3338; border-radius: 6px;
+}
+.metrics-roulette-result .metrics-match-name {
+  font-size: 15px;
+}
+.metrics-roulette .metrics-btn {
+  align-self: flex-start;
+  background: #f76e6e; border-color: #f76e6e; color: #fff;
+}
+.metrics-roulette .metrics-btn:hover { filter: brightness(1.12); }
+
+/* Country tourism tile grid. */
+.metrics-country-tour {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  max-height: 380px; overflow-y: auto;
+}
+.metrics-country-tile {
+  background: #11151a; border: 1px solid #2b3338; border-radius: 6px;
+  padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.metrics-country-flag { font-size: 22px; line-height: 1; }
+.metrics-country-code {
+  color: #fff; font-weight: 600; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.metrics-country-bar {
+  background: #0b0e12; height: 6px; border-radius: 3px; overflow: hidden;
+}
+.metrics-country-fill {
+  display: block; height: 100%;
+  background: linear-gradient(90deg, #4f8ef7 0%, #3ecf8e 100%);
+}
+.metrics-country-stats {
+  color: #8e98a0; font-size: 11px; line-height: 1.3;
+}
+
+/* Time capsule card — three subsections. */
+.metrics-timecapsule {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+.metrics-timecapsule h4 {
+  margin: 0 0 6px; color: #a8b1b8; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.metrics-timecapsule ol,
+.metrics-timecapsule ul {
+  margin: 0; padding-left: 18px; font-size: 12px;
+}
+.metrics-timecapsule li { margin-bottom: 3px; line-height: 1.4; }
+
+/* Compatibility widget (Networks tab). */
+.metrics-compat {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.metrics-compat-picker {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.metrics-compat-picker select {
+  flex: 1; min-width: 160px;
+  background: #11151a; color: #e5e9ec; border: 1px solid #2b3338;
+  padding: 5px 8px; border-radius: 4px; font-size: 12px;
+}
+.metrics-compat-result {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px; background: #11151a; border-radius: 6px;
+  border: 1px solid #2b3338;
+}
+.metrics-compat-score {
+  font-size: 30px; font-weight: 700; color: #3ecf8e;
+  min-width: 76px; text-align: center;
+  padding: 8px 12px; background: rgba(62, 207, 142, 0.08);
+  border-radius: 8px; border: 1px solid rgba(62, 207, 142, 0.3);
+  line-height: 1;
+}
+.metrics-compat-score.low { color: #f76e6e; background: rgba(247, 110, 110, 0.08); border-color: rgba(247, 110, 110, 0.3); }
+.metrics-compat-score.mid { color: #f7c948; background: rgba(247, 201, 72, 0.08); border-color: rgba(247, 201, 72, 0.3); }
+.metrics-compat-breakdown {
+  flex: 1; display: flex; flex-direction: column; gap: 3px;
+  font-size: 12px; color: #cfd6dc;
+}
+.metrics-compat-breakdown span.muted { color: #8e98a0; }
+
+/* Body-type calibration heatmap. */
+.metrics-bodytype-heatmap .metrics-heatmap-cell { font-size: 11px; padding: 8px 4px; min-height: 32px; }
+
+/* --- v1.7 wrapped / bingo / blind pick / nudge ------------------- */
+
+/* Nudge banner on Overview. */
+.metrics-nudge {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; margin-bottom: 12px;
+  background: linear-gradient(90deg, rgba(79, 142, 247, 0.08) 0%, rgba(62, 207, 142, 0.08) 100%);
+  border: 1px solid #4f8ef7; border-left: 4px solid #4f8ef7;
+  border-radius: 6px;
+}
+.metrics-nudge-icon { font-size: 22px; line-height: 1; }
+.metrics-nudge-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.metrics-nudge-title { color: #fff; font-weight: 600; font-size: 13px; }
+.metrics-nudge-action { color: #cfd6dc; font-size: 12px; }
+.metrics-nudge-cta { text-decoration: none; white-space: nowrap; }
+.metrics-nudge-dismiss {
+  background: transparent; border: 0; color: #8e98a0; cursor: pointer;
+  font-size: 18px; padding: 2px 6px; line-height: 1;
+}
+.metrics-nudge-dismiss:hover { color: #fff; }
+
+/* Blind pick card. */
+.metrics-blind { margin-top: 10px; }
+.metrics-blind-result { margin-top: 10px; }
+.metrics-blind-mask {
+  padding: 14px 16px; border: 2px dashed #c98ef7;
+  border-radius: 8px; background: rgba(201, 142, 247, 0.05);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.metrics-blind-mystery {
+  color: #c98ef7; font-size: 28px; font-weight: 700;
+  letter-spacing: 8px;
+}
+.metrics-blind-meta { color: #cfd6dc; font-size: 13px; }
+.metrics-blind-meta span { color: #fff; font-weight: 600; }
+.metrics-blind-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.metrics-blind-actions { display: flex; gap: 6px; margin-top: 4px; }
+
+/* Wrapped — slideshow. */
+.metrics-wrapped-container {
+  display: flex; flex-direction: column; gap: 12px;
+  outline: none;
+}
+.metrics-wrapped-stage {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 420px;
+}
+.metrics-wrapped-slide {
+  width: 100%; min-height: 420px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 30px; box-sizing: border-box;
+  color: #fff; text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: metrics-wrapped-in 0.35s ease-out;
+}
+@keyframes metrics-wrapped-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.metrics-wrapped-slide-inner {
+  max-width: 640px;
+  display: flex; flex-direction: column; gap: 12px; align-items: center;
+}
+.metrics-wrapped-title {
+  font-size: 14px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.4px;
+  opacity: 0.85;
+}
+.metrics-wrapped-primary {
+  font-size: 42px; font-weight: 800; line-height: 1.05;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  word-break: break-word;
+}
+.metrics-wrapped-primary a {
+  color: inherit; text-decoration: none;
+  border-bottom: 3px solid rgba(255, 255, 255, 0.5);
+}
+.metrics-wrapped-primary a:hover { border-bottom-color: #fff; }
+.metrics-wrapped-secondary {
+  font-size: 15px; opacity: 0.9;
+}
+.metrics-wrapped-extra {
+  list-style: none; padding: 0; margin: 12px 0 0;
+  font-size: 13px; opacity: 0.9;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.metrics-wrapped-progress {
+  display: flex; gap: 4px; padding: 0 4px;
+}
+.metrics-wrapped-progress-bar {
+  flex: 1; height: 4px; background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+.metrics-wrapped-progress-bar.active { background: #fff; }
+.metrics-wrapped-controls {
+  display: flex; gap: 8px; justify-content: center; padding: 4px 0;
+}
+.metrics-wrapped-controls .metrics-btn:disabled {
+  opacity: 0.35; cursor: not-allowed;
+}
+
+/* Bingo grid. */
+.metrics-bingo-controls {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.metrics-bingo-hint { color: #8e98a0; font-size: 11px; }
+.metrics-bingo-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  max-width: 900px;
+}
+.metrics-bingo-cell {
+  aspect-ratio: 1;
+  padding: 10px 8px; border-radius: 8px;
+  background: #11151a; border: 1px solid #2b3338;
+  display: flex; flex-direction: column; justify-content: center;
+  align-items: center; text-align: center; gap: 4px;
+  position: relative; transition: transform 0.15s;
+}
+.metrics-bingo-cell:hover { transform: scale(1.02); z-index: 2; }
+.metrics-bingo-cell-title {
+  color: #cfd6dc; font-size: 11px; font-weight: 600; line-height: 1.3;
+}
+.metrics-bingo-cell-hint {
+  color: #8e98a0; font-size: 10px;
+}
+.metrics-bingo-cell.done {
+  background: linear-gradient(135deg, rgba(62, 207, 142, 0.2) 0%, rgba(62, 207, 142, 0.35) 100%);
+  border-color: #3ecf8e;
+}
+.metrics-bingo-cell.done .metrics-bingo-cell-title { color: #fff; }
+.metrics-bingo-cell.free {
+  background: linear-gradient(135deg, #f7c948 0%, #f76e6e 100%);
+  border-color: #f7c948;
+}
+.metrics-bingo-cell.free .metrics-bingo-cell-title {
+  color: #11151a; font-size: 13px; font-weight: 700;
+}
+.metrics-bingo-check {
+  position: absolute; top: 6px; right: 8px;
+  color: #3ecf8e; font-size: 18px; font-weight: 900;
+  line-height: 1;
+}
+
+/* Bingo grid responsiveness — shrink on narrow. */
+@media (max-width: 700px) {
+  .metrics-bingo-cell { padding: 6px 4px; }
+  .metrics-bingo-cell-title { font-size: 9px; }
+  .metrics-bingo-cell-hint { font-size: 8px; }
+}
+
+/* --- v1.8 Tag Optimizer ------------------------------------------ */
+
+.metrics-tagopt-score.good .metrics-kpi-value { color: #3ecf8e; }
+.metrics-tagopt-score.mid  .metrics-kpi-value { color: #f7c948; }
+.metrics-tagopt-score.bad  .metrics-kpi-value { color: #f76e6e; }
+
+.metrics-tagopt-grid { grid-template-columns: 1fr; }
+
+.metrics-tagopt-chips {
+  display: inline-flex; flex-wrap: wrap; gap: 6px;
+  align-items: center; margin: 4px 0;
+}
+.metrics-tagopt-tag {
+  display: inline-flex; align-items: baseline; gap: 4px;
+  background: #11151a; border: 1px solid #2b3338;
+  border-radius: 4px; padding: 2px 6px;
+}
+.metrics-tagopt-tag .metrics-tag-pill {
+  background: transparent; padding: 0;
+}
+.metrics-tagopt-count {
+  color: #8e98a0; font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.metrics-tagopt-kind {
+  display: inline-block; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 2px 6px; border-radius: 3px;
+  background: #2b3338; color: #a8b1b8;
+  margin-right: 8px; vertical-align: middle;
+}
+.metrics-tagopt-suggest {
+  color: #3ecf8e; font-size: 12px;
+  margin-left: 8px;
+}
+.metrics-tagopt-more {
+  color: #8e98a0; font-size: 11px;
+  margin-top: 6px; font-style: italic;
+}
+
+.metrics-tagopt-clusters,
+.metrics-tagopt-pairs,
+.metrics-tagopt-hierarchy {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 480px; overflow-y: auto;
+}
+.metrics-tagopt-clusters li,
+.metrics-tagopt-pairs li,
+.metrics-tagopt-hierarchy li {
+  padding: 8px 10px; border: 1px solid #2b3338;
+  border-radius: 4px; background: #11151a;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  font-size: 12px;
+}
+.metrics-tagopt-pair {
+  display: inline-flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
+}
+.metrics-tagopt-metrics {
+  color: #8e98a0; font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.metrics-tagopt-edit {
+  color: #4f8ef7; font-size: 11px; text-decoration: none;
+  padding: 2px 6px; border-radius: 3px; border: 1px solid #2b3338;
+  margin-left: 4px;
+}
+.metrics-tagopt-edit:hover {
+  background: #2b3338; color: #fff;
+}
+
+/* --- v1.9 Cleanup ------------------------------------------------ */
+
+.metrics-cleanup-score.good .metrics-kpi-value { color: #3ecf8e; }
+.metrics-cleanup-score.mid  .metrics-kpi-value { color: #f7c948; }
+.metrics-cleanup-score.bad  .metrics-kpi-value { color: #f76e6e; }
+
+.metrics-cleanup-performers { margin-bottom: 14px; }
+
+.metrics-cleanup-filter {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  align-items: center; margin: 12px 0;
+}
+.metrics-cleanup-filter-label {
+  color: #a8b1b8; font-size: 12px; margin-right: 4px;
+}
+.metrics-cleanup-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #11151a; color: #cfd6dc;
+  border: 1px solid #2b3338; border-radius: 999px;
+  padding: 5px 12px; cursor: pointer;
+  font-size: 12px; font-family: inherit;
+}
+.metrics-cleanup-chip:hover { background: #2b3338; }
+.metrics-cleanup-chip.active {
+  background: #4f8ef7; border-color: #4f8ef7; color: #fff;
+}
+.metrics-cleanup-chip.disabled {
+  opacity: 0.4; cursor: not-allowed;
+}
+.metrics-cleanup-chip.disabled:hover { background: #11151a; }
+.metrics-cleanup-chip-count {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px; padding: 1px 6px;
+  font-size: 11px; font-variant-numeric: tabular-nums;
+}
+.metrics-cleanup-chip.active .metrics-cleanup-chip-count {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.metrics-cleanup-meta {
+  color: #8e98a0; font-size: 11px;
+  margin: 6px 0 8px;
+}
+.metrics-cleanup-table th,
+.metrics-cleanup-table td { vertical-align: middle; }
+.metrics-cleanup-fav {
+  color: #f7c948; font-size: 14px; width: 20px;
+  text-align: center;
+}
+.metrics-cleanup-edit {
+  color: #4f8ef7; font-size: 11px; text-decoration: none;
+  padding: 2px 6px; border-radius: 3px; border: 1px solid #2b3338;
+}
+.metrics-cleanup-edit:hover { background: #2b3338; color: #fff; }
+.metrics-cleanup-badges {
+  display: flex; flex-wrap: wrap; gap: 3px;
+}
+.metrics-cleanup-badge {
+  font-size: 10px; padding: 1px 5px;
+  background: rgba(247, 110, 110, 0.12);
+  border-color: rgba(247, 110, 110, 0.4);
+  color: #f8cccc;
+}
+.metrics-cleanup-grid { grid-template-columns: 1fr; }
+.metrics-cleanup-scenes { margin-top: 10px; }
+
+/* Light theme */
+@media (prefers-color-scheme: light) {
+  .metrics-root { color: #1a1d21; }
+  .metrics-kpi, .metrics-card, .metrics-filters {
+    background: #fff; border-color: #d7dce1;
+  }
+  .metrics-kpi-label, .metrics-card-title, .metrics-list-val { color: #4a525a; }
+  .metrics-kpi-value { color: #11151a; }
+  .metrics-tab { color: #4a525a; }
+  .metrics-tab.active { color: #1a1d21; }
+  .metrics-network-svg, .metrics-tag-pill, .metrics-heatmap-corner,
+  .metrics-heatmap-col-head, .metrics-heatmap-row-head {
+    background: #f3f4f6; color: #1a1d21;
+  }
+}

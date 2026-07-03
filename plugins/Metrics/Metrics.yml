@@ -1,0 +1,307 @@
+name: Metrics
+description: >
+  Comprehensive library analytics for Stash. Adds an interactive Metrics
+  dashboard with performer-centric demographics, tag co-occurrence, studio
+  output, collaboration networks and time-series charts. Ships runnable
+  tasks to generate full JSON/CSV/HTML reports and to refresh the cached
+  analytics consumed by the dashboard.
+version: 1.9.0
+url: https://github.com/Stash-Metrics/stash-metrics-plugin
+# Stash plugin manifest — see https://docs.stashapp.cc/in-app-manual/plugins/
+
+# Stash's plugin schema requires `exec:` at the plugin level, not per task
+# or hook. Every task / hook shares this launcher; the specific mode is
+# passed via defaultArgs and read from stdin JSON's `args.mode` by
+# backend/compute_metrics.js.
+exec:
+  - node
+  - "{pluginDir}/backend/compute_metrics.js"
+
+# Communication protocol between Stash and the script.
+interface: raw
+
+ui:
+  javascript:
+    - assets/lib/chart.umd.min.js
+    - assets/lib/chartjs-plugin-datalabels.min.js
+    - assets/lib/chartjs-chart-matrix.min.js
+    - src/utils/format.js
+    - src/utils/stats.js
+    - src/utils/correlations.js
+    - src/data/graphql.js
+    - src/data/cache.js
+    - src/data/preferences.js
+    # Backend-generated cache bootstrap — Stash's plugin schema only serves
+    # files declared in ui.javascript, so we ship the metrics cache as a JS
+    # file that assigns to window.__STASH_METRICS_CACHE__. The file ships
+    # as a null stub committed to the repo; Update Metrics Cache overwrites
+    # it with the real payload.
+    - assets/metrics-cache.js
+    - src/charts/overview.js
+    - src/charts/performers.js
+    - src/charts/tags.js
+    - src/charts/networks.js
+    - src/charts/timeseries.js
+    - src/charts/correlations.js
+    - src/charts/matches.js
+    - src/charts/play.js
+    - src/charts/archetypes.js
+    - src/charts/insights.js
+    - src/charts/fantasy.js
+    - src/charts/quality.js
+    - src/charts/wrapped.js
+    - src/charts/bingo.js
+    - src/charts/tagopt.js
+    - src/charts/cleanup.js
+    - src/dashboard.js
+    - src/metrics.js
+  css:
+    - src/styles.css
+
+# Settings appear under Settings → Plugins → Metrics in the Stash UI and
+# are exposed to backend scripts via the PLUGIN_SETTINGS_JSON env var.
+settings:
+  cacheTtlMinutes:
+    displayName: Cache TTL (minutes)
+    description: How long computed metrics remain valid before the dashboard refetches.
+    type: NUMBER
+  disableNetworkGraph:
+    displayName: Disable collaboration network graph
+    description: Skip the performer co-occurrence force-directed graph on slow clients.
+    type: BOOLEAN
+  topN:
+    displayName: Top-N items per chart
+    description: How many entries (performers, tags, studios) to show in ranking charts.
+    type: NUMBER
+  ageBuckets:
+    displayName: Age bucket size (years)
+    description: Granularity of the performer age pyramid (e.g. 5 = 5-year buckets).
+    type: NUMBER
+  heightUnit:
+    displayName: Height unit
+    description: cm or in — used for all height-related charts.
+    type: STRING
+  excludeTagIds:
+    displayName: Excluded tag IDs
+    description: Comma-separated tag IDs to exclude from all tag aggregations.
+    type: STRING
+  excludePerformerIds:
+    displayName: Excluded performer IDs
+    description: Comma-separated performer IDs to exclude from all performer aggregations.
+    type: STRING
+  hideOtherBucket:
+    displayName: Hide "Other" bucket in top-N charts
+    description: >
+      When ON, the tail of tag / country / studio distributions is dropped
+      entirely instead of being aggregated into an "Other" slice. Cleans
+      up pie charts and treemaps when the top-N heavily dominates.
+    type: BOOLEAN
+  genderFilter:
+    displayName: Gender filter
+    description: >
+      Restrict every tab to the listed genders. Comma-separated list of
+      Stash gender enum values: FEMALE, MALE, TRANSGENDER_FEMALE,
+      TRANSGENDER_MALE, INTERSEX, NON_BINARY. Leave blank (or write "all")
+      for no filter. Examples: "FEMALE" for female-only stats; "FEMALE,MALE"
+      for both binary genders; "FEMALE,TRANSGENDER_FEMALE" to include trans
+      women. Scenes are kept when they contain at least one performer of
+      an allowed gender. Re-run Update Metrics Cache after changing this.
+    type: STRING
+  reportFormats:
+    displayName: Report formats
+    description: Comma-separated list of report formats to produce. Any of json,csv,html.
+    type: STRING
+  refreshOnScanComplete:
+    displayName: Refresh cache after scans
+    description: Automatically run the Update Metrics Cache task after Stash finishes scanning.
+    type: BOOLEAN
+  refreshOnMetadataUpdate:
+    displayName: Refresh cache after metadata generation
+    description: Automatically run the Update Metrics Cache task after metadata generation completes.
+    type: BOOLEAN
+
+  # ---- Correlation & recommender settings (v1.1) ---------------------------
+  # Feature-flag toggles use `disable*` semantics because Stash reports
+  # every untouched BOOLEAN as `false` — with `enable*` names, the plugin
+  # would ship with every tab OFF on a fresh install. `disable*: true`
+  # explicitly opts out of a heavy computation.
+  disableCorrelations:
+    displayName: Disable correlations tab
+    description: Skip attribute × O-count correlation aggregates on very large libraries.
+    type: BOOLEAN
+  correlationMinSupport:
+    displayName: Correlation min support
+    description: >
+      Drop attribute cells with fewer than this many performers / scenes
+      from correlation aggregates so single-sample groups don't dominate.
+    type: NUMBER
+  preferenceProfile:
+    displayName: Preference profile (JSON)
+    description: >
+      JSON document describing your preference profile. The Matches tab reads
+      this on load (and lets you edit it inline). Keys:
+        countries, ethnicities, eyeColors, hairColors, cupSizes, hairLengths,
+        requiredTags, excludedTags, minHeightCm, maxHeightCm, minAge, maxAge,
+        minOCount, weights{country,ethnicity,eyeColor,hairColor,cup,height,
+        age,oCount,tagOverlap,rating}, topMatches.
+      Empty object {} disables preference filtering entirely.
+    type: STRING
+  matchMinScore:
+    displayName: Match minimum score (0–100)
+    description: Drop performers/scenes whose weighted match score is below this threshold.
+    type: NUMBER
+  matchIncludeUnknown:
+    displayName: Treat missing attributes as partial matches
+    description: >
+      When ON, an attribute with no data (e.g. unknown eye color) contributes
+      0.5 × its weight to the score instead of 0. Useful on libraries with
+      sparse performer metadata.
+    type: BOOLEAN
+
+  # ---- v1.2 advanced analytics ------------------------------------------
+  disablePlayHistory:
+    displayName: Disable Play tab
+    description: Skip the day-of-week × hour-of-day heatmap + most-watched aggregation.
+    type: BOOLEAN
+  disableArchetypes:
+    displayName: Disable Archetypes tab
+    description: Skip the O(n²) k-means clustering + cosine-similarity index on very large libraries.
+    type: BOOLEAN
+  archetypeClusters:
+    displayName: Archetype cluster count (k)
+    description: Number of performer archetype clusters to compute (2–12).
+    type: NUMBER
+  disableDiversity:
+    displayName: Disable diversity analytics
+    description: Skip Shannon / Gini-Simpson diversity per attribute + gap analysis.
+    type: BOOLEAN
+  disableTemporal:
+    displayName: Disable temporal analytics
+    description: Skip release-year + career-timeline + tag-evolution charts on the Insights tab.
+    type: BOOLEAN
+  disableFantasy:
+    displayName: Disable Fantasy Builder
+    description: Skip reverse-engineering a preference profile from your favourites / top-rated / top-O seed set.
+    type: BOOLEAN
+  fantasyMode:
+    displayName: Fantasy Builder seed mode
+    description: How to pick the seed performers — favorites | top-rated | top-o.
+    type: STRING
+  fantasyConsensus:
+    displayName: Fantasy consensus threshold
+    description: Fraction of seed performers that must share a value before it's locked into the derived profile (0.3 = loose, 0.7 = strict).
+    type: NUMBER
+
+  # ---- v1.3 quality + excel ---------------------------------------------
+  enableQuality:
+    displayName: Enable Quality tab
+    description: Hidden gems, overrated / underrated insights and a composite library-health score.
+    type: BOOLEAN
+  gemRatingFloor:
+    displayName: Hidden-gem rating floor
+    description: Minimum rating100 a scene must have to be considered a "hidden gem".
+    type: NUMBER
+  gemPlayCeiling:
+    displayName: Hidden-gem play-count ceiling
+    description: Maximum play_count for a scene to still qualify as a hidden gem.
+    type: NUMBER
+  qualityZThreshold:
+    displayName: Over/underrated z-score threshold
+    description: |
+      |z| above this is required for a scene/performer to land in the
+      overrated/underrated lists. 1.0 = top ~16% on each tail.
+    type: NUMBER
+  qualityMinScenes:
+    displayName: Minimum scenes for performer anomalies
+    description: A performer needs at least this many scenes before being eligible for the over/underrated list.
+    type: NUMBER
+
+  # ---- v1.8 tag optimizer ------------------------------------------------
+  disableTagOptimizer:
+    displayName: Disable Tag Optimizer tab
+    description: Skip near-duplicate detection, always-together pair analysis and hierarchy audit.
+    type: BOOLEAN
+  tagoptRareThreshold:
+    displayName: Tag Optimizer — rare tag threshold
+    description: Tags with fewer scenes than this are surfaced as "rare" cleanup candidates.
+    type: NUMBER
+  tagoptPairMinSupport:
+    displayName: Tag Optimizer — pair min support
+    description: A tag pair needs at least this many shared scenes before it's considered for merge / specialisation detection.
+    type: NUMBER
+  tagoptUndertagMax:
+    displayName: Tag Optimizer — under-tagged threshold
+    description: Scenes with this many tags or fewer are flagged as under-tagged.
+    type: NUMBER
+  tagoptOvertagMin:
+    displayName: Tag Optimizer — over-tagged threshold
+    description: Scenes with this many tags or more are flagged as over-tagged (auto-tagger noise).
+    type: NUMBER
+
+# Runnable tasks — appear on the Tasks page under Plugin Tasks → Metrics.
+# All tasks share the top-level `exec:` above; `defaultArgs.mode` is the
+# only per-task distinction and is delivered to the script through
+# Stash's stdin JSON payload (args.mode).
+tasks:
+  - name: Generate Full Metrics Report
+    description: >
+      Compute the complete analytics package, write JSON + CSV + a standalone
+      visual HTML report to the plugin's cache/reports directory, and refresh
+      the dashboard cache. Heavy operation — runs in the background.
+    defaultArgs:
+      mode: full-report
+
+  - name: Update Metrics Cache
+    description: >
+      Recompute the aggregated metrics consumed by the dashboard. Cheap
+      compared to the full report — no CSV/HTML output. Use after a scan or
+      metadata regeneration.
+    defaultArgs:
+      mode: cache-refresh
+
+  - name: Find Matches Based on My Preferences
+    description: >
+      Score every performer and scene against the preferenceProfile setting
+      and write ranked match lists to cache/reports/<ts>/matches.{json,html}.
+      Also refreshes the dashboard cache so the Matches tab opens instantly.
+    defaultArgs:
+      mode: match
+
+  - name: Generate Year-in-Review
+    description: >
+      Builds a calendar-year summary (top performers, tags, studios,
+      played + rated scenes, debuts, new tags) and writes a standalone
+      visual HTML report. Defaults to last year.
+    defaultArgs:
+      mode: year-review
+
+  - name: Export Full Library to Excel
+    description: >
+      Generates a comprehensive .xlsx workbook with one sheet per entity
+      (Scenes, Performers, Tags, Studios), cross-reference junction
+      sheets (Scene × Performer, Scene × Tag), tag co-occurrence,
+      correlations, top matches (if a preference profile is set) and
+      quality insights. Auto-filters and frozen header rows on every
+      sheet. Output goes to cache/reports/<ts>/library-export.xlsx +
+      cache/reports/latest-library-export.xlsx.
+    defaultArgs:
+      mode: excel-export
+
+# Optional hooks — wired up if the corresponding setting is on. Stash will
+# still call us on every event; the script no-ops when the toggle is off.
+hooks:
+  - name: Refresh metrics after a scan
+    description: Recomputes the metrics cache once a scan task finishes.
+    triggeredBy:
+      - Scan.Complete.Post
+    defaultArgs:
+      mode: hook
+      hook: scan
+
+  - name: Refresh metrics after metadata generation
+    description: Recomputes the metrics cache once metadata generation finishes.
+    triggeredBy:
+      - Generate.Complete.Post
+    defaultArgs:
+      mode: hook
+      hook: generate
