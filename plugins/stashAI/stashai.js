@@ -1,8 +1,7 @@
 (function () {
   "use strict";
 
-  let STASHMARKER_API_URL = "https://cc1234-stashtag-onnx.hf.space/gradio_api/call/predict_tags";
-  let STASHMARKER_API_MARKER = "https://cc1234-stashtag-onnx.hf.space/gradio_api/call/predict_markers";
+  let STASHMARKER_API_BASE = "https://cc1234-stashtag-onnx.hf.space";
 
   var OPTIONS = [
     "Anal",
@@ -2242,7 +2241,7 @@
       const [, scene_id] = getScenarioAndID();
       let time;
       let tagId;
-      const tagLower = frame.tag.label.toLowerCase();
+      const tagLower = frame.tag.label.toLowerCase().replace(/_/g, " ");
 
       if (tags[tagLower] === undefined) {
         const tagID = await createTag(tagLower);
@@ -2544,10 +2543,10 @@
     });
   }
 
-  async function gradioCall(url, image, vtt, threshold, retries = 3) {
+  async function gradioCall(fn_index, image, vtt, threshold, retries = 3) {
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        return await _gradioCall(url, image, vtt, threshold);
+        return await _gradioCall(fn_index, image, vtt, threshold);
       } catch (err) {
         if (attempt === retries - 1) throw err;
         await new Promise((r) => setTimeout(r, 3000));
@@ -2555,27 +2554,33 @@
     }
   }
 
-  async function _gradioCall(url, image, vtt, threshold) {
-    const body = {
-      data: [
-        { url: image, meta: { _type: "gradio.FileData" } },
-        vtt,
-        threshold,
-      ],
-    };
+  async function _gradioCall(fn_index, image, vtt, threshold) {
+    const session_hash = crypto.randomUUID
+      ? crypto.randomUUID()
+      : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        });
 
-    const response = await fetch(url, {
+    const queueResponse = await fetch(STASHMARKER_API_BASE + "/gradio_api/queue/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        data: [
+          { url: image, meta: { _type: "gradio.FileData" }, orig_name: "sprite.jpg" },
+          vtt,
+          threshold,
+        ],
+        fn_index: fn_index,
+        session_hash: session_hash,
+      }),
     });
 
-    if (!response.ok) {
-      throw new Error("HTTP " + response.status);
+    if (!queueResponse.ok) {
+      throw new Error("HTTP " + queueResponse.status);
     }
 
-    const { event_id } = await response.json();
-    const sseUrl = url + "/" + event_id;
+    const sseUrl = STASHMARKER_API_BASE + "/gradio_api/queue/data?session_hash=" + session_hash;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 120000);
@@ -2591,31 +2596,33 @@
       clearTimeout(timeout);
     }
 
-    let currentEvent = "";
-    let currentData = "";
-
+    let result;
     for (const line of text.split("\n")) {
-      if (line.startsWith("event: ")) {
-        currentEvent = line.slice(7).trim();
-      } else if (line.startsWith("data: ")) {
-        currentData = line.slice(6);
-      } else if (line === "") {
-        if (currentEvent === "complete") {
-          try {
-            return JSON.parse(currentData);
-          } catch (e) {
-            throw new Error("Failed to parse result");
+      if (line.startsWith("data: ")) {
+        try {
+          const msg = JSON.parse(line.slice(6));
+          if (msg.msg === "process_completed") {
+            if (msg.success === false) {
+              throw new Error(msg.output?.error || "Model inference failed");
+            }
+            result = [msg.output?.data?.[0]];
+            break;
           }
+          if (msg.msg === "error") {
+            throw new Error(msg.output?.error || "API error");
+          }
+        } catch (e) {
+          if (
+            e.message === "Model inference failed" ||
+            e.message === "API error"
+          )
+            throw e;
         }
-        if (currentEvent === "error") {
-          throw new Error(currentData || "API error");
-        }
-        currentEvent = "";
-        currentData = "";
       }
     }
 
-    throw new Error("No result received");
+    if (result === undefined) throw new Error("No result received");
+    return result;
   }
 
   function instance$3($$self, $$props, $$invalidate) {
@@ -2645,7 +2652,7 @@
       let vtt = await download(vtt_url);
 
       try {
-        let result = await gradioCall(STASHMARKER_API_MARKER, image, vtt, 0.4);
+        let result = await gradioCall(1, image, vtt, 0.4);
         let frames = result[0];
 
         $$invalidate(0, (scanner = false));
@@ -2677,7 +2684,7 @@
     $$self.$capture_state = () => ({
       getScenarioAndID,
       getUrlSprite,
-      STASHMARKER_API_URL,
+      STASHMARKER_API_BASE,
       MarkerMatches,
       scanner,
       download,
@@ -3772,11 +3779,12 @@
       let existingTags = await getTagsForScene(scene_id);
 
       for (const [tag] of filteredMatches) {
-        let tagLower = tag.toLowerCase();
+        const tagNormalized = tag.replace(/_/g, " ");
+        let tagLower = tagNormalized.toLowerCase();
 
         // if tag doesn't exist, create it
         if (tags[tagLower] === undefined) {
-          existingTags.push(await createTag(tag));
+          existingTags.push(await createTag(tagNormalized));
         } else if (!existingTags.includes(tags[tagLower])) {
           existingTags.push(tags[tagLower]);
         }
@@ -4075,7 +4083,7 @@
       });
 
       try {
-        let result = await gradioCall(STASHMARKER_API_URL, image, vtt, 0.2);
+        let result = await gradioCall(0, image, vtt, 0.2);
         let tags = {};
         result.forEach((item) => Object.assign(tags, item));
 
@@ -4112,7 +4120,7 @@
     $$self.$capture_state = () => ({
       getScenarioAndID,
       getUrlSprite,
-      STASHMARKER_API_URL,
+      STASHMARKER_API_BASE,
       TagMatches,
       scanner,
       getTags,
