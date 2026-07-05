@@ -49,7 +49,7 @@ def processAll():
         for perf in performers:
           performer_tags_ids = []
           performer_tags_names = []
-          for performer_tag in perf[0]["tags"]:
+          for performer_tag in perf.get("tags",[]):
             if settings["excludeTagWithIgnoreAutoTag"] and performer_tag["ignore_auto_tag"]:
                 continue
             performer_tags_ids.append(performer_tag["id"])

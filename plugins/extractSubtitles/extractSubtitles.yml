@@ -1,0 +1,27 @@
+name: Extract Embedded Subtitles
+description: Extracts embedded text subtitle tracks from video files into external .srt files that Stash recognises and displays as captions.
+version: 0.1.0
+url: https://discourse.stashapp.cc/t/extract-embedded-subtitles/10378
+exec:
+  - python
+  - "{pluginDir}/extractSubtitles.py"
+interface: raw
+settings:
+  overwrite:
+    displayName: Overwrite Existing
+    description: Re-extract and overwrite subtitle files even if a matching .srt already exists next to the video.
+    type: BOOLEAN
+  extractOnScan:
+    displayName: Extract On Scan
+    description: Automatically extract embedded subtitles when a new scene is created, then rescan its folder so captions appear. Best for incremental additions, not large initial imports.
+    type: BOOLEAN
+tasks:
+  - name: Extract Embedded Subtitles
+    description: Scan all scenes, extract embedded text subtitles to external .srt files, then trigger a scan so Stash attaches them as captions.
+    defaultArgs:
+      mode: extractAll
+hooks:
+  - name: Extract on scene create
+    description: Extract embedded subtitles after a scene is created (only runs if "Extract On Scan" is enabled in settings).
+    triggeredBy:
+      - Scene.Create.Post
