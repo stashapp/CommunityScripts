@@ -41,16 +41,11 @@
     return age <= ttlMinutes * 60 * 1000;
   };
 
-  // Fetch the backend-generated cache. Stash's plugin schema only serves
-  // files declared in ui.javascript / ui.css, so the backend writes the
-  // cache as a JS file (`assets/metrics-cache.js`) that assigns the
-  // payload to `window.__STASH_METRICS_CACHE__`. That file is in the
-  // manifest's ui.javascript list, so Stash bundles it into
-  // /plugin/Metrics/javascript and it's available at page load.
-  //
-  // If the global is set → use it. Otherwise, fall back to trying the
-  // static-file paths (for older manifests) and finally return null so
-  // the dashboard drops through to live GraphQL.
+  // Fetch the backend-generated cache. v3.0 — the plugin manifest
+  // declares `ui.assets:` mapping `/assets` to the assets/ directory, so
+  // the JSON is served directly under /plugin/Metrics/assets/metrics-
+  // cache.json. We also try the previous JS-bootstrap global for
+  // compatibility with caches from older plugin versions.
   cache.fetchBackendCache = async function () {
     if (window.__STASH_METRICS_CACHE__ && window.__STASH_METRICS_CACHE__.computedAt) {
       return window.__STASH_METRICS_CACHE__;
@@ -58,8 +53,6 @@
     const candidates = [
       "/plugin/Metrics/assets/metrics-cache.json",
       "/plugin/metrics/assets/metrics-cache.json",
-      "/plugin/plugin/assets/metrics-cache.json",
-      "/plugin/stashappgraph-/assets/metrics-cache.json",
     ];
     for (const url of candidates) {
       try {

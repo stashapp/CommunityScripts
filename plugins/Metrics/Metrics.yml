@@ -1,12 +1,7 @@
 name: Metrics
-description: >
-  Comprehensive library analytics for Stash. Adds an interactive Metrics
-  dashboard with performer-centric demographics, tag co-occurrence, studio
-  output, collaboration networks and time-series charts. Ships runnable
-  tasks to generate full JSON/CSV/HTML reports and to refresh the cached
-  analytics consumed by the dashboard.
+description: Comprehensive library analytics dashboard with 16 tabs, plus runnable report + rename tasks.
 version: 1.9.0
-url: https://github.com/Stash-Metrics/stash-metrics-plugin
+url: https://github.com/kangooaus/stashappgraph-
 # Stash plugin manifest — see https://docs.stashapp.cc/in-app-manual/plugins/
 
 # Stash's plugin schema requires `exec:` at the plugin level, not per task
@@ -21,6 +16,11 @@ exec:
 interface: raw
 
 ui:
+  # v3.0 — expose the cache directory as static assets served under
+  # /plugin/Metrics/assets/<file>. The dashboard fetch()es
+  # metrics-cache.json directly; no more JS bootstrap indirection.
+  assets:
+    /assets: assets
   javascript:
     - assets/lib/chart.umd.min.js
     - assets/lib/chartjs-plugin-datalabels.min.js
@@ -31,12 +31,6 @@ ui:
     - src/data/graphql.js
     - src/data/cache.js
     - src/data/preferences.js
-    # Backend-generated cache bootstrap — Stash's plugin schema only serves
-    # files declared in ui.javascript, so we ship the metrics cache as a JS
-    # file that assigns to window.__STASH_METRICS_CACHE__. The file ships
-    # as a null stub committed to the repo; Update Metrics Cache overwrites
-    # it with the real payload.
-    - assets/metrics-cache.js
     - src/charts/overview.js
     - src/charts/performers.js
     - src/charts/tags.js
@@ -53,6 +47,7 @@ ui:
     - src/charts/bingo.js
     - src/charts/tagopt.js
     - src/charts/cleanup.js
+    - src/charts/files.js
     - src/dashboard.js
     - src/metrics.js
   css:
@@ -91,34 +86,16 @@ settings:
     type: STRING
   hideOtherBucket:
     displayName: Hide "Other" bucket in top-N charts
-    description: >
-      When ON, the tail of tag / country / studio distributions is dropped
-      entirely instead of being aggregated into an "Other" slice. Cleans
-      up pie charts and treemaps when the top-N heavily dominates.
+    description: Drop the tail of distributions instead of aggregating into "Other".
     type: BOOLEAN
   genderFilter:
     displayName: Gender filter
-    description: >
-      Restrict every tab to the listed genders. Comma-separated list of
-      Stash gender enum values: FEMALE, MALE, TRANSGENDER_FEMALE,
-      TRANSGENDER_MALE, INTERSEX, NON_BINARY. Leave blank (or write "all")
-      for no filter. Examples: "FEMALE" for female-only stats; "FEMALE,MALE"
-      for both binary genders; "FEMALE,TRANSGENDER_FEMALE" to include trans
-      women. Scenes are kept when they contain at least one performer of
-      an allowed gender. Re-run Update Metrics Cache after changing this.
+    description: Comma-separated Stash gender enum values (FEMALE, MALE, TRANSGENDER_FEMALE, TRANSGENDER_MALE, INTERSEX, NON_BINARY). Blank or "all" = no filter.
     type: STRING
   reportFormats:
     displayName: Report formats
-    description: Comma-separated list of report formats to produce. Any of json,csv,html.
+    description: Comma-separated report formats. Any of json,csv,html.
     type: STRING
-  refreshOnScanComplete:
-    displayName: Refresh cache after scans
-    description: Automatically run the Update Metrics Cache task after Stash finishes scanning.
-    type: BOOLEAN
-  refreshOnMetadataUpdate:
-    displayName: Refresh cache after metadata generation
-    description: Automatically run the Update Metrics Cache task after metadata generation completes.
-    type: BOOLEAN
 
   # ---- Correlation & recommender settings (v1.1) ---------------------------
   # Feature-flag toggles use `disable*` semantics because Stash reports
@@ -131,31 +108,19 @@ settings:
     type: BOOLEAN
   correlationMinSupport:
     displayName: Correlation min support
-    description: >
-      Drop attribute cells with fewer than this many performers / scenes
-      from correlation aggregates so single-sample groups don't dominate.
+    description: Drop attribute cells below this sample count from correlation aggregates.
     type: NUMBER
   preferenceProfile:
     displayName: Preference profile (JSON)
-    description: >
-      JSON document describing your preference profile. The Matches tab reads
-      this on load (and lets you edit it inline). Keys:
-        countries, ethnicities, eyeColors, hairColors, cupSizes, hairLengths,
-        requiredTags, excludedTags, minHeightCm, maxHeightCm, minAge, maxAge,
-        minOCount, weights{country,ethnicity,eyeColor,hairColor,cup,height,
-        age,oCount,tagOverlap,rating}, topMatches.
-      Empty object {} disables preference filtering entirely.
+    description: JSON preference profile for the Matches tab. Empty {} disables filtering. See README for the full schema.
     type: STRING
   matchMinScore:
     displayName: Match minimum score (0–100)
-    description: Drop performers/scenes whose weighted match score is below this threshold.
+    description: Drop matches below this weighted score.
     type: NUMBER
   matchIncludeUnknown:
     displayName: Treat missing attributes as partial matches
-    description: >
-      When ON, an attribute with no data (e.g. unknown eye color) contributes
-      0.5 × its weight to the score instead of 0. Useful on libraries with
-      sparse performer metadata.
+    description: When ON, unknown-attribute matches score 0.5 × weight instead of 0.
     type: BOOLEAN
 
   # ---- v1.2 advanced analytics ------------------------------------------
@@ -207,9 +172,7 @@ settings:
     type: NUMBER
   qualityZThreshold:
     displayName: Over/underrated z-score threshold
-    description: |
-      |z| above this is required for a scene/performer to land in the
-      overrated/underrated lists. 1.0 = top ~16% on each tail.
+    description: Absolute z-score cutoff for the anomaly lists (1.0 = top ~16%).
     type: NUMBER
   qualityMinScenes:
     displayName: Minimum scenes for performer anomalies
@@ -237,6 +200,20 @@ settings:
     displayName: Tag Optimizer — over-tagged threshold
     description: Scenes with this many tags or more are flagged as over-tagged (auto-tagger noise).
     type: NUMBER
+  missingTagUndertaggedMax:
+    displayName: Missing-tag suggestions — undertagged threshold
+    description: Only surface missing-tag suggestions for scenes carrying this many tags or fewer. Default 3.
+    type: NUMBER
+
+  # ---- v2.11 batch rename -----------------------------------------------
+  renameMaxRenames:
+    displayName: Rename Files — safety cap
+    description: Maximum number of files renamed in a single run. Default 500. Set high once you trust the plan.
+    type: NUMBER
+  renameSkipStudios:
+    displayName: Rename Files — skip these studios
+    description: Comma-separated studio names to NEVER rename. Useful for studios you've already curated to a different pattern.
+    type: STRING
 
 # Runnable tasks — appear on the Tasks page under Plugin Tasks → Metrics.
 # All tasks share the top-level `exec:` above; `defaultArgs.mode` is the
@@ -244,64 +221,59 @@ settings:
 # Stash's stdin JSON payload (args.mode).
 tasks:
   - name: Generate Full Metrics Report
-    description: >
-      Compute the complete analytics package, write JSON + CSV + a standalone
-      visual HTML report to the plugin's cache/reports directory, and refresh
-      the dashboard cache. Heavy operation — runs in the background.
+    description: Compute full analytics + write JSON/CSV/HTML report + refresh dashboard cache.
     defaultArgs:
       mode: full-report
 
   - name: Update Metrics Cache
-    description: >
-      Recompute the aggregated metrics consumed by the dashboard. Cheap
-      compared to the full report — no CSV/HTML output. Use after a scan or
-      metadata regeneration.
+    description: Refresh the dashboard cache. Cheap — no report output.
     defaultArgs:
       mode: cache-refresh
 
   - name: Find Matches Based on My Preferences
-    description: >
-      Score every performer and scene against the preferenceProfile setting
-      and write ranked match lists to cache/reports/<ts>/matches.{json,html}.
-      Also refreshes the dashboard cache so the Matches tab opens instantly.
+    description: Score performers + scenes against the preferenceProfile and write ranked lists.
     defaultArgs:
       mode: match
 
   - name: Generate Year-in-Review
-    description: >
-      Builds a calendar-year summary (top performers, tags, studios,
-      played + rated scenes, debuts, new tags) and writes a standalone
-      visual HTML report. Defaults to last year.
+    description: Calendar-year summary as a standalone HTML report. Defaults to last year.
     defaultArgs:
       mode: year-review
 
   - name: Export Full Library to Excel
-    description: >
-      Generates a comprehensive .xlsx workbook with one sheet per entity
-      (Scenes, Performers, Tags, Studios), cross-reference junction
-      sheets (Scene × Performer, Scene × Tag), tag co-occurrence,
-      correlations, top matches (if a preference profile is set) and
-      quality insights. Auto-filters and frozen header rows on every
-      sheet. Output goes to cache/reports/<ts>/library-export.xlsx +
-      cache/reports/latest-library-export.xlsx.
+    description: Multi-sheet .xlsx workbook with all entities, junctions, correlations and quality data.
     defaultArgs:
       mode: excel-export
 
-# Optional hooks — wired up if the corresponding setting is on. Stash will
-# still call us on every event; the script no-ops when the toggle is off.
-hooks:
-  - name: Refresh metrics after a scan
-    description: Recomputes the metrics cache once a scan task finishes.
-    triggeredBy:
-      - Scan.Complete.Post
+  - name: Rename Files — Dry Run
+    description: Write a rename plan to cache/reports without touching any files.
     defaultArgs:
-      mode: hook
-      hook: scan
+      mode: rename-files
+      apply: "false"
 
-  - name: Refresh metrics after metadata generation
-    description: Recomputes the metrics cache once metadata generation finishes.
-    triggeredBy:
-      - Generate.Complete.Post
+  - name: Rename Files — Apply
+    description: Rename files via Stash's moveFiles mutation. Scene ↔ file link preserved.
     defaultArgs:
-      mode: hook
-      hook: generate
+      mode: rename-files
+      apply: "true"
+
+  - name: Rename Files — Dry Run (mismatches only)
+    description: Dry Run restricted to files whose name doesn't match their scene title.
+    defaultArgs:
+      mode: rename-files
+      apply: "false"
+      onlyMismatch: "true"
+
+  - name: Rename Files — Apply (unlimited)
+    description: Apply with maxRenames=100000, bypassing the safety cap setting.
+    defaultArgs:
+      mode: rename-files
+      apply: "true"
+      maxRenames: "100000"
+
+  - name: Rename Files — Dry Run (unlimited)
+    description: Dry Run with maxRenames=100000, bypassing the safety cap setting.
+    defaultArgs:
+      mode: rename-files
+      apply: "false"
+      maxRenames: "100000"

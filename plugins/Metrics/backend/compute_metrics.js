@@ -27,6 +27,7 @@ const report = require("./report");
 const { findMatches } = require("./recommender");
 const { computeYearReview, writeYearReviewHtml } = require("./year_review");
 const excel = require("./excel");
+const { runRename } = require("./rename_files");
 
 const ROOT = path.resolve(__dirname, "..");
 
@@ -207,7 +208,12 @@ function slimRaw(payload) {
   const scenes = (raw.scenes || []).map((s) => ({
     id: s.id,
     title: s.title,
+    // v2.1 — description text is needed for the semantic search + word
+    // cloud + missing-tag suggestions.
+    details: s.details,
     date: s.date,
+    // v2.0 — retention cohort needs created_at.
+    created_at: s.created_at,
     rating100: s.rating100,
     o_counter: s.o_counter,
     play_count: s.play_count,
@@ -218,9 +224,12 @@ function slimRaw(payload) {
     performers: (s.performers || []).map((p) => ({ id: p.id, name: p.name, gender: p.gender })),
     tags: (s.tags || []).map((t) => ({ id: t.id, name: t.name })),
     // Keep a single-element files array so avg-duration and resolution
-    // charts in live mode still work; drop everything else.
+    // charts in live mode still work. v2.7 also keeps path + basename
+    // so the Files tab can render.
     files: (s.files || []).slice(0, 1).map((f) => ({
-      size: f.size, duration: f.duration, width: f.width, height: f.height, video_codec: f.video_codec,
+      id: f.id, path: f.path, basename: f.basename,
+      size: f.size, duration: f.duration, width: f.width, height: f.height,
+      video_codec: f.video_codec, frame_rate: f.frame_rate,
     })),
   }));
   return { performers, scenes };
@@ -233,20 +242,11 @@ function writeCache(payload) {
   // against user-tweaked preference profiles without hitting GraphQL.
   slim._raw = slimRaw(payload);
   const jsonStr = JSON.stringify(slim);
-
-  // 1) JSON on disk — for CLI users and as a backup.
+  // v3.0 — cache is served directly under /plugin/Metrics/assets/
+  // via the manifest's ui.assets mapping; no JS bootstrap needed.
   const outJson = path.join(ROOT, "assets", "metrics-cache.json");
   fs.writeFileSync(outJson, jsonStr, "utf8");
   log("wrote " + outJson + " (" + Math.round(fs.statSync(outJson).size / 1024) + " KiB)");
-
-  // 2) JS bootstrap — Stash's plugin schema only serves files declared in
-  //    ui.javascript, so we ship the cache as a JS file that assigns the
-  //    parsed JSON to a global variable. The dashboard reads this global
-  //    at load time and bypasses fetch() entirely.
-  const outJs = path.join(ROOT, "assets", "metrics-cache.js");
-  const escaped = jsonStr.replace(/</g, "\\u003c");
-  fs.writeFileSync(outJs, "window.__STASH_METRICS_CACHE__ = " + escaped + ";\n", "utf8");
-  log("wrote " + outJs);
 }
 
 function writeMatches(matches) {
@@ -305,21 +305,6 @@ async function main() {
     ? flagKeys.map((k) => k + "=" + settings[k]).join(", ")
     : "(no feature flags — all defaults)";
   log("settings: " + flagSnapshot);
-
-  if (args.mode === "hook") {
-    // Only refresh if the corresponding toggle is on. Falls through to a
-    // cache refresh; never produces a full report from hook context to
-    // avoid hammering the server after every scan.
-    const ok = args.hook === "scan"
-      ? !!settings.refreshOnScanComplete
-      : args.hook === "generate"
-        ? !!settings.refreshOnMetadataUpdate
-        : false;
-    if (!ok) { log("hook " + args.hook + " disabled in settings — exiting"); return; }
-    const payload = await compute(settings);
-    writeCache(payload);
-    return;
-  }
 
   if (args.mode === "cache-refresh") {
     const payload = await compute(settings);
@@ -399,6 +384,38 @@ async function main() {
       fs.copyFileSync(path.join(dir, "matches.html"),
         path.join(ROOT, "cache", "reports", "latest-matches.html"));
     } catch (e) { /* ignore */ }
+    return;
+  }
+
+  if (args.mode === "rename-files") {
+    // Bulk-rename scene files to match the Search-tab suggested pattern.
+    // Default is DRY-RUN (apply=false); the user must explicitly set
+    // apply=true in the task's defaultArgs to actually rename.
+    log("fetching scenes for rename planning…");
+    const scenes = await stash.fetchAll("scenes", stash.SCENE_FIELDS, 250, progressFor("scenes"));
+    log("fetched " + scenes.length + " scenes");
+    // Resolve maxRenames from every possible source. Stash's NUMBER
+    // settings arrive as either a JS number or a string depending on
+    // version — coerce via Number() and reject NaN/0.
+    const settingRaw = settings.renameMaxRenames;
+    const argRaw = args.maxRenames;
+    const rawMax = Number(argRaw != null && argRaw !== "" ? argRaw
+      : (settingRaw != null && settingRaw !== "" ? settingRaw : 2000));
+    const maxRenames = (Number.isFinite(rawMax) && rawMax > 0) ? rawMax : 2000;
+    log("rename options: apply=" + args.apply +
+        " onlyMismatch=" + args.onlyMismatch +
+        " maxRenames=" + maxRenames +
+        " (settings.renameMaxRenames=" + JSON.stringify(settingRaw) +
+        ", args.maxRenames=" + JSON.stringify(argRaw) + ")");
+    const opts = {
+      apply: String(args.apply || "false").toLowerCase() === "true",
+      onlyMismatch: String(args.onlyMismatch || "false").toLowerCase() === "true",
+      skipStudios: (settings.renameSkipStudios ? String(settings.renameSkipStudios).split(",").map((s) => s.trim()) : []),
+      maxRenames,
+    };
+    const client = { graphql: (q, v) => stash.query(q, v) };
+    const result = await runRename(scenes, client, opts, log);
+    log("rename " + result.mode + " complete. Report: " + result.outDir);
     return;
   }
 

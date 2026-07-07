@@ -15,7 +15,7 @@ The plugin currently ships 16 dashboard tabs (Overview, Performers, Tags, Networ
         ┌────────────────────────┴────────────────────────────┐
         │                                                     │
 ┌───────▼────────┐                                  ┌─────────▼──────────┐
-│ Browser (UI)   │                                  │ Node tasks/hooks   │
+│ Browser (UI)   │                                  │ Node tasks         │
 │ ──────────────│                                  │ ────────────────── │
 │  metrics.js   │   reads/writes  ┌──────────────┐ │  compute_metrics.js│
 │   ↓ patches   │ ─────────────►  │ assets/      │ │   ↓                │
@@ -30,7 +30,7 @@ The plugin currently ships 16 dashboard tabs (Overview, Performers, Tags, Networ
 Two equally-capable computation paths:
 
 - **Live** — the dashboard's `loadMetrics()` calls Stash GraphQL directly through the `PluginApi.GQL` client, runs `ns.aggregate()`, caches the result in `localStorage`.
-- **Cached** — the Node task / hook runs the same aggregator over the same field set, writes `assets/metrics-cache.json`. The dashboard prefers this file on every page load (cheap fetch, no GraphQL hits) and falls back to live only if the file is missing or older than `cacheTtlMinutes`.
+- **Cached** — the Node task runs the same aggregator over the same field set, writes `assets/metrics-cache.json`. The manifest maps the `assets/` directory via `ui.assets`, so Stash serves the JSON directly under `/plugin/Metrics/assets/metrics-cache.json`. The dashboard prefers this file on every page load (cheap fetch, no GraphQL hits) and falls back to live only if the file is missing or older than `cacheTtlMinutes`.
 
 Both paths produce the **exact same payload shape**, so the chart modules don't need to know which side computed the data.
 
@@ -38,7 +38,7 @@ Both paths produce the **exact same payload shape**, so the chart modules don't 
 
 | File | Role | Notes |
 | --- | --- | --- |
-| `Metrics.yml` | Manifest. Declares JS/CSS loads, runnable tasks, hooks, and the typed settings UI. | This is the only file Stash actually reads to discover the plugin. Filename derives the pluginID → mount URL is `/plugin/Metrics/…`. **Stash's YAML schema rejects unknown top-level keys** (`author:`, `license:`, etc.) — the whole plugin fails to load, so stick to the documented fields. |
+| `Metrics.yml` | Manifest. Declares JS/CSS loads, `ui.assets` mount, runnable tasks, and the typed settings UI. | This is the only file Stash actually reads to discover the plugin. Filename derives the pluginID → mount URL is `/plugin/Metrics/…`. **Stash's YAML schema rejects unknown top-level keys** (`author:`, `license:`, etc.) — the whole plugin fails to load, so stick to the documented fields. |
 | `src/metrics.js` | Entry point. Registers the `/plugins/metrics` SPA route (plural — `/plugin/` is reserved by Stash for static plugin files) and patches the nav. | Defers until `window.PluginApi` exists — Stash's bundle loads after our scripts on a cold start. |
 | `src/dashboard.js` | Imperative mount. Also hosts `ns.aggregate()` — the same code the Node side runs. | DOM-driven (no React tree) so it's robust against Stash's evolving React component layout. |
 | `src/charts/*.js` | One module per dashboard tab. Each exposes `render(host, payload, opts)`. | Pure consumers — they never touch GraphQL. v1.1 adds `correlations.js` (heatmaps, bubble, parallel coords, Cramér's V / Pearson bar) and `matches.js` (preference form, live re-rank). |
@@ -61,12 +61,12 @@ Both paths produce the **exact same payload shape**, so the chart modules don't 
 | `backend/cleanup.js` | Per-performer + per-scene missing-field scan across 10 performer fields + 6 scene fields. Sorts favourites-first / by scene count for highest-impact fixes. Uses the pre-filter arrays so the gender filter doesn't hide gaps. | Pure. v1.9. |
 | `backend/excel.js` | Multi-sheet `.xlsx` writer (SheetJS) — Scenes, Performers, Tags, Studios, junctions, co-occurrence, correlations, top matches, quality. | Loads `xlsx` lazily with a helpful error if it's not installed. v1.3. |
 | `src/data/graphql.js` | Wraps `PluginApi.GQL` plus a `fetch` fallback. Defines paginated `fetchAll(entity, fields)`. | Field sets duplicated in `backend/stash_client.js`; see "Why duplicate?". |
-| `src/data/cache.js` | localStorage helpers + backend-cache fetcher. | Tries a couple of plugin-slug URLs (`/plugin/Metrics/...`, `/plugin/metrics/...`) because Stash's served slug isn't deterministic across configs. |
+| `src/data/cache.js` | localStorage helpers + backend-cache fetcher. | Fetches `metrics-cache.json` from the `ui.assets`-mapped path (`/plugin/Metrics/assets/metrics-cache.json`); tries a lowercase-slug fallback because Stash's served slug isn't deterministic across configs. |
 | `src/utils/*.js` | Tiny stats library + formatting helpers + a fixed dark-theme palette. | No external deps. |
 | `backend/stash_client.js` | Node GraphQL client over global `fetch`. Reads `STASH_*` env vars. | Same pagination loop as the browser. |
 | `backend/aggregate.js` | Pure aggregator. | Independent module so `npm test` can exercise it offline. |
 | `backend/report.js` | Writes the CSV bundle + standalone HTML report. | The HTML loads the same vendored Chart.js (`../../assets/lib/chart.umd.min.js`). |
-| `backend/compute_metrics.js` | Entry script for the runnable tasks and hooks. | Reads stdin (Stash sends a small JSON blob) but doesn't depend on it. |
+| `backend/compute_metrics.js` | Entry script for the runnable tasks. | Reads stdin (Stash sends a small JSON blob) to pick `args.mode`. |
 
 ## Why duplicate the GraphQL field sets?
 
@@ -88,10 +88,10 @@ The same field list exists in `src/data/graphql.js` and `backend/stash_client.js
 ```
 
 ```
-   On task / hook invocation:
+   On task invocation:
      1. backend/stash_client    ← paginated GraphQL
      2. backend/aggregate       ← pure compute
-     3. write assets/metrics-cache.json   (every mode)
+     3. write assets/metrics-cache.json   (every mode — served by ui.assets)
      4. if full-report:
           write cache/reports/<ts>/metrics.json
           write cache/reports/<ts>/report.html
@@ -129,3 +129,4 @@ See README → [Extending the plugin](../README.md#extending-the-plugin). The th
 | 1.7 | Wrapped tab (yearly slideshow), Bingo tab (5×5 achievement grid), Blind Pick (Play), Nudge banner (Overview). |
 | 1.8 | Tag Optimizer tab — near-duplicate clusters, merge / specialisation pair analysis, hierarchy audit, cleanup score. |
 | 1.9 | Cleanup tab — performer + scene metadata gap finder with chip filter bar (ethnicity default), favourites-first sort, edit deep-links, metadata-health score. |
+| 3.0 | Manifest cleanup for CommunityScripts submission: removed invalid `hooks:` block, collapsed multi-line descriptions, added `ui.assets:` mapping so the backend cache is served directly under `/plugin/Metrics/assets/metrics-cache.json` (dropped the previous JS-bootstrap `metrics-cache.js` workaround). |

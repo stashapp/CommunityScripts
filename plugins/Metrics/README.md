@@ -26,7 +26,6 @@ The dashboard is **performer- and tag-centric**: it cross-tabs every available p
 - [Installation](#installation)
 - [Configuration (plugin settings)](#configuration-plugin-settings)
 - [Runnable tasks](#runnable-tasks)
-- [Hooks](#hooks)
 - [Dashboard tour](#dashboard-tour)
 - [How each metric is computed](#how-each-metric-is-computed)
 - [Correlations module](#correlations-module)
@@ -86,7 +85,7 @@ By default Stash reads plugins from `~/.stash/plugins/` (Linux/macOS) or `%APPDA
 
 ```sh
 cd ~/.stash/plugins/
-git clone https://github.com/Stash-Metrics/stash-metrics-plugin Metrics
+git clone https://github.com/kangooaus/stashappgraph- Metrics
 cd Metrics
 ```
 
@@ -126,8 +125,6 @@ All settings live in **Settings → Plugins → Metrics**. They're also exposed 
 | `excludeTagIds` | string | `""` | Comma-separated tag IDs to remove from every aggregation. Useful for hiding moderation tags. |
 | `excludePerformerIds` | string | `""` | Comma-separated performer IDs to skip. |
 | `reportFormats` | string | `json,csv,html` | Comma-separated list. The full-report task only writes the formats listed. |
-| `refreshOnScanComplete` | boolean | false | Auto-refresh the cache after a scan finishes. |
-| `refreshOnMetadataUpdate` | boolean | false | Auto-refresh the cache after metadata generation finishes. |
 | `enableCorrelations` | boolean | true | Toggle the Correlations tab and the correlation block written to the cache. |
 | `correlationMinSupport` | number | 3 | Drop attribute groups with fewer entries than this so single-sample buckets don't dominate the heatmaps. |
 | `preferenceProfile` | string (JSON) | `""` | Default preference profile loaded by the Matches tab and the *Find Matches* task. See [Preference profile + match finder](#preference-profile--match-finder). |
@@ -227,19 +224,6 @@ node backend/compute_metrics.js --mode=excel-export
 ```
 
 Output: `cache/reports/<YYYYMMDD-HHMM>/library-export.xlsx` plus a `cache/reports/latest-library-export.xlsx` shortcut. See the [Excel export](#excel-export) section for sheet-by-sheet details.
-
----
-
-## Hooks
-
-The plugin registers two optional hooks, controlled by toggles in plugin settings:
-
-| Hook | Trigger | Setting | Effect |
-| --- | --- | --- | --- |
-| **Refresh metrics after a scan** | `Scan.Complete.Post` | `refreshOnScanComplete` | Runs `compute_metrics.js --mode=hook --hook=scan` |
-| **Refresh metrics after metadata generation** | `Generate.Complete.Post` | `refreshOnMetadataUpdate` | Runs the same script with `--hook=generate` |
-
-If the corresponding setting is off, the hook script exits immediately without hitting GraphQL — so you can leave both hooks registered safely.
 
 ---
 
@@ -944,7 +928,7 @@ If you want to do live exploratory queries, Stash exposes a GraphQL playground a
 
 ```
 .
-├── Metrics.yml               # Stash plugin manifest (UI, tasks, hooks, settings)
+├── Metrics.yml               # Stash plugin manifest (UI, tasks, settings)
 ├── package.json              # Node deps + vendor + test scripts
 ├── scripts/
 │   └── vendor-libs.js        # Copies Chart.js etc. into assets/lib/
@@ -977,7 +961,7 @@ If you want to do live exploratory queries, Stash exposes a GraphQL playground a
 │       ├── bingo.js          # v1.7 — 5×5 achievement grid
 │       ├── tagopt.js         # v1.8 — Tag Optimizer UI
 │       └── cleanup.js        # v1.9 — Performer/scene metadata gap finder
-├── backend/                  # Node side (tasks + hooks)
+├── backend/                  # Node side (tasks)
 │   ├── stash_client.js       # Tiny GraphQL client over `fetch` (+ legacy field fallback v1.2)
 │   ├── aggregate.js          # Pure aggregator (mirrors UI's ns.aggregate)
 │   ├── correlations.js       # v1.1 — Cramér's V / Pearson / heatmaps / bubbles / parallel
@@ -997,7 +981,7 @@ If you want to do live exploratory queries, Stash exposes a GraphQL playground a
 │   ├── cleanup.js            # v1.9 — Performer + scene metadata gap analysis
 │   ├── excel.js              # v1.3 — multi-sheet .xlsx writer (SheetJS)
 │   ├── report.js             # HTML + CSV writers (incl. matches.html)
-│   ├── compute_metrics.js    # Task / hook entry — wired up in plugin.yml
+│   ├── compute_metrics.js    # Task entry — wired up in Metrics.yml
 │   └── test_aggregate.js     # Offline smoke test (`npm test`)
 ├── assets/
 │   ├── icons/icon.svg
@@ -1025,8 +1009,6 @@ If you want to do live exploratory queries, Stash exposes a GraphQL playground a
 5. **Run the cache task once** from **Tasks → Plugin Tasks → Metrics → Update Metrics Cache**. Watch the task log; it should report `[metrics] tags: N/N`, `[metrics] performers: N/N`, etc., and finish with `[metrics] wrote …/assets/metrics-cache.json (X KiB)`.
 6. **Open the dashboard** from the Metrics nav button. Source should read `backend-cache`.
 7. **(Optional)** Run **Generate Full Metrics Report**. Look in `cache/reports/<timestamp>/report.html` and open it in any browser — it works fully offline.
-8. **Try a hook**. Toggle `refreshOnScanComplete`, kick off a scan, and check that `assets/metrics-cache.json`'s mtime updates when the scan finishes.
-
 ### Running the backend against a remote Stash
 
 Drop a `.env` in the plugin root:
@@ -1052,7 +1034,6 @@ Then `npm run compute` or `node backend/compute_metrics.js --mode=cache-refresh`
 | Age pyramid is empty | None of your performers have `birthdate` filled in. The chart only counts performers with a valid birthdate. |
 | Cup distribution is empty | `measurements` is free-text; the plugin only counts entries matching `34B-25-35` style. |
 | Network graph is missing performers | The plugin only graphs edges with `weight ≥ max(1, totalScenes / 4000)` to keep the graph readable. Disable the filter by lowering `topN` won't help; edit `aggregate.js` if you want every pair shown. |
-| Hooks don't seem to fire | Make sure the `refreshOnScanComplete` / `refreshOnMetadataUpdate` toggle is on — the hook script exits silently when its toggle is off. |
 | Correlations tab is empty | `enableCorrelations` is off, or the cache pre-dates v1.1 — run **Update Metrics Cache** to refresh. |
 | Heatmap cells show dots / blanks | Cell sample size is below `correlationMinSupport`. Either drop the threshold (e.g. to 2) or accept that the sparse cell isn't reliable. |
 | Matches tab says "raw data not available" | The dashboard slim cache doesn't carry full performer/scene attributes — click **Refresh** on the dashboard so the browser re-fetches via GraphQL (or run **Update Metrics Cache** then reload). |
