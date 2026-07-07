@@ -9,21 +9,32 @@
   // which has shifted across Stash versions.
   ns.dashboard = ns.dashboard || {};
 
+  // v2.5 — Tab order follows the natural workflow: see what you have →
+  // how you use it → analyse → get recommendations → clean up.
+  // v2.10 — the Search tab (formerly "Files") moved next to Performers so
+  // it's discoverable early on. Underlying id stays "files" to preserve
+  // any bookmarks / render-cache keys.
   const TABS = [
+    // Explore what's in the library.
     { id: "overview", label: "Overview" },
     { id: "performers", label: "Performers" },
+    { id: "files", label: "Search" },
     { id: "tags", label: "Tags" },
     { id: "networks", label: "Networks" },
     { id: "timeseries", label: "Trends" },
+    // How you use it.
     { id: "play", label: "Play" },
-    { id: "archetypes", label: "Archetypes" },
+    { id: "wrapped", label: "Wrapped" },
+    { id: "bingo", label: "Bingo" },
+    // Analyse patterns.
     { id: "insights", label: "Insights" },
     { id: "correlations", label: "Correlations" },
+    { id: "archetypes", label: "Archetypes" },
+    // Get recommendations.
     { id: "matches", label: "Matches" },
     { id: "fantasy", label: "Fantasy" },
     { id: "quality", label: "Quality" },
-    { id: "wrapped", label: "Wrapped" },
-    { id: "bingo", label: "Bingo" },
+    // Clean up.
     { id: "tagopt", label: "Tag Optimizer" },
     { id: "cleanup", label: "Cleanup" },
   ];
@@ -222,7 +233,8 @@
       const buckets = [0, 0, 0, 0, 0, 0]; // unrated, 1-star..5-star
       for (const s of scenes) {
         if (s.rating100 == null) { buckets[0]++; continue; }
-        const stars = Math.max(1, Math.min(5, Math.ceil(s.rating100 / 20)));
+        // Round to the nearest star: rating100 61 (6.1/10) is 3★, not 4★.
+        const stars = Math.max(1, Math.min(5, Math.round(s.rating100 / 20)));
         buckets[stars]++;
       }
       return { labels: ["Unrated", "★", "★★", "★★★", "★★★★", "★★★★★"], counts: buckets };
@@ -890,7 +902,11 @@
     body.className = "metrics-body";
     container.appendChild(body);
 
-    let state = { activeTab: "overview", payload: null, filtered: null };
+    // v2.4 — Tab render cache. Each rendered tab keeps its DOM node
+    // around; switching back is instant (no flash, no re-render, preserves
+    // scroll position + form state). Cache is dropped on filter change
+    // (filterVersion bump) so stale data can't linger.
+    let state = { activeTab: "overview", payload: null, filtered: null, tabDoms: new Map(), filterVersion: 0 };
 
     function setActiveTab(id) {
       state.activeTab = id;
@@ -901,30 +917,56 @@
     function renderActive() {
       if (!state.filtered) return;
       const settings = readSettings();
-      body.innerHTML = "";
       const tab = state.activeTab;
+      const cacheKey = tab + ":" + state.filterVersion;
+
+      // Hide every cached tab; if the current one is already built, reveal it.
+      for (const el of state.tabDoms.values()) el.style.display = "none";
+      const existing = state.tabDoms.get(cacheKey);
+      if (existing) {
+        existing.style.display = "";
+        return;
+      }
+
+      // Fresh render — mount into a per-tab container so we can cache it.
+      const tabHost = document.createElement("div");
+      tabHost.className = "metrics-tab-content";
+      tabHost.dataset.tabKey = cacheKey;
+      body.appendChild(tabHost);
+
       const charts = ns.charts;
       try {
-        if (tab === "overview") charts.overview.render(body, state.filtered, settings);
-        if (tab === "performers") charts.performers.render(body, state.filtered, settings);
-        if (tab === "tags") charts.tags.render(body, state.filtered, settings);
-        if (tab === "networks") charts.networks.render(body, state.filtered, settings);
-        if (tab === "timeseries") charts.timeseries.render(body, state.filtered, settings);
-        if (tab === "play") charts.play.render(body, state.filtered, settings);
-        if (tab === "archetypes") charts.archetypes.render(body, state.filtered, settings);
-        if (tab === "insights") charts.insights.render(body, state.filtered, settings);
-        if (tab === "correlations") charts.correlations.render(body, state.filtered, settings);
-        if (tab === "matches") charts.matches.render(body, state.filtered, settings);
-        if (tab === "fantasy") charts.fantasy.render(body, state.filtered, settings);
-        if (tab === "quality") charts.quality.render(body, state.filtered, settings);
-        if (tab === "wrapped") charts.wrapped.render(body, state.filtered, settings);
-        if (tab === "bingo") charts.bingo.render(body, state.filtered, settings);
-        if (tab === "tagopt") charts.tagopt.render(body, state.filtered, settings);
-        if (tab === "cleanup") charts.cleanup.render(body, state.filtered, settings);
+        if (tab === "overview") charts.overview.render(tabHost, state.filtered, settings);
+        if (tab === "performers") charts.performers.render(tabHost, state.filtered, settings);
+        if (tab === "tags") charts.tags.render(tabHost, state.filtered, settings);
+        if (tab === "networks") charts.networks.render(tabHost, state.filtered, settings);
+        if (tab === "timeseries") charts.timeseries.render(tabHost, state.filtered, settings);
+        if (tab === "play") charts.play.render(tabHost, state.filtered, settings);
+        if (tab === "archetypes") charts.archetypes.render(tabHost, state.filtered, settings);
+        if (tab === "insights") charts.insights.render(tabHost, state.filtered, settings);
+        if (tab === "correlations") charts.correlations.render(tabHost, state.filtered, settings);
+        if (tab === "matches") charts.matches.render(tabHost, state.filtered, settings);
+        if (tab === "fantasy") charts.fantasy.render(tabHost, state.filtered, settings);
+        if (tab === "quality") charts.quality.render(tabHost, state.filtered, settings);
+        if (tab === "wrapped") charts.wrapped.render(tabHost, state.filtered, settings);
+        if (tab === "bingo") charts.bingo.render(tabHost, state.filtered, settings);
+        if (tab === "tagopt") charts.tagopt.render(tabHost, state.filtered, settings);
+        if (tab === "cleanup") charts.cleanup.render(tabHost, state.filtered, settings);
+        if (tab === "files") charts.files.render(tabHost, state.filtered, settings);
+        state.tabDoms.set(cacheKey, tabHost);
+        return;
       } catch (e) {
-        body.innerHTML = '<div class="metrics-error"></div>';
-        body.firstChild.textContent = "Render error: " + (e && e.message ? e.message : e);
+        tabHost.innerHTML = '<div class="metrics-error"></div>';
+        tabHost.firstChild.textContent = "Render error: " + (e && e.message ? e.message : e);
       }
+    }
+
+    // Filter changes invalidate every cached render so no tab shows stale
+    // data. New tab visits will re-render fresh.
+    function invalidateTabCache() {
+      for (const el of state.tabDoms.values()) el.remove();
+      state.tabDoms.clear();
+      state.filterVersion++;
     }
 
     // Which genders are currently checked in the filter bar. Returns null
@@ -1014,6 +1056,7 @@
           p.a.toLowerCase().includes(tagQ) || p.b.toLowerCase().includes(tagQ));
       }
       state.filtered = filtered;
+      invalidateTabCache();
       // Live-update the header note so the user sees what's currently
       // applied without waiting for a new cache task.
       const src = head.querySelector("#metrics-source");

@@ -63,43 +63,43 @@ ui:
 settings:
   cacheTtlMinutes:
     displayName: Cache TTL (minutes)
-    description: How long computed metrics remain valid before the dashboard refetches.
+    description: How long computed metrics remain valid before the dashboard refetches. Default 60.
     type: NUMBER
   disableNetworkGraph:
     displayName: Disable collaboration network graph
-    description: Skip the performer co-occurrence force-directed graph on slow clients.
+    description: Skip the performer co-occurrence force-directed graph on slow clients. Default off.
     type: BOOLEAN
   topN:
     displayName: Top-N items per chart
-    description: How many entries (performers, tags, studios) to show in ranking charts.
+    description: How many entries (performers, tags, studios) to show in ranking charts. Default 20.
     type: NUMBER
   ageBuckets:
     displayName: Age bucket size (years)
-    description: Granularity of the performer age pyramid (e.g. 5 = 5-year buckets).
+    description: Granularity of the performer age pyramid (e.g. 5 = 5-year buckets). Default 5.
     type: NUMBER
   heightUnit:
     displayName: Height unit
-    description: cm or in — used for all height-related charts.
+    description: cm or in — used for all height-related charts. Default cm.
     type: STRING
   excludeTagIds:
     displayName: Excluded tag IDs
-    description: Comma-separated tag IDs to exclude from all tag aggregations.
+    description: Comma-separated tag IDs to exclude from all tag aggregations. Default empty (no exclusions).
     type: STRING
   excludePerformerIds:
     displayName: Excluded performer IDs
-    description: Comma-separated performer IDs to exclude from all performer aggregations.
+    description: Comma-separated performer IDs to exclude from all performer aggregations. Default empty (no exclusions).
     type: STRING
   hideOtherBucket:
     displayName: Hide "Other" bucket in top-N charts
-    description: Drop the tail of distributions instead of aggregating into "Other".
+    description: Drop the tail of distributions instead of aggregating into "Other". Default off.
     type: BOOLEAN
   genderFilter:
     displayName: Gender filter
-    description: Comma-separated Stash gender enum values (FEMALE, MALE, TRANSGENDER_FEMALE, TRANSGENDER_MALE, INTERSEX, NON_BINARY). Blank or "all" = no filter.
+    description: Comma-separated Stash gender enum values (FEMALE, MALE, TRANSGENDER_FEMALE, TRANSGENDER_MALE, INTERSEX, NON_BINARY). Default all (no filter).
     type: STRING
   reportFormats:
     displayName: Report formats
-    description: Comma-separated report formats. Any of json,csv,html.
+    description: Comma-separated report formats. Any of json,csv,html. Default json,csv,html.
     type: STRING
 
   # ---- Correlation & recommender settings (v1.1) ---------------------------
@@ -109,101 +109,101 @@ settings:
   # explicitly opts out of a heavy computation.
   disableCorrelations:
     displayName: Disable correlations tab
-    description: Skip attribute × O-count correlation aggregates on very large libraries.
+    description: Skip attribute × O-count correlation aggregates on very large libraries. Default off.
     type: BOOLEAN
   correlationMinSupport:
     displayName: Correlation min support
-    description: Drop attribute cells below this sample count from correlation aggregates.
+    description: Drop attribute cells below this sample count from correlation aggregates. Default 3.
     type: NUMBER
   preferenceProfile:
     displayName: Preference profile (JSON)
-    description: JSON preference profile for the Matches tab. Empty {} disables filtering. See README for the full schema.
+    description: JSON preference profile for the Matches tab. Default empty (no filtering). See README for the full schema.
     type: STRING
   matchMinScore:
     displayName: Match minimum score (0–100)
-    description: Drop matches below this weighted score.
+    description: Drop matches below this weighted score. Default 0 (keep all).
     type: NUMBER
   matchIncludeUnknown:
     displayName: Treat missing attributes as partial matches
-    description: When ON, unknown-attribute matches score 0.5 × weight instead of 0.
+    description: When ON, unknown-attribute matches score 0.5 × weight instead of 0. Default off.
     type: BOOLEAN
 
   # ---- v1.2 advanced analytics ------------------------------------------
   disablePlayHistory:
     displayName: Disable Play tab
-    description: Skip the day-of-week × hour-of-day heatmap + most-watched aggregation.
+    description: Skip the day-of-week × hour-of-day heatmap + most-watched aggregation. Default off.
     type: BOOLEAN
   disableArchetypes:
     displayName: Disable Archetypes tab
-    description: Skip the O(n²) k-means clustering + cosine-similarity index on very large libraries.
+    description: Skip the O(n²) k-means clustering + cosine-similarity index on very large libraries. Default off.
     type: BOOLEAN
   archetypeClusters:
     displayName: Archetype cluster count (k)
-    description: Number of performer archetype clusters to compute (2–12).
+    description: Number of performer archetype clusters to compute (2–12). Default 6.
     type: NUMBER
   disableDiversity:
     displayName: Disable diversity analytics
-    description: Skip Shannon / Gini-Simpson diversity per attribute + gap analysis.
+    description: Skip Shannon / Gini-Simpson diversity per attribute + gap analysis. Default off.
     type: BOOLEAN
   disableTemporal:
     displayName: Disable temporal analytics
-    description: Skip release-year + career-timeline + tag-evolution charts on the Insights tab.
+    description: Skip release-year + career-timeline + tag-evolution charts on the Insights tab. Default off.
     type: BOOLEAN
   disableFantasy:
     displayName: Disable Fantasy Builder
-    description: Skip reverse-engineering a preference profile from your favourites / top-rated / top-O seed set.
+    description: Skip reverse-engineering a preference profile from your favourites / top-rated / top-O seed set. Default off.
     type: BOOLEAN
   fantasyMode:
     displayName: Fantasy Builder seed mode
-    description: How to pick the seed performers — favorites | top-rated | top-o.
+    description: How to pick the seed performers — favorites | top-rated | top-o. Default favorites.
     type: STRING
   fantasyConsensus:
     displayName: Fantasy consensus threshold
-    description: Fraction of seed performers that must share a value before it's locked into the derived profile (0.3 = loose, 0.7 = strict).
-    type: NUMBER
+    description: Fraction of seed performers that must share a value before it's locked into the derived profile (0.3 = loose, 0.7 = strict). Default 0.5.
+    type: STRING
 
   # ---- v1.3 quality + excel ---------------------------------------------
   enableQuality:
     displayName: Enable Quality tab
-    description: Hidden gems, overrated / underrated insights and a composite library-health score.
+    description: Hidden gems, overrated / underrated insights and a composite library-health score. Default off.
     type: BOOLEAN
   gemRatingFloor:
     displayName: Hidden-gem rating floor
-    description: Minimum rating100 a scene must have to be considered a "hidden gem".
+    description: Minimum rating100 a scene must have to be considered a "hidden gem". Default 80.
     type: NUMBER
   gemPlayCeiling:
     displayName: Hidden-gem play-count ceiling
-    description: Maximum play_count for a scene to still qualify as a hidden gem.
+    description: Maximum play_count for a scene to still qualify as a hidden gem. Default 2.
     type: NUMBER
   qualityZThreshold:
     displayName: Over/underrated z-score threshold
-    description: Absolute z-score cutoff for the anomaly lists (1.0 = top ~16%).
-    type: NUMBER
+    description: Absolute z-score cutoff for the anomaly lists (1.0 = top ~16%). Default 1.0.
+    type: STRING
   qualityMinScenes:
     displayName: Minimum scenes for performer anomalies
-    description: A performer needs at least this many scenes before being eligible for the over/underrated list.
+    description: A performer needs at least this many scenes before being eligible for the over/underrated list. Default 2.
     type: NUMBER
 
   # ---- v1.8 tag optimizer ------------------------------------------------
   disableTagOptimizer:
     displayName: Disable Tag Optimizer tab
-    description: Skip near-duplicate detection, always-together pair analysis and hierarchy audit.
+    description: Skip near-duplicate detection, always-together pair analysis and hierarchy audit. Default off.
     type: BOOLEAN
   tagoptRareThreshold:
     displayName: Tag Optimizer — rare tag threshold
-    description: Tags with fewer scenes than this are surfaced as "rare" cleanup candidates.
+    description: Tags with fewer scenes than this are surfaced as "rare" cleanup candidates. Default 3.
     type: NUMBER
   tagoptPairMinSupport:
     displayName: Tag Optimizer — pair min support
-    description: A tag pair needs at least this many shared scenes before it's considered for merge / specialisation detection.
+    description: A tag pair needs at least this many shared scenes before it's considered for merge / specialisation detection. Default 5.
     type: NUMBER
   tagoptUndertagMax:
     displayName: Tag Optimizer — under-tagged threshold
-    description: Scenes with this many tags or fewer are flagged as under-tagged.
+    description: Scenes with this many tags or fewer are flagged as under-tagged. Default 2.
     type: NUMBER
   tagoptOvertagMin:
     displayName: Tag Optimizer — over-tagged threshold
-    description: Scenes with this many tags or more are flagged as over-tagged (auto-tagger noise).
+    description: Scenes with this many tags or more are flagged as over-tagged (auto-tagger noise). Default 20.
     type: NUMBER
   missingTagUndertaggedMax:
     displayName: Missing-tag suggestions — undertagged threshold
@@ -213,11 +213,11 @@ settings:
   # ---- v2.11 batch rename -----------------------------------------------
   renameMaxRenames:
     displayName: Rename Files — safety cap
-    description: Maximum number of files renamed in a single run. Default 500. Set high once you trust the plan.
+    description: Maximum number of files renamed in a single run. Default 2000. Set high once you trust the plan.
     type: NUMBER
   renameSkipStudios:
     displayName: Rename Files — skip these studios
-    description: Comma-separated studio names to NEVER rename. Useful for studios you've already curated to a different pattern.
+    description: Comma-separated studio names to NEVER rename. Default empty. Useful for studios you've already curated to a different pattern.
     type: STRING
 
 # Runnable tasks — appear on the Tasks page under Plugin Tasks → Metrics.

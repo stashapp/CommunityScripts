@@ -18,6 +18,11 @@ const { computeBingo } = require("./bingo");
 const { computeNudges } = require("./nudges");
 const { computeTagOptimization } = require("./tagopt");
 const { computeCleanup } = require("./cleanup");
+const { computeRankings } = require("./rankings");
+const { computeDiscoveries } = require("./discoveries");
+const { computeNoveltyComfort } = require("./novelty");
+const { computeTextAnalysis } = require("./text_analysis");
+const { computeStudioAnalysis } = require("./studios");
 
 function totalSceneDuration(s) {
   if (!s.files || !s.files.length) return 0;
@@ -246,7 +251,9 @@ function aggregate(statsBlock, performers, tags, studios, scenes, opts) {
     const buckets = [0, 0, 0, 0, 0, 0];
     for (const s of filteredScenes) {
       if (s.rating100 == null) { buckets[0]++; continue; }
-      const stars = Math.max(1, Math.min(5, Math.ceil(s.rating100 / 20)));
+      // Round to the nearest star: rating100 61 (6.1/10) is 3★, not 4★.
+      // ceil() would inflate anything a hair above an exact star boundary.
+      const stars = Math.max(1, Math.min(5, Math.round(s.rating100 / 20)));
       buckets[stars]++;
     }
     return { labels: ["Unrated", "★", "★★", "★★★", "★★★★", "★★★★★"], counts: buckets };
@@ -612,6 +619,34 @@ function aggregate(statsBlock, performers, tags, studios, scenes, opts) {
     // the current gender scope.
     cleanup: computeCleanup(allPerformers, allScenes,
       { topN: opts.cleanupTopN || 40 }),
+    // v2.0 — tag/studio "least loved / underrepresented / exposure gap"
+    // rankings + three data-driven insights + novelty vs comfort index.
+    rankings: computeRankings(filteredScenes, {
+      tagMinScenes: opts.rankTagMinScenes || 5,
+      tagMinRated: opts.rankTagMinRated || 3,
+      studioMinScenes: opts.rankStudioMinScenes || 3,
+      studioMinRated: opts.rankStudioMinRated || 2,
+    }),
+    discoveries: computeDiscoveries(filteredScenes, {
+      gapMinSupport: opts.gapMinSupport || 3,
+      retentionMaxMonths: opts.retentionMaxMonths || 12,
+      todTopTags: opts.todTopTags || 12,
+    }),
+    noveltyComfort: computeNoveltyComfort(filteredScenes),
+    // v2.1 — text mining over titles + descriptions.
+    textAnalysis: computeTextAnalysis(filteredScenes, tags, {
+      wordCloudMinRated: opts.wordCloudMinRated || 20,
+      overallWordCloudTopN: opts.overallWordCloudTopN || 80,
+      studioFingerprintMinScenes: opts.studioFingerprintMinScenes || 5,
+      missingTagMax: opts.missingTagMax || 60,
+    }),
+    // v2.2 — Studio DNA + similar studios + discovery rate.
+    studioAnalysis: computeStudioAnalysis(filteredScenes, {
+      dnaMinScenes: opts.dnaMinScenes || 5,
+      dnaTopSimilar: opts.dnaTopSimilar || 5,
+      dnaTopTags: opts.dnaTopTags || 10,
+      discoveryMinScenes: opts.discoveryMinScenes || 3,
+    }),
   };
 }
 

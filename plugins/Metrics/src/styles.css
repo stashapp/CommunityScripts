@@ -20,6 +20,17 @@
 .metrics-tabs {
   display: flex; gap: 4px; border-bottom: 1px solid #2b3338; margin-bottom: 14px;
   flex-wrap: wrap;
+  /* v2.4 — Sticky tab bar so navigation stays reachable while scrolling. */
+  position: sticky; top: 0; z-index: 20;
+  background: #14181c;
+  padding: 6px 0 0;
+}
+.metrics-tab-content {
+  animation: metrics-fade-in 0.12s ease-out;
+}
+@keyframes metrics-fade-in {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
 }
 .metrics-tab {
   background: transparent; color: #cfd6dc; border: 0;
@@ -79,8 +90,8 @@
   display: flex; flex-direction: column; justify-content: center;
 }
 .metrics-kpi-label { color: #8e98a0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
-.metrics-kpi-value { color: #fff; font-size: 22px; font-weight: 600; line-height: 1.2; }
-.metrics-kpi-sub { color: #8e98a0; font-size: 11px; margin-top: 2px; }
+.metrics-kpi-value { color: #fff; font-size: 22px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.metrics-kpi-sub { color: #8e98a0; font-size: 11px; margin-top: 2px; overflow-wrap: anywhere; }
 
 .metrics-grid {
   display: grid; gap: 14px;
@@ -91,12 +102,17 @@
   border-radius: 8px; padding: 12px 14px;
   display: flex; flex-direction: column;
   position: relative;
+  /* Grid items default to min-width: auto — one long unbreakable name
+   * would stretch the card past its column. 0 keeps the card inside the
+   * grid track and lets the rules below ellipsize / wrap instead. */
+  min-width: 0;
 }
 .metrics-card-title {
   color: #cfd6dc; font-size: 13px; font-weight: 600;
   letter-spacing: 0.3px; margin-bottom: 8px;
   text-transform: uppercase;
   flex: 0 0 auto;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 /* Only lock a fixed height when the card actually contains a Chart.js
  * canvas. Chart.js's responsive: true measures its parent on every
@@ -108,10 +124,13 @@
   overflow: hidden;
 }
 .metrics-card:has(> canvas) canvas {
-  /* min-height: 0 lets the canvas shrink inside the flex parent instead
-   * of demanding min-content and pushing the container. */
+  /* A concrete min-height keeps the canvas hit-testable — with
+   * min-height: 0 the canvas could collapse inside the flex parent and
+   * Chart.js hover/tooltips stopped registering. max-height bounds it
+   * so the fixed-height card still can't run away. */
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 200px;
+  max-height: 100%;
   max-width: 100%;
 }
 
@@ -139,6 +158,7 @@
 .metrics-treemap-cell-inner {
   color: #11151a; text-align: center; padding: 4px;
   font-weight: 600; mix-blend-mode: luminosity;
+  max-width: 100%; overflow-wrap: anywhere;
 }
 .metrics-treemap-cell-inner .name { display: block; font-size: 12px; }
 .metrics-treemap-cell-inner .val { display: block; font-size: 11px; opacity: 0.85; }
@@ -224,7 +244,7 @@
 
 /* Ranking lists */
 .metrics-list { padding-left: 18px; margin: 0; }
-.metrics-list li { margin-bottom: 4px; line-height: 1.4; }
+.metrics-list li { margin-bottom: 4px; line-height: 1.4; overflow-wrap: anywhere; }
 .metrics-list-val { color: #8e98a0; font-size: 12px; margin-left: 6px; }
 
 /* Hierarchy list */
@@ -248,6 +268,9 @@
 }
 .metrics-table th, .metrics-table td {
   border-bottom: 1px solid #2b3338; padding: 4px 6px; text-align: left;
+  /* Long titles / studio / performer names ellipsize inside the cell
+   * instead of pushing the table past the card boundary. */
+  max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .metrics-table th { color: #8e98a0; font-weight: 600; }
 .metrics-parallel {
@@ -316,6 +339,7 @@
 }
 .metrics-match-name {
   color: #fff; text-decoration: none; font-weight: 600; font-size: 14px;
+  min-width: 0; overflow-wrap: anywhere;
 }
 .metrics-match-name:hover { text-decoration: underline; }
 .metrics-match-score {
@@ -345,6 +369,37 @@
 
 /* Sub-list lines under ranking entries */
 .metrics-list-sub { color: #8e98a0; font-size: 11px; margin-left: 22px; margin-top: 2px; }
+
+/* Archetype ranking cards (least loved / underrepresented / exposure gap) */
+.metrics-arch-ranks {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-bottom: 14px;
+}
+.metrics-rank-card {
+  border-left: 4px solid #2b3338;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.metrics-rank-card.metrics-rank-gap    { border-left-color: #3ecf8e; }
+.metrics-rank-card.metrics-rank-under  { border-left-color: #f7c948; }
+.metrics-rank-card.metrics-rank-least  { border-left-color: #f76e6e; }
+.metrics-rank-card.metrics-rank-most   { border-left-color: #4f8ef7; }
+.metrics-rank-badge {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.5px; color: #cfd6dc;
+  text-transform: uppercase;
+}
+.metrics-rank-name {
+  color: #fff; font-size: 15px; font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.metrics-rank-stats {
+  color: #a8b1b8; font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.metrics-rank-footnote {
+  color: #8e98a0; font-size: 11px; line-height: 1.4;
+  border-top: 1px dashed #2b3338; padding-top: 6px; margin-top: 2px;
+}
 
 /* Archetype cluster cards */
 .metrics-cluster-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
@@ -900,6 +955,295 @@
 .metrics-tagopt-edit:hover {
   background: #2b3338; color: #fff;
 }
+
+/* --- v2.1 Word cloud + semantic search + studio fingerprint ------ */
+.metrics-wordcloud-cols {
+  display: grid; gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 8px;
+}
+.metrics-wordcloud-col {
+  background: #11151a; border: 1px solid #2b3338;
+  border-radius: 6px; padding: 10px 12px;
+}
+.metrics-wordcloud-col h4 {
+  margin: 0 0 8px; color: #a8b1b8; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.metrics-wordcloud-inner {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 4px 10px; line-height: 1.3;
+}
+.metrics-wordcloud-word {
+  font-weight: 600; cursor: default;
+}
+@media (max-width: 700px) {
+  .metrics-wordcloud-cols { grid-template-columns: 1fr; }
+}
+
+.metrics-search-card { margin-top: 10px; }
+.metrics-search-controls { margin: 8px 0; }
+.metrics-search-controls input {
+  width: 100%; max-width: 480px;
+}
+.metrics-search-results { margin-top: 8px; }
+
+/* --- v2.7 Files tab --------------------------------------------- */
+.metrics-files-controls { margin-bottom: 12px; }
+.metrics-files-filter {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  align-items: center; margin-top: 6px;
+}
+.metrics-files-filter input[type=text] {
+  flex: 1; min-width: 200px; max-width: 500px;
+}
+.metrics-files-filter label {
+  color: #cfd6dc; font-size: 12px;
+  display: inline-flex; gap: 4px; align-items: center;
+}
+.metrics-files-sort { max-width: 200px; }
+.metrics-files-dir {
+  padding: 5px 12px; font-size: 12px;
+  min-width: 84px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.metrics-files-dir[data-dir="asc"]  { color: #3ecf8e; border-color: #3ecf8e; }
+.metrics-files-dir[data-dir="desc"] { color: #4f8ef7; border-color: #4f8ef7; }
+
+.metrics-files-scroll {
+  overflow-x: auto;
+  border: 1px solid #2b3338; border-radius: 6px;
+  max-height: 640px;
+}
+.metrics-files-table {
+  min-width: 1500px;
+  font-size: 12px;
+}
+.metrics-files-res {
+  display: inline-block; padding: 1px 6px;
+  font-size: 10.5px; font-weight: 600;
+  border-radius: 3px; text-transform: uppercase;
+  letter-spacing: 0.3px; white-space: nowrap;
+}
+.metrics-files-res-4k   { background: rgba(201, 142, 247, 0.18); color: #c98ef7; border: 1px solid rgba(201, 142, 247, 0.5); }
+.metrics-files-res-1080 { background: rgba(62, 207, 142, 0.15);  color: #3ecf8e; border: 1px solid rgba(62, 207, 142, 0.4); }
+.metrics-files-res-720  { background: rgba(247, 201, 72, 0.15);  color: #f7c948; border: 1px solid rgba(247, 201, 72, 0.4); }
+.metrics-files-res-low  { background: rgba(247, 110, 110, 0.15); color: #f76e6e; border: 1px solid rgba(247, 110, 110, 0.4); }
+.metrics-files-suggest-wrap {
+  display: flex; align-items: flex-start; gap: 6px;
+}
+.metrics-files-suggest-wrap code {
+  color: #b6f0d1; background: rgba(62, 207, 142, 0.06);
+  border-color: rgba(62, 207, 142, 0.25);
+  max-width: 380px;
+}
+.metrics-files-copy {
+  padding: 2px 8px; font-size: 10.5px;
+  background: #11151a; color: #cfd6dc;
+  border: 1px solid #2b3338; border-radius: 3px;
+  cursor: pointer; font-family: inherit;
+  flex-shrink: 0;
+}
+.metrics-files-copy:hover { background: #2b3338; color: #fff; }
+.metrics-files-table thead th {
+  position: sticky; top: 0; background: #1c2126;
+  z-index: 3;
+}
+.metrics-files-table tbody tr:hover { background: rgba(79, 142, 247, 0.05); }
+.metrics-files-cell-title { max-width: 220px; }
+.metrics-files-cell-title a {
+  color: #4f8ef7; text-decoration: none; font-weight: 600;
+  word-break: break-word;
+}
+.metrics-files-cell-title a:hover { text-decoration: underline; }
+.metrics-files-cell-file code {
+  color: #cfd6dc; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  background: #0b0e12; padding: 2px 6px;
+  border-radius: 3px; border: 1px solid #2b3338;
+  display: inline-block; max-width: 320px;
+  word-break: break-all;
+}
+.metrics-files-substudio {
+  color: #8e98a0; font-size: 10.5px; margin-top: 3px;
+}
+.metrics-files-chips {
+  display: flex; flex-wrap: wrap; gap: 3px;
+  max-width: 260px;
+}
+.metrics-files-perf {
+  display: inline-block; padding: 1px 6px;
+  background: rgba(62, 207, 142, 0.12);
+  border: 1px solid rgba(62, 207, 142, 0.35);
+  color: #b6f0d1; border-radius: 10px;
+  font-size: 10.5px; text-decoration: none;
+}
+.metrics-files-perf:hover { background: rgba(62, 207, 142, 0.25); }
+.metrics-files-more {
+  color: #8e98a0; font-size: 10.5px; padding: 1px 4px;
+  cursor: help;
+}
+.metrics-files-num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.metrics-files-match {
+  display: inline-block; padding: 2px 8px;
+  border-radius: 3px; font-size: 10.5px; font-weight: 600;
+  white-space: nowrap;
+}
+.metrics-files-match-good {
+  background: rgba(62, 207, 142, 0.15); color: #3ecf8e;
+  border: 1px solid rgba(62, 207, 142, 0.4);
+}
+.metrics-files-match-partial {
+  background: rgba(247, 201, 72, 0.12); color: #f7c948;
+  border: 1px solid rgba(247, 201, 72, 0.4);
+}
+.metrics-files-match-none {
+  background: rgba(247, 110, 110, 0.15); color: #f76e6e;
+  border: 1px solid rgba(247, 110, 110, 0.4);
+}
+.metrics-files-match-n\/a {
+  background: #2b3338; color: #8e98a0;
+}
+.metrics-files-status {
+  margin: 4px 0 8px; font-size: 11px;
+}
+
+/* --- v2.5 Play: barely-played slider ---------------------------- */
+.metrics-barely-range {
+  color: #4f8ef7; font-weight: 500;
+}
+.metrics-barely-value {
+  color: #fff; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.5ch; display: inline-block;
+}
+.metrics-barely-slider-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 10px; padding: 8px 12px;
+  background: #11151a; border: 1px solid #2b3338;
+  border-radius: 6px;
+}
+.metrics-barely-slider-row label {
+  color: #a8b1b8; font-size: 12px; font-weight: 600;
+}
+.metrics-barely-slider-row input[type=range] {
+  flex: 1; max-width: 320px;
+  accent-color: #4f8ef7;
+}
+.metrics-barely-slider-hint {
+  color: #8e98a0; font-size: 11px; font-style: italic;
+  margin-left: auto;
+}
+
+/* --- v2.4 Matches: search + finder + top-3 highlight ------------ */
+.metrics-matches-search,
+.metrics-matches-finder {
+  margin-bottom: 12px;
+}
+.metrics-matches-finder .metrics-form-input { width: 100%; max-width: 640px; }
+.metrics-finder-wrap { margin-top: 6px; }
+.metrics-finder-parsed {
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 6px; margin-top: 6px;
+}
+.metrics-finder-parsed-label {
+  color: #8e98a0; font-size: 11px; font-weight: 600;
+}
+.metrics-finder-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.metrics-finder-results { margin-top: 10px; }
+
+/* Top-3 preference-match cards get a soft border + always-open breakdown */
+.metrics-match-card-top {
+  border-left: 4px solid #3ecf8e;
+  background: linear-gradient(90deg, rgba(62, 207, 142, 0.06), transparent 60%);
+}
+.metrics-match-card-top .metrics-match-details {
+  border-top: 1px dashed rgba(62, 207, 142, 0.35);
+  padding-top: 6px; margin-top: 6px;
+}
+.metrics-match-card-top .metrics-match-details summary {
+  color: #3ecf8e; font-weight: 600;
+}
+.metrics-finder-card {
+  border-left: 4px solid #4f8ef7;
+  background: linear-gradient(90deg, rgba(79, 142, 247, 0.06), transparent 60%);
+}
+
+/* --- v2.2 Studio DNA + Discovery Rate --------------------------- */
+.metrics-studio-dna-list {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 620px; overflow-y: auto;
+  padding-right: 4px;
+}
+.metrics-studio-dna {
+  background: #11151a; border: 1px solid #2b3338;
+  border-radius: 6px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.metrics-studio-dna-head {
+  display: flex; justify-content: space-between;
+  align-items: baseline; gap: 8px;
+}
+.metrics-studio-dna-name {
+  color: #fff; font-weight: 600; font-size: 14px;
+  text-decoration: none;
+}
+.metrics-studio-dna-name:hover { color: #4f8ef7; }
+.metrics-studio-dna-size {
+  color: #8e98a0; font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.metrics-studio-dna-signature,
+.metrics-studio-dna-similar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 5px 6px; font-size: 12px;
+}
+.metrics-studio-dna-label {
+  color: #8e98a0; font-size: 11px;
+  margin-right: 4px; font-weight: 600;
+}
+.metrics-studio-dna-similar-link {
+  color: #4f8ef7; text-decoration: none;
+  padding: 2px 8px; border-radius: 10px;
+  border: 1px solid rgba(79, 142, 247, 0.4);
+  background: rgba(79, 142, 247, 0.08);
+  font-size: 12px;
+}
+.metrics-studio-dna-similar-link:hover {
+  background: rgba(79, 142, 247, 0.2);
+}
+
+.metrics-discovery-cols {
+  display: grid; gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 6px;
+}
+.metrics-discovery-col {
+  background: #11151a; border: 1px solid #2b3338;
+  border-radius: 6px; padding: 10px 12px;
+}
+.metrics-discovery-col h4 {
+  margin: 0 0 4px; color: #cfd6dc; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+@media (max-width: 800px) {
+  .metrics-discovery-cols { grid-template-columns: 1fr; }
+}
+
+/* --- v2.0 Content Gap Radar SVG --------------------------------- */
+.metrics-gap-svg {
+  width: 100%; height: auto; max-height: 480px;
+  background: #11151a; border-radius: 6px;
+  border: 1px solid #2b3338; margin-top: 6px;
+}
+.metrics-gap-toplist {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 10px; align-items: baseline;
+}
+.metrics-gap-toplist strong { color: #8e98a0; font-size: 12px; margin-right: 4px; }
 
 /* --- v1.9 Cleanup ------------------------------------------------ */
 

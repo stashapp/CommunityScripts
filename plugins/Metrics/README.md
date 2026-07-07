@@ -137,11 +137,11 @@ All settings live in **Settings → Plugins → Metrics**. They're also exposed 
 | `enableTemporal` | boolean | true | Toggle release-year, career-timeline, and tag-evolution blocks on the Insights tab. |
 | `enableFantasy` | boolean | true | Toggle the Fantasy Builder tab. |
 | `fantasyMode` | string | `favorites` | How to pick the seed performers. One of `favorites`, `top-rated`, `top-o`. |
-| `fantasyConsensus` | number | 0.5 | Fraction of seed performers that must share a value before it locks into the derived profile (0.3 = loose, 0.7 = strict). |
+| `fantasyConsensus` | string (decimal) | 0.5 | Fraction of seed performers that must share a value before it locks into the derived profile (0.3 = loose, 0.7 = strict). |
 | `enableQuality` | boolean | true | Toggle the Quality tab (hidden gems, anomalies, library-health score). |
 | `gemRatingFloor` | number | 80 | Minimum `rating100` for a scene to qualify as a hidden gem. |
 | `gemPlayCeiling` | number | 2 | Maximum `play_count` a scene can have and still count as a hidden gem. |
-| `qualityZThreshold` | number | 1.0 | Residual z-score threshold for the over- / underrated lists (\|z\| > threshold). |
+| `qualityZThreshold` | string (decimal) | 1.0 | Residual z-score threshold for the over- / underrated lists (\|z\| > threshold). |
 | `qualityMinScenes` | number | 2 | Minimum scenes a performer must have before being eligible for performer-anomaly lists. |
 
 ---
