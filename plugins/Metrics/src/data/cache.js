@@ -42,10 +42,11 @@
   };
 
   // Fetch the backend-generated cache. v3.0 — the plugin manifest
-  // declares `ui.assets:` mapping `/assets` to the assets/ directory, so
-  // the JSON is served directly under /plugin/Metrics/assets/metrics-
-  // cache.json. We also try the previous JS-bootstrap global for
-  // compatibility with caches from older plugin versions.
+  // declares `ui.assets: {/: assets}`, mapping the plugin's asset
+  // namespace (/plugin/Metrics/assets/…) to the assets/ directory, so
+  // the JSON is served at /plugin/Metrics/assets/metrics-cache.json.
+  // We also try the previous JS-bootstrap global for compatibility
+  // with caches from older plugin versions.
   cache.fetchBackendCache = async function () {
     if (window.__STASH_METRICS_CACHE__ && window.__STASH_METRICS_CACHE__.computedAt) {
       return window.__STASH_METRICS_CACHE__;

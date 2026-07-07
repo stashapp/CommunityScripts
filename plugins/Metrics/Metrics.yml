@@ -19,8 +19,13 @@ ui:
   # v3.0 — expose the cache directory as static assets served under
   # /plugin/Metrics/assets/<file>. The dashboard fetch()es
   # metrics-cache.json directly; no more JS bootstrap indirection.
+  # NOTE: Stash already namespaces every plugin's assets under
+  # /plugin/<id>/assets/ — the mapping key is matched against the path
+  # AFTER that prefix is stripped, so `/` maps the whole namespace to
+  # the plugin's assets/ directory. (`/assets: assets` would serve files
+  # at /plugin/Metrics/assets/assets/… — a double prefix.)
   assets:
-    /assets: assets
+    /: assets
   javascript:
     - assets/lib/chart.umd.min.js
     - assets/lib/chartjs-plugin-datalabels.min.js

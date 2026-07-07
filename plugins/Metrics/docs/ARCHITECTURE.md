@@ -30,7 +30,9 @@ The plugin currently ships 16 dashboard tabs (Overview, Performers, Tags, Networ
 Two equally-capable computation paths:
 
 - **Live** — the dashboard's `loadMetrics()` calls Stash GraphQL directly through the `PluginApi.GQL` client, runs `ns.aggregate()`, caches the result in `localStorage`.
-- **Cached** — the Node task runs the same aggregator over the same field set, writes `assets/metrics-cache.json`. The manifest maps the `assets/` directory via `ui.assets`, so Stash serves the JSON directly under `/plugin/Metrics/assets/metrics-cache.json`. The dashboard prefers this file on every page load (cheap fetch, no GraphQL hits) and falls back to live only if the file is missing or older than `cacheTtlMinutes`.
+- **Cached** — the Node task runs the same aggregator over the same field set, writes `assets/metrics-cache.json`. The manifest maps the `assets/` directory via `ui.assets: {/: assets}`, so Stash serves the JSON directly under `/plugin/Metrics/assets/metrics-cache.json`. The dashboard prefers this file on every page load (cheap fetch, no GraphQL hits) and falls back to live only if the file is missing or older than `cacheTtlMinutes`.
+
+  **`ui.assets` key semantics** (source: `pkg/utils/urlmap.go` + `internal/api/routes_plugin.go` in stashapp/stash): Stash serves every plugin's assets under its own `/plugin/<id>/assets/` prefix, and the mapping keys are matched against the request path *after* that prefix is stripped. A key of `/` is the fallback that maps the whole namespace to a directory. Using `/assets: assets` therefore double-prefixes — files end up at `/plugin/<id>/assets/assets/…` and the natural URL 404s. Note the live-vs-cached distinction matters: several tabs (Play history, Archetypes, Matches, Fantasy, Quality, Tag Optimizer, Cleanup) are backend-computed and exist **only** in the cache payload — in `source: live` mode they show their "not in this cache" empty states.
 
 Both paths produce the **exact same payload shape**, so the chart modules don't need to know which side computed the data.
 
@@ -130,3 +132,4 @@ See README → [Extending the plugin](../README.md#extending-the-plugin). The th
 | 1.8 | Tag Optimizer tab — near-duplicate clusters, merge / specialisation pair analysis, hierarchy audit, cleanup score. |
 | 1.9 | Cleanup tab — performer + scene metadata gap finder with chip filter bar (ethnicity default), favourites-first sort, edit deep-links, metadata-health score. |
 | 3.0 | Manifest cleanup for CommunityScripts submission: removed invalid `hooks:` block, collapsed multi-line descriptions, added `ui.assets:` mapping so the backend cache is served directly under `/plugin/Metrics/assets/metrics-cache.json` (dropped the previous JS-bootstrap `metrics-cache.js` workaround). |
+| 3.0.1 | Fixed the `ui.assets` mapping key: `/: assets` instead of `/assets: assets` — Stash strips its own `/plugin/<id>/assets/` prefix before matching, so the old key double-prefixed the URL and the cache fetch 404'd (dashboard silently fell back to `source: live`, hiding all backend-only tabs). |
