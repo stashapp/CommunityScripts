@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  let STASHMARKER_API_URL = "https://cc1234-stashtag_onnx.hf.space/api/predict";
+  let STASHMARKER_API_URL = "https://cc1234-stashtag.hf.space/api/predict";
 
   var OPTIONS = [
     "Anal",
