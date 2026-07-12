@@ -1,6 +1,7 @@
 name: Javstash Autofill
-description: On performer create, fill empty fields from a scraper (best name match, skip if none). Existing values/images are protected; per-field overwrite is optional. Primary name can be the created one or the scraper's, chosen separately for Identify and manual; when the scraper name would collide, the new performer is merged into the existing one.
+description: Autofill new performers from a scraper. Empty fields are filled, overwrites are optional, and name collisions merge performers.
 version: 1.3
+url: https://discourse.stashapp.cc/t/javstash-autofill/11502
 exec:
   - python3
   - "{pluginDir}/javstash_autofill.py"
