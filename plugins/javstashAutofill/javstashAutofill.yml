@@ -1,0 +1,105 @@
+name: Javstash Autofill
+description: On performer create, fill empty fields from a scraper (best name match, skip if none). Existing values/images are protected; per-field overwrite is optional. Primary name can be the created one or the scraper's, chosen separately for Identify and manual; when the scraper name would collide, the new performer is merged into the existing one.
+version: 1.3
+exec:
+  - python3
+  - "{pluginDir}/javstash_autofill.py"
+interface: raw
+settings:
+  identifySource:
+    displayName: Scraper (Identify)
+    description: Source for performers auto-created by Identify. A stash-box endpoint URL (e.g. https://javstash.org/graphql) or a scraper_id (e.g. Minnano-AV-JP). Empty = javstash.
+    type: STRING
+  identifyUseScraperName:
+    displayName: Identify - use scraper name as primary
+    description: When ON, Identify-created performers get the scraper's canonical name as primary (created name -> alias; merged if a same-named performer exists). When OFF, keep the created name. Default ON.
+    type: BOOLEAN
+  manualSource:
+    displayName: Scraper (manual)
+    description: Source for manually-created performers. Endpoint URL or scraper_id. Empty = javstash.
+    type: STRING
+  manualUseScraperName:
+    displayName: Manual - use scraper name as primary
+    description: When ON, manually-created performers also get the scraper's canonical name as primary. When OFF, keep the created name. Default OFF.
+    type: BOOLEAN
+  threshold:
+    displayName: Name-match threshold (0-1)
+    description: Skip when the best name-match score is below this. Default 0.9.
+    type: NUMBER
+  owBirthdate:
+    displayName: "Overwrite: birthdate"
+    description: Overwrite even if a value already exists. OFF = fill only when empty.
+    type: BOOLEAN
+  owDeathDate:
+    displayName: "Overwrite: death date"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owMeasurements:
+    displayName: "Overwrite: measurements"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owHeight:
+    displayName: "Overwrite: height"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owWeight:
+    displayName: "Overwrite: weight"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owCountry:
+    displayName: "Overwrite: country"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owEthnicity:
+    displayName: "Overwrite: ethnicity"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owHairColor:
+    displayName: "Overwrite: hair color"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owEyeColor:
+    displayName: "Overwrite: eye color"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owGender:
+    displayName: "Overwrite: gender"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owFakeTits:
+    displayName: "Overwrite: fake tits (Natural/Fake)"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owCareerLength:
+    displayName: "Overwrite: career length"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owTattoos:
+    displayName: "Overwrite: tattoos"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owPiercings:
+    displayName: "Overwrite: piercings"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owDetails:
+    displayName: "Overwrite: details"
+    description: Overwrite even if set. OFF = empty only.
+    type: BOOLEAN
+  owUrls:
+    displayName: "Overwrite: URLs"
+    description: When ON, replace urls with the scraper's. OFF = keep existing and append missing.
+    type: BOOLEAN
+  owAliasList:
+    displayName: "Overwrite: aliases"
+    description: When ON, replace alias_list from the scraper. OFF = keep existing and append missing (recommended).
+    type: BOOLEAN
+  owImage:
+    displayName: "Overwrite: image"
+    description: When ON, replace an existing image with the scraper's. OFF = set only when there is no image.
+    type: BOOLEAN
+hooks:
+  - name: performer_create_autofill
+    description: Fill fields when a performer is created
+    triggeredBy:
+      - Performer.Create.Post
