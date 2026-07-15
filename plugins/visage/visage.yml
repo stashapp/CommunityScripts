@@ -1,0 +1,22 @@
+name: Visage
+description: Use facial recognition to lookup performers from scene sprites
+version: 2.1.0
+url: https://github.com/cc1234475/visage
+ui:
+  javascript:
+  - visage.js
+  css:
+  - visage.css
+  csp:
+    # connect-src: URLs the plugin is allowed to make API calls to.
+    # Add your Gradio server here when using a different backend.
+    # Supports http:// https:// ws:// and wss:// variants.
+    connect-src:
+    # Remote/huggingface Gradio server
+    - "https://cc1234-stashface-onnx.hf.space"
+    # Add your own server below:
+    - "http://localhost:7860"
+    # - "wss://localhost:7860"
+    # - "https://your-gradio-server.example.com"
+    script-src:
+    - "'self'"
