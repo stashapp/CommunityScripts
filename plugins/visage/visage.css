@@ -1,0 +1,1810 @@
+/* === VISAGE PLUGIN === */
+
+/* Global defaults — elements outside the modal (toolbar buttons etc) */
+:root {
+  color-scheme: dark;
+  --v-bg: #07070f;
+  --v-surface: #0c0c18;
+  --v-surface-2: #0f0f1e;
+  --v-surface-3: #141428;
+  --v-border: rgba(255, 255, 255, 0.07);
+  --v-border-hover: rgba(255, 255, 255, 0.13);
+  --v-border-active: #5695ff;
+  --v-accent: #5695ff;
+  --v-accent-hover: #3f73e0;
+  --v-accent-glow: rgba(86, 149, 255, 0.18);
+  --v-excellent: #2dd4a0;
+  --v-good: #f0a030;
+  --v-uncertain: #e04868;
+  --v-text: rgba(255, 255, 255, 0.93);
+  --v-text-2: rgba(255, 255, 255, 0.52);
+  --v-text-3: rgba(255, 255, 255, 0.28);
+  --v-mono: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  --v-sans: system-ui, -apple-system, sans-serif;
+  --v-r: 12px;
+  --v-r-sm: 7px;
+  --v-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light theme — activated by Stash light themes via class on html/body */
+.visage-theme-light {
+  color-scheme: light;
+  --v-bg: #f5f6f7;
+  --v-surface: #ffffff;
+  --v-surface-2: #f0f1f3;
+  --v-surface-3: #e8e9eb;
+  --v-border: rgba(0, 0, 0, 0.1);
+  --v-border-hover: rgba(0, 0, 0, 0.18);
+  --v-border-active: #2b6dd6;
+  --v-accent: #2b6dd6;
+  --v-accent-hover: #1a5bc7;
+  --v-accent-glow: rgba(43, 109, 214, 0.15);
+  --v-excellent: #0f9960;
+  --v-good: #d9822b;
+  --v-uncertain: #db3737;
+  --v-text: rgba(0, 0, 0, 0.9);
+  --v-text-2: rgba(0, 0, 0, 0.55);
+  --v-text-3: rgba(0, 0, 0, 0.3);
+}
+
+/* ========================
+   TOOLBAR BUTTONS
+   ======================== */
+
+.visage-toolbar-button {
+  background-color: var(--v-nav-bg, var(--secondary, #30404d));
+  border: 0;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s var(--v-ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--v-text);
+}
+
+.visage-toolbar-button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px var(--v-accent-glow);
+}
+
+.visage-toolbar-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ========================
+   MODAL BACKDROP
+   ======================== */
+
+.visage-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.visage-modal-backdrop.visage-visible {
+  opacity: 1;
+}
+
+.visage-theme-light .visage-modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* ========================
+   MODAL
+   ======================== */
+
+.visage-modal {
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r);
+  width: 92vw;
+  max-width: 1200px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.55),
+    0 0 0 1px color-mix(in srgb, var(--v-accent) 8%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: scale(0.96) translateY(10px);
+  opacity: 0;
+  transition: transform 0.35s var(--v-ease), opacity 0.3s ease;
+  font-family: var(--v-sans);
+  overflow: hidden;
+}
+
+.visage-modal.visage-visible {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* ========================
+   MODAL LOADING STATE
+   ======================== */
+
+.visage-modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  flex: 1;
+  gap: 1.5rem;
+  min-height: 260px;
+}
+
+.visage-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.06);
+  border-top-color: var(--v-accent);
+  border-radius: 50%;
+  animation: visage-spin 0.7s linear infinite;
+}
+
+@keyframes visage-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================
+   FACE SCAN LOADER
+   ======================== */
+
+.visage-face-scan {
+  position: relative;
+  width: 140px;
+  height: 160px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--v-accent) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--v-accent) 6%, transparent) 1px, transparent 1px);
+  background-size: 14px 14px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.visage-face-scan svg {
+  position: absolute;
+  inset: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  color: var(--v-accent);
+}
+
+.visage-face-scan-outline {
+  stroke-dasharray: 4 3;
+  animation: visage-scan-dash 3s linear infinite;
+}
+
+@keyframes visage-scan-dash {
+  to { stroke-dashoffset: -28; }
+}
+
+.visage-face-scan-dot {
+  fill: var(--v-accent);
+  animation: visage-scan-blink 1.8s ease-in-out infinite;
+}
+
+.visage-face-scan-dot:nth-of-type(2n) { animation-delay: 0.4s; }
+.visage-face-scan-dot:nth-of-type(3n) { animation-delay: 0.9s; }
+.visage-face-scan-dot:nth-of-type(5n) { animation-delay: 1.3s; }
+
+@keyframes visage-scan-blink {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+.visage-face-scan-beam {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 34px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--v-accent) 22%, transparent) 70%,
+    var(--v-accent)
+  );
+  border-bottom: 1.5px solid var(--v-accent);
+  box-shadow: 0 2px 12px var(--v-accent-glow);
+  animation: visage-scan-sweep 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes visage-scan-sweep {
+  from { top: -34px; }
+  to { top: calc(100% - 0px); }
+}
+
+.visage-face-scan-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--v-accent);
+  opacity: 0.9;
+}
+
+.visage-face-scan-corner:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 4px; }
+.visage-face-scan-corner:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 4px; }
+.visage-face-scan-corner:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 4px; }
+.visage-face-scan-corner:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 4px; }
+
+/* Toolbar button while scanning */
+
+.visage-toolbar-button.visage-scanning {
+  opacity: 1;
+  color: var(--v-accent);
+  animation: visage-btn-scan-glow 1.2s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.visage-toolbar-button.visage-scanning::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--v-accent);
+  box-shadow: 0 0 8px var(--v-accent);
+  animation: visage-btn-scan-line 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes visage-btn-scan-line {
+  from { top: 2px; }
+  to { top: calc(100% - 4px); }
+}
+
+@keyframes visage-btn-scan-glow {
+  0%, 100% { box-shadow: 0 0 4px var(--v-accent-glow); }
+  50% { box-shadow: 0 0 16px var(--v-accent-glow); }
+}
+
+/* ========================
+   SPRITE CONVEYOR LOADER
+   ======================== */
+
+.visage-conveyor {
+  position: relative;
+  width: min(340px, 80%);
+  height: 96px;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--v-accent) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--v-accent) 5%, transparent) 1px, transparent 1px);
+  background-size: 12px 12px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+}
+
+.visage-conveyor-track {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  display: flex;
+  gap: 12px;
+  animation: visage-conveyor-move 6s linear infinite;
+}
+
+@keyframes visage-conveyor-move {
+  to { transform: translateX(calc(-50% - 6px)); }
+}
+
+.visage-conveyor-frame {
+  position: relative;
+  width: 46px;
+  height: 60px;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--v-accent) 45%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--v-accent) 8%, transparent);
+}
+
+/* tiny silhouette: head + shoulders */
+.visage-conveyor-frame::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--v-accent) 55%, transparent);
+}
+
+.visage-conveyor-frame::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 28px;
+  height: 16px;
+  margin-left: -14px;
+  border-radius: 14px 14px 3px 3px;
+  background: color-mix(in srgb, var(--v-accent) 40%, transparent);
+}
+
+.visage-conveyor-beam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--v-accent);
+  border-radius: 2px;
+  box-shadow:
+    0 0 10px var(--v-accent),
+    0 0 30px var(--v-accent-glow);
+  animation: visage-beam-flicker 0.9s ease-in-out infinite;
+  z-index: 2;
+}
+
+.visage-conveyor-beam::before,
+.visage-conveyor-beam::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 30px;
+  margin-left: -15px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--v-accent-glow), transparent);
+}
+
+@keyframes visage-beam-flicker {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.visage-conveyor-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--v-accent) 60%, transparent) 0 8px,
+    transparent 8px 16px
+  );
+  animation: visage-rail-move 0.8s linear infinite;
+}
+
+@keyframes visage-rail-move {
+  to { background-position: -16px 0; }
+}
+
+.visage-loading-label {
+  font-family: var(--v-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--v-text-2);
+  animation: visage-loading-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes visage-loading-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ========================
+   SCAN PROGRESS BAR
+   ======================== */
+
+.visage-scan-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(280px, 80%);
+}
+
+.visage-scan-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.visage-scan-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--v-accent), #8fbfff);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.visage-scan-progress-text {
+  font-family: var(--v-mono);
+  font-size: 0.65rem;
+  color: var(--v-text-2);
+  letter-spacing: 0.04em;
+}
+
+.visage-scan-progress-pct {
+  font-family: var(--v-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--v-accent);
+}
+
+/* ========================
+   MODAL HEADER
+   ======================== */
+
+.visage-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid var(--v-border);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent);
+  flex-shrink: 0;
+}
+
+.visage-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.visage-modal-title h2 {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v-accent);
+  font-family: var(--v-mono);
+}
+
+.visage-match-count {
+  font-size: 0.65rem;
+  color: var(--v-text-3);
+  font-family: var(--v-mono);
+  letter-spacing: 0.05em;
+}
+
+.visage-modal-close {
+  background: none;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r-sm);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--v-text-2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.visage-modal-close:hover {
+  color: var(--v-text);
+  border-color: var(--v-border-hover);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ========================
+   FACE STRIP
+   ======================== */
+
+.visage-face-tabs {
+  display: flex;
+  gap: 0.625rem;
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid var(--v-border);
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.visage-face-tabs::-webkit-scrollbar { height: 3px; }
+.visage-face-tabs::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 2px;
+}
+
+.visage-face-tab {
+  background: none;
+  border: 2px solid transparent;
+  border-radius: var(--v-r-sm);
+  padding: 2px;
+  cursor: pointer;
+  transition: all 0.2s var(--v-ease);
+  flex-shrink: 0;
+}
+
+.visage-face-tab:hover {
+  border-color: color-mix(in srgb, var(--v-accent) 35%, transparent);
+}
+
+.visage-face-tab-active {
+  border-color: var(--v-accent);
+  box-shadow: 0 0 0 3px var(--v-accent-glow);
+}
+
+.visage-face-tab-image {
+  width: 60px;
+  height: 74px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 5px;
+  display: block;
+}
+
+/* ========================
+   MODAL BODY (two-panel)
+   ======================== */
+
+.visage-modal-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ========================
+   LEFT PANEL
+   ======================== */
+
+.visage-left-panel {
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1rem;
+  border-right: 1px solid var(--v-border);
+  gap: 1rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.visage-section-label {
+  display: block;
+  font-family: var(--v-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--v-text-3);
+  margin-bottom: 0.5rem;
+}
+
+.visage-section-label-name {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--v-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.5rem;
+  font-family: var(--v-sans);
+}
+
+/* Detected face frame — square, shows the full crop */
+.visage-detect-frame {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--v-r-sm);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--v-border);
+}
+
+.visage-detect-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* VS divider */
+.visage-vs-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--v-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--v-text-3);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.visage-vs-divider::before,
+.visage-vs-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--v-border);
+}
+
+/* Performer comparison frame — portrait */
+.visage-match-frame {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--v-r-sm);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--v-border);
+}
+
+.visage-match-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* ========================
+   RIGHT PANEL + GRID
+   ======================== */
+
+.visage-right-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.visage-right-panel::-webkit-scrollbar { width: 5px; }
+.visage-right-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+}
+
+.visage-performer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 1rem;
+}
+
+/* ========================
+   PERFORMER CARD (portrait)
+   ======================== */
+
+.visage-performer-card {
+  position: relative;
+  border-radius: var(--v-r);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s var(--v-ease), box-shadow 0.25s var(--v-ease), border-color 0.2s ease;
+  border: 1.5px solid var(--v-border);
+  background: var(--v-surface-3);
+  display: flex;
+  flex-direction: column;
+}
+
+.visage-performer-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--v-border-hover);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--v-accent-glow);
+}
+
+.visage-performer-card:active {
+  transform: translateY(-2px);
+}
+
+.visage-performer-card:focus-visible {
+  outline: 2px solid var(--v-accent);
+  outline-offset: 2px;
+}
+
+.visage-keyboard-selected {
+  outline: 2px solid var(--v-accent) !important;
+  outline-offset: 3px !important;
+  border-color: var(--v-accent) !important;
+  box-shadow: 0 0 0 5px var(--v-accent-glow), 0 14px 32px rgba(0, 0, 0, 0.35) !important;
+}
+
+.visage-performer-card.visage-selected-preview {
+  border-color: var(--v-accent) !important;
+  box-shadow: 0 0 0 2px var(--v-accent), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.visage-performer-card.visage-performer-selected {
+  border-color: var(--v-excellent) !important;
+  box-shadow: 0 0 0 2px var(--v-excellent), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.visage-card-check-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--v-excellent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.visage-performer-card.visage-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.visage-performer-card.visage-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+  animation: visage-shimmer 1.5s infinite;
+}
+
+.visage-performer-card[data-performer-id].visage-assigned {
+  border: 2px solid var(--v-excellent);
+  animation: visage-assignedPulse 0.6s ease-out;
+}
+
+@keyframes visage-assignedPulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0  color-mix(in srgb, var(--v-excellent) 60%, transparent); }
+  50%  { transform: scale(1.02); box-shadow: 0 0 0 14px color-mix(in srgb, var(--v-excellent) 0%, transparent); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0  color-mix(in srgb, var(--v-excellent) 0%, transparent); }
+}
+
+@keyframes visage-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Portrait image area */
+.visage-card-portrait {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  display: block;
+  flex-shrink: 0;
+}
+
+.visage-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.4s var(--v-ease);
+  display: block;
+}
+
+.visage-performer-card:hover .visage-portrait-img {
+  transform: scale(1.05);
+}
+
+/* Gradient overlay on bottom of portrait */
+.visage-card-img-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--v-surface) 97%, transparent) 0%,
+    color-mix(in srgb, var(--v-surface) 72%, transparent) 38%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Confidence strip at bottom edge of portrait */
+.visage-confidence-strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2.5px;
+  transition: width 0.7s var(--v-ease);
+}
+
+.visage-confidence-strip.visage-confidence-excellent { background: var(--v-excellent); }
+.visage-confidence-strip.visage-confidence-good      { background: var(--v-good); }
+.visage-confidence-strip.visage-confidence-uncertain { background: var(--v-uncertain); }
+
+/* Country flag */
+.visage-country-flag {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1rem;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.55));
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Text overlay content */
+.visage-card-meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.7rem 0.65rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  pointer-events: none;
+}
+
+.visage-performer-name {
+  color: var(--v-text);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--v-sans);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.35;
+  pointer-events: auto;
+  transition: color 0.15s ease;
+}
+
+.visage-performer-name:hover {
+  color: var(--v-accent);
+}
+
+.visage-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.visage-confidence-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.visage-confidence-dot.visage-confidence-excellent { background: var(--v-excellent); }
+.visage-confidence-dot.visage-confidence-good      { background: var(--v-good); }
+.visage-confidence-dot.visage-confidence-uncertain { background: var(--v-uncertain); }
+
+.visage-confidence-pct {
+  font-family: var(--v-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--v-text);
+}
+
+.visage-confidence-lbl {
+  font-family: var(--v-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--v-text-2);
+}
+
+/* Add-button overlay — appears on hover */
+.visage-card-add-hover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.18);
+  z-index: 3;
+}
+
+.visage-performer-card:hover .visage-card-add-hover,
+.visage-keyboard-selected .visage-card-add-hover {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.visage-add-button {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  background: var(--v-accent);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  font-family: var(--v-sans);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 18px var(--v-accent-glow);
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.visage-add-button:hover {
+  background: var(--v-accent-hover);
+  transform: scale(1.06);
+}
+
+.visage-add-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ========================
+   MODAL FOOTER
+   ======================== */
+
+.visage-modal-footer {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--v-border);
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.visage-footer-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1.5rem;
+}
+
+.visage-progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.visage-matches-assigned {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--v-text-2);
+  font-family: var(--v-mono);
+  letter-spacing: 0.04em;
+}
+
+.visage-progress-bar {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 1px;
+  overflow: hidden;
+  max-width: 160px;
+}
+
+.visage-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--v-accent), #8fbfff);
+  border-radius: 1px;
+  transition: width 0.5s var(--v-ease);
+}
+
+.visage-keyboard-hints {
+  font-size: 0.6rem;
+  color: var(--v-text-3);
+  font-family: var(--v-mono);
+  letter-spacing: 0.03em;
+}
+
+.visage-keyboard-hints kbd {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.58rem;
+  font-family: inherit;
+}
+
+.visage-button-group {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.visage-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.875rem;
+  border: none;
+  border-radius: var(--v-r-sm);
+  font-weight: 600;
+  font-size: 0.78rem;
+  font-family: var(--v-sans);
+  cursor: pointer;
+  transition: all 0.2s var(--v-ease);
+  white-space: nowrap;
+}
+
+.visage-btn:hover { transform: translateY(-1px); }
+
+.visage-btn-primary {
+  background: var(--v-accent);
+  color: #fff;
+  box-shadow: 0 2px 10px var(--v-accent-glow);
+}
+
+.visage-btn-primary:hover {
+  background: var(--v-accent-hover);
+  box-shadow: 0 4px 16px var(--v-accent-glow);
+}
+
+.visage-btn-secondary {
+  background: color-mix(in srgb, var(--v-surface) 60%, white);
+  color: var(--v-text);
+  border: 1px solid var(--v-border);
+}
+
+.visage-btn-secondary:hover {
+  background: color-mix(in srgb, var(--v-surface) 50%, white);
+  border-color: var(--v-border-active);
+}
+
+.visage-btn-icon {
+  padding: 0.45rem;
+  background: color-mix(in srgb, var(--v-surface) 60%, white);
+  color: var(--v-text-2);
+  border: 1px solid var(--v-border);
+}
+
+.visage-btn-icon:hover {
+  background: color-mix(in srgb, var(--v-surface) 50%, white);
+  color: var(--v-text);
+  border-color: var(--v-border-hover);
+}
+
+.visage-btn-small {
+  padding: 0.28rem 0.6rem;
+  font-size: 0.72rem;
+  font-family: var(--v-sans);
+  font-weight: 600;
+  background: var(--v-accent);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.visage-btn-small:hover { background: var(--v-accent-hover); }
+
+/* ========================
+   SETTINGS PANEL
+   ======================== */
+
+.visage-settings-panel {
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 0, 0, 0.18);
+  border-top: 1px solid var(--v-border);
+}
+
+.visage-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-family: var(--v-sans);
+}
+
+.visage-settings-row label {
+  color: var(--v-text-2);
+  white-space: nowrap;
+}
+
+.visage-settings-input {
+  flex: 1;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.73rem;
+  font-family: var(--v-mono);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--v-border);
+  border-radius: 5px;
+  color: var(--v-text);
+}
+
+.visage-settings-input:focus {
+  outline: none;
+  border-color: var(--v-border-active);
+}
+
+/* ========================
+   FRAME SELECTOR
+   ======================== */
+
+.visage-frame-selector {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 420px;
+  height: 100vh;
+  background: var(--v-surface);
+  border-right: 1px solid var(--v-border);
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5);
+  transform: translateX(-100%);
+  transition: transform 0.3s var(--v-ease);
+  font-family: var(--v-sans);
+}
+
+.visage-frame-selector.visage-visible {
+  transform: translateX(0);
+}
+
+.visage-frame-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--v-border);
+  flex-shrink: 0;
+}
+
+.visage-frame-selector-close {
+  background: none;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r-sm);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--v-text-2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visage-frame-selector-close:hover {
+  color: var(--v-text);
+  border-color: var(--v-border-hover);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.visage-frame-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.visage-frame-grid::-webkit-scrollbar { width: 5px; }
+.visage-frame-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+}
+
+.visage-frame-item-wrapper {
+  padding: 3px;
+  border-radius: var(--v-r-sm);
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.visage-frame-item-wrapper.visage-frame-selected {
+  border-color: var(--v-accent);
+  box-shadow: 0 0 0 3px var(--v-accent-glow);
+}
+
+.visage-frame-item {
+  width: 150px;
+  height: 85px;
+  border-radius: 5px;
+  cursor: pointer;
+  background-size: auto;
+  background-repeat: no-repeat;
+  transition: transform 0.2s ease;
+}
+
+.visage-frame-item:hover { transform: translateY(-2px); }
+
+.visage-frame-item:focus-visible {
+  outline: 2px solid var(--v-accent);
+  outline-offset: 2px;
+}
+
+/* ========================
+   SPRITE RESULT MODAL
+   ======================== */
+
+.visage-sprite-modal {
+  width: 88vw;
+  max-width: 1100px;
+}
+
+.visage-sprite-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  min-height: 0;
+}
+
+.visage-sprite-body::-webkit-scrollbar { width: 5px; }
+.visage-sprite-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+}
+
+.visage-sprite-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--v-text-2);
+  font-family: var(--v-sans);
+  font-size: 0.85rem;
+}
+
+.visage-sprite-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+
+/* Card - clickable, with comparison + info column */
+.visage-sprite-card {
+  background: var(--v-surface-2);
+  border: 1.5px solid var(--v-border);
+  border-radius: var(--v-r);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.visage-sprite-card:hover {
+  border-color: var(--v-border-hover);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.visage-sprite-card:active {
+  transform: translateY(0);
+}
+
+.visage-sprite-card.visage-sprite-confirmed {
+  border-color: var(--v-excellent);
+  box-shadow: 0 0 0 2px var(--v-excellent), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.visage-sprite-card.visage-sprite-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Comparison row: sprite face | vs | stash portrait */
+.visage-sprite-compare {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  position: relative;
+  background: color-mix(in srgb, var(--v-surface) 60%, black);
+}
+
+.visage-sprite-face,
+.visage-sprite-performer-img {
+  flex: 1;
+  aspect-ratio: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--v-surface) 50%, black);
+}
+
+.visage-sprite-face-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.visage-sprite-performer-img-src {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  z-index: 1;
+}
+
+.visage-sprite-img-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--v-text-3);
+  background: rgba(255, 255, 255, 0.03);
+  z-index: 0;
+}
+
+.visage-sprite-img-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+  animation: visage-shimmer 1.5s infinite;
+}
+
+.visage-sprite-label {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--v-mono);
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.visage-sprite-vs {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--v-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.visage-sprite-vs span {
+  font-family: var(--v-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+
+/* Check badge on confirmed cards */
+.visage-sprite-check-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--v-excellent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Info section below comparison */
+.visage-sprite-info {
+  padding: 0.7rem 0.75rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.visage-sprite-performer-link {
+  color: var(--v-text);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: var(--v-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  transition: color 0.15s ease;
+}
+
+.visage-sprite-performer-link:hover {
+  color: var(--v-accent);
+}
+
+.visage-sprite-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--v-mono);
+  font-size: 0.65rem;
+}
+
+.visage-sprite-conf-badge {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+}
+
+.visage-sprite-conf-badge.visage-confidence-excellent {
+  background: color-mix(in srgb, var(--v-excellent) 15%, transparent);
+  color: var(--v-excellent);
+}
+
+.visage-sprite-conf-badge.visage-confidence-good {
+  background: color-mix(in srgb, var(--v-good) 15%, transparent);
+  color: var(--v-good);
+}
+
+.visage-sprite-conf-badge.visage-confidence-uncertain {
+  background: color-mix(in srgb, var(--v-uncertain) 15%, transparent);
+  color: var(--v-uncertain);
+}
+
+.visage-sprite-stat {
+  color: var(--v-text-2);
+}
+
+.visage-sprite-stat-sep {
+  color: var(--v-text-3);
+}
+
+/* Summary row: confidence ring + name/stats */
+.visage-sprite-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.visage-sprite-ring {
+  position: relative;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visage-sprite-ring-fill {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.visage-sprite-ring-fill.visage-confidence-excellent { stroke: var(--v-excellent); }
+.visage-sprite-ring-fill.visage-confidence-good      { stroke: var(--v-good); }
+.visage-sprite-ring-fill.visage-confidence-uncertain { stroke: var(--v-uncertain); }
+
+.visage-sprite-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--v-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--v-text);
+}
+
+.visage-sprite-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.visage-sprite-summary-text .visage-sprite-performer-link {
+  font-size: 0.95rem;
+}
+
+/* Timeline bar with hover preview */
+.visage-sprite-timeline-wrap {
+  margin-top: 0.15rem;
+}
+
+.visage-sprite-timeline {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.visage-sprite-timeline-seg {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  opacity: 0.8;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.visage-sprite-timeline-seg:hover {
+  opacity: 1;
+  transform: scaleY(1.6);
+}
+
+.visage-sprite-timeline-seg.visage-confidence-excellent { background: var(--v-excellent); }
+.visage-sprite-timeline-seg.visage-confidence-good      { background: var(--v-good); }
+.visage-sprite-timeline-seg.visage-confidence-uncertain { background: var(--v-uncertain); }
+
+.visage-sprite-timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.3rem;
+  font-family: var(--v-mono);
+  font-size: 0.55rem;
+  color: var(--v-text-3);
+  letter-spacing: 0.02em;
+}
+
+
+/* Click hint */
+.visage-sprite-hint {
+  margin-top: 0.15rem;
+  font-family: var(--v-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.visage-sprite-hint span {
+  color: var(--v-text-3);
+}
+
+.visage-sprite-hint-done span {
+  color: var(--v-excellent);
+  font-weight: 600;
+}
+
+/* ========================
+   SPRITE TOOLBAR (sort + threshold)
+   ======================== */
+
+.visage-sprite-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1.5rem 0;
+  flex-shrink: 0;
+}
+
+.visage-sprite-sort {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.visage-sprite-sort-btn {
+  padding: 0.15rem 0.5rem;
+  font-family: var(--v-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--v-text-2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--v-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.visage-sprite-sort-btn:hover {
+  color: var(--v-text);
+  border-color: var(--v-border-hover);
+}
+
+.visage-sprite-sort-btn.visage-active {
+  color: var(--v-text);
+  border-color: var(--v-accent);
+  background: var(--v-accent-glow);
+}
+
+.visage-sprite-threshold {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.visage-sprite-threshold input[type="range"] {
+  width: 60px;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.visage-sprite-threshold input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--v-accent);
+  border: none;
+  cursor: pointer;
+}
+
+.visage-threshold-text {
+  font-size: 0.6rem;
+  color: var(--v-text-2);
+  white-space: nowrap;
+}
+
+.visage-sprite-threshold-label {
+  font-family: var(--v-mono);
+  font-size: 0.58rem;
+  color: var(--v-text-2);
+  min-width: 2.2em;
+  text-align: right;
+}
+
+/* Keyboard focus ring */
+.visage-sprite-card.visage-sprite-focused {
+  outline: 2px solid var(--v-accent) !important;
+  outline-offset: 3px !important;
+  border-color: var(--v-accent) !important;
+  box-shadow: 0 0 0 5px var(--v-accent-glow), 0 14px 32px rgba(0, 0, 0, 0.35) !important;
+}
+
+.visage-sprite-card.visage-sprite-focused.visage-sprite-confirmed {
+  outline-color: var(--v-excellent) !important;
+  border-color: var(--v-excellent) !important;
+}
+
+/* Already in scene badge */
+/* ========================
+   DONATION BAR
+   ======================== */
+
+.visage-donate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 24px;
+}
+
+.visage-donate-head {
+  font-size: 10px;
+  color: var(--v-text-3);
+  letter-spacing: 0.03em;
+}
+
+.visage-donate-addr {
+  font-family: var(--v-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: #f0b830;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.visage-donate-addr:hover {
+  color: #f5cc5a;
+}
+
+.visage-donate-desc {
+  font-size: 9px;
+  color: var(--v-text-3);
+}
+
+.visage-donate-link {
+  font-size: 9px;
+  color: var(--v-text-3);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.visage-donate-link:hover {
+  color: rgba(255,255,255,0.6);
+  text-decoration: underline;
+}
+
+.visage-ext-patreon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #ff5c62, #f1465a);
+  box-shadow: 0 2px 10px rgba(241,70,90,0.35);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.visage-ext-patreon-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  animation: visage-shine 3.2s ease-in-out infinite;
+}
+@keyframes visage-shine {
+  0%, 55% { left: -80%; }
+  85%, 100% { left: 130%; }
+}
+.visage-ext-patreon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(241,70,90,0.5);
+}
+
+.visage-sprite-in-scene {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 1px 6px;
+  font-family: var(--v-mono);
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visage-ext-patreon-btn::after {
+    animation: none;
+  }
+  .visage-modal,
+  .visage-frame-selector,
+  .visage-modal-backdrop,
+  .visage-portrait-img,
+  .visage-performer-card,
+  .visage-btn,
+  .visage-toolbar-button,
+  .visage-loading-label {
+    transition-duration: 0.01ms;
+  }
+}
