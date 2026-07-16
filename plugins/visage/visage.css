@@ -690,7 +690,7 @@
   border-radius: var(--v-r);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.25s var(--v-ease), box-shadow 0.25s var(--v-ease), border-color 0.2s ease;
+  transition: box-shadow 0.25s var(--v-ease), border-color 0.2s ease;
   border: 1.5px solid var(--v-border);
   background: var(--v-surface-3);
   display: flex;
@@ -698,13 +698,8 @@
 }
 
 .visage-performer-card:hover {
-  transform: translateY(-4px);
   border-color: var(--v-border-hover);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--v-accent-glow);
-}
-
-.visage-performer-card:active {
-  transform: translateY(-2px);
 }
 
 .visage-performer-card:focus-visible {
@@ -789,13 +784,10 @@
   height: 100%;
   object-fit: cover;
   object-position: top center;
-  transition: transform 0.4s var(--v-ease);
   display: block;
 }
 
-.visage-performer-card:hover .visage-portrait-img {
-  transform: scale(1.05);
-}
+
 
 /* Gradient overlay on bottom of portrait */
 .visage-card-img-overlay {
@@ -1791,6 +1783,223 @@
   border-radius: 3px;
   z-index: 3;
   pointer-events: none;
+}
+
+/* ========================
+   MOBILE (≤768px)
+   Everything below is wrapped in a media query so desktop is untouched.
+   ======================== */
+
+@media (max-width: 768px) {
+
+  .visage-modal {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .visage-modal-header {
+    padding: 0.6rem 1rem;
+  }
+
+  .visage-modal-title h2 {
+    font-size: 0.55rem;
+  }
+
+  .visage-match-count {
+    font-size: 0.55rem;
+  }
+
+  .visage-face-tabs {
+    padding: 0.5rem 0.75rem;
+    gap: 0.4rem;
+  }
+
+  .visage-face-tab-image {
+    width: 44px;
+    height: 56px;
+  }
+
+  .visage-modal-body {
+    flex-direction: column;
+  }
+
+  .visage-left-panel {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--v-border);
+    gap: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .visage-left-panel > div {
+    flex-shrink: 0;
+  }
+
+  .visage-section-label,
+  .visage-section-label-name {
+    font-size: 0.5rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+  }
+
+  .visage-detect-frame,
+  .visage-match-frame {
+    width: 64px;
+    aspect-ratio: 1;
+  }
+
+  .visage-match-frame {
+    aspect-ratio: 2 / 3;
+  }
+
+  .visage-vs-divider {
+    font-size: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .visage-vs-divider::before,
+  .visage-vs-divider::after {
+    display: none;
+  }
+
+  .visage-right-panel {
+    padding: 0.75rem;
+  }
+
+  .visage-performer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .visage-performer-card {
+    border-radius: 8px;
+  }
+
+  .visage-card-portrait {
+    aspect-ratio: 3 / 4;
+  }
+
+  .visage-card-meta {
+    padding: 0.4rem 0.4rem 0.35rem;
+    gap: 0.15rem;
+  }
+
+  .visage-performer-name {
+    font-size: 0.68rem;
+    -webkit-line-clamp: 1;
+  }
+
+  .visage-card-stats {
+    gap: 0.15rem;
+  }
+
+  .visage-confidence-pct {
+    font-size: 0.6rem;
+  }
+
+  .visage-card-check-badge {
+    width: 22px;
+    height: 22px;
+    top: 4px;
+    right: 4px;
+  }
+
+  .visage-sprite-toolbar {
+    flex-wrap: wrap;
+    padding: 0.4rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .visage-threshold-text {
+    font-size: 0.55rem;
+  }
+
+  .visage-sprite-threshold input[type="range"] {
+    width: 48px;
+  }
+
+  .visage-modal-footer .visage-footer-main {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .visage-progress-info {
+    align-items: center;
+    text-align: center;
+  }
+
+  .visage-keyboard-hints {
+    display: none;
+  }
+
+  .visage-button-group {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .visage-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.72rem;
+  }
+
+  .visage-ext-patreon-btn {
+    font-size: 10px;
+    padding: 6px 12px;
+  }
+
+  .visage-sprite-modal {
+    width: 100vw;
+  }
+
+  .visage-sprite-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .visage-sprite-compare {
+    flex-direction: row;
+  }
+
+  .visage-sprite-vs {
+    width: 26px;
+    height: 26px;
+  }
+
+  .visage-sprite-vs span {
+    font-size: 0.45rem;
+  }
+
+  .visage-sprite-info {
+    padding: 0.5rem 0.6rem 0.4rem;
+  }
+
+  .visage-sprite-performer-link {
+    font-size: 0.78rem;
+  }
+
+  .visage-sprite-summary-text .visage-sprite-performer-link {
+    font-size: 0.82rem;
+  }
+
+  .visage-sprite-card {
+    border-radius: 10px;
+  }
+
+  .visage-sprite-stats-row {
+    font-size: 0.55rem;
+  }
+
+  .visage-sprite-conf-badge {
+    font-size: 0.55rem;
+  }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
