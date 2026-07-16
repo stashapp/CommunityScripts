@@ -1,0 +1,5 @@
+# Generated contact sheets (disposable cache, regenerated on demand)
+generated/
+# Python bytecode
+__pycache__/
+*.pyc
