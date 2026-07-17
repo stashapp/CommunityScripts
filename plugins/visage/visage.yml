@@ -1,7 +1,7 @@
 name: Visage
 description: Use facial recognition to lookup performers from scene sprites
 version: 2.2.0
-url: https://github.com/cc1234475/visage
+url: https://discourse.stashapp.cc/t/visage/11785
 ui:
   javascript:
   - visage.js
