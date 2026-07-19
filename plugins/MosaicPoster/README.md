@@ -16,57 +16,49 @@ button changes the global size.
 ## Why
 
 The default poster is a single cover image. For a lot of libraries you want to
-see *what is actually in the file* before playing it. Mosaic Poster gives you a
-25-frame overview generated from the real video, on demand, without changing any
-core Stash behaviour.
+see *what is actually in the file* before playing it. Mosaic Poster gives you an
+N×N overview, built instantly from Stash's existing scene sprite (no extra
+generation), without changing any core Stash behaviour.
 
 ## How it works
 
-The plugin is self-contained — a single Stash plugin that is both a UI plugin
-and a Python-backed plugin. **No standalone daemon, no fixed port, no
-OS-specific service.**
+By default the sheet is built **entirely in the browser from Stash's existing
+scene sprite** — the sprite image + WebVTT that Stash already generates for the
+seekbar hover preview. The plugin reads the VTT for each thumbnail's timestamp
+and region and splices the frames into an N×N grid on a canvas. **No generation,
+no ffmpeg, no extra storage** — and it appears instantly. Tap-to-seek uses each
+thumbnail's real timestamp from the VTT.
 
-| Part | File | Role |
-|---|---|---|
-| Frontend | `MosaicPoster.{js,css}` | Overlays the sheet on the detail poster and provides the toggle. Pre-warms sheets for cards near the viewport. |
-| Backend | `MosaicPoster.py` | Invoked via `runPluginOperation`. Generates the 5×5 sheet from the real video with ffmpeg. |
+If a scene has no sprite (Generate → Sprites hasn't been run) the mosaic isn't
+shown for it (the cover art stays), unless the optional hi-res upgrade is on.
 
-Flow:
+### High-res upgrade (optional, off by default)
 
-1. The frontend asks the backend to generate a sheet for a scene at the current
-   grid size (`runPluginOperation`, `mode: generate`, `n: <grid>`).
+Sprite thumbnails are low-res, so on a large / hi-DPI display the sheet can look
+soft. Enable **High-res upgrade** to render a higher-resolution sheet from the
+real video with ffmpeg and swap it in once ready:
+
+1. The frontend shows the sprite sheet instantly, then calls the backend
+   (`runPluginOperation`, `mode: generate`, `n: <grid>`).
 2. The backend reads ffmpeg/ffprobe and the generated-files path **from Stash's
-   own configuration** (so it works on any OS), samples N×N frames with input
-   seeking, tiles them into a 16:9 JPEG (5×5 = 1920×1080), and writes it to
-   `generated/<oshash>_<N>x<N>.jpg` inside the plugin directory.
-3. Stash serves that folder statically (via `ui.assets`) at
-   `/plugin/MosaicPoster/assets/generated/<oshash>_<N>x<N>.jpg`, so the frontend
-   just loads it as a normal, HTTP-cacheable image.
+   own configuration** (any OS), samples N×N frames, tiles them into a JPEG, and
+   writes it to `generated/<oshash>_<N>x<N>.jpg` in the plugin directory.
+3. Stash serves that folder statically (via `ui.assets`); the frontend swaps the
+   hi-res sheet in over the sprite. Each grid size is cached independently, and a
+   sheet is generated only for scenes you actually open.
 
-Each grid size is cached independently, so switching sizes is instant once a
-size has been generated once. 16:9 cells in a square N×N grid keep the whole
-sheet 16:9, matching the poster area.
-
-While a sheet is being generated for the first time (2–3s), a coarse
-placeholder built from Stash's existing sprite is shown, then swapped for the
-hi-res sheet. If a sheet already exists, the sprite step is skipped entirely so
-there is no flicker.
-
-### Viewport-following pre-generation (warm)
-
-When browsing a scene list, the plugin pre-generates sheets for cards that are
-visible or about to become visible (about 1.5 screens ahead), using an
-`IntersectionObserver`. This means opening a scene's detail page shows the sheet
-instantly. Whether the list shows 40 or 1000 items, it only ever generates what
-you actually scroll past — never the whole list blindly. Warm requests are
-batched and run one at a time (one ffmpeg) to keep the machine responsive.
+This is the only mode that runs ffmpeg or writes to disk, and it is **off by
+default** — out of the box the plugin adds no generation overhead. No standalone
+daemon, no fixed port, no OS-specific service.
 
 ## Requirements
 
-- Stash **v0.31.0+** (uses `runPluginOperation` and plugin `assets` serving).
-- `python` 3 on `PATH` (standard library only — no pip packages).
-- ffmpeg/ffprobe. Stash's bundled binaries are used automatically; if you have
-  configured custom ffmpeg/ffprobe paths in Stash, those are used instead.
+- Stash **v0.31.0+**.
+- Scene **sprites** generated (Generate → Sprites) for the scenes you want a
+  mosaic on — this is what the default (sprite) mode builds from.
+- Only if you enable the optional **High-res upgrade**: `python` 3 on `PATH`
+  (standard library only) and ffmpeg/ffprobe (Stash's bundled binaries are used
+  automatically, or your configured paths).
 
 ## Install
 
@@ -87,10 +79,13 @@ batched and run one at a time (one ffmpeg) to keep the machine responsive.
   default 5. This is the same value as the grid button on the poster; changing
   either one keeps both in sync (reload the scene tab to pick up a change made
   from the Settings page).
-- **Cache limit (files)** — maximum number of generated sheets to keep. Excess
-  is removed least-recently-viewed first (LRU). ~0.3MB each; default 250 (~75MB).
-  0 = unlimited. Generated sheets are disposable: if one is pruned it is simply
-  regenerated (a few seconds) the next time that scene is opened.
+- **High-res upgrade** — off by default. When on, the instant sprite sheet is
+  upgraded to a higher-resolution sheet generated from the video with ffmpeg
+  (see above). This is the only setting that runs ffmpeg / writes to disk.
+- **Cache limit (files)** — only applies to the High-res upgrade. Maximum number
+  of generated sheets to keep; excess is removed least-recently-viewed first
+  (LRU). ~0.3MB each; default 250 (~75MB). 0 = unlimited. Generated sheets are
+  disposable — a pruned one is simply regenerated next time that scene is opened.
 
 ## Tasks
 

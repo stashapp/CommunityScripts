@@ -28,6 +28,10 @@ settings:
     displayName: Tap a cell to seek
     description: When enabled (default), clicking a mosaic cell jumps playback to that point in the video. Disable to make clicking the mosaic play from the start instead.
     type: BOOLEAN
+  hiResUpgrade:
+    displayName: High-res upgrade
+    description: When enabled, after showing the instant sprite-based sheet, a higher-resolution sheet is generated from the video with ffmpeg and swapped in. Off by default (sprite only, no generation).
+    type: BOOLEAN
   gridSize:
     displayName: Mosaic grid size (3-8)
     description: Frames per side, N for an N x N sheet (3-8, default 5). Also changeable from the button on the poster; both stay in sync.

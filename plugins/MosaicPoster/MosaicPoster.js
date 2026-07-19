@@ -25,6 +25,7 @@
 
   var DEFAULT_ON = true;
   var DEFAULT_SEEK = true;             // tapping a mosaic cell seeks the video there
+  var DEFAULT_HIRES = false;           // upgrade the sprite sheet to a generated hi-res one
   var SIZES = [3, 4, 5, 6, 7, 8];      // selectable N x N grids (16:9 cells -> 16:9 sheet)
   var DEFAULT_SIZE = 5;
   var PLUGIN_ID = "MosaicPoster";
@@ -36,6 +37,7 @@
   var currentOn = DEFAULT_ON;
   var currentGrid = DEFAULT_SIZE;
   var currentSeek = DEFAULT_SEEK;
+  var currentHiRes = DEFAULT_HIRES;
   var settingsLoaded = false; // don't kick generation until the real grid size is known
 
   // ---- i18n: only the JS strings can be localised (yml setting labels can't).
@@ -122,7 +124,8 @@
       .catch(function () { return null; });
   }
 
-  var infoCache   = new Map(); // sceneId  -> Promise<{oshash}|null>
+  var infoCache   = new Map(); // sceneId          -> Promise<{oshash,duration,sprite}|null>
+  var spriteCache = new Map(); // spriteUrl+"|"+n  -> Promise<{url,times,aspect}|null>
   var probeCache  = new Map(); // sheetKey -> Promise<url|null> (existence check, no generation)
   var hiresReady  = new Set(); // sheetKey -> confirmed generated (no need to re-probe)
   var genInFlight = new Map(); // sheetKey -> Promise<url|null> (generation in progress; dedupes)
@@ -211,10 +214,13 @@
       if (n !== null) currentGrid = n;
       var sk = asBool(cfg.tapToSeek);
       if (sk !== null) currentSeek = sk;
+      var hr = asBool(cfg.hiResUpgrade);
+      if (hr !== null) currentHiRes = hr;
       var patch = {};
       if (on === null) patch.defaultOn = currentOn;
       if (n === null) patch.gridSize = currentGrid;
       if (sk === null) patch.tapToSeek = currentSeek;
+      if (hr === null) patch.hiResUpgrade = currentHiRes;
       if (Object.keys(patch).length) configure(patch); // initialise unset setting(s)
       settingsLoaded = true;
     });
@@ -243,7 +249,7 @@
     return m ? m[1] : null;
   }
 
-  /* ---------- scene info (oshash + duration) ---------- */
+  /* ---------- scene info (oshash + duration + sprite) ---------- */
   function fetchInfo(id) {
     if (infoCache.has(id)) return infoCache.get(id);
     var p = fetch("/graphql", {
@@ -251,7 +257,7 @@
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({
-        query: "query($id:ID!){findScene(id:$id){files{duration fingerprints{type value}}}}",
+        query: "query($id:ID!){findScene(id:$id){paths{sprite} files{duration fingerprints{type value}}}}",
         variables: { id: id },
       }),
     })
@@ -264,7 +270,8 @@
           for (var i = 0; i < fps.length; i++) {
             if (fps[i].type === "oshash") { oshash = fps[i].value; break; }
           }
-          return { oshash: oshash, duration: f0.duration || 0 };
+          return { oshash: oshash, duration: f0.duration || 0,
+                   sprite: (sc.paths && sc.paths.sprite) || null };
         } catch (e) { return null; }
       })
       .catch(function () { infoCache.delete(id); return null; });
@@ -280,6 +287,68 @@
       img.onerror = reject;
       img.src = src;
     });
+  }
+
+  /* ---------- sheet from Stash's existing scene sprite (no generation) ----------
+   * Stash already generates a sprite + WebVTT for each scanned scene (used for
+   * the seekbar hover preview). We reuse them: parse the VTT for each thumb's
+   * timestamp and region, then splice the frames into an N x N sheet on a
+   * canvas — entirely client-side, no ffmpeg, no extra storage. Falls back to
+   * on-demand generation only when a scene has no sprite. */
+  function vttSeconds(s) {
+    var parts = String(s).trim().split(":"), sec = 0;
+    for (var i = 0; i < parts.length; i++) sec = sec * 60 + parseFloat(parts[i] || 0);
+    return isNaN(sec) ? 0 : sec;
+  }
+  function fetchSpriteCues(vttUrl) {
+    return fetch(vttUrl, { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (txt) {
+        var cues = [], lines = txt.split(/\r?\n/);
+        for (var i = 0; i < lines.length; i++) {
+          var arrow = lines[i].indexOf("-->");
+          if (arrow < 0) continue;
+          var start = vttSeconds(lines[i].slice(0, arrow));
+          for (var j = i + 1; j < lines.length && lines[j].indexOf("-->") < 0; j++) {
+            var m = lines[j].match(/#xywh=(\d+),(\d+),(\d+),(\d+)/);
+            if (m) { cues.push({ t: start, x: +m[1], y: +m[2], w: +m[3], h: +m[4] }); break; }
+          }
+        }
+        return cues;
+      });
+  }
+  function pickIndices(n, k) {
+    if (n <= k) { var all = []; for (var i = 0; i < n; i++) all.push(i); return all; }
+    var out = []; for (var j = 0; j < k; j++) out.push(Math.round((j * (n - 1)) / (k - 1)));
+    return out;
+  }
+  // Build the N x N sheet from the sprite/VTT. Resolves {url, times, aspect} or
+  // null (no sprite / empty VTT). times[i] = real timestamp of cell i (for seek).
+  function buildSpriteSheet(spriteUrl, n) {
+    if (!spriteUrl) return Promise.resolve(null);
+    var key = spriteUrl + "|" + n;
+    if (spriteCache.has(key)) return spriteCache.get(key);
+    var cells = n * n;
+    var vttUrl = spriteUrl.replace(/_sprite\.jpg(\?.*)?$/, "_thumbs.vtt");
+    var p = Promise.all([fetchSpriteCues(vttUrl), loadImage(spriteUrl)]).then(function (res) {
+      var cues = res[0], sprite = res[1];
+      if (!cues.length) return null;
+      var idx = pickIndices(cues.length, cells);
+      var cw = cues[0].w, ch = cues[0].h;
+      var canvas = document.createElement("canvas");
+      canvas.width = n * cw; canvas.height = n * ch;
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      var times = [];
+      for (var i = 0; i < idx.length; i++) {
+        var c = cues[idx[i]];
+        ctx.drawImage(sprite, c.x, c.y, c.w, c.h, (i % n) * cw, Math.floor(i / n) * ch, cw, ch);
+        times.push(c.t);
+      }
+      return { url: canvas.toDataURL("image/jpeg", 0.85), times: times, aspect: cw / ch };
+    }).catch(function () { spriteCache.delete(key); return null; });
+    spriteCache.set(key, p);
+    return p;
   }
 
   /* ---------- hi-res sheet (Stash-served + generation backend) ----------
@@ -356,11 +425,22 @@
     if (!n) return null;
     var rect = ov.getBoundingClientRect();
     if (!rect.width || !rect.height) return null;
-    var aspect = 16 / 9, iw, ih;
+    var aspect = parseFloat(ov.getAttribute("data-mp-aspect")) || (16 / 9);
+    var iw, ih;
     if (rect.width / rect.height > aspect) { ih = rect.height; iw = ih * aspect; }
     else { iw = rect.width; ih = iw / aspect; }
     return { n: n, rect: rect, iw: iw, ih: ih,
              ox: (rect.width - iw) / 2, oy: (rect.height - ih) / 2, cw: iw / n, ch: ih / n };
+  }
+  // Timestamp for cell idx: prefer the exact VTT times (sprite sheets); fall
+  // back to even spacing from the duration (generated sheets).
+  function cellTime(ov, idx, n) {
+    var ta = ov.getAttribute("data-mp-times");
+    if (ta) {
+      try { var arr = JSON.parse(ta); if (arr && arr[idx] != null) return arr[idx]; } catch (e) {}
+    }
+    var dur = parseFloat(ov.getAttribute("data-mp-dur")) || 0;
+    return dur > 0 ? dur * (idx + 0.5) / (n * n) : 0;
   }
   // Which cell (col,row) is at the given client point? null if in the letterbox.
   function cellAt(g, clientX, clientY) {
@@ -370,17 +450,15 @@
              row: Math.max(0, Math.min(g.n - 1, Math.floor(y / g.ch))) };
   }
 
-  // Tap a cell -> seek to that cell's timestamp (matches the backend sampling).
+  // Tap a cell -> seek to that cell's timestamp.
   function onOverlayClick(e) {
     if (!currentSeek) return;
     var ov = e.currentTarget;
     if (ov.style.display === "none") return;
     var g = cellGeom(ov); if (!g) return;
     var c = cellAt(g, e.clientX, e.clientY); if (!c) return;
-    var dur = parseFloat(ov.getAttribute("data-mp-dur")) || 0;
-    var idx = c.row * g.n + c.col;
     e.preventDefault(); e.stopPropagation();
-    seekTo(dur > 0 ? dur * (idx + 0.5) / (g.n * g.n) : 0);
+    seekTo(cellTime(ov, c.row * g.n + c.col, g.n));
   }
 
   // Highlight the cell under the cursor (desktop hover) so it's clear what a
@@ -480,16 +558,23 @@
     return currentSceneId() === id && isEnabled() && currentSize() === n;
   }
 
-  // Apply the mosaic background to the overlay (write nothing if identical, to
-  // avoid a MutationObserver loop).
-  function applyBg(ov, id, url) {
+  // Apply the mosaic background to the overlay. rank: sprite(1) < hi-res(2);
+  // a lower rank never overwrites a higher one already shown for this view.
+  // Writes nothing if identical (avoids a MutationObserver loop).
+  function applyBg(ov, id, url, rank) {
     var curId = ov.getAttribute("data-mp-id");
+    var curRank = +ov.getAttribute("data-mp-rank") || 0;
     var curUrl = ov.getAttribute("data-mp-url");
-    if (curId === id && curUrl === url) return; // identical -> no-op
+    if (curId === id && curUrl === url && curRank === rank) return; // identical -> no-op
+    if (curId === id && curRank > rank) return;                     // higher rank present -> keep
     ov.setAttribute("data-mp-id", id);
+    ov.setAttribute("data-mp-rank", String(rank));
     ov.setAttribute("data-mp-url", url);
     setStyle(ov, "backgroundImage", 'url("' + url + '")');
     setStyle(ov, "display", "block");
+  }
+  function overlayRank(ov, view) {
+    return ov.getAttribute("data-mp-id") === view ? (+ov.getAttribute("data-mp-rank") || 0) : 0;
   }
 
   /* ---------- render (idempotent) ---------- */
@@ -532,40 +617,61 @@
     if (ov.getAttribute("data-mp-id") !== view) {
       ov.setAttribute("data-mp-id", view);
       ov.setAttribute("data-mp-n", n);
+      ov.setAttribute("data-mp-rank", "0");
       ov.removeAttribute("data-mp-url");
+      ov.removeAttribute("data-mp-times");
       setStyle(ov, "display", "none");
+    }
+
+    // Two stages: (1) show the sprite sheet instantly, then (2) swap in the
+    // hi-res ffmpeg sheet once it's ready. Hi-res (rank 2) never gets clobbered
+    // by the sprite (rank 1) on re-renders.
+    function applyHiRes(url) {
+      if (!stillCurrent(id, n) || !url) return;
+      var p = document.querySelector(".vjs-poster"); if (!p) return;
+      var o = ensureOverlay(p);
+      o.removeAttribute("data-mp-times");            // generated sheet = even spacing
+      o.setAttribute("data-mp-aspect", String(16 / 9));
+      setLoading(p, false);
+      applyBg(o, view, url, 2);
     }
 
     fetchInfo(id).then(function (info) {
       if (!stillCurrent(id, n)) return;
       var oshash = (info || {}).oshash;
       var dur = (info || {}).duration || 0;
+      var sprite = (info || {}).sprite;
+      var q = document.querySelector(".vjs-poster"); if (!q) return;
+      var ovq = ensureOverlay(q);
+      ovq.setAttribute("data-mp-n", n);
+      ovq.setAttribute("data-mp-dur", dur);
 
-      // Already generated? show it right away. Otherwise keep the cover art
-      // visible and show the loading spinner while the sheet is generated.
-      probeHires(oshash, n).then(function (hurl) {
+      // Stage 1: sprite sheet (instant). Uses the real VTT timestamps for seek.
+      buildSpriteSheet(sprite, n).then(function (sres) {
         if (!stillCurrent(id, n)) return;
-        var q = document.querySelector(".vjs-poster"); if (!q) return;
-        var ovq = ensureOverlay(q);
-        ovq.setAttribute("data-mp-n", n);
-        ovq.setAttribute("data-mp-dur", dur);  // for cell -> timestamp seeking
-
-        if (hurl) {                          // ready -> show the mosaic
-          setLoading(q, false);
-          applyBg(ovq, view, hurl);
-          return;
+        var p1 = document.querySelector(".vjs-poster"); if (!p1) return;
+        var ov1 = ensureOverlay(p1);
+        if (sres && overlayRank(ov1, view) < 2) {    // don't clobber hi-res
+          ov1.setAttribute("data-mp-times", JSON.stringify(sres.times));
+          ov1.setAttribute("data-mp-aspect", sres.aspect);
+          setLoading(p1, false);
+          applyBg(ov1, view, sres.url, 1);
+        } else if (!sres && overlayRank(ov1, view) < 2) {
+          // no sprite: keep the cover art; show the spinner only if a hi-res
+          // sheet is going to be generated.
+          setStyle(ov1, "display", "none");
+          setLoading(p1, currentHiRes);
         }
-
-        // Not generated yet: cover art stays, spinner on, generate in background.
-        setStyle(ensureOverlay(q), "display", "none");
-        setLoading(q, true);
-        generateHires(id, oshash, n).then(function (gurl) {
-          if (!stillCurrent(id, n)) return;
-          var r = document.querySelector(".vjs-poster"); if (!r) return;
-          setLoading(r, false);
-          if (gurl) applyBg(ensureOverlay(r), view, gurl);
-        });
       });
+
+      // Stage 2 (optional, off by default): upgrade to the hi-res ffmpeg sheet —
+      // reuse if already generated, else generate, then swap it in.
+      if (currentHiRes) {
+        probeHires(oshash, n).then(function (hurl) {
+          if (hurl) { applyHiRes(hurl); return; }
+          generateHires(id, oshash, n).then(applyHiRes);
+        });
+      }
     });
   }
 
@@ -580,6 +686,11 @@
    *    and flushed to the backend in small batches, one operation in flight at
    *    a time, so at most one ffmpeg runs for warm. Once queued, unobserve.
    */
+  // Speculative pre-generation is disabled: sprite-based sheets are built
+  // instantly on the detail page, so there is nothing worth pre-generating (and
+  // it would add exactly the ffmpeg overhead we now avoid). Kept behind a flag
+  // in case the generation fallback ever wants opt-in warming again.
+  var WARM_ENABLED = false;
   var WARM_BATCH = 8;                // scene ids per backend call
   var warmSeen = new Set();          // scene ids already queued this session
   var warmPending = [];              // ids waiting to be flushed
@@ -607,6 +718,7 @@
   // (safe to unobserve), false if warming is currently disabled (keep watching
   // so it can be picked up after the user toggles mosaic back on).
   function tryWarm(a) {
+    if (!WARM_ENABLED) return true;  // warming disabled -> stop observing this card
     if (!currentOn) return false; // gate on global default (per-scene overrides don't drive warm)
     var id = linkSceneId(a);
     if (!id) return true;
@@ -654,7 +766,7 @@
   // background tabs), so a scene opened in an inactive tab starts generating
   // right away instead of waiting for the tab to become active.
   function maybeGenerate() {
-    if (!settingsLoaded) return;              // wait until the real grid size is known
+    if (!settingsLoaded || !currentHiRes) return; // only pre-generate when hi-res is on
     var id = currentSceneId();
     if (!id || !isEnabled()) return;
     var n = currentSize();
@@ -662,7 +774,7 @@
       var oshash = (info || {}).oshash;
       if (!oshash) return;
       probeHires(oshash, n).then(function (url) {
-        if (!url) generateHires(id, oshash, n); // start generation now (deduped)
+        if (!url) generateHires(id, oshash, n); // start hi-res generation now (deduped)
       });
     });
   }
