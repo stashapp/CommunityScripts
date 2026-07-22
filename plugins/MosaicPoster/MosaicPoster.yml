@@ -1,5 +1,5 @@
 name: Mosaic Poster
-description: Replaces the pre-playback poster on the scene detail page with a 5x5 contact sheet (a whole-video overview) sampled evenly across the video. A button at the top-right of the poster toggles cover art <-> mosaic in one click (the choice is remembered). List and card cover art is untouched.
+description: Replaces the scene detail poster with a contact-sheet mosaic of the whole video, built from the scene's sprite.
 version: 1.0.0
 url: https://github.com/stashapp/CommunityScripts
 # UI: the frontend plugin. It serves the generated/ folder statically and
