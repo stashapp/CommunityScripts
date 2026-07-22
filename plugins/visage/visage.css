@@ -498,6 +498,44 @@
 }
 
 /* ========================
+   STASHBOX WARNING BANNER
+   ======================== */
+
+.visage-stashbox-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.5rem;
+  background: rgba(240, 160, 48, 0.08);
+  border-bottom: 1px solid rgba(240, 160, 48, 0.18);
+  flex-shrink: 0;
+}
+
+.visage-stashbox-banner svg {
+  flex-shrink: 0;
+  color: #f0a030;
+}
+
+.visage-stashbox-banner-text {
+  font-size: 0.75rem;
+  color: var(--v-text-2);
+  line-height: 1.4;
+}
+
+.visage-stashbox-banner-text strong {
+  color: #f0a030;
+}
+
+.visage-stashbox-banner-text a {
+  color: #f0a030;
+  text-decoration: underline;
+}
+
+.visage-stashbox-banner-text a:hover {
+  color: #f0b040;
+}
+
+/* ========================
    FACE STRIP
    ======================== */
 
@@ -827,6 +865,40 @@
   filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.55));
   z-index: 2;
   pointer-events: none;
+}
+
+/* Source badge roundel */
+.visage-source-badge {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+  z-index: 2;
+  pointer-events: auto;
+  cursor: help;
+  line-height: 1;
+}
+
+.visage-source-stashdb {
+  background: #4a6fa5;
+}
+
+.visage-source-javstash {
+  background: #c0392b;
+}
+
+.visage-source-fansdb {
+  background: #27ae60;
 }
 
 /* Text overlay content */
@@ -1789,6 +1861,124 @@
    MOBILE (≤768px)
    Everything below is wrapped in a media query so desktop is untouched.
    ======================== */
+
+/* === ERROR DIALOG === */
+.visage-error-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+  pointer-events: none;
+}
+
+.visage-error-dialog {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px 14px 16px;
+  border-radius: var(--v-r);
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  max-width: 520px;
+  min-width: 280px;
+  position: relative;
+  overflow: hidden;
+  animation: visage-error-in 0.25s var(--v-ease);
+  outline: none;
+}
+
+.visage-error-dialog:focus {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--v-accent);
+}
+
+@keyframes visage-error-in {
+  from { opacity: 0; transform: translateY(-16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.visage-error-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.visage-error-error .visage-error-icon {
+  color: #e04868;
+  background: rgba(224, 72, 104, 0.12);
+}
+
+.visage-error-warning .visage-error-icon {
+  color: #f0a030;
+  background: rgba(240, 160, 48, 0.12);
+}
+
+.visage-error-success .visage-error-icon {
+  color: #2dd4a0;
+  background: rgba(45, 212, 160, 0.12);
+}
+
+.visage-error-message {
+  flex: 1;
+  font: 13px/1.45 var(--v-sans);
+  color: var(--v-text);
+  word-break: break-word;
+}
+
+.visage-error-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--v-text-2);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.visage-error-close:hover {
+  opacity: 1;
+  color: var(--v-text);
+}
+
+.visage-error-timer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--v-accent);
+  border-radius: 0 0 0 var(--v-r);
+  animation: visage-error-timer 10s linear forwards;
+}
+
+.visage-error-error .visage-error-timer {
+  background: #e04868;
+}
+
+.visage-error-warning .visage-error-timer {
+  background: #f0a030;
+}
+
+.visage-error-success .visage-error-timer {
+  background: #2dd4a0;
+}
+
+@keyframes visage-error-timer {
+  from { width: 100%; }
+  to { width: 0%; }
+}
 
 @media (max-width: 768px) {
 
