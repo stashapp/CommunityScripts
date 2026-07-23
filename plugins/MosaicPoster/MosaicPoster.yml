@@ -1,0 +1,51 @@
+name: Mosaic Poster
+description: Replaces the scene detail poster with a contact-sheet mosaic of the whole video, built from the scene's sprite.
+version: 1.0.0
+url: https://github.com/stashapp/CommunityScripts
+# UI: the frontend plugin. It serves the generated/ folder statically and
+#     overlays the 5x5 sheet on the detail poster. Served at
+#     /plugin/MosaicPoster/assets/generated/<oshash>.jpg
+ui:
+  javascript:
+    - MosaicPoster.js
+  css:
+    - MosaicPoster.css
+  assets:
+    /: .
+# Generation backend: called from the frontend via runPluginOperation. It
+#     generates the 5x5 sheet from the real video with ffmpeg. Paths are read
+#     from Stash's own configuration, so it is OS-independent.
+exec:
+  - python
+  - "{pluginDir}/MosaicPoster.py"
+interface: raw
+settings:
+  defaultOn:
+    displayName: Show mosaic by default
+    description: When enabled (default), scenes open showing the mosaic; disable to open with cover art. This is the global default across devices; the button on each scene's poster overrides it for that scene only.
+    type: BOOLEAN
+  tapToSeek:
+    displayName: Tap a cell to seek
+    description: When enabled (default), clicking a mosaic cell jumps playback to that point in the video. Disable to make clicking the mosaic play from the start instead.
+    type: BOOLEAN
+  hiResUpgrade:
+    displayName: High-res upgrade
+    description: When enabled, after showing the instant sprite-based sheet, a higher-resolution sheet is generated from the video with ffmpeg and swapped in. Off by default (sprite only, no generation).
+    type: BOOLEAN
+  gridSize:
+    displayName: Mosaic grid size (3-8)
+    description: Frames per side, N for an N x N sheet (3-8, default 5). Also changeable from the button on the poster; both stay in sync.
+    type: NUMBER
+  cacheMax:
+    displayName: Cache limit (files)
+    description: Maximum number of generated sheets to keep. Excess is removed least-recently-viewed first (LRU). ~0.3MB each. 0 = unlimited.
+    type: NUMBER
+tasks:
+  - name: Backfill mosaics
+    description: Generate every missing sheet across the whole library (mounted files only).
+    defaultArgs:
+      mode: backfill
+  - name: Prune mosaic cache
+    description: Shrink the cache down to the configured limit (oldest first).
+    defaultArgs:
+      mode: prune
