@@ -1,10 +1,8 @@
 name: Mosaic Poster
 description: Replaces the scene detail poster with a contact-sheet mosaic of the whole video, built from the scene's sprite.
 version: 1.0.0
-url: https://github.com/stashapp/CommunityScripts
-# UI: the frontend plugin. It serves the generated/ folder statically and
-#     overlays the 5x5 sheet on the detail poster. Served at
-#     /plugin/MosaicPoster/assets/generated/<oshash>.jpg
+url: https://discourse.stashapp.cc/t/mosaic-poster/12358
+
 ui:
   javascript:
     - MosaicPoster.js
@@ -12,9 +10,7 @@ ui:
     - MosaicPoster.css
   assets:
     /: .
-# Generation backend: called from the frontend via runPluginOperation. It
-#     generates the 5x5 sheet from the real video with ffmpeg. Paths are read
-#     from Stash's own configuration, so it is OS-independent.
+
 exec:
   - python
   - "{pluginDir}/MosaicPoster.py"

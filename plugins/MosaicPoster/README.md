@@ -1,5 +1,7 @@
 # Mosaic Poster
 
+https://discourse.stashapp.cc/t/mosaic-poster/12358
+
 A Stash UI plugin that replaces the pre-playback **poster** on the scene detail page (`/scenes/{id}`) with a **contact sheet** — a whole-video overview sampled evenly across the file. A button at the top-right of the poster toggles **cover art ⇄ mosaic**, and a button at the top-left cycles the **grid size** (3×3 up to 8×8). List and card cover art is left untouched.
 
 Whether the mosaic shows by default, and the grid size, are **global plugin settings** (shared across devices). The cover/mosaic button overrides the default **for that scene only** (remembered per scene in the browser); the grid button changes the global size.
