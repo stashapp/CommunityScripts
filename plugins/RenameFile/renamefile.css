@@ -1,7 +1,7 @@
 .renamefile {
-  color: unset;
+  cursor: pointer;
   &:hover {
-    text-decoration: unset;
+    text-decoration: underline;
   }
   &:active {
     color: white;
