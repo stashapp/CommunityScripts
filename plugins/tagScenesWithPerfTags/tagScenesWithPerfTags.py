@@ -10,9 +10,9 @@ SCENE_UPDATE_BATCH = 1000
 def processAll():
     exclusion_marker_tag_id = None
     if settings["excludeSceneWithTag"] != "":
-        exclussion_marker_tag = stash.find_tag(settings["excludeSceneWithTag"])
-        if exclussion_marker_tag is not None:
-            exclusion_marker_tag_id = exclussion_marker_tag['id']
+        exclusion_marker_tag = stash.find_tag(settings["excludeSceneWithTag"])
+        if exclusion_marker_tag is not None:
+            exclusion_marker_tag_id = exclusion_marker_tag['id']
 
     query = {
         "tags": {
@@ -32,9 +32,8 @@ def processAll():
     processed = 0
     page = 0
 
-    while True:
-        if performersTotal > 0:
-            log.progress(min(processed / performersTotal, 1.0))
+    while performersTotal > processed:
+        log.progress(min(processed / performersTotal, 1.0))
 
         performers = stash.find_performers(
             f=query,
@@ -43,26 +42,25 @@ def processAll():
         )
 
         if not performers:
-            log.info("Finished processing all performers.")
             break
 
         for perf in performers:
-          performer_tags_ids = []
-          performer_tags_names = []
-          for performer_tag in perf.get("tags",[]):
-            if settings["excludeTagWithIgnoreAutoTag"] and performer_tag["ignore_auto_tag"]:
-                continue
-            performer_tags_ids.append(performer_tag["id"])
-            performer_tags_names.append(performer_tag["name"])
-
-            if not performer_tags_ids:
+            perf_tags = perf.get("tags", [])
+            if not perf_tags:
                 processed += 1
                 continue
+
+            performer_tags_ids = set()
+            performer_tags_names = set()
+
+            for tag in perf["tags"]:
+                performer_tags_ids.add(tag["id"])
+                performer_tags_names.add(tag["name"])
 
             scene_query = {
                 "performers": {
                     "value": [perf["id"]],
-                    "modifier": "INCLUDES_ALL"
+                    "modifier": "INCLUDES"
                 }
             }
             if settings['excludeSceneOrganized']:
@@ -89,35 +87,51 @@ def processAll():
                 stash.update_scenes(
                     {
                         "ids": batch,
-                        "tag_ids": {"mode": "ADD", "ids": performer_tags_ids},
+                        "tag_ids": {"mode": "ADD", "ids": list(performer_tags_ids)},
                     }
                 )
             processed += 1
         page += 1
 
+    log.info("Finished processing all performers.")
+
 
 def processScene(scene: dict):
+    # Skip if organized
+    if settings['excludeSceneOrganized'] and scene.get('organized'):
+        log.debug("Skipping scene update because it is organized")
+        return
+
+    # Skip if tagged with the excluded tag
+    scene_tags = scene.get("tags", [])
     if settings["excludeSceneWithTag"] != "":
-        for tag in scene.get("tags", []):
+        for tag in scene_tags:
             if tag["name"] == settings["excludeSceneWithTag"]:
+                log.debug("Skipping scene because it has the excluded tag")
                 return
 
-    if settings['excludeSceneOrganized'] and scene.get('organized'):
-        return
-
-    target_tag_ids = []
+    perf_tag_ids = set()
     for perf in scene.get("performers", []):
-        for tag in perf.get("tags", []):
-            if settings["excludeTagWithIgnoreAutoTag"] and tag["ignore_auto_tag"]:
-                continue
-            target_tag_ids.append(tag["id"])
+        perf_tag_ids.update(map(lambda tag: tag["id"], perf.get("tags", [])))
 
-    if not target_tag_ids:
+    # Skip if no performer tags
+    if not perf_tag_ids:
+        log.debug("Skipping scene update because performers have no tags")
         return
 
-    stash.update_scenes({
-        "ids": [scene["id"]],
-        "tag_ids": {"mode": "ADD", "ids": list(set(target_tag_ids))}
+    scene_tag_ids = set(map(lambda tag: tag["id"], scene_tags))
+
+    # Skip if scene already has all performer tags
+    if perf_tag_ids.issubset(scene_tag_ids):
+        log.debug("Skipping scene update because it already has all performer tags")
+        return
+
+    log.debug(f"Updating scene {scene['id']} with performer tags: {perf_tag_ids}")
+    scene_tag_ids.update(perf_tag_ids)
+
+    stash.update_scene({
+        "id": scene["id"],
+        "tag_ids": list(scene_tag_ids)
     })
 
 
@@ -147,6 +161,6 @@ elif "hookContext" in json_input["args"]:
         and len(json_input["args"]["hookContext"]["inputFields"]) > 1
     ):
         # Enforce explicit studio object allocation inside our graphQL post-hook criteria
-        scene = stash.find_scene(id, fragment="id organized tags { name } performers { id tags { id ignore_auto_tag } } studio { id }")
+        scene = stash.find_scene(id, fragment="id organized tags { id name } performers { id tags { id } }")
         if scene:
             processScene(scene)

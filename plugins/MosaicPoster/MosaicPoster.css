@@ -1,0 +1,125 @@
+/* Mosaic Poster — mosaic overlay + toggle/size buttons on the scene detail poster */
+
+/* Mosaic layer: covers the cover art underneath. When .mp-seekable, tapping a
+   cell seeks the video to that point in time; otherwise clicks pass through. */
+.vjs-poster .mp-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #000;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 2;
+}
+.vjs-poster .mp-overlay.mp-seekable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+/* hovered-cell highlight (desktop) — red, translucent */
+.vjs-poster .mp-overlay .mp-cell-hi {
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+  border: 2px solid rgba(255, 45, 45, 0.95);
+  background: rgba(255, 40, 40, 0.28);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55) inset;
+  transition: left 0.05s linear, top 0.05s linear, width 0.05s linear, height 0.05s linear;
+}
+/* keep the big play button above the mosaic so its centre still plays from the
+   start; the surrounding cells seek */
+.video-js .vjs-big-play-button {
+  z-index: 3;
+}
+
+/* Mosaic on/off toggle: "Mosaic" label + a switch showing the current state
+   (top-right of the poster, pre-playback) */
+.vjs-poster .mp-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  padding: 6px 9px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.12s ease, background 0.12s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.vjs-poster .mp-toggle:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
+}
+.vjs-poster .mp-toggle-label { font-weight: 600; }
+/* loading spinner shown in the toggle while a sheet is being generated */
+.vjs-poster .mp-spin {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: mp-spin 0.7s linear infinite;
+}
+@keyframes mp-spin { to { transform: rotate(360deg); } }
+/* switch track */
+.vjs-poster .mp-switch {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  flex: none;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.15s ease;
+}
+.vjs-poster .mp-toggle.mp-on .mp-switch { background: #4caf50; }
+/* switch knob */
+.vjs-poster .mp-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.15s ease;
+}
+.vjs-poster .mp-toggle.mp-on .mp-knob { left: 18px; }
+
+/* Grid-size button (top-left of the poster, shown only in mosaic mode) */
+.vjs-poster .mp-size {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 5px;
+  padding: 5px 9px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.12s ease, background 0.12s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.vjs-poster .mp-size:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
+}
