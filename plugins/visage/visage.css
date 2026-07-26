@@ -244,9 +244,29 @@
 .visage-toolbar-button.visage-scanning {
   opacity: 1;
   color: var(--v-accent);
-  animation: visage-btn-scan-glow 1.2s ease-in-out infinite;
+  animation: visage-btn-scan-glow 0.8s ease-in-out infinite;
   position: relative;
   overflow: hidden;
+  background: color-mix(in srgb, var(--v-accent) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--v-accent) 40%, transparent) !important;
+}
+
+.visage-toolbar-button.visage-scanning::before {
+  content: 'Scanning\u2026';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--v-surface) 92%, transparent);
+  color: var(--v-accent);
+  font-family: var(--v-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  z-index: 1;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .visage-toolbar-button.visage-scanning::after {
@@ -256,18 +276,18 @@
   right: 0;
   height: 2px;
   background: var(--v-accent);
-  box-shadow: 0 0 8px var(--v-accent);
-  animation: visage-btn-scan-line 1.2s ease-in-out infinite alternate;
+  box-shadow: 0 0 12px var(--v-accent), 0 0 24px var(--v-accent-glow);
+  animation: visage-btn-scan-line 0.8s ease-in-out infinite alternate;
 }
 
 @keyframes visage-btn-scan-line {
-  from { top: 2px; }
-  to { top: calc(100% - 4px); }
+  from { top: 0; }
+  to { top: calc(100% - 2px); }
 }
 
 @keyframes visage-btn-scan-glow {
-  0%, 100% { box-shadow: 0 0 4px var(--v-accent-glow); }
-  50% { box-shadow: 0 0 16px var(--v-accent-glow); }
+  0%, 100% { box-shadow: 0 0 8px var(--v-accent-glow), 0 0 0 1px color-mix(in srgb, var(--v-accent) 20%, transparent); }
+  50% { box-shadow: 0 0 24px var(--v-accent), 0 0 0 2px color-mix(in srgb, var(--v-accent) 40%, transparent); }
 }
 
 /* ========================
@@ -899,6 +919,76 @@
 
 .visage-source-fansdb {
   background: #27ae60;
+}
+
+/* Gender badge roundel */
+.visage-gender-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff !important;
+  border: 1.5px solid;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  z-index: 2;
+  pointer-events: auto;
+  cursor: help;
+}
+
+.visage-gender-male {
+  background: rgba(80, 140, 210, 0.7);
+  border-color: rgba(80, 140, 210, 0.9);
+}
+
+.visage-gender-female {
+  background: rgba(210, 100, 180, 0.7);
+  border-color: rgba(210, 100, 180, 0.9);
+}
+
+.visage-gender-transgender-male {
+  background: rgba(100, 185, 220, 0.7);
+  border-color: rgba(100, 185, 220, 0.9);
+}
+
+.visage-gender-transgender-female {
+  background: rgba(210, 120, 180, 0.7);
+  border-color: rgba(210, 120, 180, 0.9);
+}
+
+.visage-gender-non-binary {
+  background: rgba(100, 200, 120, 0.7);
+  border-color: rgba(100, 200, 120, 0.9);
+}
+
+.visage-gender-intersex {
+  background: rgba(220, 180, 60, 0.7);
+  border-color: rgba(220, 180, 60, 0.9);
+}
+
+/* Gender badge — sprite card (bottom-left on performer image) */
+.visage-sprite-gender-badge {
+  top: auto !important;
+  bottom: 0.5rem;
+  left: 0.5rem;
+}
+
+/* Country flag — sprite card (bottom-right on performer image) */
+.visage-sprite-country-flag {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  font-size: 1rem;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.55));
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* Text overlay content */

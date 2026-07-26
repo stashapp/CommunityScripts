@@ -46,6 +46,8 @@
                 return { ...state, showSpriteModal: action.show };
             case 'CLEAR_MATCHES':
                 return { ...state, matches: [], showMatchModal: false };
+            case 'START_MATCH_SEARCH':
+                return { ...state, matches: [], showMatchModal: true };
             case 'SET_SPRITE_RESULT':
                 return { ...state, spriteResult: action.result, showSpriteModal: true };
             case 'CLEAR_SPRITE_RESULT':
@@ -101,6 +103,9 @@
         const clearMatches = useCallback$7(() => {
             dispatch({ type: 'CLEAR_MATCHES' });
         }, []);
+        const startMatchSearch = useCallback$7(() => {
+            dispatch({ type: 'START_MATCH_SEARCH' });
+        }, []);
         const setSpriteResult = useCallback$7((result) => {
             dispatch({ type: 'SET_SPRITE_RESULT', result });
         }, []);
@@ -141,6 +146,7 @@
             showFrameSelector: showFrameSelectorFn,
             showSpriteModal: showSpriteModalFn,
             clearMatches,
+            startMatchSearch,
             setSpriteResult,
             clearSpriteResult,
             setDetectionMode,
@@ -8864,10 +8870,14 @@
             return null;
         }
     }
-    async function dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey) {
+    async function dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal) {
         setLoading(loadingKey, true);
         const [scenario, scenarioId] = getScenarioAndID();
         setScenario(scenario, scenarioId);
+        // Open the modal up front: the trigger lives in a dropdown that closes on
+        // click, so the modal is the only place the scanning state stays visible.
+        startMatchSearch();
+        let succeeded = false;
         try {
             const result = await callGradioAPI('multiple_image_search', [blob, MAX_RESULTS]);
             const matchData = result.data;
@@ -8885,6 +8895,7 @@
                 return;
             }
             setMatches(matchData);
+            succeeded = true;
         }
         catch (error) {
             const message = getErrorMessage(error);
@@ -8900,10 +8911,12 @@
         }
         finally {
             setLoading(loadingKey, false);
+            if (!succeeded)
+                showMatchModal(false);
         }
     }
     function FaceSearchButton({ menuItem }) {
-        const { state, setLoading, setMatches, setScenario, showWarning, showError } = useVisage();
+        const { state, setLoading, setMatches, setScenario, showWarning, showError, startMatchSearch, showMatchModal } = useVisage();
         const loadingKey = 'face-search';
         const isLoading = state.loading[loadingKey] || false;
         const recognize = useCallback$6(async () => {
@@ -8921,7 +8934,7 @@
                             setLoading(loadingKey, false);
                             return;
                         }
-                        await dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey);
+                        await dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
                     }
                     catch (error) {
                         showError('Failed to capture image: ' + getErrorMessage(error));
@@ -8930,7 +8943,7 @@
                     return;
                 }
                 makeOverlay((blob) => {
-                    dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey);
+                    dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
                 }, () => {
                     showWarning('Select a face within the image.');
                 }, {
@@ -8953,7 +8966,7 @@
                         setLoading(loadingKey, false);
                         return;
                     }
-                    await dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey);
+                    await dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
                 }
                 catch (error) {
                     console.warn('[Visage] captureWholeFrame failed:', error);
@@ -8963,11 +8976,11 @@
                 return;
             }
             makeOverlay((blob) => {
-                dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey);
+                dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
             }, () => {
                 showWarning('Select a face within the video player area.');
             });
-        }, [setLoading, setMatches, setScenario, isLoading, showWarning, showError]);
+        }, [setLoading, setMatches, setScenario, isLoading, showWarning, showError, startMatchSearch, showMatchModal]);
         if (menuItem) {
             return React$b.createElement('a', {
                 href: '#',
@@ -9343,6 +9356,35 @@
     }
 
     const React$6 = window.PluginApi.React;
+    const SOURCE_BASE_URLS = {
+        stashdb: 'https://stashdb.org',
+        javstash: 'https://javstash.org',
+        fansdb: 'https://fansdb.cc',
+    };
+    const performerUrl = (id, source) => {
+        const base = SOURCE_BASE_URLS[(source || '').toLowerCase()] || SOURCE_BASE_URLS.stashdb;
+        return `${base}/performers/${id}`;
+    };
+    const GENDER_CONFIG = {
+        MALE: { symbol: '♂', label: 'Male', className: 'visage-gender-male' },
+        FEMALE: { symbol: '♀', label: 'Female', className: 'visage-gender-female' },
+        TRANSGENDER_MALE: { symbol: '⚧', label: 'Transgender male', className: 'visage-gender-transgender-male' },
+        TRANSGENDER_FEMALE: { symbol: '⚧', label: 'Transgender female', className: 'visage-gender-transgender-female' },
+        NON_BINARY: { symbol: '⚦', label: 'Non-binary', className: 'visage-gender-non-binary' },
+        INTERSEX: { symbol: '⚥', label: 'Intersex', className: 'visage-gender-intersex' },
+    };
+    const genderBadge = (gender) => {
+        if (!gender)
+            return null;
+        const cfg = GENDER_CONFIG[gender];
+        if (!cfg)
+            return null;
+        return React$6.createElement('span', {
+            className: `visage-gender-badge ${cfg.className}`,
+            title: cfg.label,
+            'aria-label': cfg.label,
+        }, cfg.symbol);
+    };
     function PerformerCard({ performer, isLoading, isKeyboardSelected, isSelected, onToggle, onQuickAdd }) {
         const imgRef = useSmoothLoad();
         const confidence = performer.confidence || 0;
@@ -9413,6 +9455,8 @@
             className: `visage-source-badge visage-source-${performer.source}`,
             title: performer.source,
         }, performer.source[0].toUpperCase()), 
+        // Gender badge
+        genderBadge(performer.gender), 
         // Selected check badge
         isSelected && React$6.createElement('div', { className: 'visage-card-check-badge' }, React$6.createElement('svg', {
             width: 16, height: 16, viewBox: '0 0 24 24',
@@ -9420,7 +9464,8 @@
         }, React$6.createElement('polyline', { points: '20 6 9 17 4 12' }))), 
         // Text overlay: name + confidence
         React$6.createElement('div', { className: 'visage-card-meta' }, React$6.createElement('a', {
-            href: `https://stashdb.org/performers/${performer.id}`,
+            href: performerUrl(performer.id, performer.source),
+            title: `Open on ${(performer.source || 'stashdb').toLowerCase()}`,
             target: '_blank',
             rel: 'noopener noreferrer',
             className: 'visage-performer-name',
@@ -9441,19 +9486,32 @@
         const [visible, setVisible] = useState$2(false);
         const [sceneStashIds, setSceneStashIds] = useState$2(new Set());
         const [stashboxStatus, setStashboxStatus] = useState$2(null);
-        const [minConfidence, setMinConfidence] = useState$2(() => {
-            const saved = localStorage.getItem('visage:minConfidence:match');
-            if (saved !== null) {
-                const parsed = Number(saved);
-                if (!Number.isNaN(parsed))
-                    return parsed;
+        // null means "auto": derive the threshold from the matches whenever they arrive.
+        // Kept derived (not seeded into state on mount) because the modal opens before
+        // the search returns, when `matches` is still empty. Not persisted: every search
+        // recalibrates, and the slider only overrides the current result set.
+        const [confidenceOverride, setConfidenceOverride] = useState$2(null);
+        const [thresholdFor, setThresholdFor] = useState$2(rawMatches);
+        if (thresholdFor !== rawMatches) {
+            setThresholdFor(rawMatches);
+            setConfidenceOverride(null);
+        }
+        // Threshold low enough that every face keeps at least three performers:
+        // take each face's 3rd-best score and use the smallest of those.
+        const autoConfidence = React$5.useMemo(() => {
+            let threshold = Infinity;
+            for (const face of matches) {
+                const scores = face.performers
+                    .map(p => p.confidence || 0)
+                    .filter(c => c > 0)
+                    .sort((a, b) => b - a);
+                if (scores.length === 0)
+                    continue;
+                threshold = Math.min(threshold, scores[Math.min(2, scores.length - 1)]);
             }
-            const scores = matches
-                .flatMap(f => f.performers.map(p => p.confidence || 0))
-                .filter(c => c > 0)
-                .sort((a, b) => b - a);
-            return scores.length >= 3 ? scores[2] : 0;
-        });
+            return Number.isFinite(threshold) ? threshold : 0;
+        }, [matches]);
+        const minConfidence = confidenceOverride !== null && confidenceOverride !== void 0 ? confidenceOverride : autoConfidence;
         const close = useCallback$2(() => {
             setVisible(false);
             setTimeout(() => showMatchModal(false), 300);
@@ -9690,8 +9748,7 @@
                 value: minConfidence,
                 onChange: (e) => {
                     const value = Number(e.target.value);
-                    setMinConfidence(value);
-                    localStorage.setItem('visage:minConfidence:match', String(value));
+                    setConfidenceOverride(value);
                 },
                 title: `Minimum confidence: ${minConfidence}%`,
             }), React$5.createElement('span', { className: 'visage-sprite-threshold-label' }, `${minConfidence}%`))), React$5.createElement('div', { className: 'visage-modal-body' }, React$5.createElement('div', { className: 'visage-left-panel' }, activeFace && React$5.createElement(React$5.Fragment, null, React$5.createElement('div', null, React$5.createElement('span', { className: 'visage-section-label' }, 'Detected'), React$5.createElement('div', { className: 'visage-detect-frame' }, React$5.createElement('img', {
@@ -9806,17 +9863,17 @@
                 if (abortRef.current)
                     return;
                 if (existing.length > 0) {
-                    setPerformerCache(prev => ({ ...prev, [stashId]: { id: existing[0].id, image: `/performer/${existing[0].id}/image` } }));
+                    setPerformerCache(prev => ({ ...prev, [stashId]: { id: existing[0].id, image: `/performer/${existing[0].id}/image`, gender: existing[0].gender, country: existing[0].country } }));
                     return;
                 }
                 const scraped = await getPerformerDataFromStashID(stashId, sourceName);
                 if (abortRef.current)
                     return;
                 if ((_a = scraped === null || scraped === void 0 ? void 0 : scraped.images) === null || _a === void 0 ? void 0 : _a[0]) {
-                    setPerformerCache(prev => ({ ...prev, [stashId]: { id: stashId, image: scraped.images[0] } }));
+                    setPerformerCache(prev => ({ ...prev, [stashId]: { id: stashId, image: scraped.images[0], gender: scraped.gender, country: scraped.country } }));
                 }
                 else {
-                    setPerformerCache(prev => ({ ...prev, [stashId]: { id: stashId, image: null } }));
+                    setPerformerCache(prev => ({ ...prev, [stashId]: { id: stashId, image: null, gender: scraped === null || scraped === void 0 ? void 0 : scraped.gender, country: scraped === null || scraped === void 0 ? void 0 : scraped.country } }));
                 }
             }
             catch (_b) {
@@ -9892,6 +9949,14 @@
 
     const React$2 = window.PluginApi.React;
     const { useEffect: useEffect$1, useMemo, useState, useRef: useRef$1, useCallback } = React$2;
+    const GENDER_SYMBOLS = {
+        MALE: '\u2642',
+        FEMALE: '\u2640',
+        TRANSGENDER_MALE: '\u26A7',
+        TRANSGENDER_FEMALE: '\u26A7',
+        NON_BINARY: '\u26A6',
+        INTERSEX: '\u26A5',
+    };
     function SpriteResultModal() {
         const { state, showSpriteModal, clearSpriteResult, setLoading, showError, showSuccess, showWarning } = useVisage();
         const { spriteResult, loading: loadingState, scanProgress, scanProgressDesc } = state;
@@ -10199,7 +10264,12 @@
                         alt: p.name,
                         className: 'visage-sprite-performer-img-src',
                         onError: (e) => { e.target.remove(); },
-                    }), React$2.createElement('span', { className: 'visage-sprite-label' }, 'STASH')), alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-in-scene' }, 'In scene'), isConfirmed && !alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-check-badge' }, React$2.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$2.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$2.createElement('div', { className: 'visage-sprite-info' }, React$2.createElement('div', { className: 'visage-sprite-summary' }, ConfidenceRing({ confidence: p.confidence, confClass }), React$2.createElement('div', { className: 'visage-sprite-summary-text' }, React$2.createElement('a', {
+                    }), React$2.createElement('span', { className: 'visage-sprite-label' }, 'STASH'), (cached === null || cached === void 0 ? void 0 : cached.gender) && React$2.createElement('span', {
+                        className: 'visage-sprite-gender-badge visage-gender-badge visage-gender-' + cached.gender.toLowerCase().replace(/_/g, '-'),
+                        title: cached.gender.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
+                    }, GENDER_SYMBOLS[cached.gender] || '?'), (cached === null || cached === void 0 ? void 0 : cached.country) && React$2.createElement('span', {
+                        className: 'visage-sprite-country-flag fi fi-' + cached.country.toLowerCase(),
+                    })), alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-in-scene' }, 'In scene'), isConfirmed && !alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-check-badge' }, React$2.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$2.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$2.createElement('div', { className: 'visage-sprite-info' }, React$2.createElement('div', { className: 'visage-sprite-summary' }, ConfidenceRing({ confidence: p.confidence, confClass }), React$2.createElement('div', { className: 'visage-sprite-summary-text' }, React$2.createElement('a', {
                         href: p.performer_url,
                         target: '_blank',
                         rel: 'noopener noreferrer',
