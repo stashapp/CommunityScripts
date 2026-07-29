@@ -40,7 +40,8 @@
   var currentHiRes = DEFAULT_HIRES;
   var settingsLoaded = false; // don't kick generation until the real grid size is known
 
-  // ---- i18n: only the JS strings can be localised (yml setting labels can't).
+  // ---- i18n: the strings drawn on scene pages. The settings page has its own
+  // (much larger) table, fetched only when it is opened -- see "settings page".
   // Keyed by Stash's interface language code, lower-cased. English is the
   // default: any language without an entry falls back to it. To add a language,
   // add an entry keyed by its lower-cased Stash code (e.g. "pt-br") or base code
@@ -174,6 +175,9 @@
   }
 
   // Pick the string table from Stash's UI language (e.g. "ja-JP" -> Japanese).
+  // The raw code is kept as well: the settings page picks from its own table.
+  var langCode = DEFAULT_LANG;
+  var langReady = null; // the loadLanguage() promise, once it is running
   function loadLanguage() {
     return fetch("/graphql", {
       method: "POST",
@@ -183,7 +187,10 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        try { T = pickStrings(j.data.configuration.interface.language); } catch (e) {}
+        try {
+          langCode = j.data.configuration.interface.language || DEFAULT_LANG;
+          T = pickStrings(langCode);
+        } catch (e) {}
       })
       .catch(function () {});
   }
@@ -779,6 +786,141 @@
     });
   }
 
+  /* ---------- settings page ----------
+   * The setting labels, the plugin description above them and the task names
+   * under Settings > Tasks all come from the YAML, which Stash serves as plain
+   * text: the plugin format has no localisation, and there is no API for a
+   * plugin to register translations of its own. So they are translated here.
+   *
+   *  - The rows are drawn by Stash's PluginSettings component, which is
+   *    patchable: this plugin's props are handed on with the labels swapped,
+   *    and Stash renders them as usual. Every other plugin's are passed
+   *    through untouched.
+   *  - The description above the rows, and the task list, are not drawn from
+   *    anything a plugin can reach, so those two are corrected in the DOM.
+   *  - The strings are a separate JSON, fetched from this plugin's own assets
+   *    the first time a settings page is opened. Settings text in every
+   *    language Stash ships is many times the size of this file, and no other
+   *    page ever shows it, so it is not carried on every page load. */
+  var SETTINGS_URL = "/plugin/" + PLUGIN_ID + "/assets/" + PLUGIN_ID + ".settings.json";
+  var settingsText = null;    // strings in the UI language, once fetched
+  var settingsEn = null;      // the English originals, to match task rows on
+  var settingsWaiters = [];   // redraws waiting for the fetch
+  var settingsAsked = false;
+
+  function loadSettingsText() {
+    if (settingsAsked) return;
+    settingsAsked = true;
+    Promise.all([
+      langReady,
+      fetch(SETTINGS_URL, { credentials: "same-origin" })
+        .then(function (r) { return r.ok ? r.json() : null; }),
+    ])
+      .then(function (res) {
+        var table = res[1];
+        if (!table) return;
+        settingsEn = table[DEFAULT_LANG] || null;
+        var code = (langCode || "").toLowerCase();
+        settingsText = table[code] || table[code.split("-")[0]] || settingsEn;
+      })
+      .catch(function () {}) // fetch failed: the page stays in English
+      .then(function () {
+        var waiting = settingsWaiters;
+        settingsWaiters = [];
+        waiting.forEach(function (fn) { try { fn(); } catch (e) {} });
+        relabelTasks();
+      });
+  }
+
+  function say(key) {
+    return (settingsText && settingsText[key]) || null;
+  }
+
+  // Settings > Tasks lists this plugin's tasks by their YAML name/description,
+  // from a component that is not registered for patching. Rows are matched on
+  // the English text, so a row that is already translated is left alone.
+  function relabelTasks() {
+    if (!settingsText || !settingsEn || settingsText === settingsEn) return;
+    var rows = document.querySelectorAll("#tasks-panel .setting");
+    if (!rows.length) return;
+    ["backfill", "prune"].forEach(function (task) {
+      var from = settingsEn["task." + task + ".name"];
+      var name = say("task." + task + ".name");
+      var desc = say("task." + task + ".description");
+      if (!from || !name) return;
+      for (var i = 0; i < rows.length; i++) {
+        var heading = rows[i].querySelector("h3");
+        if (!heading || heading.textContent !== from) continue;
+        heading.textContent = name;
+        var sub = rows[i].querySelector(".sub-heading");
+        if (sub && desc) sub.textContent = desc;
+        var btn = rows[i].querySelector("button");
+        if (btn && btn.textContent === from) btn.textContent = name;
+      }
+    });
+  }
+
+  (function patchSettings() {
+    var api = window.PluginApi;
+    // Older Stash without the plugin API: the settings page stays in English.
+    if (!api || !api.patch || !api.patch.instead || !api.React) return;
+    var React = api.React;
+
+    // Rendered in place of Stash's PluginSettings for this plugin only. The
+    // rows are still Stash's own: this fetches the strings, redraws once they
+    // arrive, and hands the props on with the labels replaced.
+    function MosaicPosterSettings(props) {
+      var redraw = React.useState(0)[1];
+      var rows = (props.args[0] && props.args[0].settings) || [];
+
+      React.useEffect(function () {
+        if (settingsText) return;
+        function onLoaded() { redraw(function (n) { return n + 1; }); }
+        settingsWaiters.push(onLoaded);
+        loadSettingsText();
+        return function () {
+          settingsWaiters = settingsWaiters.filter(function (fn) { return fn !== onLoaded; });
+        };
+      });
+
+      // The plugin's description, printed above the rows by the page itself.
+      // Anchored on a row this plugin owns, so no other plugin's is touched.
+      React.useEffect(function () {
+        var text = say("plugin.description");
+        if (!text || !rows.length) return;
+        var row = document.getElementById("plugin-" + PLUGIN_ID + "-" + rows[0].name);
+        var group = row && row.closest ? row.closest(".setting-group") : null;
+        var sub = group ? group.querySelector(".setting .sub-heading") : null;
+        if (sub && sub.textContent !== text) sub.textContent = text;
+      });
+
+      // Call Stash's component rather than mount it, so the arguments it was
+      // given (and any patch another plugin put after this one) are kept.
+      var args = props.args.slice();
+      if (settingsText && rows.length) {
+        args[0] = Object.assign({}, args[0], {
+          settings: rows.map(function (s) {
+            var name = say("setting." + s.name + ".name");
+            var desc = say("setting." + s.name + ".description");
+            if (!name && !desc) return s;
+            return Object.assign({}, s, {
+              display_name: name || s.display_name,
+              description: desc || s.description,
+            });
+          }),
+        });
+      }
+      return props.next.apply(null, args);
+    }
+
+    api.patch.instead("PluginSettings", function (props) {
+      var args = Array.prototype.slice.call(arguments);
+      var next = args.pop();
+      if (!props || props.pluginID !== PLUGIN_ID) return next.apply(this, args);
+      return React.createElement(MosaicPosterSettings, { args: args, next: next });
+    });
+  })();
+
   /* ---------- SPA following (DOM observer) ----------
    * Debounce with setTimeout, NOT requestAnimationFrame: rAF is paused in
    * background/inactive tabs, so a scene opened in a background tab would not
@@ -787,12 +929,19 @@
   var obs = new MutationObserver(function () {
     if (scheduled) return;
     scheduled = true;
-    setTimeout(function () { scheduled = false; render(); observeCards(); maybeGenerate(); }, 0);
+    setTimeout(function () {
+      scheduled = false;
+      render(); observeCards(); maybeGenerate();
+      // Settings > Tasks is drawn without this plugin being involved, so the
+      // task rows are picked up here, and re-applied if the page redraws them.
+      if (document.getElementById("tasks-panel")) { loadSettingsText(); relabelTasks(); }
+    }, 0);
   });
   obs.observe(document.documentElement, { childList: true, subtree: true });
 
   // Load language + settings, then render/warm/generate at the resolved values.
-  Promise.all([loadSettings(), loadLanguage()]).then(function () {
+  langReady = loadLanguage();
+  Promise.all([loadSettings(), langReady]).then(function () {
     resetWarm(); render(); maybeGenerate();
   });
   render();

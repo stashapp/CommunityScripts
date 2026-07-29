@@ -55,7 +55,12 @@ This is the only mode that runs ffmpeg or writes to disk, and it is **off by def
 
 ## Localization
 
-The on-poster button/tooltip strings follow Stash's UI language and ship with translations for every language Stash supports (English is the default fallback for any unset locale). Non-English strings are best-effort — corrections from native speakers are welcome; add or edit an entry in the `STRINGS` table in `MosaicPoster.js` (keyed by lower-cased language code, e.g. `de` or `zh-tw`). Plugin **Settings** labels are static and remain in English (a Stash limitation).
+Everything this plugin displays follows Stash's UI language, in every language Stash supports (English is the fallback for any locale without an entry):
+
+- **On the poster** — the button and tooltip strings, from the `STRINGS` table in `MosaicPoster.js`.
+- **On the settings page** — the setting labels, their descriptions, the plugin description above them and the two task entries under Settings → Tasks, from `MosaicPoster.settings.json`. Stash reads those from the plugin YAML, which has no localisation and no API for a plugin to register translations, so the plugin patches Stash's `PluginSettings` component and hands its own rows on with the labels swapped (other plugins' rows are passed through untouched); the description and the task list are corrected in the DOM. The JSON is fetched only when a settings page is opened, so it costs nothing on every other page.
+
+Both tables are keyed by lower-cased language code (e.g. `de`, `zh-tw`); lookup tries the full code, then the base code, then English. Non-English strings are best-effort — corrections from native speakers are welcome.
 
 ## Notes
 
