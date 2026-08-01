@@ -1,4 +1,8 @@
-.wall-item-container:hover .marker-delete-button {
+div.marker-delete-wrapper {
+  position: relative;
+}
+
+.wall-item:hover .marker-delete-button {
   display: block;
 }
 

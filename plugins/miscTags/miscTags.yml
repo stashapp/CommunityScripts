@@ -1,6 +1,6 @@
 name: Misc Tags
-description: Add extra tags for VR and other ues
-version: 0.4.1
+description: Add extra tags for VR, stash-vr-companion, and group makeup based on filename and existing tags.
+version: 0.4.2
 url: https://discourse.stashapp.cc/t/misc-tags/1383
 exec:
   - python

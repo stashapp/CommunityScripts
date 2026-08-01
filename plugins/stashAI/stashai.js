@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  let STASHMARKER_API_URL = "https://cc1234-stashtag.hf.space/api/predict";
+  let STASHMARKER_API_BASE = "https://cc1234-stashtag-onnx.hf.space";
 
   var OPTIONS = [
     "Anal",
@@ -2241,7 +2241,7 @@
       const [, scene_id] = getScenarioAndID();
       let time;
       let tagId;
-      const tagLower = frame.tag.label.toLowerCase();
+      const tagLower = frame.tag.label.toLowerCase().replace(/_/g, " ");
 
       if (tags[tagLower] === undefined) {
         const tagID = await createTag(tagLower);
@@ -2543,6 +2543,88 @@
     });
   }
 
+  async function gradioCall(fn_index, image, vtt, threshold, retries = 3) {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        return await _gradioCall(fn_index, image, vtt, threshold);
+      } catch (err) {
+        if (attempt === retries - 1) throw err;
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+    }
+  }
+
+  async function _gradioCall(fn_index, image, vtt, threshold) {
+    const session_hash = crypto.randomUUID
+      ? crypto.randomUUID()
+      : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+        });
+
+    const queueResponse = await fetch(STASHMARKER_API_BASE + "/gradio_api/queue/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: [
+          { url: image, meta: { _type: "gradio.FileData" }, orig_name: "sprite.jpg" },
+          vtt,
+          threshold,
+        ],
+        fn_index: fn_index,
+        session_hash: session_hash,
+      }),
+    });
+
+    if (!queueResponse.ok) {
+      throw new Error("HTTP " + queueResponse.status);
+    }
+
+    const sseUrl = STASHMARKER_API_BASE + "/gradio_api/queue/data?session_hash=" + session_hash;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
+
+    let text;
+    try {
+      const resp = await fetch(sseUrl, { signal: controller.signal });
+      if (!resp.ok) {
+        throw new Error("HTTP " + resp.status);
+      }
+      text = await resp.text();
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    let result;
+    for (const line of text.split("\n")) {
+      if (line.startsWith("data: ")) {
+        try {
+          const msg = JSON.parse(line.slice(6));
+          if (msg.msg === "process_completed") {
+            if (msg.success === false) {
+              throw new Error(msg.output?.error || "Model inference failed");
+            }
+            result = [msg.output?.data?.[0]];
+            break;
+          }
+          if (msg.msg === "error") {
+            throw new Error(msg.output?.error || "API error");
+          }
+        } catch (e) {
+          if (
+            e.message === "Model inference failed" ||
+            e.message === "API error"
+          )
+            throw e;
+        }
+      }
+    }
+
+    if (result === undefined) throw new Error("No result received");
+    return result;
+  }
+
   function instance$3($$self, $$props, $$invalidate) {
     let { $$slots: slots = {}, $$scope } = $$props;
     validate_slots("MarkerButton", slots, []);
@@ -2569,51 +2651,23 @@
 
       let vtt = await download(vtt_url);
 
-      // query the api with a threshold of 0.4 as we want to do the filtering ourselves
-      var data = { data: [image, vtt, 0.4] };
+      try {
+        let result = await gradioCall(1, image, vtt, 0.4);
+        let frames = result[0];
 
-      fetch(STASHMARKER_API_URL + "_1", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => {
-          if (response.status !== 200) {
-            $$invalidate(0, (scanner = false));
-            alert(
-              "Something went wrong. It's likely a server issue, Please try again later."
-            );
-            return;
-          }
+        $$invalidate(0, (scanner = false));
 
-          return response.json();
-        })
-        .then((data) => {
-          $$invalidate(0, (scanner = false));
-          let frames = data.data[0];
-          $$invalidate(0, (scanner = false));
+        if (!frames || frames.length === 0) {
+          alert("No tags found");
+          return;
+        }
 
-          if (frames.length === 0) {
-            alert("No tags found");
-            return;
-          }
-
-          // find a div with class row
-          let row = document.querySelector(".row");
-
-          new MarkerMatches({ target: row, props: { frames, url } });
-        })
-        .catch((error) => {
-          $$invalidate(0, (scanner = false));
-
-          if (error.message === "") {
-            alert("Error: Service may be down. please try again later.");
-          } else {
-            alert("Error: " + error.message);
-          }
-        });
+        let row = document.querySelector(".row");
+        new MarkerMatches({ target: row, props: { frames, url } });
+      } catch (error) {
+        $$invalidate(0, (scanner = false));
+        alert("Error: " + (error.message || "Service may be down. Please try again later."));
+      }
     }
 
     const writable_props = [];
@@ -2630,7 +2684,7 @@
     $$self.$capture_state = () => ({
       getScenarioAndID,
       getUrlSprite,
-      STASHMARKER_API_URL,
+      STASHMARKER_API_BASE,
       MarkerMatches,
       scanner,
       download,
@@ -3725,11 +3779,12 @@
       let existingTags = await getTagsForScene(scene_id);
 
       for (const [tag] of filteredMatches) {
-        let tagLower = tag.toLowerCase();
+        const tagNormalized = tag.replace(/_/g, " ");
+        let tagLower = tagNormalized.toLowerCase();
 
         // if tag doesn't exist, create it
         if (tags[tagLower] === undefined) {
-          existingTags.push(await createTag(tag));
+          existingTags.push(await createTag(tagNormalized));
         } else if (!existingTags.includes(tags[tagLower])) {
           existingTags.push(tags[tagLower]);
         }
@@ -4027,52 +4082,28 @@
         reader.readAsDataURL(vblob);
       });
 
-      // query the api with a threshold of 0.2 as we want to do the filtering ourselves
-      var data = { data: [image, vtt, 0.2] };
+      try {
+        let result = await gradioCall(0, image, vtt, 0.2);
+        let tags = {};
+        result.forEach((item) => Object.assign(tags, item));
 
-      fetch(STASHMARKER_API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => {
-          if (response.status !== 200) {
-            $$invalidate(0, (scanner = false));
-            alert(
-              "Something went wrong. It's likely a server issue, Please try again later."
-            );
-            return;
-          }
+        $$invalidate(0, (scanner = false));
 
-          return response.json();
-        })
-        .then((data) => {
-          $$invalidate(0, (scanner = false));
+        if (Object.keys(tags).length === 0) {
+          alert("No tags found");
+          return;
+        }
 
-          if (data.data[0].length === 0) {
-            alert("No tags found");
-            return;
-          }
+        let threshold = localStorage.getItem("stash-tag-threshold") || 0.4;
 
-          // grab stash-tag-threshold from local storage or set to default
-          let threshold = localStorage.getItem("stash-tag-threshold") || 0.4;
-
-          new TagMatches({
-            target: document.body,
-            props: { matches: data.data[0], url, threshold },
-          });
-        })
-        .catch((error) => {
-          $$invalidate(0, (scanner = false));
-
-          if (error.message === "") {
-            alert("Error: Service may be down. please try again later.");
-          } else {
-            alert("Error: " + error.message);
-          }
+        new TagMatches({
+          target: document.body,
+          props: { matches: tags, url, threshold },
         });
+      } catch (error) {
+        $$invalidate(0, (scanner = false));
+        alert("Error: " + (error.message || "Service may be down. Please try again later."));
+      }
     }
 
     const writable_props = [];
@@ -4089,7 +4120,7 @@
     $$self.$capture_state = () => ({
       getScenarioAndID,
       getUrlSprite,
-      STASHMARKER_API_URL,
+      STASHMARKER_API_BASE,
       TagMatches,
       scanner,
       getTags,

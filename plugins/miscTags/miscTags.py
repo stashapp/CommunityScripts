@@ -272,7 +272,7 @@ stash = StashInterface(FRAGMENT_SERVER)
 config = stash.get_configuration()["plugins"]
 if "miscTags" in config:
     settings.update(config["miscTags"])
-log.info("config: %s " % (settings,))
+log.debug("config: %s " % (settings,))
 
 if "mode" in json_input["args"]:
     PLUGIN_ARGS = json_input["args"]["mode"]

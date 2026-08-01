@@ -1,0 +1,59 @@
+# stash-scheduler.service — systemd unit that starts the Stash Scheduler
+# automatically whenever the Stash service starts or restarts.
+#
+# HOW IT WORKS:
+#   BindsTo=stash.service  — this unit stops when Stash stops and starts
+#                            when Stash starts, covering both initial boot
+#                            and any subsequent Stash restarts.
+#   Type=simple + Restart  — if the autostart script or Stash connectivity
+#                            fails, systemd retries automatically.
+#
+# INSTALL:
+#   1. Find your Stash systemd unit name:
+#        systemctl list-units | grep -i stash
+#      Common names: stash.service, stashapp.service
+#
+#   2. Edit this file:
+#      a. Replace every "stash.service" with your actual unit name.
+#      b. Set PLUGIN_DIR to the full path of the stash-scheduler/ folder.
+#      c. If Stash requires an API key, uncomment the STASH_API_KEY line.
+#
+#   3. Copy to systemd and enable:
+#        sudo cp stash-scheduler.service /etc/systemd/system/
+#        sudo systemctl daemon-reload
+#        sudo systemctl enable stash-scheduler.service
+#
+#   4. The unit will now start/restart automatically with Stash.
+#      To start it manually right now:
+#        sudo systemctl start stash-scheduler.service
+
+[Unit]
+Description=Stash Scheduler — auto-start scan scheduler alongside Stash
+# Replace "stash.service" with your actual Stash service unit name
+BindsTo=stash.service
+After=stash.service
+
+[Service]
+Type=simple
+
+# --- Edit these two variables ---
+Environment=STASH_URL=http://localhost:9999
+Environment=PLUGIN_DIR=/path/to/.stash/plugins/stash-scheduler
+
+# Uncomment and set if Stash requires API key authentication:
+# Environment=STASH_API_KEY=your-api-key-here
+
+ExecStart=/bin/bash -c '${PLUGIN_DIR}/startup/autostart.sh ${STASH_URL} ${STASH_API_KEY}'
+
+# Restart whenever the script exits (e.g., after a Stash restart
+# this unit is re-triggered by BindsTo and tries again)
+Restart=on-failure
+RestartSec=15
+
+# Give Stash up to 3 minutes to become reachable before giving up
+TimeoutStartSec=180
+
+[Install]
+# "BindsTo" already handles the restart-with-Stash coupling.
+# WantedBy ensures the unit is active in normal runlevels.
+WantedBy=multi-user.target
