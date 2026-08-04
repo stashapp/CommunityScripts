@@ -1,21 +1,24 @@
 name: e621_tagger
 description: Finding images and videos on e621 and tagging them.
-version: 0.6
+version: 0.7
 url: https://discourse.stashapp.cc/t/e621-tagger/1377
 exec:
   - python
   - "{pluginDir}/e621_tagger.py"
-
 interface: raw
-
 settings:
   SkipTags:
-    displayName: List of tags to skip (comma separated). Default - e621_tagged
+    displayName: List of tags to skip (comma separated). Default - e621_tagged, e621_tag_failed, e621_not_found
     type: STRING
   ExcludeOrganized:
     displayName: Exclude images that are set as organized (default is to include)
     type: BOOLEAN
-
+  UserAgent:
+    displayName: "e621 User-Agent. Must look like Project/1.0 (by yourname on e621) - generic or browser-like strings are rejected with 403. Default - Stash-e621-Tagger/1.1 (by anonymous on e621)"
+    type: STRING
+  RequestDelayMs:
+    displayName: Delay between e621 requests in milliseconds. Minimum 500 (e621 caps at 2 req/s). Default - 1000
+    type: NUMBER
 tasks:
   - name: "Tag everything"
     description: "Tag everything (Warning: can take a while)"
