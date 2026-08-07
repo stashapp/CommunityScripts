@@ -27,6 +27,13 @@
       headerSelector: 'a.group-card-header',
       urlPattern: '/groups/',
       graphqlFilter: 'groups'
+    },
+    galleries: {
+      cardSelector: 'div.gallery-card',
+      headerSelector: 'a.gallery-card-header',
+      urlPattern: '/galleries/',
+      graphqlFilter: 'galleries',
+      imageClass: 'gallery-card-image'
     }
   };
 
@@ -118,6 +125,20 @@
         }
       }
     `,
+    tagGalleries: `
+      query GetTagGalleriesForThumbnail($entityId: ID!) {
+        findGalleries(gallery_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          galleries {
+            id
+            cover {
+              paths {
+                thumbnail
+              }
+            }
+          }
+        }
+      }
+    `,
     performerScenes: `
       query GetPerformerScenesForPreview($performerIds: [ID!]!) {
         findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
@@ -137,6 +158,29 @@
             id
             paths {
               screenshot
+            }
+          }
+        }
+      }
+    `,
+    galleryCover: `
+      query GalleryCover($entityId: ID!) {
+        findGallery(id: $entityId) {
+          cover {
+            paths {
+              thumbnail
+            }
+          }
+        }
+      }
+    `,
+    galleryImages: `
+      query GalleryImagesForThumbnail($entityId: ID!) {
+        findImages(image_filter: { galleries: { value: [$entityId], modifier: INCLUDES_ALL } }) {
+          images {
+            id
+            paths {
+              thumbnail
             }
           }
         }
@@ -191,10 +235,17 @@
       // Copy classes from image to video
       videoElement.className = existingImage.className;
       
-      // Styling for smooth transition
+      // Styling for smooth overlay transition
       videoElement.style.transition = 'opacity 0.3s ease-in-out';
       videoElement.style.opacity = '0';
       videoElement.style.display = 'none';
+      videoElement.style.position = 'absolute';
+      videoElement.style.top = '0';
+      videoElement.style.left = '0';
+      videoElement.style.width = '100%';
+      videoElement.style.height = '100%';
+      videoElement.style.objectFit = 'cover';
+      videoElement.style.zIndex = '1';
       
       return videoElement;
     },
@@ -325,6 +376,12 @@
         this.videoElement = null;
       }
       
+      // Make sure image is visible and in layout
+      if (this.existingImage) {
+        this.existingImage.style.display = '';
+        this.existingImage.style.opacity = '1';
+      }
+      
       // Fetch preview URLs if not already loaded
       if (!this.previewUrls.length && !this.isFetching) {
         await this.fetchPreviewUrls();
@@ -370,11 +427,7 @@
           
           if (this.existingImage) {
             this.existingImage.style.display = '';
-            setTimeout(() => {
-              if (this.existingImage) {
-                this.existingImage.style.opacity = '1';
-              }
-            }, 10);
+            this.existingImage.style.opacity = '1';
           }
         }, 300);
       } else if (this.existingImage) {
@@ -387,6 +440,46 @@
       this.isFetching = true;
       
       try {
+        // Galleries: use the gallery's cover image (or a random gallery image) as the thumbnail
+        if (this.entityType === 'galleries') {
+          try {
+            const coverResponse = await csLib.callGQL({
+              query: QUERIES.galleryCover,
+              variables: { entityId: this.entityId }
+            });
+            
+            const coverUrl = coverResponse?.findGallery?.cover?.paths?.thumbnail;
+            if (coverUrl) {
+              this.randomSceneThumbnailUrl = coverUrl;
+              this.existingImage.src = coverUrl;
+              this.isFetching = false;
+              return;
+            }
+            
+            const imagesResponse = await csLib.callGQL({
+              query: QUERIES.galleryImages,
+              variables: { entityId: this.entityId }
+            });
+            
+            const imageUrls = imagesResponse?.findImages?.images
+              ?.map(image => image?.paths?.thumbnail)
+              ?.filter(url => url) || [];
+              
+            if (imageUrls.length > 0) {
+              const shuffledImages = helpers.shuffleArray([...imageUrls]);
+              this.randomSceneThumbnailUrl = shuffledImages[0];
+              this.existingImage.src = this.randomSceneThumbnailUrl;
+              this.isFetching = false;
+              return;
+            }
+          } catch (error) {
+            // Fall through to default behaviour if gallery queries fail
+          }
+          
+          this.isFetching = false;
+          return;
+        }
+        
         let query;
         if (this.entityType === 'tags') {
           query = QUERIES.tagScreenshots;
@@ -395,9 +488,8 @@
         }
         
         const response = await csLib.callGQL({ query, variables: { entityId: this.entityId } });
-        let screenshotUrls = helpers.extractScreenshots(response, this.entityType);
+        let candidateUrls = helpers.extractScreenshots(response, this.entityType);
         
-        // For tags, try to get performer images first if it's a default thumbnail
         if (this.entityType === 'tags') {
           try {
             // Get performers with images for this tag
@@ -409,24 +501,13 @@
             const performers = performersWithImagesResponse?.findPerformers?.performers || [];
             const performerIds = performers.map(p => p.id);
             
-            // Extract performer image paths
+            // Add non-default performer images to the candidate pool
             const performerImagePaths = performers
               .map(p => p.image_path)
               .filter(path => path && !path.includes('?default=true'));
-              
-            // If we found performer images and this is a default thumbnail, use them
-            if (performerImagePaths.length > 0 && this.defaultImageUrl) {
-              performerImagePaths.sort(() => Math.random() - 0.5); // Shuffle image paths
-              this.randomSceneThumbnailUrl = performerImagePaths[0];
-              
-              if (this.randomSceneThumbnailUrl) {
-                this.existingImage.src = this.randomSceneThumbnailUrl;
-                this.isFetching = false;
-                return; // Early return as we've found and used a performer image
-              }
-            }
+            candidateUrls = [...candidateUrls, ...performerImagePaths];
             
-            // If we have performers but no performer images (or all are default), try to get their scene screenshots
+            // Add performer scene screenshots to the candidate pool
             if (performerIds.length > 0) {
               const performerScenesResponse = await csLib.callGQL({ 
                 query: QUERIES.performerScreenshots, 
@@ -437,29 +518,28 @@
                 ?.map(scene => scene?.paths?.screenshot)
                 ?.filter(url => url) || [];
               
-              // If we have performer scene screenshots and this is a default thumbnail with no content
-              if (performerSceneScreenshots.length > 0 && this.defaultImageUrl && screenshotUrls.length === 0) {
-                const shuffledScreenshots = helpers.shuffleArray([...performerSceneScreenshots]);
-                this.randomSceneThumbnailUrl = shuffledScreenshots[0];
-                
-                if (this.randomSceneThumbnailUrl) {
-                  this.existingImage.src = this.randomSceneThumbnailUrl;
-                  this.isFetching = false;
-                  return; // Early return as we've found and used a performer's scene screenshot
-                }
-              }
-              
-              // Add performer scene screenshots to the existing list
-              screenshotUrls = [...screenshotUrls, ...performerSceneScreenshots];
+              candidateUrls = [...candidateUrls, ...performerSceneScreenshots];
             }
+            
+            // Add gallery covers tagged with this tag to the candidate pool
+            const galleriesResponse = await csLib.callGQL({
+              query: QUERIES.tagGalleries,
+              variables: { entityId: this.entityId }
+            });
+            
+            const galleryCoverUrls = galleriesResponse?.findGalleries?.galleries
+              ?.map(gallery => gallery?.cover?.paths?.thumbnail)
+              ?.filter(url => url) || [];
+              
+            candidateUrls = [...candidateUrls, ...galleryCoverUrls];
           } catch (error) {
-            // Fallback to original screenshots if performer queries fail
+            // Continue with whatever candidates we already have
           }
         }
         
-        if (screenshotUrls.length > 0) {
-          screenshotUrls = helpers.shuffleArray(screenshotUrls);
-          this.randomSceneThumbnailUrl = screenshotUrls[0];
+        if (candidateUrls.length > 0) {
+          candidateUrls = helpers.shuffleArray(candidateUrls);
+          this.randomSceneThumbnailUrl = candidateUrls[0];
           
           if (this.randomSceneThumbnailUrl) {
             this.existingImage.src = this.randomSceneThumbnailUrl;
@@ -533,9 +613,11 @@
       // Add event listeners to video element
       this.setupVideoEvents();
       
-      // Append video to the header link
+      // Append video to the header link and make the link a positioning context
       const cardHeaderLink = this.cardElement.querySelector(this.config.headerSelector);
       if (cardHeaderLink) {
+        cardHeaderLink.style.position = 'relative';
+        cardHeaderLink.style.display = 'block';
         cardHeaderLink.appendChild(this.videoElement);
       }
     }
@@ -578,69 +660,44 @@
       // Handle successful video loading
       this.videoElement.onloadeddata = () => {
         this.hasSuccessfulVideo = true;
-        
-        // Check if elements still exist before accessing their properties
+
+        if (!this.videoElement) return;
+
+        // Keep the image in layout as a placeholder so the card doesn't collapse
         if (this.existingImage) {
-          this.existingImage.style.display = 'none';
+          this.existingImage.style.opacity = '0';
         }
-        
-        if (this.videoElement) {
-          this.videoElement.style.display = '';
-        } else {
-          // Video element was removed, bail out
+
+        this.videoElement.style.display = '';
+        this.videoElement.style.opacity = '1';
+
+        if (this.isMouseLeaving) {
+          this.videoElement.pause();
+          this.videoElement.style.opacity = '0';
+          if (this.existingImage) {
+            this.existingImage.style.opacity = '1';
+          }
           return;
         }
-        
-        setTimeout(() => {
-          // Re-check if elements still exist in the setTimeout callback
-          if (this.isMouseLeaving) {
+
+        const playAttemptTime = Date.now();
+        this.lastPlayAttemptTime = playAttemptTime;
+
+        this.videoElement.play().catch(e => {
+          if (!(e.name === 'AbortError' && this.isMouseLeaving)) {
+            console.warn("Video play failed after loadeddata:", e);
+          }
+
+          if (this.lastPlayAttemptTime === playAttemptTime && !this.hasSuccessfulVideo) {
             if (this.videoElement) {
-              this.videoElement.pause();
               this.videoElement.style.display = 'none';
               this.videoElement.style.opacity = '0';
             }
-            
             if (this.existingImage) {
-              this.existingImage.style.display = '';
               this.existingImage.style.opacity = '1';
             }
-            return;
           }
-          
-          if (!this.videoElement) {
-            // Video element no longer exists
-            return;
-          }
-          
-          this.videoElement.style.opacity = '1';
-          
-          // Check if user already moved the mouse out before trying to play
-          if (!this.isMouseLeaving) {
-            // Track that we're attempting to play
-            const playAttemptTime = Date.now();
-            this.lastPlayAttemptTime = playAttemptTime;
-            
-            this.videoElement.play().catch(e => {
-              // Only log warning if it's not an abort error or if it's not due to quick mouse movements
-              if (!(e.name === 'AbortError' && this.isMouseLeaving)) {
-                console.warn("Video play failed after loadeddata:", e);
-              }
-              
-              // Only handle errors if this is still the most recent play attempt
-              if (this.lastPlayAttemptTime === playAttemptTime && !this.hasSuccessfulVideo) {
-                if (this.videoElement) {
-                  this.videoElement.style.display = 'none';
-                  this.videoElement.style.opacity = '0';
-                }
-                
-                if (this.existingImage) {
-                  this.existingImage.style.display = '';
-                  this.existingImage.style.opacity = '1';
-                }
-              }
-            });
-          }
-        }, 50);
+        });
       };
       
       // Handle video loading errors
@@ -687,63 +744,68 @@
     }
   }
 
-  // Main function to handle thumbnail preview logic
-  const handleThumbLogic = async (containerElement, entityType) => {
+  // Process a single card for a given entity type
+  const processCard = (cardElement, entityType) => {
     const currentConfig = CONFIG[entityType];
     if (!currentConfig) return;
 
-    // Process a single card element
-    const processCard = async (cardElement) => {
-      // Skip if already processed
-      if (cardElement.dataset[`${entityType}CardProcessed`]) return;
-      cardElement.dataset[`${entityType}CardProcessed`] = "true";
+    // Skip if already processed for this type
+    if (cardElement.dataset[`${entityType}CardProcessed`]) return;
+    cardElement.dataset[`${entityType}CardProcessed`] = "true";
 
-      // Find the thumbnail section
-      const thumbnailSection = cardElement.querySelector('div.thumbnail-section');
-      if (!thumbnailSection) return;
+    // Find the thumbnail section
+    const thumbnailSection = cardElement.querySelector('div.thumbnail-section');
+    if (!thumbnailSection) return;
 
-      // Find the existing image thumbnail
-      const existingImage = thumbnailSection.querySelector(`img.${entityType.slice(0, -1)}-card-image`) || thumbnailSection.querySelector('img');
-      if (!existingImage) return;
+    // Find the existing image thumbnail
+    const imageClass = currentConfig.imageClass || `${entityType.slice(0, -1)}-card-image`;
+    const existingImage = thumbnailSection.querySelector(`img.${imageClass}`) || thumbnailSection.querySelector('img');
+    if (!existingImage) return;
 
-      // Extract entity ID from the card
-      const entityId = helpers.getEntityId(cardElement, currentConfig.urlPattern);
-      if (!entityId) return;
+    // Extract entity ID from the card
+    const entityId = helpers.getEntityId(cardElement, currentConfig.urlPattern);
+    if (!entityId) return;
 
-      // Clean up any custom styles previously added
-      helpers.cleanupCustomStyles(thumbnailSection, cardElement);
+    // Clean up any custom styles previously added
+    helpers.cleanupCustomStyles(thumbnailSection, cardElement);
 
-      // Create and initialize the video preview manager
-      new VideoPreviewManager(cardElement, existingImage, entityType, entityId, currentConfig);
-    };
+    // Create and initialize the video preview manager
+    new VideoPreviewManager(cardElement, existingImage, entityType, entityId, currentConfig);
+  };
 
-    // Process existing cards
-    containerElement.querySelectorAll(currentConfig.cardSelector).forEach(processCard);
+  // Main function to handle thumbnail preview logic for all configured card types
+  const handleThumbLogic = (containerElement) => {
+    // Process existing cards of all types
+    Object.keys(CONFIG).forEach(entityType => {
+      containerElement.querySelectorAll(CONFIG[entityType].cardSelector).forEach(card => processCard(card, entityType));
+    });
 
     // Use MutationObserver to process newly added cards
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.classList.contains(currentConfig.cardSelector.replace('div.', ''))) {
-              processCard(node);
-            } else {
-              const cards = node.querySelectorAll(currentConfig.cardSelector);
-              cards.forEach(processCard);
-            }
+            Object.keys(CONFIG).forEach(entityType => {
+              const currentConfig = CONFIG[entityType];
+              if (node.classList.contains(currentConfig.cardSelector.replace('div.', ''))) {
+                processCard(node, entityType);
+              } else {
+                const cards = node.querySelectorAll(currentConfig.cardSelector);
+                cards.forEach(card => processCard(card, entityType));
+              }
+            });
           }
         });
       });
     });
 
-    // Observe the container element for added cards
     observer.observe(containerElement, { childList: true, subtree: true });
   };
 
   // Set up path listeners for different entity pages
-  ['studios', 'tags', 'performers', 'groups'].forEach(entityType => {
+  ['studios', 'tags', 'performers', 'groups', 'galleries'].forEach(entityType => {
     csLib.PathElementListener(`/${entityType}`, "div.item-list-container", (containerElement) => {
-      handleThumbLogic(containerElement, entityType);
+      handleThumbLogic(containerElement);
     });
   });
 
