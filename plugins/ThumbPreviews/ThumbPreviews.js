@@ -139,18 +139,6 @@
         }
       }
     `,
-    tagImages: `
-      query GetTagImagesForThumbnail($entityId: ID!) {
-        findImages(image_filter: { tags: { value: [$entityId], modifier: INCLUDES_ALL } }) {
-          images {
-            id
-            paths {
-              thumbnail
-            }
-          }
-        }
-      }
-    `,
     performerScenes: `
       query GetPerformerScenesForPreview($performerIds: [ID!]!) {
         findScenes(scene_filter: { performers: { value: $performerIds, modifier: INCLUDES } }) {
@@ -544,18 +532,6 @@
               ?.filter(url => url) || [];
               
             candidateUrls = [...candidateUrls, ...galleryCoverUrls];
-            
-            // Add images tagged with this tag to the candidate pool
-            const imagesResponse = await csLib.callGQL({
-              query: QUERIES.tagImages,
-              variables: { entityId: this.entityId }
-            });
-            
-            const imageUrls = imagesResponse?.findImages?.images
-              ?.map(image => image?.paths?.thumbnail)
-              ?.filter(url => url) || [];
-              
-            candidateUrls = [...candidateUrls, ...imageUrls];
           } catch (error) {
             // Continue with whatever candidates we already have
           }
