@@ -9004,6 +9004,11 @@
         })));
     }
 
+    const LOAD_TIMEOUT_MS = 15000;
+    const SEEK_TIMEOUT_MS = 10000;
+    // Below this delta the browser treats the seek as a no-op and never fires
+    // `seeked`, so the frame is already the one we want.
+    const SEEK_EPSILON = 0.001;
     function pad(n, width = 2) {
         return String(n).padStart(width, '0');
     }
@@ -9014,6 +9019,70 @@
         const ms = Math.round((seconds - Math.floor(seconds)) * 1000);
         return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(ms, 3)}`;
     }
+    function loadMetadata(video) {
+        return new Promise((resolve, reject) => {
+            let timeout;
+            const done = () => {
+                clearTimeout(timeout);
+                video.onloadedmetadata = null;
+                video.onerror = null;
+            };
+            timeout = setTimeout(() => {
+                done();
+                reject(new Error('Preview video load timed out'));
+            }, LOAD_TIMEOUT_MS);
+            video.onloadedmetadata = () => {
+                done();
+                resolve();
+            };
+            video.onerror = () => {
+                done();
+                reject(new Error('Failed to load preview video'));
+            };
+            video.load();
+        });
+    }
+    // Seeking alone decodes and presents the frame, so `play()` is never needed.
+    // Calling it made the whole scan fail whenever the play promise was rejected
+    // (AbortError), which is out of our control on some machines.
+    function seekTo(video, time) {
+        if (Math.abs(video.currentTime - time) < SEEK_EPSILON)
+            return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            let timeout;
+            const done = () => {
+                clearTimeout(timeout);
+                video.onseeked = null;
+                video.onerror = null;
+            };
+            timeout = setTimeout(() => {
+                done();
+                reject(new Error(`Timed out seeking preview video to ${time.toFixed(2)}s`));
+            }, SEEK_TIMEOUT_MS);
+            video.onseeked = () => {
+                done();
+                resolve();
+            };
+            video.onerror = () => {
+                done();
+                reject(new Error('Preview video failed while seeking'));
+            };
+            video.currentTime = time;
+        });
+    }
+    function releaseVideo(video) {
+        video.onloadedmetadata = null;
+        video.onseeked = null;
+        video.onerror = null;
+        try {
+            video.removeAttribute('src');
+            video.load();
+        }
+        catch (e) {
+            console.warn('[Visage] Failed to release preview video:', e);
+        }
+        video.remove();
+    }
     async function extractFramesFromPreview(previewUrl, frameCount = 12, tileWidth = 640, tileHeight = 360) {
         const video = document.createElement('video');
         video.crossOrigin = 'anonymous';
@@ -9021,59 +9090,59 @@
         video.muted = true;
         video.playsInline = true;
         video.src = previewUrl;
-        await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Preview video load timed out')), 15000);
-            video.onloadedmetadata = () => {
-                clearTimeout(timeout);
-                resolve();
-            };
-            video.onerror = () => {
-                clearTimeout(timeout);
-                reject(new Error('Failed to load preview video'));
-            };
-            video.load();
-        });
-        await video.play();
-        video.pause();
-        const duration = video.duration;
-        if (!duration || duration <= 0)
-            throw new Error('Invalid preview video duration');
-        const interval = duration / frameCount;
         const extractCanvas = document.createElement('canvas');
-        extractCanvas.width = tileWidth;
-        extractCanvas.height = tileHeight;
-        const extractCtx = extractCanvas.getContext('2d');
-        const cols = 4;
-        const rows = Math.ceil(frameCount / cols);
         const spriteCanvas = document.createElement('canvas');
-        spriteCanvas.width = cols * tileWidth;
-        spriteCanvas.height = rows * tileHeight;
-        const spriteCtx = spriteCanvas.getContext('2d');
-        const cues = [];
-        const halfStep = interval / 2;
-        for (let i = 0; i < frameCount; i++) {
-            if (isCancelled())
-                break;
-            const time = Math.min(i * interval + halfStep, duration - 0.001);
-            video.currentTime = time;
-            await new Promise((resolve) => {
-                video.onseeked = () => resolve();
+        try {
+            await loadMetadata(video);
+            const duration = video.duration;
+            if (!Number.isFinite(duration) || duration <= 0) {
+                throw new Error('Invalid preview video duration');
+            }
+            const interval = duration / frameCount;
+            extractCanvas.width = tileWidth;
+            extractCanvas.height = tileHeight;
+            const extractCtx = extractCanvas.getContext('2d');
+            const cols = 4;
+            const rows = Math.ceil(frameCount / cols);
+            spriteCanvas.width = cols * tileWidth;
+            spriteCanvas.height = rows * tileHeight;
+            const spriteCtx = spriteCanvas.getContext('2d');
+            const cues = [];
+            const halfStep = interval / 2;
+            for (let i = 0; i < frameCount; i++) {
+                if (isCancelled())
+                    break;
+                const time = Math.min(i * interval + halfStep, duration - SEEK_EPSILON);
+                try {
+                    await seekTo(video, time);
+                }
+                catch (e) {
+                    // A stalled decode must not hang or fail the scan: keep the frames we
+                    // already have and identify on those.
+                    console.warn('[Visage] Stopping frame extraction early:', e);
+                    break;
+                }
+                extractCtx.drawImage(video, 0, 0, tileWidth, tileHeight);
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                spriteCtx.drawImage(extractCanvas, col * tileWidth, row * tileHeight);
+                cues.push(`${formatVttTime(time)} --> ${formatVttTime(Math.min(time + interval, duration))}\n` +
+                    `sprite.jpg#xywh=${col * tileWidth},${row * tileHeight},${tileWidth},${tileHeight}`);
+            }
+            if (!cues.length && !isCancelled()) {
+                throw new Error('Could not extract any frames from the preview video');
+            }
+            const spriteBlob = await new Promise((resolve, reject) => {
+                spriteCanvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.85);
             });
-            extractCtx.drawImage(video, 0, 0, tileWidth, tileHeight);
-            const col = i % cols;
-            const row = Math.floor(i / cols);
-            spriteCtx.drawImage(extractCanvas, col * tileWidth, row * tileHeight);
-            cues.push(`${formatVttTime(time)} --> ${formatVttTime(Math.min(time + interval, duration))}\n` +
-                `sprite.jpg#xywh=${col * tileWidth},${row * tileHeight},${tileWidth},${tileHeight}`);
+            const vtt = 'WEBVTT\n\n' + cues.map((c, i) => `${i + 1}\n${c}`).join('\n\n');
+            return { sprite: spriteBlob, vtt };
         }
-        const spriteBlob = await new Promise((resolve, reject) => {
-            spriteCanvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.85);
-        });
-        const vtt = 'WEBVTT\n\n' + cues.map((c, i) => `${i + 1}\n${c}`).join('\n\n');
-        video.remove();
-        extractCanvas.remove();
-        spriteCanvas.remove();
-        return { sprite: spriteBlob, vtt };
+        finally {
+            releaseVideo(video);
+            extractCanvas.remove();
+            spriteCanvas.remove();
+        }
     }
 
     function hasPerformers(data) {
