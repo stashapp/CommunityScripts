@@ -102,6 +102,61 @@
 }
 
 /* ========================
+   HEALTH BANNER
+   ======================== */
+
+.visage-health-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 0.7rem 1.2rem;
+  background: var(--v-surface);
+  border-bottom: 1px solid var(--v-border);
+  color: var(--v-text);
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.visage-health-banner-action {
+  flex: 0 0 auto;
+  color: var(--v-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.visage-health-banner-action:hover {
+  filter: brightness(1.15);
+}
+
+.visage-theme-light .visage-health-banner {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.visage-health-banner-close {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  opacity: 0.7;
+}
+
+.visage-health-banner-close:hover {
+  opacity: 1;
+}
+
+/* ========================
    MODAL
    ======================== */
 
@@ -512,6 +567,26 @@
 }
 
 .visage-modal-close:hover {
+  color: var(--v-text);
+  border-color: var(--v-border-hover);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.visage-modal-settings {
+  background: none;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r-sm);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--v-text-2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.visage-modal-settings:hover {
   color: var(--v-text);
   border-color: var(--v-border-hover);
   background: rgba(255, 255, 255, 0.06);
@@ -2070,6 +2145,262 @@
   to { width: 0%; }
 }
 
+/* ========================
+   BACKEND BADGE
+   ======================== */
+
+.visage-backend-badge {
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+  z-index: 2000;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  border: 1px solid var(--v-border);
+  background: var(--v-surface);
+  color: var(--v-text);
+  font-family: var(--v-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: default;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* In the result-modal header the badge is a passive label next to the gear,
+   not an always-visible fixed pill. */
+.visage-modal-header .visage-backend-badge {
+  position: static;
+  box-shadow: none;
+  padding: 4px 10px;
+}
+
+.visage-backend-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.visage-backend-badge:hover {
+  border-color: var(--v-border-hover);
+}
+
+.visage-modal-header .visage-backend-badge:hover {
+  box-shadow: none;
+}
+
+.visage-backend-badge.visage-backend-local {
+  color: var(--v-excellent);
+  border-color: color-mix(in srgb, var(--v-excellent) 35%, transparent);
+  background: color-mix(in srgb, var(--v-excellent) 9%, var(--v-surface));
+}
+
+.visage-backend-badge.visage-backend-cloud {
+  color: var(--v-good);
+  border-color: color-mix(in srgb, var(--v-good) 35%, transparent);
+  background: color-mix(in srgb, var(--v-good) 9%, var(--v-surface));
+}
+
+/* ========================
+   BACKEND SETTINGS
+   ======================== */
+
+.visage-backend-settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.visage-theme-light .visage-backend-settings-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.visage-backend-settings {
+  width: min(480px, 92vw);
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55);
+  font-family: var(--v-sans);
+  color: var(--v-text);
+  overflow: hidden;
+  animation: visage-error-in 0.25s var(--v-ease);
+}
+
+.visage-backend-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid var(--v-border);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent);
+}
+
+.visage-backend-settings-title {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v-accent);
+  font-family: var(--v-mono);
+}
+
+.visage-backend-settings-close {
+  background: none;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r-sm);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--v-text-2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.visage-backend-settings-close:hover {
+  color: var(--v-text);
+  border-color: var(--v-border-hover);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.visage-backend-settings-body {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.visage-backend-settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.visage-backend-settings-label {
+  font-size: 0.7rem;
+  color: var(--v-text-2);
+}
+
+.visage-backend-settings-seg {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.visage-backend-seg-opt {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r-sm);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--v-text-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.visage-backend-seg-opt:hover {
+  border-color: var(--v-border-hover);
+  color: var(--v-text);
+}
+
+.visage-backend-seg-opt.visage-backend-seg-active {
+  border-color: var(--v-accent);
+  color: var(--v-accent);
+  background: var(--v-accent-glow);
+}
+
+.visage-backend-settings-input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.75rem;
+  font-family: var(--v-mono);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--v-border);
+  border-radius: 5px;
+  color: var(--v-text);
+}
+
+.visage-backend-settings-input:focus {
+  outline: none;
+  border-color: var(--v-border-active);
+}
+
+.visage-backend-settings-cloud-url {
+  padding: 0.5rem 0.7rem;
+  font-family: var(--v-mono);
+  font-size: 0.75rem;
+  color: var(--v-text-2);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px dashed var(--v-border);
+  border-radius: 5px;
+  word-break: break-all;
+}
+
+.visage-backend-settings-note {
+  font-size: 0.7rem;
+  color: var(--v-good);
+  background: color-mix(in srgb, var(--v-good) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--v-good) 25%, transparent);
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--v-r-sm);
+}
+
+.visage-backend-settings-hint {
+  font-size: 0.7rem;
+  color: var(--v-text-2);
+  margin: 0.4rem 0 0;
+}
+
+.visage-backend-settings-hint-link {
+  color: var(--v-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.visage-backend-settings-status {
+  font-size: 0.72rem;
+  color: var(--v-text-2);
+  min-height: 1.1rem;
+}
+
+.visage-backend-settings-status.visage-backend-reachable {
+  color: var(--v-excellent);
+}
+
+.visage-backend-settings-status.visage-backend-degraded {
+  color: var(--v-good);
+}
+
+.visage-backend-settings-status.visage-backend-unreachable {
+  color: var(--v-uncertain);
+}
+
+.visage-backend-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  border-top: 1px solid var(--v-border);
+  padding: 0.875rem 1.5rem;
+  background: rgba(0, 0, 0, 0.12);
+}
+
 @media (max-width: 768px) {
 
   .visage-modal {
@@ -2280,6 +2611,84 @@
     font-size: 0.55rem;
   }
 
+}
+
+/* FIRST RUN ONBOARDING */
+.visage-firstrun-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.visage-theme-light .visage-firstrun-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.visage-firstrun-dialog {
+  width: min(440px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  padding: 1.75rem 1.75rem 1.25rem;
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-r);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.55);
+  font-family: var(--v-sans);
+  color: var(--v-text);
+  text-align: center;
+  animation: visage-error-in 0.25s var(--v-ease);
+}
+
+.visage-firstrun-heading {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+  color: var(--v-text);
+}
+
+.visage-firstrun-sub {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  color: var(--v-text-2);
+  line-height: 1.4;
+}
+
+.visage-firstrun-dialog .visage-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 0.6rem 0.875rem;
+  font-size: 0.8rem;
+}
+
+.visage-firstrun-note {
+  margin: -0.25rem 0 0.5rem;
+  font-size: 0.62rem;
+  color: var(--v-text-2);
+  line-height: 1.35;
+}
+
+.visage-firstrun-skip {
+  align-self: center;
+  margin-top: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  background: none;
+  border: none;
+  color: var(--v-accent);
+  font-family: var(--v-sans);
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.visage-firstrun-skip:hover {
+  color: var(--v-accent-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {

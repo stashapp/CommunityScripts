@@ -1,6 +1,6 @@
 name: Visage
 description: Use facial recognition to lookup performers from scene sprites
-version: 2.4.1
+version: 2.5.0
 url: https://discourse.stashapp.cc/t/visage/11785
 ui:
   javascript:
@@ -10,6 +10,6 @@ ui:
   csp:
     connect-src:
     - "https://cc1234-stashface-onnx.hf.space"
-    - "http://localhost:7860"
+    - "http://*:7860"
     script-src:
     - "'self'"

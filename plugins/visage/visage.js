@@ -1,8 +1,8 @@
 (function () {
     'use strict';
 
-    const React$c = window.PluginApi.React;
-    const { createContext, useContext, useReducer, useCallback: useCallback$7 } = React$c;
+    const React$g = window.PluginApi.React;
+    const { createContext, useContext, useReducer, useCallback: useCallback$7 } = React$g;
     const initialState = {
         scenario: null,
         scenarioId: null,
@@ -19,6 +19,8 @@
         scanProgress: 0,
         scanProgressDesc: '',
         errorDialog: null,
+        healthBanner: null,
+        settingsOpen: false,
     };
     function visageReducer(state, action) {
         switch (action.type) {
@@ -58,6 +60,14 @@
                 return { ...state, errorDialog: { message: action.message, variant: action.variant } };
             case 'HIDE_ERROR_DIALOG':
                 return { ...state, errorDialog: null };
+            case 'SHOW_HEALTH_BANNER':
+                return { ...state, healthBanner: action.message };
+            case 'HIDE_HEALTH_BANNER':
+                return { ...state, healthBanner: null };
+            case 'SHOW_SETTINGS':
+                return { ...state, settingsOpen: true };
+            case 'HIDE_SETTINGS':
+                return { ...state, settingsOpen: false };
             case 'SET_SCAN_PROGRESS':
                 return { ...state, scanProgress: action.progress, scanProgressDesc: action.desc };
             case 'RESET':
@@ -133,6 +143,18 @@
         const hideErrorDialog = useCallback$7(() => {
             dispatch({ type: 'HIDE_ERROR_DIALOG' });
         }, []);
+        const showHealthBanner = useCallback$7((message) => {
+            dispatch({ type: 'SHOW_HEALTH_BANNER', message });
+        }, []);
+        const hideHealthBanner = useCallback$7(() => {
+            dispatch({ type: 'HIDE_HEALTH_BANNER' });
+        }, []);
+        const openSettings = useCallback$7(() => {
+            dispatch({ type: 'SHOW_SETTINGS' });
+        }, []);
+        const closeSettings = useCallback$7(() => {
+            dispatch({ type: 'HIDE_SETTINGS' });
+        }, []);
         const value = {
             state,
             dispatch,
@@ -156,8 +178,12 @@
             showWarning,
             showSuccess,
             hideErrorDialog,
+            showHealthBanner,
+            hideHealthBanner,
+            openSettings,
+            closeSettings,
         };
-        return React$c.createElement(VisageContext.Provider, { value }, children);
+        return React$g.createElement(VisageContext.Provider, { value }, children);
     }
     function useVisage() {
         const context = useContext(VisageContext);
@@ -8029,6 +8055,74 @@
         }
         return VISAGE_API_URL;
     }
+    /**
+     * Probe the backend's `/health` endpoint. Resolves the health status when the
+     * backend is up, `null` only when it is genuinely unreachable (network error
+     * or a non-404 error response). Used to surface a "backend offline" state
+     * proactively instead of failing on the first scan. Never throws.
+     *
+     * A `404` on `/health` is treated as reachable-and-healthy: some backends (the
+     * hosted Hugging Face cloud app) don't expose a `/health` route, but a 404
+     * proves the server itself answered, so we must not report it as unreachable.
+     */
+    async function checkHealth(endpoint = getApiEndpoint()) {
+        try {
+            const res = await fetch(`${endpoint}/health`, { method: 'GET' });
+            if (res.status === 404) {
+                return { status: 'ready', index_docs: null, models_loaded: true };
+            }
+            if (!res.ok)
+                return null;
+            return (await res.json());
+        }
+        catch (_a) {
+            return null;
+        }
+    }
+    function setApiEndpoint(endpoint) {
+        try {
+            localStorage.setItem(STORAGE_KEY, endpoint);
+        }
+        catch (e) {
+            console.warn('Could not save API endpoint to localStorage:', e);
+        }
+    }
+    function isPrivateIPv4(octets) {
+        const [a, b, c] = octets.map(Number);
+        if (a === 127)
+            return true;
+        if (a === 10)
+            return true;
+        if (a === 192 && b === 168)
+            return true;
+        if (a === 172 && b >= 16 && b <= 31)
+            return true;
+        if (a === 169 && b === 254)
+            return true;
+        return false;
+    }
+    function isLocalEndpoint(endpoint) {
+        let hostname;
+        try {
+            hostname = new URL(endpoint).hostname;
+        }
+        catch (_a) {
+            return false;
+        }
+        if (!hostname)
+            return false;
+        const lower = hostname.toLowerCase();
+        if (lower === 'localhost')
+            return true;
+        if (lower.endsWith('.local'))
+            return true;
+        const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(lower);
+        if (ipv4)
+            return isPrivateIPv4(ipv4.slice(1));
+        if (!lower.includes('.') && !/[0-9]/.test(lower))
+            return true;
+        return false;
+    }
     function dataUrlToBlob(dataUrl) {
         const arr = dataUrl.split(',');
         const mime = arr[0].match(/:(.*?);/)[1];
@@ -8290,6 +8384,95 @@
         document.body.appendChild(img);
         setTimeout(() => { img.remove(); URL.revokeObjectURL(url); }, 3000);
     }
+    function waitForVideoReady(video, timeoutMs = 2000) {
+        if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0)
+            return Promise.resolve(true);
+        return new Promise((resolve) => {
+            let done = false;
+            const finish = (ok) => {
+                if (done)
+                    return;
+                done = true;
+                clearTimeout(timer);
+                video.removeEventListener('loadeddata', onData);
+                video.removeEventListener('loadedmetadata', onData);
+                video.removeEventListener('canplay', onData);
+                video.removeEventListener('error', onError);
+                resolve(ok);
+            };
+            const onData = () => finish(video.videoWidth > 0 && video.videoHeight > 0);
+            const onError = () => finish(false);
+            const timer = setTimeout(() => finish(false), timeoutMs);
+            video.addEventListener('loadeddata', onData);
+            video.addEventListener('loadedmetadata', onData);
+            video.addEventListener('canplay', onData);
+            video.addEventListener('error', onError);
+            try {
+                video.load();
+            }
+            catch ( /* ignore */_a) { /* ignore */ }
+        });
+    }
+    function findPosterUrl(video) {
+        var _a;
+        if (video.poster)
+            return video.poster;
+        const poster = (_a = video.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.vjs-poster');
+        if (poster) {
+            const bg = getComputedStyle(poster).backgroundImage;
+            const m = bg.match(/url\(["']?([^"')]+)["']?\)/);
+            if (m)
+                return m[1];
+        }
+        return null;
+    }
+    async function capturePoster(video, crop) {
+        const posterUrl = findPosterUrl(video);
+        if (!posterUrl)
+            return null;
+        console.warn('[Visage] Video not loaded, capturing poster:', posterUrl);
+        try {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = posterUrl;
+            await new Promise((resolve, reject) => {
+                img.onload = () => resolve();
+                img.onerror = () => reject(new Error('Poster image failed to load'));
+            });
+            if (!crop) {
+                const bitmap = await createImageBitmap(img);
+                const blob = await optimizeCanvas(bitmap);
+                return blob !== null && blob !== void 0 ? blob : null;
+            }
+            const nw = img.naturalWidth, nh = img.naturalHeight;
+            if (!nw || !nh)
+                return null;
+            const vr = crop.videoRect;
+            const sx = Math.max(0, Math.min(((crop.bounds.x - vr.x) / vr.w) * nw, nw));
+            const sy = Math.max(0, Math.min(((crop.bounds.y - vr.y) / vr.h) * nh, nh));
+            const sw = Math.min((crop.bounds.w / vr.w) * nw, nw - sx);
+            const sh = Math.min((crop.bounds.h / vr.h) * nh, nh - sy);
+            if (sw < 4 || sh < 4)
+                return null;
+            const scale = Math.min(MAX_LONG_SIDE / sw, MAX_LONG_SIDE / sh, 1);
+            const dw = Math.max(1, Math.round(sw * scale));
+            const dh = Math.max(1, Math.round(sh * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = dw;
+            canvas.height = dh;
+            const ctx = canvas.getContext('2d');
+            if (!ctx)
+                return null;
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+            return await new Promise((resolve) => {
+                canvas.toBlob((b) => resolve(b), 'image/jpeg', JPEG_QUALITY);
+            });
+        }
+        catch (e) {
+            console.warn('[Visage] Poster capture failed:', e);
+            return null;
+        }
+    }
     async function fallbackCapture(bounds) {
         const canvas = await html2canvas(document.documentElement, {
             x: bounds.x, y: bounds.y, width: bounds.w, height: bounds.h,
@@ -8343,19 +8526,6 @@
         }
         return bestVideo || bestOther;
     }
-    function findPosterUrl(video) {
-        var _a;
-        if (video.poster)
-            return video.poster;
-        const poster = (_a = video.parentElement) === null || _a === void 0 ? void 0 : _a.querySelector('.vjs-poster');
-        if (poster) {
-            const bg = getComputedStyle(poster).backgroundImage;
-            const m = bg.match(/url\(["']?([^"')]+)["']?\)/);
-            if (m)
-                return m[1];
-        }
-        return null;
-    }
     // Capture the whole content of the primary media element on screen (the playing
     // video, or the preview/image being viewed), not the entire browser viewport.
     async function captureWholeFrame() {
@@ -8366,26 +8536,9 @@
         }
         const int = getIntrinsicSize(found.el);
         if (found.el instanceof HTMLVideoElement && (int.w === 0 || int.h === 0)) {
-            const posterUrl = findPosterUrl(found.el);
-            if (posterUrl) {
-                console.warn('[Visage] Video not loaded, capturing poster:', posterUrl);
-                try {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.src = posterUrl;
-                    await new Promise((resolve, reject) => {
-                        img.onload = () => resolve();
-                        img.onerror = () => reject(new Error('Poster image failed to load'));
-                    });
-                    const bitmap = await createImageBitmap(img);
-                    const blob = await optimizeCanvas(bitmap);
-                    if (blob)
-                        return blob;
-                }
-                catch (e) {
-                    console.warn('[Visage] Poster capture failed:', e);
-                }
-            }
+            const poster = await capturePoster(found.el);
+            if (poster)
+                return poster;
             return fallbackCapture(found.rect);
         }
         const content = getContentRect(found.el, found.rect);
@@ -8416,6 +8569,28 @@
         }
         const intSize = getIntrinsicSize(found.el);
         if (intSize.w === 0 || intSize.h === 0) {
+            if (found.el instanceof HTMLVideoElement) {
+                // Capture the visible poster/thumbnail FIRST. Calling video.load() (via
+                // waitForVideoReady) can hide or clear the poster, so grab it before the
+                // video has a chance to disturb the DOM.
+                const poster = await capturePoster(found.el, { bounds, videoRect: found.rect });
+                if (poster)
+                    return poster;
+                const ready = await waitForVideoReady(found.el);
+                if (ready && found.el.videoWidth > 0 && found.el.videoHeight > 0) {
+                    const contentRect = getContentRect(found.el, found.rect);
+                    const clamped = clampSelToContent(bounds, contentRect);
+                    if (clamped.w >= 4 && clamped.h >= 4) {
+                        const { sx, sy, sw, sh } = mapToIntrinsic(found.el, clamped, contentRect);
+                        try {
+                            const blob = await drawFromMedia(found.el, sx, sy, sw, sh);
+                            if (blob)
+                                return blob;
+                        }
+                        catch ( /* fall through */_b) { /* fall through */ }
+                    }
+                }
+            }
             console.warn('[Visage] Media has no intrinsic size (not loaded yet), falling back');
             return fallbackCapture(bounds);
         }
@@ -8686,8 +8861,8 @@
         return error instanceof Error ? error.message : fallback;
     }
 
-    const React$b = window.PluginApi.React;
-    const { useCallback: useCallback$6 } = React$b;
+    const React$f = window.PluginApi.React;
+    const { useCallback: useCallback$6 } = React$f;
     let overlayDiv = null;
     let selectionDiv = null;
     let keyHandler = null;
@@ -8870,7 +9045,7 @@
             return null;
         }
     }
-    async function dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal) {
+    async function dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal) {
         setLoading(loadingKey, true);
         const [scenario, scenarioId] = getScenarioAndID();
         setScenario(scenario, scenarioId);
@@ -8903,7 +9078,7 @@
                 showError('Could not capture media. Please ensure the scene/image is fully loaded.');
             }
             else if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-                showError('Face recognition API is not reachable. Check the API endpoint in Settings.');
+                showHealthBanner('Face recognition API is not reachable. Start the backend and try again.');
             }
             else {
                 showError('Face search failed: ' + message);
@@ -8916,7 +9091,7 @@
         }
     }
     function FaceSearchButton({ menuItem }) {
-        const { state, setLoading, setMatches, setScenario, showWarning, showError, startMatchSearch, showMatchModal } = useVisage();
+        const { state, setLoading, setMatches, setScenario, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal } = useVisage();
         const loadingKey = 'face-search';
         const isLoading = state.loading[loadingKey] || false;
         const recognize = useCallback$6(async () => {
@@ -8934,7 +9109,7 @@
                             setLoading(loadingKey, false);
                             return;
                         }
-                        await dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+                        await dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
                     }
                     catch (error) {
                         showError('Failed to capture image: ' + getErrorMessage(error));
@@ -8943,7 +9118,7 @@
                     return;
                 }
                 makeOverlay((blob) => {
-                    dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+                    dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
                 }, () => {
                     showWarning('Select a face within the image.');
                 }, {
@@ -8966,7 +9141,7 @@
                         setLoading(loadingKey, false);
                         return;
                     }
-                    await dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+                    await dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
                 }
                 catch (error) {
                     console.warn('[Visage] captureWholeFrame failed:', error);
@@ -8976,13 +9151,13 @@
                 return;
             }
             makeOverlay((blob) => {
-                dispatchBlob(blob, showWarning, showError, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+                dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
             }, () => {
                 showWarning('Select a face within the video player area.');
             });
-        }, [setLoading, setMatches, setScenario, isLoading, showWarning, showError, startMatchSearch, showMatchModal]);
+        }, [setLoading, setMatches, setScenario, isLoading, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal]);
         if (menuItem) {
-            return React$b.createElement('a', {
+            return React$f.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
@@ -8990,25 +9165,20 @@
                 onClick: (e) => { e.preventDefault(); closeDropdown(); recognize(); },
             }, 'Visage: Current Frame');
         }
-        return React$b.createElement('button', {
+        return React$f.createElement('button', {
             id: 'visage-frame-search',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: recognize,
             disabled: isLoading,
             title: 'Visage: Current Frame',
-        }, React$b.createElement('svg', {
+        }, React$f.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
-        }, React$b.createElement('path', {
+        }, React$f.createElement('path', {
             d: 'M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z',
         })));
     }
 
-    const LOAD_TIMEOUT_MS = 15000;
-    const SEEK_TIMEOUT_MS = 10000;
-    // Below this delta the browser treats the seek as a no-op and never fires
-    // `seeked`, so the frame is already the one we want.
-    const SEEK_EPSILON = 0.001;
     function pad(n, width = 2) {
         return String(n).padStart(width, '0');
     }
@@ -9019,70 +9189,6 @@
         const ms = Math.round((seconds - Math.floor(seconds)) * 1000);
         return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(ms, 3)}`;
     }
-    function loadMetadata(video) {
-        return new Promise((resolve, reject) => {
-            let timeout;
-            const done = () => {
-                clearTimeout(timeout);
-                video.onloadedmetadata = null;
-                video.onerror = null;
-            };
-            timeout = setTimeout(() => {
-                done();
-                reject(new Error('Preview video load timed out'));
-            }, LOAD_TIMEOUT_MS);
-            video.onloadedmetadata = () => {
-                done();
-                resolve();
-            };
-            video.onerror = () => {
-                done();
-                reject(new Error('Failed to load preview video'));
-            };
-            video.load();
-        });
-    }
-    // Seeking alone decodes and presents the frame, so `play()` is never needed.
-    // Calling it made the whole scan fail whenever the play promise was rejected
-    // (AbortError), which is out of our control on some machines.
-    function seekTo(video, time) {
-        if (Math.abs(video.currentTime - time) < SEEK_EPSILON)
-            return Promise.resolve();
-        return new Promise((resolve, reject) => {
-            let timeout;
-            const done = () => {
-                clearTimeout(timeout);
-                video.onseeked = null;
-                video.onerror = null;
-            };
-            timeout = setTimeout(() => {
-                done();
-                reject(new Error(`Timed out seeking preview video to ${time.toFixed(2)}s`));
-            }, SEEK_TIMEOUT_MS);
-            video.onseeked = () => {
-                done();
-                resolve();
-            };
-            video.onerror = () => {
-                done();
-                reject(new Error('Preview video failed while seeking'));
-            };
-            video.currentTime = time;
-        });
-    }
-    function releaseVideo(video) {
-        video.onloadedmetadata = null;
-        video.onseeked = null;
-        video.onerror = null;
-        try {
-            video.removeAttribute('src');
-            video.load();
-        }
-        catch (e) {
-            console.warn('[Visage] Failed to release preview video:', e);
-        }
-        video.remove();
-    }
     async function extractFramesFromPreview(previewUrl, frameCount = 12, tileWidth = 640, tileHeight = 360) {
         const video = document.createElement('video');
         video.crossOrigin = 'anonymous';
@@ -9090,59 +9196,59 @@
         video.muted = true;
         video.playsInline = true;
         video.src = previewUrl;
+        await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Preview video load timed out')), 15000);
+            video.onloadedmetadata = () => {
+                clearTimeout(timeout);
+                resolve();
+            };
+            video.onerror = () => {
+                clearTimeout(timeout);
+                reject(new Error('Failed to load preview video'));
+            };
+            video.load();
+        });
+        await video.play();
+        video.pause();
+        const duration = video.duration;
+        if (!duration || duration <= 0)
+            throw new Error('Invalid preview video duration');
+        const interval = duration / frameCount;
         const extractCanvas = document.createElement('canvas');
+        extractCanvas.width = tileWidth;
+        extractCanvas.height = tileHeight;
+        const extractCtx = extractCanvas.getContext('2d');
+        const cols = 4;
+        const rows = Math.ceil(frameCount / cols);
         const spriteCanvas = document.createElement('canvas');
-        try {
-            await loadMetadata(video);
-            const duration = video.duration;
-            if (!Number.isFinite(duration) || duration <= 0) {
-                throw new Error('Invalid preview video duration');
-            }
-            const interval = duration / frameCount;
-            extractCanvas.width = tileWidth;
-            extractCanvas.height = tileHeight;
-            const extractCtx = extractCanvas.getContext('2d');
-            const cols = 4;
-            const rows = Math.ceil(frameCount / cols);
-            spriteCanvas.width = cols * tileWidth;
-            spriteCanvas.height = rows * tileHeight;
-            const spriteCtx = spriteCanvas.getContext('2d');
-            const cues = [];
-            const halfStep = interval / 2;
-            for (let i = 0; i < frameCount; i++) {
-                if (isCancelled())
-                    break;
-                const time = Math.min(i * interval + halfStep, duration - SEEK_EPSILON);
-                try {
-                    await seekTo(video, time);
-                }
-                catch (e) {
-                    // A stalled decode must not hang or fail the scan: keep the frames we
-                    // already have and identify on those.
-                    console.warn('[Visage] Stopping frame extraction early:', e);
-                    break;
-                }
-                extractCtx.drawImage(video, 0, 0, tileWidth, tileHeight);
-                const col = i % cols;
-                const row = Math.floor(i / cols);
-                spriteCtx.drawImage(extractCanvas, col * tileWidth, row * tileHeight);
-                cues.push(`${formatVttTime(time)} --> ${formatVttTime(Math.min(time + interval, duration))}\n` +
-                    `sprite.jpg#xywh=${col * tileWidth},${row * tileHeight},${tileWidth},${tileHeight}`);
-            }
-            if (!cues.length && !isCancelled()) {
-                throw new Error('Could not extract any frames from the preview video');
-            }
-            const spriteBlob = await new Promise((resolve, reject) => {
-                spriteCanvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.85);
+        spriteCanvas.width = cols * tileWidth;
+        spriteCanvas.height = rows * tileHeight;
+        const spriteCtx = spriteCanvas.getContext('2d');
+        const cues = [];
+        const halfStep = interval / 2;
+        for (let i = 0; i < frameCount; i++) {
+            if (isCancelled())
+                break;
+            const time = Math.min(i * interval + halfStep, duration - 0.001);
+            video.currentTime = time;
+            await new Promise((resolve) => {
+                video.onseeked = () => resolve();
             });
-            const vtt = 'WEBVTT\n\n' + cues.map((c, i) => `${i + 1}\n${c}`).join('\n\n');
-            return { sprite: spriteBlob, vtt };
+            extractCtx.drawImage(video, 0, 0, tileWidth, tileHeight);
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            spriteCtx.drawImage(extractCanvas, col * tileWidth, row * tileHeight);
+            cues.push(`${formatVttTime(time)} --> ${formatVttTime(Math.min(time + interval, duration))}\n` +
+                `sprite.jpg#xywh=${col * tileWidth},${row * tileHeight},${tileWidth},${tileHeight}`);
         }
-        finally {
-            releaseVideo(video);
-            extractCanvas.remove();
-            spriteCanvas.remove();
-        }
+        const spriteBlob = await new Promise((resolve, reject) => {
+            spriteCanvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.85);
+        });
+        const vtt = 'WEBVTT\n\n' + cues.map((c, i) => `${i + 1}\n${c}`).join('\n\n');
+        video.remove();
+        extractCanvas.remove();
+        spriteCanvas.remove();
+        return { sprite: spriteBlob, vtt };
     }
 
     function hasPerformers(data) {
@@ -9192,10 +9298,10 @@
         return hasPerformers(data) ? data : null;
     }
 
-    const React$a = window.PluginApi.React;
-    const { useCallback: useCallback$5 } = React$a;
+    const React$e = window.PluginApi.React;
+    const { useCallback: useCallback$5 } = React$e;
     function SceneScanButton({ menuItem }) {
-        const { state, setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showWarning, showError } = useVisage();
+        const { state, setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showWarning, showError, showHealthBanner } = useVisage();
         const loadingKey = 'face-detection';
         const isLoading = state.loading[loadingKey] || false;
         const scanScene = useCallback$5(async () => {
@@ -9239,7 +9345,7 @@
                 showSpriteModal(false);
                 const message = getErrorMessage(error);
                 if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-                    showError('Face recognition API is not reachable. Check the API endpoint in Settings.');
+                    showHealthBanner('Face recognition API is not reachable. Start the backend and try again.');
                 }
                 else {
                     showError('Scene scan failed: ' + message);
@@ -9248,9 +9354,9 @@
             finally {
                 setLoading(loadingKey, false);
             }
-        }, [setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showWarning, showError]);
+        }, [setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showWarning, showError, showHealthBanner]);
         if (menuItem) {
-            return React$a.createElement('a', {
+            return React$e.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
@@ -9258,26 +9364,26 @@
                 onClick: (e) => { e.preventDefault(); closeDropdown(); scanScene(); },
             }, 'Visage: Whole Scene');
         }
-        return React$a.createElement('button', {
+        return React$e.createElement('button', {
             id: 'visage-scene-scan',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: scanScene,
             disabled: isLoading,
             title: 'Visage: Whole Scene',
-        }, React$a.createElement('svg', {
+        }, React$e.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
-        }, React$a.createElement('path', {
+        }, React$e.createElement('path', {
             d: 'M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z',
         })));
     }
 
-    const React$9 = window.PluginApi.React;
-    const { useState: useState$3, useEffect: useEffect$5, useCallback: useCallback$4 } = React$9;
+    const React$d = window.PluginApi.React;
+    const { useState: useState$4, useEffect: useEffect$6, useCallback: useCallback$4 } = React$d;
     function useKeyboardNav({ faceCount, getPerformerCount, onAssign, enabled }) {
-        const [selectedFaceIndex, setSelectedFaceIndex] = useState$3(0);
-        const [selectedCardIndex, setSelectedCardIndex] = useState$3(0);
-        const [hasNavigated, setHasNavigated] = useState$3(false);
+        const [selectedFaceIndex, setSelectedFaceIndex] = useState$4(0);
+        const [selectedCardIndex, setSelectedCardIndex] = useState$4(0);
+        const [hasNavigated, setHasNavigated] = useState$4(false);
         const handleKeydown = useCallback$4((event) => {
             if (!enabled)
                 return;
@@ -9321,7 +9427,7 @@
                     break;
             }
         }, [enabled, faceCount, selectedFaceIndex, selectedCardIndex, getPerformerCount, onAssign]);
-        useEffect$5(() => {
+        useEffect$6(() => {
             if (!enabled)
                 return;
             document.addEventListener('keydown', handleKeydown);
@@ -9336,12 +9442,12 @@
         };
     }
 
-    const React$8 = window.PluginApi.React;
-    const { useEffect: useEffect$4 } = React$8;
+    const React$c = window.PluginApi.React;
+    const { useEffect: useEffect$5 } = React$c;
     const FOCUSABLE_SELECTOR = 'a, button, input, [tabindex]:not([tabindex="-1"])';
     function useModalShell(onClose, active = true) {
-        const ref = React$8.useRef(null);
-        useEffect$4(() => {
+        const ref = React$c.useRef(null);
+        useEffect$5(() => {
             if (!active)
                 return;
             const container = ref.current;
@@ -9403,8 +9509,8 @@
         return ref;
     }
 
-    const React$7 = window.PluginApi.React;
-    const { useCallback: useCallback$3 } = React$7;
+    const React$b = window.PluginApi.React;
+    const { useCallback: useCallback$3 } = React$b;
     function useSmoothLoad(duration = 400) {
         return useCallback$3((node) => {
             if (!node)
@@ -9424,7 +9530,7 @@
         }, [duration]);
     }
 
-    const React$6 = window.PluginApi.React;
+    const React$a = window.PluginApi.React;
     const SOURCE_BASE_URLS = {
         stashdb: 'https://stashdb.org',
         javstash: 'https://javstash.org',
@@ -9448,7 +9554,7 @@
         const cfg = GENDER_CONFIG[gender];
         if (!cfg)
             return null;
-        return React$6.createElement('span', {
+        return React$a.createElement('span', {
             className: `visage-gender-badge ${cfg.className}`,
             title: cfg.label,
             'aria-label': cfg.label,
@@ -9491,7 +9597,7 @@
                 handleClick(e);
             }
         }
-        return React$6.createElement('div', {
+        return React$a.createElement('div', {
             className: cardClasses,
             'data-performer-id': performer.id,
             onClick: handleClick,
@@ -9502,54 +9608,220 @@
             'aria-label': `${isSelected ? 'Deselect' : 'Select'} ${performer.name}`,
         }, 
         // Portrait image area
-        React$6.createElement('div', { className: 'visage-card-portrait' }, React$6.createElement('img', {
+        React$a.createElement('div', { className: 'visage-card-portrait' }, React$a.createElement('img', {
             ref: imgRef,
             className: 'visage-portrait-img',
             alt: performer.name,
             src: performer.image,
         }), 
         // Gradient overlay
-        React$6.createElement('div', { className: 'visage-card-img-overlay' }), 
+        React$a.createElement('div', { className: 'visage-card-img-overlay' }), 
         // Confidence strip at bottom edge
-        React$6.createElement('div', {
+        React$a.createElement('div', {
             className: `visage-confidence-strip ${confidenceClass}`,
             style: { width: `${confidence}%` },
         }), 
         // Country flag
-        performer.country && React$6.createElement('span', {
+        performer.country && React$a.createElement('span', {
             className: `visage-country-flag fi fi-${performer.country.toLowerCase()}`,
         }), 
         // Source badge
-        performer.source && React$6.createElement('span', {
+        performer.source && React$a.createElement('span', {
             className: `visage-source-badge visage-source-${performer.source}`,
             title: performer.source,
         }, performer.source[0].toUpperCase()), 
         // Gender badge
         genderBadge(performer.gender), 
         // Selected check badge
-        isSelected && React$6.createElement('div', { className: 'visage-card-check-badge' }, React$6.createElement('svg', {
+        isSelected && React$a.createElement('div', { className: 'visage-card-check-badge' }, React$a.createElement('svg', {
             width: 16, height: 16, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 3,
-        }, React$6.createElement('polyline', { points: '20 6 9 17 4 12' }))), 
+        }, React$a.createElement('polyline', { points: '20 6 9 17 4 12' }))), 
         // Text overlay: name + confidence
-        React$6.createElement('div', { className: 'visage-card-meta' }, React$6.createElement('a', {
+        React$a.createElement('div', { className: 'visage-card-meta' }, React$a.createElement('a', {
             href: performerUrl(performer.id, performer.source),
             title: `Open on ${(performer.source || 'stashdb').toLowerCase()}`,
             target: '_blank',
             rel: 'noopener noreferrer',
             className: 'visage-performer-name',
             onClick: (e) => e.stopPropagation(),
-        }, performer.name), React$6.createElement('div', { className: 'visage-card-stats' }, React$6.createElement('div', { className: `visage-confidence-dot ${confidenceClass}` }), React$6.createElement('span', { className: 'visage-confidence-pct' }, `${confidence}%`), React$6.createElement('span', { className: 'visage-confidence-lbl' }, confidenceLabel)))));
+        }, performer.name), React$a.createElement('div', { className: 'visage-card-stats' }, React$a.createElement('div', { className: `visage-confidence-dot ${confidenceClass}` }), React$a.createElement('span', { className: 'visage-confidence-pct' }, `${confidence}%`), React$a.createElement('span', { className: 'visage-confidence-lbl' }, confidenceLabel)))));
     }
 
-    const React$5 = window.PluginApi.React;
-    const { useCallback: useCallback$2, useEffect: useEffect$3, useRef: useRef$3, useState: useState$2 } = React$5;
+    const React$9 = window.PluginApi.React;
+    const { useEffect: useEffect$4, useState: useState$3 } = React$9;
+    const CLOUD_URL = VISAGE_API_URL;
+    const LOCAL_DEFAULT = 'http://localhost:7860';
+    const TEST_FEEDBACK = {
+        reachable: 'Connection successful. Backend is ready.',
+        degraded: 'Backend reachable but degraded (models or index not loaded).',
+        unreachable: 'Backend unreachable. Check the URL and that the backend is running.',
+    };
+    function SettingsCloseButton({ onClick }) {
+        return React$9.createElement('button', {
+            className: 'visage-backend-settings-close',
+            onClick,
+            'aria-label': 'Close settings',
+        }, React$9.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$9.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$9.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })));
+    }
+    function SettingsButton({ onClick }) {
+        return React$9.createElement('button', {
+            className: 'visage-modal-settings',
+            onClick,
+            'aria-label': 'Backend settings',
+            title: 'Change backend',
+        }, React$9.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$9.createElement('path', { d: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' }), React$9.createElement('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' })));
+    }
+    function BackendSettings({ onClose, initialMode }) {
+        const current = getApiEndpoint();
+        const [mode, setMode] = useState$3(() => {
+            if (initialMode)
+                return initialMode;
+            try {
+                return isLocalEndpoint(current) ? 'local' : 'cloud';
+            }
+            catch (_a) {
+                return 'cloud';
+            }
+        });
+        const [url, setUrl] = useState$3(() => {
+            if (initialMode === 'local')
+                return isLocalEndpoint(current) ? current : LOCAL_DEFAULT;
+            return current || LOCAL_DEFAULT;
+        });
+        const [testStatus, setTestStatus] = useState$3(null);
+        useEffect$4(() => {
+            function onKey(e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onClose();
+                }
+            }
+            document.addEventListener('keydown', onKey, true);
+            return () => document.removeEventListener('keydown', onKey, true);
+        }, [onClose]);
+        function selectMode(next) {
+            setMode(next);
+            if (next === 'cloud') {
+                setUrl(CLOUD_URL);
+            }
+            else {
+                let cur;
+                try {
+                    cur = getApiEndpoint();
+                }
+                catch (_a) {
+                    cur = LOCAL_DEFAULT;
+                }
+                setUrl(isLocalEndpoint(cur) ? cur : LOCAL_DEFAULT);
+            }
+            setTestStatus(null);
+        }
+        async function handleTest() {
+            setTestStatus('testing');
+            let status = 'unreachable';
+            try {
+                const health = await checkHealth(url.trim());
+                if (health === null) {
+                    status = 'unreachable';
+                }
+                else if (health.models_loaded === false || health.status !== 'ready') {
+                    status = 'degraded';
+                }
+                else {
+                    status = 'reachable';
+                }
+            }
+            catch (_a) {
+                status = 'unreachable';
+            }
+            setTestStatus(status);
+        }
+        function handleSave() {
+            setApiEndpoint(url.trim());
+            onClose();
+        }
+        const statusText = testStatus === 'testing'
+            ? 'Testing connection…'
+            : (testStatus ? TEST_FEEDBACK[testStatus] : '');
+        return React$9.createElement('div', {
+            className: 'visage-backend-settings-backdrop',
+            onClick: (e) => { if (e.target === e.currentTarget)
+                onClose(); },
+        }, React$9.createElement('div', {
+            className: 'visage-backend-settings',
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-label': 'Backend settings',
+        }, React$9.createElement('div', { className: 'visage-backend-settings-header' }, React$9.createElement('h2', { className: 'visage-backend-settings-title' }, 'Backend settings'), React$9.createElement(SettingsCloseButton, { onClick: onClose })), React$9.createElement('div', { className: 'visage-backend-settings-body' }, React$9.createElement('div', { className: 'visage-backend-settings-field' }, React$9.createElement('span', { className: 'visage-backend-settings-label' }, 'Backend'), React$9.createElement('div', { className: 'visage-backend-settings-seg' }, React$9.createElement('button', {
+            className: `visage-backend-seg-opt${mode === 'local' ? ' visage-backend-seg-active' : ''}`,
+            onClick: () => selectMode('local'),
+        }, 'Local'), React$9.createElement('button', {
+            className: `visage-backend-seg-opt${mode === 'cloud' ? ' visage-backend-seg-active' : ''}`,
+            onClick: () => selectMode('cloud'),
+        }, 'Cloud (Hugging Face)'))), mode === 'cloud' && React$9.createElement('div', { className: 'visage-backend-settings-note' }, 'Images are sent to the Hugging Face cloud service.'), mode === 'cloud' && React$9.createElement('p', { className: 'visage-backend-settings-hint' }, 'Want your images to stay on your network? ', React$9.createElement('a', {
+            className: 'visage-backend-settings-hint-link',
+            href: 'https://www.patreon.com/cw/cc12340',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+        }, 'Run a private server via Patreon'), '.'), React$9.createElement('div', { className: 'visage-backend-settings-field' }, React$9.createElement('label', { className: 'visage-backend-settings-label', htmlFor: 'visage-backend-url' }, 'URL'), mode === 'local'
+            ? React$9.createElement('input', {
+                id: 'visage-backend-url',
+                className: 'visage-backend-settings-input',
+                type: 'text',
+                value: url,
+                onChange: (e) => { setUrl(e.target.value); setTestStatus(null); },
+                placeholder: LOCAL_DEFAULT,
+            })
+            : React$9.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), React$9.createElement('div', {
+            className: `visage-backend-settings-status${testStatus ? ` visage-backend-${testStatus}` : ''}`,
+            role: 'status',
+        }, statusText)), React$9.createElement('div', { className: 'visage-backend-settings-actions' }, React$9.createElement('button', {
+            className: 'visage-btn visage-btn-secondary',
+            onClick: handleTest,
+            disabled: testStatus === 'testing',
+        }, testStatus === 'testing' ? 'Testing…' : 'Test connection'), React$9.createElement('button', {
+            className: 'visage-btn visage-btn-secondary',
+            onClick: onClose,
+        }, 'Cancel'), React$9.createElement('button', {
+            className: 'visage-btn visage-btn-primary',
+            onClick: handleSave,
+        }, 'Save'))));
+    }
+
+    const React$8 = window.PluginApi.React;
+    /**
+     * Passive indicator of the resolved active backend, shown in the result modal
+     * header next to the settings gear. Never guesses Local: on any error it falls
+     * back to showing Cloud (Hugging Face). Not interactive - the adjacent gear
+     * button opens the backend settings.
+     */
+    function BackendBadge() {
+        let isLocal;
+        try {
+            isLocal = isLocalEndpoint(getApiEndpoint());
+        }
+        catch (_a) {
+            isLocal = false;
+        }
+        const label = isLocal ? 'Local' : 'Cloud (Hugging Face)';
+        const variant = isLocal ? 'local' : 'cloud';
+        return React$8.createElement('span', {
+            className: `visage-backend-badge visage-backend-${variant}`,
+            'aria-label': `Visage backend: ${label}`,
+            title: `Visage backend: ${label}`,
+        }, label);
+    }
+
+    const React$7 = window.PluginApi.React;
+    const { useCallback: useCallback$2, useEffect: useEffect$3, useRef: useRef$3, useState: useState$2 } = React$7;
     function FaceMatchModal() {
         var _a, _b, _c, _d, _e;
-        const { state, setLoading, showMatchModal, showError, showSuccess, showWarning } = useVisage();
+        const { state, setLoading, showMatchModal, showError, showSuccess, showWarning, openSettings } = useVisage();
         const { matches: rawMatches, loading: loadingState } = state;
         const matches = Array.isArray(rawMatches) ? rawMatches : [];
-        const [activeFaceIndex, setActiveFaceIndex] = React$5.useState(0);
+        const [activeFaceIndex, setActiveFaceIndex] = React$7.useState(0);
         const [selectedPerformer, setSelectedPerformer] = useState$2(new Map());
         const [adding, setAdding] = useState$2(false);
         const [visible, setVisible] = useState$2(false);
@@ -9567,7 +9839,7 @@
         }
         // Threshold low enough that every face keeps at least three performers:
         // take each face's 3rd-best score and use the smallest of those.
-        const autoConfidence = React$5.useMemo(() => {
+        const autoConfidence = React$7.useMemo(() => {
             let threshold = Infinity;
             for (const face of matches) {
                 const scores = face.performers
@@ -9769,50 +10041,50 @@
             : selectedId
                 ? (_e = (_d = activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers) === null || _d === void 0 ? void 0 : _d.findIndex((p) => p.id === selectedId)) !== null && _e !== void 0 ? _e : 0
                 : inSceneIdx >= 0 ? inSceneIdx : 0;
-        return React$5.createElement('div', {
+        return React$7.createElement('div', {
             className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 close(); },
-        }, React$5.createElement('div', {
+        }, React$7.createElement('div', {
             ref: modalRef,
             className: `visage-modal ${visible ? 'visage-visible' : ''}`,
             role: 'dialog',
             'aria-modal': 'true',
             tabIndex: -1,
-        }, React$5.createElement('div', { className: 'visage-modal-header' }, React$5.createElement('div', { className: 'visage-modal-title' }, React$5.createElement('h2', null, 'CURRENT FRAME'), !isSearching && React$5.createElement('span', { className: 'visage-match-count' }, `${matches.length} faces found \u00B7 ${selectedPerformer.size} selected` + (sceneStashIds.size > 0 ? ` \u00B7 ${sceneStashIds.size} in scene` : ''))), React$5.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$5.createElement('button', {
+        }, React$7.createElement('div', { className: 'visage-modal-header' }, React$7.createElement('div', { className: 'visage-modal-title' }, React$7.createElement('h2', null, 'CURRENT FRAME'), !isSearching && React$7.createElement('span', { className: 'visage-match-count' }, `${matches.length} faces found \u00B7 ${selectedPerformer.size} selected` + (sceneStashIds.size > 0 ? ` \u00B7 ${sceneStashIds.size} in scene` : ''))), React$7.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$7.createElement(BackendBadge, null), React$7.createElement(SettingsButton, { onClick: openSettings }), React$7.createElement('button', {
             className: 'visage-modal-close',
             onClick: close,
             'aria-label': 'Close',
-        }, React$5.createElement('svg', {
+        }, React$7.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-        }, React$5.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$5.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$5.createElement('div', { className: 'visage-stashbox-banner' }, React$5.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$5.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$5.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$5.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$5.createElement('span', { className: 'visage-stashbox-banner-text' }, React$5.createElement('strong', null, stashboxStatus === 'empty' ? 'No stash-box configured.' : 'No "StashDB" provider found.'), stashboxStatus === 'empty'
+        }, React$7.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$7.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$7.createElement('div', { className: 'visage-stashbox-banner' }, React$7.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$7.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$7.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$7.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$7.createElement('span', { className: 'visage-stashbox-banner-text' }, React$7.createElement('strong', null, stashboxStatus === 'empty' ? 'No stash-box configured.' : 'No "StashDB" provider found.'), stashboxStatus === 'empty'
             ? ' Add a stash-box provider in Settings \u2192 Metadata Providers to enable performer import. '
-            : ' Performer import requires a provider named "StashDB". Rename your provider in Settings \u2192 Metadata Providers. ', React$5.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Learn more.'))), isSearching
-            ? React$5.createElement('div', { className: 'visage-modal-loading' }, React$5.createElement('div', { className: 'visage-face-scan' }, React$5.createElement('span', { className: 'visage-face-scan-corner' }), React$5.createElement('span', { className: 'visage-face-scan-corner' }), React$5.createElement('span', { className: 'visage-face-scan-corner' }), React$5.createElement('span', { className: 'visage-face-scan-corner' }), React$5.createElement('svg', {
+            : ' Performer import requires a provider named "StashDB". Rename your provider in Settings \u2192 Metadata Providers. ', React$7.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Learn more.'))), isSearching
+            ? React$7.createElement('div', { className: 'visage-modal-loading' }, React$7.createElement('div', { className: 'visage-face-scan' }, React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('svg', {
                 viewBox: '0 0 100 120',
                 fill: 'none',
                 stroke: 'currentColor',
                 strokeWidth: 1.5,
                 strokeLinecap: 'round',
-            }, React$5.createElement('path', { d: 'M50 7 C29 7 15 22 16 45 C16.5 57 20 65 24 71' }), React$5.createElement('path', { d: 'M50 7 C71 7 85 22 84 45 C83.5 57 80 65 76 71' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C37 15 27 26 27 42' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C63 15 73 26 73 42' }), React$5.createElement('path', { d: 'M27 42 C27 61 34 77 43 85 C46 88 54 88 57 85 C66 77 73 61 73 42' }), React$5.createElement('path', { d: 'M33 52 C36.5 55 42.5 55 46 52' }), React$5.createElement('path', { d: 'M54 52 C57.5 55 63.5 55 67 52' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M35 54.6 L33.8 57 M39.5 55.6 L39 58.2 M44 54.6 L45 57' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M56 54.6 L55 57 M60.5 55.6 L61 58.2 M65 54.6 L66.2 57' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M32 46 C36 43.6 43 43.6 47 46' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M53 46 C57 43.6 64 43.6 68 46' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M50 54 C50 60 49.4 63 48.8 65.2 C49.6 66.4 50.4 66.4 51.2 65.2' }), React$5.createElement('path', { d: 'M42 75 C45 72.5 48 73.8 50 74.8 C52 73.8 55 72.5 58 75 C55 79.5 45 79.5 42 75 Z' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M44.5 80.5 C47 82.5 53 82.5 55.5 80.5' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M42 87.5 C42 94 40.5 99 38 104' }), React$5.createElement('path', { strokeWidth: 1.2, d: 'M58 87.5 C58 94 59.5 99 62 104' }), ...([
+            }, React$7.createElement('path', { d: 'M50 7 C29 7 15 22 16 45 C16.5 57 20 65 24 71' }), React$7.createElement('path', { d: 'M50 7 C71 7 85 22 84 45 C83.5 57 80 65 76 71' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C37 15 27 26 27 42' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C63 15 73 26 73 42' }), React$7.createElement('path', { d: 'M27 42 C27 61 34 77 43 85 C46 88 54 88 57 85 C66 77 73 61 73 42' }), React$7.createElement('path', { d: 'M33 52 C36.5 55 42.5 55 46 52' }), React$7.createElement('path', { d: 'M54 52 C57.5 55 63.5 55 67 52' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M35 54.6 L33.8 57 M39.5 55.6 L39 58.2 M44 54.6 L45 57' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M56 54.6 L55 57 M60.5 55.6 L61 58.2 M65 54.6 L66.2 57' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M32 46 C36 43.6 43 43.6 47 46' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M53 46 C57 43.6 64 43.6 68 46' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M50 54 C50 60 49.4 63 48.8 65.2 C49.6 66.4 50.4 66.4 51.2 65.2' }), React$7.createElement('path', { d: 'M42 75 C45 72.5 48 73.8 50 74.8 C52 73.8 55 72.5 58 75 C55 79.5 45 79.5 42 75 Z' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M44.5 80.5 C47 82.5 53 82.5 55.5 80.5' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M42 87.5 C42 94 40.5 99 38 104' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M58 87.5 C58 94 59.5 99 62 104' }), ...([
                 [25, 52], [75, 52], [35, 68], [65, 68], [60.5, 82],
-            ].map(([cx, cy], i) => React$5.createElement('circle', {
+            ].map(([cx, cy], i) => React$7.createElement('circle', {
                 key: i, className: 'visage-face-scan-dot', cx, cy, r: i === 4 ? 1.5 : 1.8, stroke: 'none',
-            })))), React$5.createElement('div', { className: 'visage-face-scan-beam' })), React$5.createElement('span', { className: 'visage-loading-label' }, 'Scanning \u2022 face recognition\u2026'))
-            : React$5.createElement(React$5.Fragment, null, React$5.createElement('div', { className: 'visage-face-tabs' }, matches.map((face, idx) => {
+            })))), React$7.createElement('div', { className: 'visage-face-scan-beam' })), React$7.createElement('span', { className: 'visage-loading-label' }, 'Scanning \u2022 face recognition\u2026'))
+            : React$7.createElement(React$7.Fragment, null, React$7.createElement('div', { className: 'visage-face-tabs' }, matches.map((face, idx) => {
                 if (getPerformerCount(idx) === 0)
                     return null;
-                return React$5.createElement('button', {
+                return React$7.createElement('button', {
                     key: idx,
                     className: `visage-face-tab ${idx === activeFaceIndex ? 'visage-face-tab-active' : ''}`,
                     onClick: () => setActiveFaceIndex(idx),
-                }, React$5.createElement('img', {
+                }, React$7.createElement('img', {
                     src: `data:image/jpg;base64,${face.image}`,
                     alt: `Face ${idx + 1}`,
                     className: 'visage-face-tab-image',
                 }));
-            })), React$5.createElement('div', { className: 'visage-sprite-toolbar', style: { padding: '0.5rem 1.5rem' } }, React$5.createElement('div', { className: 'visage-sprite-threshold' }, React$5.createElement('span', { className: 'visage-threshold-text' }, 'Min conf.'), React$5.createElement('input', {
+            })), React$7.createElement('div', { className: 'visage-sprite-toolbar', style: { padding: '0.5rem 1.5rem' } }, React$7.createElement('div', { className: 'visage-sprite-threshold' }, React$7.createElement('span', { className: 'visage-threshold-text' }, 'Min conf.'), React$7.createElement('input', {
                 type: 'range', min: 0, max: 100, step: 5,
                 value: minConfidence,
                 onChange: (e) => {
@@ -9820,17 +10092,17 @@
                     setConfidenceOverride(value);
                 },
                 title: `Minimum confidence: ${minConfidence}%`,
-            }), React$5.createElement('span', { className: 'visage-sprite-threshold-label' }, `${minConfidence}%`))), React$5.createElement('div', { className: 'visage-modal-body' }, React$5.createElement('div', { className: 'visage-left-panel' }, activeFace && React$5.createElement(React$5.Fragment, null, React$5.createElement('div', null, React$5.createElement('span', { className: 'visage-section-label' }, 'Detected'), React$5.createElement('div', { className: 'visage-detect-frame' }, React$5.createElement('img', {
+            }), React$7.createElement('span', { className: 'visage-sprite-threshold-label' }, `${minConfidence}%`))), React$7.createElement('div', { className: 'visage-modal-body' }, React$7.createElement('div', { className: 'visage-left-panel' }, activeFace && React$7.createElement(React$7.Fragment, null, React$7.createElement('div', null, React$7.createElement('span', { className: 'visage-section-label' }, 'Detected'), React$7.createElement('div', { className: 'visage-detect-frame' }, React$7.createElement('img', {
                 src: `data:image/jpg;base64,${activeFace.image}`,
                 alt: 'Detected face',
                 className: 'visage-detect-image',
-            }))), activeFace.performers[previewIdx] && React$5.createElement(React$5.Fragment, null, React$5.createElement('div', { className: 'visage-vs-divider' }, 'vs'), React$5.createElement('div', null, React$5.createElement('span', { className: 'visage-section-label-name' }, activeFace.performers[previewIdx].name), React$5.createElement('div', { className: 'visage-match-frame' }, React$5.createElement('img', {
+            }))), activeFace.performers[previewIdx] && React$7.createElement(React$7.Fragment, null, React$7.createElement('div', { className: 'visage-vs-divider' }, 'vs'), React$7.createElement('div', null, React$7.createElement('span', { className: 'visage-section-label-name' }, activeFace.performers[previewIdx].name), React$7.createElement('div', { className: 'visage-match-frame' }, React$7.createElement('img', {
                 src: activeFace.performers[previewIdx].image,
                 alt: activeFace.performers[previewIdx].name,
                 className: 'visage-match-image',
-            })))))), React$5.createElement('div', { className: 'visage-right-panel' }, React$5.createElement('div', { className: 'visage-performer-grid' }, activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers.filter((p) => (p.confidence || 0) >= minConfidence).map((performer, cardIdx) => {
+            })))))), React$7.createElement('div', { className: 'visage-right-panel' }, React$7.createElement('div', { className: 'visage-performer-grid' }, activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers.filter((p) => (p.confidence || 0) >= minConfidence).map((performer, cardIdx) => {
                 var _a;
-                return React$5.createElement(PerformerCard, {
+                return React$7.createElement(PerformerCard, {
                     key: performer.id,
                     performer,
                     isLoading: loadingState[`add-performer-${performer.id}`] || false,
@@ -9839,22 +10111,22 @@
                     onToggle: (stashId) => selectPerformer(activeFaceIndex, stashId),
                     onQuickAdd: handleQuickAddCard,
                 });
-            })))), React$5.createElement('div', { className: 'visage-modal-footer' }, React$5.createElement('div', { className: 'visage-footer-main' }, React$5.createElement('a', {
+            })))), React$7.createElement('div', { className: 'visage-modal-footer' }, React$7.createElement('div', { className: 'visage-footer-main' }, React$7.createElement('a', {
                 className: 'visage-ext-patreon-btn',
                 href: 'https://www.patreon.com/cw/cc12340',
                 target: '_blank',
                 rel: 'noopener noreferrer',
-            }, React$5.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$5.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$5.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), 'Support on Patreon'), React$5.createElement('div', { className: 'visage-progress-info' }, React$5.createElement('span', { className: 'visage-matches-assigned' }, selectedPerformer.size > 0
+            }, React$7.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$7.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$7.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), 'Support on Patreon'), React$7.createElement('div', { className: 'visage-progress-info' }, React$7.createElement('span', { className: 'visage-matches-assigned' }, selectedPerformer.size > 0
                 ? `${selectedPerformer.size} of ${matches.length} selected`
                 : sceneStashIds.size > 0
                     ? `${matches.length} faces found \u00B7 all in scene`
-                    : `${matches.length} faces found \u00B7 click to select`), React$5.createElement('div', { className: 'visage-keyboard-hints' }, React$5.createElement('kbd', null, '\u2191\u2193'), ' Switch faces \u2022 ', React$5.createElement('kbd', null, '\u2190\u2192'), ' Select performers \u2022 ', React$5.createElement('kbd', null, 'Enter'), ' Toggle select \u2022 ', 'Shift+click to add instantly')), React$5.createElement('div', { className: 'visage-button-group' }, hasHighConfidenceMatches() && React$5.createElement('button', {
+                    : `${matches.length} faces found \u00B7 click to select`), React$7.createElement('div', { className: 'visage-keyboard-hints' }, React$7.createElement('kbd', null, '\u2191\u2193'), ' Switch faces \u2022 ', React$7.createElement('kbd', null, '\u2190\u2192'), ' Select performers \u2022 ', React$7.createElement('kbd', null, 'Enter'), ' Toggle select \u2022 ', 'Shift+click to add instantly')), React$7.createElement('div', { className: 'visage-button-group' }, hasHighConfidenceMatches() && React$7.createElement('button', {
                 className: 'visage-btn visage-btn-secondary',
                 onClick: assignConfidentMatches,
-            }, React$5.createElement('svg', {
+            }, React$7.createElement('svg', {
                 width: 16, height: 16, viewBox: '0 0 24 24',
                 fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-            }, React$5.createElement('path', { d: 'M9 11l3 3 8-8' })), 'Select Best Matches'), React$5.createElement('button', {
+            }, React$7.createElement('path', { d: 'M9 11l3 3 8-8' })), 'Select Best Matches'), React$7.createElement('button', {
                 className: 'visage-btn visage-btn-primary',
                 onClick: addConfirmed,
                 disabled: selectedPerformer.size === 0 || adding,
@@ -9877,17 +10149,17 @@
                 : 'visage-confidence-uncertain';
     }
 
-    const React$4 = window.PluginApi.React;
+    const React$6 = window.PluginApi.React;
     function ConfidenceRing({ confidence, confClass }) {
         const size = 46;
         const stroke = 4;
         const r = (size - stroke) / 2;
         const circumference = 2 * Math.PI * r;
         const offset = circumference * (1 - confidence / 100);
-        return React$4.createElement('div', { className: 'visage-sprite-ring' }, React$4.createElement('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, React$4.createElement('circle', {
+        return React$6.createElement('div', { className: 'visage-sprite-ring' }, React$6.createElement('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, React$6.createElement('circle', {
             cx: size / 2, cy: size / 2, r,
             fill: 'none', stroke: 'rgba(255,255,255,0.08)', strokeWidth: stroke,
-        }), React$4.createElement('circle', {
+        }), React$6.createElement('circle', {
             className: `visage-sprite-ring-fill ${confClass}`,
             cx: size / 2, cy: size / 2, r,
             fill: 'none', strokeWidth: stroke,
@@ -9895,11 +10167,11 @@
             strokeDashoffset: offset,
             strokeLinecap: 'round',
             transform: `rotate(-90 ${size / 2} ${size / 2})`,
-        })), React$4.createElement('span', { className: 'visage-sprite-ring-label' }, `${confidence}%`));
+        })), React$6.createElement('span', { className: 'visage-sprite-ring-label' }, `${confidence}%`));
     }
 
-    const React$3 = window.PluginApi.React;
-    const { useEffect: useEffect$2, useMemo: useMemo$1, useState: useState$1, useRef: useRef$2, useCallback: useCallback$1 } = React$3;
+    const React$5 = window.PluginApi.React;
+    const { useEffect: useEffect$2, useMemo: useMemo$1, useState: useState$1, useRef: useRef$2, useCallback: useCallback$1 } = React$5;
     function useSpriteModalData(spriteResult, onError) {
         const [performerCache, setPerformerCache] = useState$1({});
         const [loadingPerformers, setLoadingPerformers] = useState$1(new Set());
@@ -10016,8 +10288,8 @@
         };
     }
 
-    const React$2 = window.PluginApi.React;
-    const { useEffect: useEffect$1, useMemo, useState, useRef: useRef$1, useCallback } = React$2;
+    const React$4 = window.PluginApi.React;
+    const { useEffect: useEffect$1, useMemo, useState, useRef: useRef$1, useCallback } = React$4;
     const GENDER_SYMBOLS = {
         MALE: '\u2642',
         FEMALE: '\u2640',
@@ -10027,7 +10299,7 @@
         INTERSEX: '\u26A5',
     };
     function SpriteResultModal() {
-        const { state, showSpriteModal, clearSpriteResult, setLoading, showError, showSuccess, showWarning } = useVisage();
+        const { state, showSpriteModal, clearSpriteResult, setLoading, showError, showSuccess, showWarning, openSettings } = useVisage();
         const { spriteResult, loading: loadingState, scanProgress, scanProgressDesc } = state;
         const [visible, setVisible] = useState(false);
         const [confirmedIds, setConfirmedIds] = useState(new Set());
@@ -10245,27 +10517,27 @@
             const entries = Array.isArray(timeRanges) ? timeRanges : Object.values(timeRanges !== null && timeRanges !== void 0 ? timeRanges : {});
             return [...entries].sort((a, b) => { var _a, _b, _c, _d; return Number((_b = (_a = a === null || a === void 0 ? void 0 : a[0]) !== null && _a !== void 0 ? _a : a === null || a === void 0 ? void 0 : a.start) !== null && _b !== void 0 ? _b : 0) - Number((_d = (_c = b === null || b === void 0 ? void 0 : b[0]) !== null && _c !== void 0 ? _c : b === null || b === void 0 ? void 0 : b.start) !== null && _d !== void 0 ? _d : 0); });
         }
-        return React$2.createElement('div', {
+        return React$4.createElement('div', {
             className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 close(); },
-        }, React$2.createElement('div', {
+        }, React$4.createElement('div', {
             ref: shellRef,
             className: `visage-modal visage-sprite-modal ${visible ? 'visage-visible' : ''}`,
             role: 'dialog',
             'aria-modal': 'true',
-        }, React$2.createElement('div', { className: 'visage-modal-header' }, React$2.createElement('div', { className: 'visage-modal-title' }, React$2.createElement('h2', null, 'SCENE PERFORMERS'), !isProcessing && React$2.createElement('span', { className: 'visage-match-count' }, `${performers.length} found \u00B7 ${confirmedIds.size} confirmed`)), React$2.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$2.createElement('button', {
+        }, React$4.createElement('div', { className: 'visage-modal-header' }, React$4.createElement('div', { className: 'visage-modal-title' }, React$4.createElement('h2', null, 'SCENE PERFORMERS'), !isProcessing && React$4.createElement('span', { className: 'visage-match-count' }, `${performers.length} found \u00B7 ${confirmedIds.size} confirmed`)), React$4.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$4.createElement(BackendBadge, null), React$4.createElement(SettingsButton, { onClick: openSettings }), React$4.createElement('button', {
             className: 'visage-modal-close',
             onClick: close,
             'aria-label': 'Close',
-        }, React$2.createElement('svg', {
+        }, React$4.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-        }, React$2.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$2.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })))), !isProcessing && React$2.createElement('div', { className: 'visage-sprite-toolbar' }, React$2.createElement('div', { className: 'visage-sprite-sort' }, ['confidence', 'name', 'hits'].map(s => React$2.createElement('button', {
+        }, React$4.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$4.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })))), !isProcessing && React$4.createElement('div', { className: 'visage-sprite-toolbar' }, React$4.createElement('div', { className: 'visage-sprite-sort' }, ['confidence', 'name', 'hits'].map(s => React$4.createElement('button', {
             key: s,
             className: `visage-sprite-sort-btn${sortBy === s ? ' visage-active' : ''}`,
             onClick: () => { setSortBy(s); setFocusedIndex(0); },
-        }, s.charAt(0).toUpperCase() + s.slice(1)))), React$2.createElement('div', { className: 'visage-sprite-threshold' }, React$2.createElement('span', { className: 'visage-threshold-text' }, 'Min conf.'), React$2.createElement('input', {
+        }, s.charAt(0).toUpperCase() + s.slice(1)))), React$4.createElement('div', { className: 'visage-sprite-threshold' }, React$4.createElement('span', { className: 'visage-threshold-text' }, 'Min conf.'), React$4.createElement('input', {
             type: 'range', min: 0, max: 100, step: 5,
             value: minConfidence,
             onChange: (e) => {
@@ -10274,13 +10546,13 @@
                 localStorage.setItem('visage:minConfidence:sprite', String(value));
             },
             title: `Minimum confidence: ${minConfidence}%`,
-        }), React$2.createElement('span', { className: 'visage-sprite-threshold-label' }, `${minConfidence}%`)))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$2.createElement('div', { className: 'visage-stashbox-banner' }, React$2.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$2.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$2.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$2.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$2.createElement('span', { className: 'visage-stashbox-banner-text' }, React$2.createElement('strong', null, stashboxStatus === 'empty' ? 'No stash-box configured.' : 'No "StashDB" provider found.'), stashboxStatus === 'empty'
+        }), React$4.createElement('span', { className: 'visage-sprite-threshold-label' }, `${minConfidence}%`)))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$4.createElement('div', { className: 'visage-stashbox-banner' }, React$4.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$4.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$4.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$4.createElement('span', { className: 'visage-stashbox-banner-text' }, React$4.createElement('strong', null, stashboxStatus === 'empty' ? 'No stash-box configured.' : 'No "StashDB" provider found.'), stashboxStatus === 'empty'
             ? ' Add a stash-box provider in Settings \u2192 Metadata Providers to enable performer import. '
-            : ' Performer import requires a provider named "StashDB". Rename your provider in Settings \u2192 Metadata Providers. ', React$2.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Learn more.'))), isProcessing
-            ? React$2.createElement('div', { className: 'visage-modal-loading' }, React$2.createElement('div', { className: 'visage-conveyor' }, React$2.createElement('div', { className: 'visage-conveyor-track' }, Array.from({ length: 14 }, (_, i) => React$2.createElement('div', { key: i, className: 'visage-conveyor-frame' }))), React$2.createElement('div', { className: 'visage-conveyor-beam' }), React$2.createElement('div', { className: 'visage-conveyor-rail' })), (scanProgress > 0 || scanProgressDesc) && React$2.createElement('div', { className: 'visage-scan-progress' }, React$2.createElement('div', { className: 'visage-scan-progress-bar' }, React$2.createElement('div', {
+            : ' Performer import requires a provider named "StashDB". Rename your provider in Settings \u2192 Metadata Providers. ', React$4.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Learn more.'))), isProcessing
+            ? React$4.createElement('div', { className: 'visage-modal-loading' }, React$4.createElement('div', { className: 'visage-conveyor' }, React$4.createElement('div', { className: 'visage-conveyor-track' }, Array.from({ length: 14 }, (_, i) => React$4.createElement('div', { key: i, className: 'visage-conveyor-frame' }))), React$4.createElement('div', { className: 'visage-conveyor-beam' }), React$4.createElement('div', { className: 'visage-conveyor-rail' })), (scanProgress > 0 || scanProgressDesc) && React$4.createElement('div', { className: 'visage-scan-progress' }, React$4.createElement('div', { className: 'visage-scan-progress-bar' }, React$4.createElement('div', {
                 className: 'visage-scan-progress-fill',
                 style: { width: `${Math.round(scanProgress * 100)}%` },
-            }))), React$2.createElement('span', { className: 'visage-loading-label' }, scanProgressDesc || 'Visage Scanning\u2026'), React$2.createElement('button', {
+            }))), React$4.createElement('span', { className: 'visage-loading-label' }, scanProgressDesc || 'Visage Scanning\u2026'), React$4.createElement('button', {
                 className: 'visage-btn visage-btn-secondary',
                 onClick: () => {
                     cancelDetection();
@@ -10289,9 +10561,9 @@
                 },
                 style: { marginTop: 12 },
             }, 'Cancel'))
-            : React$2.createElement(React$2.Fragment, null, React$2.createElement('div', { className: 'visage-sprite-body' }, performers.length === 0
-                ? React$2.createElement('div', { className: 'visage-sprite-empty' }, React$2.createElement('p', null, 'No performers identified in this sprite.'))
-                : React$2.createElement('div', { className: 'visage-sprite-grid' }, visiblePerformers.map((p, idx) => {
+            : React$4.createElement(React$4.Fragment, null, React$4.createElement('div', { className: 'visage-sprite-body' }, performers.length === 0
+                ? React$4.createElement('div', { className: 'visage-sprite-empty' }, React$4.createElement('p', null, 'No performers identified in this sprite.'))
+                : React$4.createElement('div', { className: 'visage-sprite-grid' }, visiblePerformers.map((p, idx) => {
                     const alreadyInScene = sceneStashIds.has(p.id);
                     const isConfirmed = confirmedIds.has(p.id) || alreadyInScene;
                     const isFocused = idx === focusedIndex;
@@ -10317,69 +10589,69 @@
                             toggleConfirm(p.id);
                         }
                     }
-                    return React$2.createElement('div', {
+                    return React$4.createElement('div', {
                         key: p.id,
                         className: cardClass,
                         onClick: onSpriteCardClick,
                         role: 'button',
                         tabIndex: 0,
                         'aria-pressed': isConfirmed,
-                    }, React$2.createElement('div', { className: 'visage-sprite-compare' }, React$2.createElement('div', { className: 'visage-sprite-face' }, React$2.createElement('img', {
+                    }, React$4.createElement('div', { className: 'visage-sprite-compare' }, React$4.createElement('div', { className: 'visage-sprite-face' }, React$4.createElement('img', {
                         src: `data:image/jpeg;base64,${p.thumbnail}`,
                         alt: 'Detected face',
                         className: 'visage-sprite-face-img',
-                    }), React$2.createElement('span', { className: 'visage-sprite-label' }, 'SPRITE')), React$2.createElement('div', { className: 'visage-sprite-vs' }, React$2.createElement('span', null, 'vs')), React$2.createElement('div', { className: 'visage-sprite-performer-img' }, React$2.createElement('div', { className: 'visage-sprite-img-placeholder' }, React$2.createElement('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$2.createElement('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }), React$2.createElement('circle', { cx: 12, cy: 7, r: 4 }))), isLoadingImg && React$2.createElement('div', { className: 'visage-sprite-img-loading' }), stashImg && React$2.createElement('img', {
+                    }), React$4.createElement('span', { className: 'visage-sprite-label' }, 'SPRITE')), React$4.createElement('div', { className: 'visage-sprite-vs' }, React$4.createElement('span', null, 'vs')), React$4.createElement('div', { className: 'visage-sprite-performer-img' }, React$4.createElement('div', { className: 'visage-sprite-img-placeholder' }, React$4.createElement('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }), React$4.createElement('circle', { cx: 12, cy: 7, r: 4 }))), isLoadingImg && React$4.createElement('div', { className: 'visage-sprite-img-loading' }), stashImg && React$4.createElement('img', {
                         src: stashImg,
                         alt: p.name,
                         className: 'visage-sprite-performer-img-src',
                         onError: (e) => { e.target.remove(); },
-                    }), React$2.createElement('span', { className: 'visage-sprite-label' }, 'STASH'), (cached === null || cached === void 0 ? void 0 : cached.gender) && React$2.createElement('span', {
+                    }), React$4.createElement('span', { className: 'visage-sprite-label' }, 'STASH'), (cached === null || cached === void 0 ? void 0 : cached.gender) && React$4.createElement('span', {
                         className: 'visage-sprite-gender-badge visage-gender-badge visage-gender-' + cached.gender.toLowerCase().replace(/_/g, '-'),
                         title: cached.gender.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
-                    }, GENDER_SYMBOLS[cached.gender] || '?'), (cached === null || cached === void 0 ? void 0 : cached.country) && React$2.createElement('span', {
+                    }, GENDER_SYMBOLS[cached.gender] || '?'), (cached === null || cached === void 0 ? void 0 : cached.country) && React$4.createElement('span', {
                         className: 'visage-sprite-country-flag fi fi-' + cached.country.toLowerCase(),
-                    })), alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-in-scene' }, 'In scene'), isConfirmed && !alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-check-badge' }, React$2.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$2.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$2.createElement('div', { className: 'visage-sprite-info' }, React$2.createElement('div', { className: 'visage-sprite-summary' }, ConfidenceRing({ confidence: p.confidence, confClass }), React$2.createElement('div', { className: 'visage-sprite-summary-text' }, React$2.createElement('a', {
+                    })), alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-in-scene' }, 'In scene'), isConfirmed && !alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-check-badge' }, React$4.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$4.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$4.createElement('div', { className: 'visage-sprite-info' }, React$4.createElement('div', { className: 'visage-sprite-summary' }, ConfidenceRing({ confidence: p.confidence, confClass }), React$4.createElement('div', { className: 'visage-sprite-summary-text' }, React$4.createElement('a', {
                         href: p.performer_url,
                         target: '_blank',
                         rel: 'noopener noreferrer',
                         className: 'visage-sprite-performer-link',
                         onClick: (e) => e.stopPropagation(),
-                    }, p.name), React$2.createElement('div', { className: 'visage-sprite-stats-row' }, React$2.createElement('span', { className: 'visage-sprite-stat' }, `${p.hit_count} hit${p.hit_count !== 1 ? 's' : ''}`), React$2.createElement('span', { className: 'visage-sprite-stat-sep' }, '\u00B7'), React$2.createElement('span', { className: 'visage-sprite-stat' }, `${formatTime(sortedRanges.reduce((sum, r) => {
+                    }, p.name), React$4.createElement('div', { className: 'visage-sprite-stats-row' }, React$4.createElement('span', { className: 'visage-sprite-stat' }, `${p.hit_count} hit${p.hit_count !== 1 ? 's' : ''}`), React$4.createElement('span', { className: 'visage-sprite-stat-sep' }, '\u00B7'), React$4.createElement('span', { className: 'visage-sprite-stat' }, `${formatTime(sortedRanges.reduce((sum, r) => {
                     var _a, _b, _c, _d;
                     const end = Number((_b = (_a = r === null || r === void 0 ? void 0 : r[1]) !== null && _a !== void 0 ? _a : r === null || r === void 0 ? void 0 : r.end) !== null && _b !== void 0 ? _b : 0);
                     const start = Number((_d = (_c = r === null || r === void 0 ? void 0 : r[0]) !== null && _c !== void 0 ? _c : r === null || r === void 0 ? void 0 : r.start) !== null && _d !== void 0 ? _d : 0);
                     return sum + (end - start);
-                }, 0))} total`)))), React$2.createElement('div', { className: 'visage-sprite-timeline-wrap' }, React$2.createElement('div', { className: 'visage-sprite-timeline' }, segments.map((seg, i) => {
+                }, 0))} total`)))), React$4.createElement('div', { className: 'visage-sprite-timeline-wrap' }, React$4.createElement('div', { className: 'visage-sprite-timeline' }, segments.map((seg, i) => {
                         var _a, _b, _c, _d;
                         const range = sortedRanges[i];
                         const start = Number((_b = (_a = range === null || range === void 0 ? void 0 : range[0]) !== null && _a !== void 0 ? _a : range === null || range === void 0 ? void 0 : range.start) !== null && _b !== void 0 ? _b : 0);
                         const end = Number((_d = (_c = range === null || range === void 0 ? void 0 : range[1]) !== null && _c !== void 0 ? _c : range === null || range === void 0 ? void 0 : range.end) !== null && _d !== void 0 ? _d : 0);
-                        return React$2.createElement('div', {
+                        return React$4.createElement('div', {
                             key: i,
                             className: `visage-sprite-timeline-seg ${confClass}`,
                             style: { left: `${seg.left}%`, width: `${seg.width}%` },
                             onClick: (e) => { e.stopPropagation(); jumpToTime(start); },
                             title: `${formatTime(start)}\u2013${formatTime(end)}`,
                         });
-                    })), React$2.createElement('div', { className: 'visage-sprite-timeline-labels' }, React$2.createElement('span', null, '00:00'), React$2.createElement('span', null, formatTime(maxEndTime)))), alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-hint visage-sprite-hint-done' }, React$2.createElement('span', null, 'Already in scene')), !isConfirmed && !alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-hint' }, React$2.createElement('span', null, 'Click to confirm')), isConfirmed && !alreadyInScene && React$2.createElement('div', { className: 'visage-sprite-hint visage-sprite-hint-done' }, React$2.createElement('span', null, 'Confirmed'))));
-                }))), React$2.createElement('div', { className: 'visage-modal-footer' }, React$2.createElement('div', { className: 'visage-footer-main' }, React$2.createElement('a', {
+                    })), React$4.createElement('div', { className: 'visage-sprite-timeline-labels' }, React$4.createElement('span', null, '00:00'), React$4.createElement('span', null, formatTime(maxEndTime)))), alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-hint visage-sprite-hint-done' }, React$4.createElement('span', null, 'Already in scene')), !isConfirmed && !alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-hint' }, React$4.createElement('span', null, 'Click to confirm')), isConfirmed && !alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-hint visage-sprite-hint-done' }, React$4.createElement('span', null, 'Confirmed'))));
+                }))), React$4.createElement('div', { className: 'visage-modal-footer' }, React$4.createElement('div', { className: 'visage-footer-main' }, React$4.createElement('a', {
                 className: 'visage-ext-patreon-btn',
                 href: 'https://www.patreon.com/cw/cc12340',
                 target: '_blank',
                 rel: 'noopener noreferrer',
-            }, React$2.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$2.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$2.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), 'Support on Patreon'), React$2.createElement('div', { className: 'visage-progress-info' }, confirmedIds.size > 0
-                ? React$2.createElement('span', { className: 'visage-matches-assigned' }, `${confirmedIds.size} of ${performers.length} confirmed`)
-                : React$2.createElement('span', { className: 'visage-matches-assigned' }, visiblePerformers.length < performers.length
+            }, React$4.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$4.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$4.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), 'Support on Patreon'), React$4.createElement('div', { className: 'visage-progress-info' }, confirmedIds.size > 0
+                ? React$4.createElement('span', { className: 'visage-matches-assigned' }, `${confirmedIds.size} of ${performers.length} confirmed`)
+                : React$4.createElement('span', { className: 'visage-matches-assigned' }, visiblePerformers.length < performers.length
                     ? `${visiblePerformers.length} shown (${performers.length} total) \u00B7 click to confirm \u00B7 \u2190\u2192 navigate \u00B7 Enter confirm`
-                    : `Click to confirm \u00B7 \u2190\u2192 navigate \u00B7 Enter confirm`)), React$2.createElement('div', { className: 'visage-button-group' }, React$2.createElement('button', {
+                    : `Click to confirm \u00B7 \u2190\u2192 navigate \u00B7 Enter confirm`)), React$4.createElement('div', { className: 'visage-button-group' }, React$4.createElement('button', {
                 className: 'visage-btn visage-btn-primary',
                 onClick: addConfirmed,
                 disabled: confirmedIds.size === 0 || adding,
             }, adding ? 'Adding...' : `Done (${confirmedIds.size})`)))))));
     }
 
-    const React$1 = window.PluginApi.React;
-    const { useEffect, useRef } = React$1;
+    const React$3 = window.PluginApi.React;
+    const { useEffect, useRef } = React$3;
     const ICONS = {
         error: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z',
         warning: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2V8h2v6z',
@@ -10418,21 +10690,85 @@
         if (!state.errorDialog)
             return null;
         const { message, variant } = state.errorDialog;
-        return React$1.createElement('div', {
+        return React$3.createElement('div', {
             className: `visage-error-backdrop`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 hideErrorDialog(); },
-        }, React$1.createElement('div', {
+        }, React$3.createElement('div', {
             ref: dialogRef,
             className: `visage-error-dialog visage-error-${variant}`,
             role: 'alertdialog',
             'aria-modal': 'true',
             tabIndex: -1,
-        }, React$1.createElement('div', { className: 'visage-error-icon' }, React$1.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'currentColor' }, React$1.createElement('path', { d: ICONS[variant] }))), React$1.createElement('div', { className: 'visage-error-message' }, message), React$1.createElement('button', {
+        }, React$3.createElement('div', { className: 'visage-error-icon' }, React$3.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'currentColor' }, React$3.createElement('path', { d: ICONS[variant] }))), React$3.createElement('div', { className: 'visage-error-message' }, message), React$3.createElement('button', {
             className: 'visage-error-close',
             onClick: hideErrorDialog,
             'aria-label': 'Dismiss',
-        }, React$1.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$1.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$1.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))), React$1.createElement('div', { className: 'visage-error-timer' })));
+        }, React$3.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$3.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$3.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))), React$3.createElement('div', { className: 'visage-error-timer' })));
+    }
+
+    const { React: React$2 } = PluginApi;
+    /**
+     * Surfaces a dismissible warning when a search action hits a backend that is
+     * unreachable or degraded. Unlike the previous version, this does NOT poll
+     * `/health` on page load: it only renders when a button (scene scan or face
+     * search) fails because the backend is down. The message comes from context
+     * state and is cleared by the dismiss button. Clicking the banner or the
+     * "Change backend" link opens the backend settings panel via `onOpen`.
+     */
+    function BackendHealthBanner({ onOpen }) {
+        const { state, hideHealthBanner } = useVisage();
+        if (!state.healthBanner)
+            return null;
+        const openSettings = (e) => {
+            e.stopPropagation();
+            onOpen === null || onOpen === void 0 ? void 0 : onOpen();
+        };
+        return React$2.createElement('div', {
+            className: 'visage-health-banner',
+            role: 'button',
+            tabIndex: 0,
+            onClick: openSettings,
+            onKeyDown: (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openSettings(e);
+                }
+            },
+        }, React$2.createElement('span', null, state.healthBanner), onOpen && React$2.createElement('a', {
+            className: 'visage-health-banner-action',
+            onClick: openSettings,
+        }, 'Change backend'), React$2.createElement('button', {
+            className: 'visage-health-banner-close',
+            onClick: (e) => {
+                e.stopPropagation();
+                hideHealthBanner();
+            },
+            'aria-label': 'Dismiss',
+        }, '×'));
+    }
+
+    const { React: React$1 } = PluginApi;
+    function FirstRunDialog({ onComplete }) {
+        const [showSettings, setShowSettings] = React$1.useState(false);
+        if (showSettings) {
+            return React$1.createElement(BackendSettings, { onClose: onComplete, initialMode: 'local' });
+        }
+        return React$1.createElement('div', { className: 'visage-firstrun-backdrop' }, React$1.createElement('div', {
+            className: 'visage-firstrun-dialog',
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-label': 'Set up your Visage backend',
+        }, React$1.createElement('h2', { className: 'visage-firstrun-heading' }, 'Set up your Visage backend'), React$1.createElement('p', { className: 'visage-firstrun-sub' }, 'Visage sends face images to a backend for recognition. Choose where to run it.'), React$1.createElement('button', {
+            className: 'visage-btn visage-btn-primary visage-firstrun-cloud',
+            onClick: onComplete,
+        }, 'Use Hugging Face cloud'), React$1.createElement('div', { className: 'visage-firstrun-note' }, 'Zero setup. Images are sent to the Hugging Face cloud service.'), React$1.createElement('button', {
+            className: 'visage-btn visage-btn-secondary visage-firstrun-server',
+            onClick: () => setShowSettings(true),
+        }, 'Use my own server'), React$1.createElement('div', { className: 'visage-firstrun-note' }, 'Run the private binary on your own machine or network.'), React$1.createElement('button', {
+            className: 'visage-firstrun-skip',
+            onClick: onComplete,
+        }, 'Skip for now')));
     }
 
     function detectTheme() {
@@ -10505,8 +10841,29 @@
         return useMenuPortal((anchor) => React.createElement(FaceSearchButton, { menuItem: true }));
     }
     function ModalRoot() {
-        const { state } = useVisage();
-        return ReactDOM.createPortal(React.createElement(React.Fragment, null, state.showMatchModal && React.createElement(FaceMatchModal, null), state.showSpriteModal && React.createElement(SpriteResultModal, null), React.createElement(ErrorDialog, null)), document.body);
+        const { state, openSettings, closeSettings } = useVisage();
+        return ReactDOM.createPortal(React.createElement(React.Fragment, null, state.showMatchModal && React.createElement(FaceMatchModal, null), state.showSpriteModal && React.createElement(SpriteResultModal, null), React.createElement(ErrorDialog, null), React.createElement(BackendHealthBanner, { onOpen: openSettings }), state.settingsOpen && React.createElement(BackendSettings, { onClose: closeSettings })), document.body);
+    }
+    const ONBOARDED_KEY = 'visage_onboarded';
+    function isOnboarded() {
+        try {
+            return !!localStorage.getItem(ONBOARDED_KEY);
+        }
+        catch (_a) {
+            return true;
+        }
+    }
+    function markOnboarded() {
+        try {
+            localStorage.setItem(ONBOARDED_KEY, '1');
+        }
+        catch ( /* ignore */_a) { /* ignore */ }
+    }
+    function FirstRunDialogRoot() {
+        const [show, setShow] = React.useState(() => !isOnboarded());
+        if (!show)
+            return null;
+        return ReactDOM.createPortal(React.createElement(FirstRunDialog, { onComplete: () => { markOnboarded(); setShow(false); } }), document.body);
     }
     function ThemeDetector() {
         React.useEffect(() => {
@@ -10588,6 +10945,13 @@
     const imageMatch = initialPath.match(/\/images\/(\d+)/);
     if (imageMatch) {
         requestAnimationFrame(() => mountImage(imageMatch[1]));
+    }
+    const firstRunRoot = document.createElement('div');
+    firstRunRoot.id = 'visage-firstrun-root';
+    firstRunRoot.style.display = 'contents';
+    document.body.appendChild(firstRunRoot);
+    if (typeof (ReactDOM === null || ReactDOM === void 0 ? void 0 : ReactDOM.render) === 'function') {
+        ReactDOM.render(React.createElement(FirstRunDialogRoot, null), firstRunRoot);
     }
 
 })();
