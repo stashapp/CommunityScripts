@@ -9652,6 +9652,18 @@
     const { useEffect: useEffect$4, useState: useState$3 } = React$9;
     const CLOUD_URL = VISAGE_API_URL;
     const LOCAL_DEFAULT = 'http://localhost:7860';
+    function hostOf(url) {
+        try {
+            return new URL(url).hostname;
+        }
+        catch (_a) {
+            return '';
+        }
+    }
+    function isLocalHost(url) {
+        const host = hostOf(url);
+        return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+    }
     const TEST_FEEDBACK = {
         reachable: 'Connection successful. Backend is ready.',
         degraded: 'Backend reachable but degraded (models or index not loaded).',
@@ -9745,6 +9757,7 @@
         const statusText = testStatus === 'testing'
             ? 'Testing connection…'
             : (testStatus ? TEST_FEEDBACK[testStatus] : '');
+        const showNonLocalhostWarn = mode === 'local' && url.trim() !== '' && !isLocalHost(url.trim());
         return React$9.createElement('div', {
             className: 'visage-backend-settings-backdrop',
             onClick: (e) => { if (e.target === e.currentTarget)
@@ -9774,7 +9787,7 @@
                 onChange: (e) => { setUrl(e.target.value); setTestStatus(null); },
                 placeholder: LOCAL_DEFAULT,
             })
-            : React$9.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), React$9.createElement('div', {
+            : React$9.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), showNonLocalhostWarn && React$9.createElement('div', { className: 'visage-backend-settings-warn' }, 'The browser\'s security policy (CSP) only allows ', React$9.createElement('code', null, 'http://localhost:7860'), ' by default. To reach a local backend on another address (e.g. your LAN IP), add it to the ', React$9.createElement('code', null, 'connect-src'), ' list in the ', React$9.createElement('code', null, 'visage.yml'), ' file inside your Stash plugins folder, otherwise requests will be blocked. Note: updating Visage reinstalls ', React$9.createElement('code', null, 'visage.yml'), ', so this must be reapplied after every update.'), React$9.createElement('div', {
             className: `visage-backend-settings-status${testStatus ? ` visage-backend-${testStatus}` : ''}`,
             role: 'status',
         }, statusText)), React$9.createElement('div', { className: 'visage-backend-settings-actions' }, React$9.createElement('button', {

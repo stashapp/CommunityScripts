@@ -2362,6 +2362,25 @@
   border-radius: var(--v-r-sm);
 }
 
+.visage-backend-settings-warn {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--v-uncertain);
+  background: color-mix(in srgb, var(--v-uncertain) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--v-uncertain) 25%, transparent);
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--v-r-sm);
+}
+
+.visage-backend-settings-warn code {
+  font-family: var(--v-mono);
+  font-size: 0.68rem;
+  color: var(--v-text);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+
 .visage-backend-settings-hint {
   font-size: 0.7rem;
   color: var(--v-text-2);

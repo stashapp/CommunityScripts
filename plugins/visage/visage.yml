@@ -9,7 +9,12 @@ ui:
   - visage.css
   csp:
     connect-src:
+    # Local backend default: http://localhost:7860
+    # If your backend runs on another address (e.g. your LAN IP), add it below
+    # or the browser CSP will block requests. Reapply after every Visage update.
     - "https://cc1234-stashface-onnx.hf.space"
-    - "http://*:7860"
+    - "http://localhost:7860"
+    # Example (uncomment and replace):
+    # - "http://192.168.1.50:7860"
     script-src:
     - "'self'"
