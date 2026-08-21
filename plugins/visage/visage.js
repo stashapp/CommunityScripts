@@ -9805,6 +9805,13 @@
         const base = SOURCE_BASE_URLS[(source || '').toLowerCase()] || SOURCE_BASE_URLS.stashdb;
         return `${base}/performers/${id}`;
     };
+    const imgSrc$1 = (value, fallback = '') => {
+        if (!value)
+            return fallback;
+        if (value.startsWith('data:') || /^https?:\/\//.test(value))
+            return value;
+        return `data:image/jpeg;base64,${value}`;
+    };
     const GENDER_CONFIG = {
         MALE: { symbol: '♂', label: 'gender.male', className: 'visage-gender-male' },
         FEMALE: { symbol: '♀', label: 'gender.female', className: 'visage-gender-female' },
@@ -9852,7 +9859,7 @@
             if ((e.shiftKey || e.ctrlKey || e.metaKey) && onQuickAdd) {
                 e.preventDefault();
                 e.stopPropagation();
-                onQuickAdd(performer.id);
+                onQuickAdd(performer.id, performer.source);
             }
             else {
                 onToggle(performer.id);
@@ -9879,7 +9886,7 @@
             ref: imgRef,
             className: 'visage-portrait-img',
             alt: performer.name,
-            src: performer.image,
+            src: imgSrc$1(performer.image),
         }), 
         // Gradient overlay
         React$a.createElement('div', { className: 'visage-card-img-overlay' }), 
@@ -10101,6 +10108,13 @@
 
     const React$7 = window.PluginApi.React;
     const { useCallback: useCallback$2, useEffect: useEffect$3, useRef: useRef$3, useState: useState$2 } = React$7;
+    const imgSrc = (value, fallback = '') => {
+        if (!value)
+            return fallback;
+        if (value.startsWith('data:') || /^https?:\/\//.test(value))
+            return value;
+        return `data:image/jpeg;base64,${value}`;
+    };
     function FaceMatchModal() {
         var _a, _b, _c, _d, _e;
         useLocale();
@@ -10198,13 +10212,13 @@
                 selectPerformer(faceIndex, performer.id);
             }
         }, [matches, loadingState]);
-        const handleQuickAddCard = useCallback$2(async (stashId) => {
+        const handleQuickAddCard = useCallback$2(async (stashId, source) => {
             if (adding || sceneStashIds.has(stashId))
                 return;
             const [scenario] = getScenarioAndID();
             setAdding(true);
             try {
-                const ok = await addSinglePerformer(stashId);
+                const ok = await addSinglePerformer(stashId, source);
                 if (ok) {
                     showSuccess(t('faceMatch.toast.added', { target: scenario === 'scenes' ? 'scene' : 'image' }));
                     close();
@@ -10245,18 +10259,22 @@
                 return next;
             });
         }
-        async function addSinglePerformer(stashId, sourceName) {
+        async function addSinglePerformer(stashId, source) {
             const [scenario, scenarioId] = getScenarioAndID();
             const loadingKey = `add-performer-${stashId}`;
             setLoading(loadingKey, true);
             try {
+                if (source === 'stash') {
+                    await addPerformerToContent(scenario, scenarioId, stashId);
+                    return true;
+                }
                 let performers = await getPerformers(stashId);
                 let performerId = stashId;
                 if (performers.length === 0) {
-                    const performer = await getPerformerDataFromStashID(stashId, sourceName);
+                    const performer = await getPerformerDataFromStashID(stashId, source);
                     if (!performer)
                         return false;
-                    const { performerId: pid } = await createOrGetPerformer(performer, stashId, sourceName);
+                    const { performerId: pid } = await createOrGetPerformer(performer, stashId, source);
                     performerId = pid;
                 }
                 else {
@@ -10383,7 +10401,7 @@
                 alt: t('faceMatch.detectedFaceAlt'),
                 className: 'visage-detect-image',
             }))), activeFace.performers[previewIdx] && React$7.createElement(React$7.Fragment, null, React$7.createElement('div', { className: 'visage-vs-divider' }, t('faceMatch.vs')), React$7.createElement('div', null, React$7.createElement('span', { className: 'visage-section-label-name' }, activeFace.performers[previewIdx].name), React$7.createElement('div', { className: 'visage-match-frame' }, React$7.createElement('img', {
-                src: activeFace.performers[previewIdx].image,
+                src: imgSrc(activeFace.performers[previewIdx].image),
                 alt: activeFace.performers[previewIdx].name,
                 className: 'visage-match-image',
             })))))), React$7.createElement('div', { className: 'visage-right-panel' }, React$7.createElement('div', { className: 'visage-performer-grid' }, activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers.filter((p) => (p.confidence || 0) >= minConfidence).map((performer, cardIdx) => {
