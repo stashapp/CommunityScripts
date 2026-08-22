@@ -2420,6 +2420,49 @@
   background: rgba(0, 0, 0, 0.12);
 }
 
+.visage-backend-settings-sync {
+  border-top: 1px solid var(--v-border);
+  padding-top: 1rem;
+}
+
+.visage-sync-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.visage-sync-last {
+  font-size: 0.72rem;
+  color: var(--v-text-2);
+}
+
+.visage-sync-count {
+  font-size: 0.72rem;
+  color: var(--v-text-3);
+}
+
+.visage-sync-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.visage-sync-note {
+  font-size: 0.7rem;
+  color: var(--v-good);
+}
+
+.visage-sync-error {
+  font-size: 0.7rem;
+  color: var(--v-uncertain);
+}
+
+.visage-syncing {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 @media (max-width: 768px) {
 
   .visage-modal {
