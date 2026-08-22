@@ -1,0 +1,82 @@
+name: StashMetadataMapper
+description: Export scene metadata into MP4 metadata atoms for portable, self-describing media files
+version: 0.1.0
+url: https://github.com/stashapp/CommunityScripts
+exec:
+  - python
+  - "{pluginDir}/StashMetadataMapper.py"
+interface: raw
+errLog: warning
+
+settings:
+  exportTitle:
+    displayName: Export Title
+    description: Write scene title to the MP4 title atom (©nam)
+    type: BOOLEAN
+  exportDescription:
+    displayName: Export Description
+    description: Write scene details to the MP4 long description atom (ldes)
+    type: BOOLEAN
+  exportDate:
+    displayName: Export Date
+    description: Write scene date to the MP4 release date atom (©day)
+    type: BOOLEAN
+  exportStudio:
+    displayName: Export Studio
+    description: Write studio name to album artist (aART) and a custom com.stash atom
+    type: BOOLEAN
+  exportCast:
+    displayName: Export Cast (Performers)
+    description: Write performer names to the MP4 artist atom (©ART), comma-separated
+    type: BOOLEAN
+  exportRating:
+    displayName: Export Rating
+    description: Write the 0–100 scene rating to a custom com.stash atom
+    type: BOOLEAN
+  exportArtwork:
+    displayName: Export Artwork
+    description: Embed the scene cover image into the MP4 artwork atom (covr)
+    type: BOOLEAN
+  exportTagsAsKeywords:
+    displayName: Export Tags as Keywords
+    description: Write non-genre scene tags to the MP4 keywords atom (keyw)
+    type: BOOLEAN
+  genreTagNames:
+    displayName: Genre Tag Names
+    description: >
+      Comma-separated substrings — any tag whose name contains one of these
+      (case-insensitive) goes to the MP4 genre atom (©gen) instead of keywords.
+      Example: Amateur, Teen, MILF
+    type: STRING
+  ignoreTagNames:
+    displayName: Ignored Tag Names
+    description: >
+      Comma-separated substrings — any tag whose name contains one of these
+      (case-insensitive) is excluded from all metadata export.
+      Example: HD, 4K, º
+    type: STRING
+  exportStashIds:
+    displayName: Export Stash IDs
+    description: Write the internal Stash ID and any StashDB/TPDB IDs as custom com.stash atoms
+    type: BOOLEAN
+
+tasks:
+  - name: Export Metadata
+    description: Write scene metadata to all MP4 files in the library
+    defaultArgs:
+      mode: export
+      dryRun: "false"
+  - name: Export Metadata (Dry Run)
+    description: Preview what metadata would be written without modifying any files
+    defaultArgs:
+      mode: export
+      dryRun: "true"
+
+hooks:
+  - name: Auto-export on scene update
+    description: Automatically write metadata to the MP4 file when a scene is saved in Stash
+    triggeredBy:
+      - Scene.Update.Post
+    defaultArgs:
+      mode: hook
+      dryRun: "false"
