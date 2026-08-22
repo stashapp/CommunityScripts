@@ -8123,6 +8123,26 @@
             return true;
         return false;
     }
+    async function getStashStatus(endpoint = getApiEndpoint()) {
+        try {
+            const res = await fetch(`${endpoint}/api/stash/status`, { method: 'GET' });
+            if (!res.ok)
+                return null;
+            return (await res.json());
+        }
+        catch (_a) {
+            return null;
+        }
+    }
+    async function triggerStashSync(endpoint = getApiEndpoint()) {
+        const res = await fetch(`${endpoint}/api/stash/sync`, { method: 'POST' });
+        if (res.status === 409)
+            throw new Error('already_running');
+        if (!res.ok)
+            throw new Error(`Sync failed: ${res.status}`);
+        const data = await res.json();
+        return data.event_id;
+    }
     function dataUrlToBlob(dataUrl) {
         const arr = dataUrl.split(',');
         const mime = arr[0].match(/:(.*?);/)[1];
@@ -8909,6 +8929,16 @@
         'backendSettings.feedback.reachable': 'Connection successful. Backend is ready.',
         'backendSettings.feedback.degraded': 'Backend reachable but degraded (models or index not loaded).',
         'backendSettings.feedback.unreachable': 'Backend unreachable. Check the URL and that the backend is running.',
+        'backendSettings.sync.title': 'Stash Sync',
+        'backendSettings.sync.lastSynced': 'Last synced: {time}',
+        'backendSettings.sync.neverSynced': 'Never synced',
+        'backendSettings.sync.performers': '{count} performers in index',
+        'backendSettings.sync.button': 'Sync',
+        'backendSettings.sync.syncing': 'Syncing…',
+        'backendSettings.sync.done': 'Done',
+        'backendSettings.sync.alreadyRunning': 'Sync already in progress',
+        'backendSettings.sync.error': 'Sync failed',
+        'backendSettings.sync.connectionLost': 'Connection lost',
         // ---- FaceMatchModal.tsx ----
         'faceMatch.title': 'CURRENT FRAME',
         'faceMatch.close': 'Close',
@@ -9979,6 +10009,9 @@
             return current || LOCAL_DEFAULT;
         });
         const [testStatus, setTestStatus] = useState$3(null);
+        const [stashStatus, setStashStatus] = useState$3(null);
+        const [syncStatus, setSyncStatus] = useState$3('idle');
+        const [syncError, setSyncError] = useState$3('');
         useEffect$4(() => {
             function onKey(e) {
                 if (e.key === 'Escape') {
@@ -9990,6 +10023,34 @@
             document.addEventListener('keydown', onKey, true);
             return () => document.removeEventListener('keydown', onKey, true);
         }, [onClose]);
+        useEffect$4(() => {
+            if (mode !== 'local') {
+                setStashStatus(null);
+                return;
+            }
+            let cancelled = false;
+            const timer = setTimeout(() => {
+                getStashStatus(url.trim()).then((status) => {
+                    if (cancelled)
+                        return;
+                    if (status && status.stash_url) {
+                        setStashStatus({
+                            configured: true,
+                            lastSyncAt: status.last_sync_at,
+                            performerCount: status.performer_count,
+                            linkedCount: status.linked_count,
+                        });
+                    }
+                    else {
+                        setStashStatus({ configured: false, lastSyncAt: null, performerCount: 0, linkedCount: 0 });
+                    }
+                }).catch(() => {
+                    if (!cancelled)
+                        setStashStatus(null);
+                });
+            }, 300);
+            return () => { cancelled = true; clearTimeout(timer); };
+        }, [mode, url]);
         function selectMode(next) {
             setMode(next);
             if (next === 'cloud') {
@@ -10031,6 +10092,50 @@
             setApiEndpoint(url.trim());
             onClose();
         }
+        async function handleSync() {
+            setSyncStatus('syncing');
+            setSyncError('');
+            try {
+                const eventId = await triggerStashSync(url.trim());
+                const sseUrl = `${url.trim()}/api/stash/sync/${eventId}`;
+                const evtSource = new EventSource(sseUrl);
+                evtSource.addEventListener('complete', () => {
+                    evtSource.close();
+                    setSyncStatus('done');
+                    // Re-fetch status to update counts
+                    getStashStatus(url.trim()).then((s) => {
+                        if (s && s.stash_url) {
+                            setStashStatus({ configured: true, lastSyncAt: s.last_sync_at, performerCount: s.performer_count, linkedCount: s.linked_count });
+                        }
+                    });
+                    setTimeout(() => setSyncStatus('idle'), 2000);
+                });
+                evtSource.addEventListener('error', (e) => {
+                    evtSource.close();
+                    let data = null;
+                    try {
+                        data = e.data ? JSON.parse(e.data) : null;
+                    }
+                    catch ( /* ignore */_a) { /* ignore */ }
+                    setSyncStatus('error');
+                    setSyncError((data === null || data === void 0 ? void 0 : data.error) || t('backendSettings.sync.error'));
+                });
+                evtSource.onerror = () => {
+                    evtSource.close();
+                    setSyncStatus('error');
+                    setSyncError(t('backendSettings.sync.connectionLost'));
+                };
+            }
+            catch (err) {
+                if (err.message === 'already_running') {
+                    setSyncStatus('already_running');
+                }
+                else {
+                    setSyncStatus('error');
+                    setSyncError(err.message || t('backendSettings.sync.error'));
+                }
+            }
+        }
         const statusText = testStatus === 'testing'
             ? t('backendSettings.testing')
             : (testStatus ? t(TEST_FEEDBACK[testStatus]) : '');
@@ -10067,7 +10172,17 @@
             : React$9.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), showNonLocalhostWarn && React$9.createElement('div', { className: 'visage-backend-settings-warn' }, t('backendSettings.csp1'), React$9.createElement('code', null, 'http://localhost:7860'), t('backendSettings.csp2'), React$9.createElement('code', null, 'connect-src'), t('backendSettings.csp3'), React$9.createElement('code', null, 'visage.yml'), t('backendSettings.csp4'), React$9.createElement('code', null, 'visage.yml'), t('backendSettings.csp5')), React$9.createElement('div', {
             className: `visage-backend-settings-status${testStatus ? ` visage-backend-${testStatus}` : ''}`,
             role: 'status',
-        }, statusText)), React$9.createElement('div', { className: 'visage-backend-settings-actions' }, React$9.createElement('button', {
+        }, statusText), (stashStatus === null || stashStatus === void 0 ? void 0 : stashStatus.configured) && React$9.createElement('div', { className: 'visage-backend-settings-sync' }, React$9.createElement('div', { className: 'visage-backend-settings-field' }, React$9.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.sync.title')), React$9.createElement('div', { className: 'visage-sync-info' }, React$9.createElement('div', { className: 'visage-sync-last' }, stashStatus.lastSyncAt
+            ? t('backendSettings.sync.lastSynced', { time: new Date(stashStatus.lastSyncAt).toLocaleString() })
+            : t('backendSettings.sync.neverSynced')), React$9.createElement('div', { className: 'visage-sync-count' }, t('backendSettings.sync.performers', { count: String(stashStatus.performerCount) }))), React$9.createElement('div', { className: 'visage-sync-actions' }, React$9.createElement('button', {
+            className: `visage-btn visage-btn-secondary${syncStatus === 'syncing' ? ' visage-syncing' : ''}`,
+            onClick: handleSync,
+            disabled: syncStatus === 'syncing',
+        }, syncStatus === 'syncing'
+            ? t('backendSettings.sync.syncing')
+            : syncStatus === 'done'
+                ? t('backendSettings.sync.done')
+                : t('backendSettings.sync.button')), syncStatus === 'already_running' && React$9.createElement('span', { className: 'visage-sync-note' }, t('backendSettings.sync.alreadyRunning')), syncStatus === 'error' && React$9.createElement('span', { className: 'visage-sync-error' }, syncError))))), React$9.createElement('div', { className: 'visage-backend-settings-actions' }, React$9.createElement('button', {
             className: 'visage-btn visage-btn-secondary',
             onClick: handleTest,
             disabled: testStatus === 'testing',
@@ -11135,6 +11250,17 @@
         'backendSettings.feedback.reachable': `Verbinding geslaagd. De backend is klaar.`,
         'backendSettings.feedback.degraded': `Backend bereikbaar maar gedegradeerd (modellen of index niet geladen).`,
         'backendSettings.feedback.unreachable': `Backend niet bereikbaar. Controleer de URL en of de backend actief is.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         // ---- FaceMatchModal.tsx ----
         'faceMatch.title': `HUIDIG FRAME`,
         'faceMatch.close': `Sluiten`,
@@ -11282,6 +11408,17 @@
         'backendSettings.feedback.reachable': `החיבור הצליח. צד-השרת מוכן.`,
         'backendSettings.feedback.degraded': `צד-השרת נגיש אך מוגבל (המודלים או המדד אינם נטענים).`,
         'backendSettings.feedback.unreachable': `צד-השרת אינו נגיש. בדוק את ה-URL וודא שצד-השרת פועל.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `הפריים הנוכחי`,
         'faceMatch.close': `סגירה`,
         'faceMatch.facesSelected': `נמצאו {faces} פנים · נבחרו {selected}`,
@@ -11418,6 +11555,17 @@
         'backendSettings.feedback.reachable': `Ryšys sėkmingas. Pamatinė sistema paruošta.`,
         'backendSettings.feedback.degraded': `Pamatinė sistema pasiekiama, bet sumažintu režimu (modeliai arba indeksas neįkelti).`,
         'backendSettings.feedback.unreachable': `Pamatinė sistema nepasiekiama. Patikrinkite URL ir įsitikinkite, kad sistema veikia.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `DABARTINIS KADRAS`,
         'faceMatch.close': `Uždaryti`,
         'faceMatch.facesSelected': `Rasta veidų: {faces} · pasirinkta: {selected}`,
@@ -11556,6 +11704,17 @@
         'backendSettings.feedback.reachable': `Conexión exitosa. El backend está listo.`,
         'backendSettings.feedback.degraded': `Backend accesible pero degradado (modelos o índice no cargados).`,
         'backendSettings.feedback.unreachable': `Backend inaccesible. Comprueba la URL y que el backend esté en ejecución.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         // ---- FaceMatchModal.tsx ----
         'faceMatch.title': `FOTO ACTUAL`,
         'faceMatch.close': `Cerrar`,
@@ -11703,6 +11862,17 @@
         'backendSettings.feedback.reachable': `تم الاتصال بنجاح. الواجهة الخلفية جاهزة.`,
         'backendSettings.feedback.degraded': `الواجهة الخلفية قابلة للوصول لكنها متدهورة (النماذج أو الفهرس غير محمّل).`,
         'backendSettings.feedback.unreachable': `الواجهة الخلفية غير قابلة للوصول. تحقق من URL وتأكد من أن الواجهة الخلفية تعمل.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `الإطار الحالي`,
         'faceMatch.close': `إغلاق`,
         'faceMatch.facesSelected': `تم العثور على {faces} وجهًا · تم اختيار {selected}`,
@@ -11841,6 +12011,17 @@
         'backendSettings.feedback.reachable': `Connexion réussie. Le backend est prêt.`,
         'backendSettings.feedback.degraded': `Backend joignable mais dégradé (modèles ou index non chargés).`,
         'backendSettings.feedback.unreachable': `Backend injoignable. Vérifiez l'URL et que le backend est en cours d'exécution.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         // ---- FaceMatchModal.tsx ----
         'faceMatch.title': `IMAGE ACTUELLE`,
         'faceMatch.close': `Fermer`,
@@ -11989,6 +12170,17 @@
         'backendSettings.feedback.reachable': `Tilkopling vellukka. Backend er klar.`,
         'backendSettings.feedback.degraded': `Backend er tilgjengeleg, men redusert (modellar eller indeks er ikkje lasta inn).`,
         'backendSettings.feedback.unreachable': `Backend er utilgjengeleg. Sjekk URL-en og at backend køyrer.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `GJELDANDE RAME`,
         'faceMatch.close': `Lukk`,
         'faceMatch.facesSelected': `{faces} andlet funne · {selected} valt`,
@@ -12125,6 +12317,17 @@
         'backendSettings.feedback.reachable': `연결에 성공했습니다. 백엔드가 준비되었습니다.`,
         'backendSettings.feedback.degraded': `백엔드에 연결할 수 있지만 성능이 저하되었습니다(모델 또는 인덱스가 로드되지 않음).`,
         'backendSettings.feedback.unreachable': `백엔드에 연결할 수 없습니다. URL을 확인하고 백엔드가 실행 중인지 확인하세요.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `현재 프레임`,
         'faceMatch.close': `닫기`,
         'faceMatch.facesSelected': `얼굴 {faces}개 발견 · {selected}개 선택됨`,
@@ -12261,6 +12464,17 @@
         'backendSettings.feedback.reachable': `连接成功。后端已就绪。`,
         'backendSettings.feedback.degraded': `后端可访问但已降级（模型或索引未加载）。`,
         'backendSettings.feedback.unreachable': `后端不可访问。请检查 URL 并确认后端正在运行。`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `当前帧`,
         'faceMatch.close': `关闭`,
         'faceMatch.facesSelected': `发现 {faces} 张人脸 · 已选择 {selected}`,
@@ -12397,6 +12611,17 @@
         'backendSettings.feedback.reachable': `Връзката е успешна. Бекендът е готов.`,
         'backendSettings.feedback.degraded': `Бекендът е достъпен, но деградиран (моделите или индексът не са заредени).`,
         'backendSettings.feedback.unreachable': `Бекендът е недостъпен. Проверете URL адреса и се уверете, че бекендът работи.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `ТЕКУЩ КАДЪР`,
         'faceMatch.close': `Затваряне`,
         'faceMatch.facesSelected': `Намерени лица: {faces} · избрани: {selected}`,
@@ -12533,6 +12758,17 @@
         'backendSettings.feedback.reachable': `Подключение успешно. Бэкенд готов.`,
         'backendSettings.feedback.degraded': `Бэкенд доступен, но работает с ограничениями (модели или индекс не загружены).`,
         'backendSettings.feedback.unreachable': `Бэкенд недоступен. Проверьте URL и убедитесь, что бэкенд запущен.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `ТЕКУЩИЙ КАДР`,
         'faceMatch.close': `Закрыть`,
         'faceMatch.facesSelected': `Найдено лиц: {faces} · выбрано: {selected}`,
@@ -12669,6 +12905,17 @@
         'backendSettings.feedback.reachable': `Koneksi berhasil. Backend siap.`,
         'backendSettings.feedback.degraded': `Backend terjangkau tetapi menurun (model atau indeks tidak dimuat).`,
         'backendSettings.feedback.unreachable': `Backend tidak terjangkau. Periksa URL dan pastikan backend berjalan.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `BINGKAI SAAT INI`,
         'faceMatch.close': `Tutup`,
         'faceMatch.facesSelected': `{faces} wajah ditemukan · {selected} dipilih`,
@@ -12805,6 +13052,17 @@
         'backendSettings.feedback.reachable': `Připojení úspěšné. Backend je připraven.`,
         'backendSettings.feedback.degraded': `Backend dosažitelný, ale degradovaný (modely nebo index nejsou načteny).`,
         'backendSettings.feedback.unreachable': `Backend je nedosažitelný. Zkontrolujte URL a ujistěte se, že backend běží.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `AKTUÁLNÍ SNÍMEK`,
         'faceMatch.close': `Zavřít`,
         'faceMatch.facesSelected': `Nalezeno tváří: {faces} · vybráno: {selected}`,
@@ -12941,6 +13199,17 @@
         'backendSettings.feedback.reachable': `Veza uspješna. Pozadinski poslužitelj je spreman.`,
         'backendSettings.feedback.degraded': `Pozadinski poslužitelj je dostupan, ali smanjenih performansi (modeli ili indeks nisu učitani).`,
         'backendSettings.feedback.unreachable': `Pozadinski poslužitelj je nedostupan. Provjerite URL i uvjerite se da poslužitelj radi.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `TRENUTNI OKVIR`,
         'faceMatch.close': `Zatvori`,
         'faceMatch.facesSelected': `Pronađena lica: {faces} · odabrano: {selected}`,
@@ -13077,6 +13346,17 @@
         'backendSettings.feedback.reachable': `เชื่อมต่อสำเร็จ แบ็กเอนด์พร้อมใช้งานแล้ว`,
         'backendSettings.feedback.degraded': `เข้าถึงแบ็กเอนด์ได้แต่ประสิทธิภาพลดลง (โมเดลหรือดัชนียังไม่โหลด)`,
         'backendSettings.feedback.unreachable': `ไม่สามารถเข้าถึงแบ็กเอนด์ได้ ตรวจสอบ URL และยืนยันว่าแบ็กเอนด์กำลังทำงาน`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `เฟรมปัจจุบัน`,
         'faceMatch.close': `ปิด`,
         'faceMatch.facesSelected': `พบใบหน้า {faces} ใบ · เลือกแล้ว {selected}`,
@@ -13215,6 +13495,17 @@
         'backendSettings.feedback.reachable': `Conexão bem-sucedida. O backend está pronto.`,
         'backendSettings.feedback.degraded': `Backend acessível, mas degradado (modelos ou índice não carregados).`,
         'backendSettings.feedback.unreachable': `Backend inacessível. Verifique a URL e se o backend está em execução.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         // ---- FaceMatchModal.tsx ----
         'faceMatch.title': `QUADRO ATUAL`,
         'faceMatch.close': `Fechar`,
@@ -13363,6 +13654,17 @@
         'backendSettings.feedback.reachable': `Forbindelsen lykkedes. Backend er klar.`,
         'backendSettings.feedback.degraded': `Backend er tilgængelig, men forringet (modeller eller indeks er ikke indlæst).`,
         'backendSettings.feedback.unreachable': `Backend er utilgængelig. Tjek URL'en, og at backend kører.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `AKTUELLE RAMME`,
         'faceMatch.close': `Luk`,
         'faceMatch.facesSelected': `{faces} ansigter fundet · {selected} valgt`,
@@ -13500,6 +13802,17 @@
         'backendSettings.feedback.reachable': `A kapcsolat sikeres. A backend készen áll.`,
         'backendSettings.feedback.degraded': `A backend elérhető, de korlátozott (a modellek vagy az index nincs betöltve).`,
         'backendSettings.feedback.unreachable': `A backend nem érhető el. Ellenőrizd az URL-t, és hogy a backend fut-e.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `AKTUÁLIS KERET`,
         'faceMatch.close': `Bezárás`,
         'faceMatch.facesSelected': `{faces} arc található · {selected} kiválasztva`,
@@ -13636,6 +13949,17 @@
         'backendSettings.feedback.reachable': `Підключення успішне. Бекенд готовий.`,
         'backendSettings.feedback.degraded': `Бекенд доступний, але працює з обмеженнями (моделі або індекс не завантажені).`,
         'backendSettings.feedback.unreachable': `Бекенд недоступний. Перевірте URL і переконайтеся, що бекенд запущено.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `ПОТОЧНИЙ КАДР`,
         'faceMatch.close': `Закрити`,
         'faceMatch.facesSelected': `Знайдено облич: {faces} · вибрано: {selected}`,
@@ -13774,6 +14098,17 @@
         'backendSettings.feedback.reachable': `Verbindung erfolgreich. Das Backend ist bereit.`,
         'backendSettings.feedback.degraded': `Backend erreichbar, aber eingeschränkt (Modelle oder Index nicht geladen).`,
         'backendSettings.feedback.unreachable': `Backend nicht erreichbar. Prüfe die URL und ob das Backend läuft.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         // ---- FaceMatchModal.tsx ----
         'faceMatch.title': `AKTUELLES BILD`,
         'faceMatch.close': `Schließen`,
@@ -13922,6 +14257,17 @@
         'backendSettings.feedback.reachable': `Yhteys onnistui. Backend on valmis.`,
         'backendSettings.feedback.degraded': `Backend on tavoitettavissa mutta heikentynyt (mallit tai indeksi ei ole ladattu).`,
         'backendSettings.feedback.unreachable': `Backend ei ole tavoitettavissa. Tarkista URL ja että backend on käynnissä.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `NYKYINEN RUUTU`,
         'faceMatch.close': `Sulje`,
         'faceMatch.facesSelected': `{faces} kasvoa löydetty · {selected} valittu`,
@@ -14058,6 +14404,17 @@
         'backendSettings.feedback.reachable': `Savienojums izdevies. Pamata pakalpojums ir gatavs.`,
         'backendSettings.feedback.degraded': `Pamata pakalpojums sasniedzams, bet samazinātā režīmā (modeļi vai indekss nav ielādēti).`,
         'backendSettings.feedback.unreachable': `Pamata pakalpojums nesasniedzams. Pārbaudiet URL un pārliecinieties, ka pakalpojums darbojas.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `PAŠREIZĒJAIS KADRĪTIS`,
         'faceMatch.close': `Aizvērt`,
         'faceMatch.facesSelected': `Atrastas sejas: {faces} · atlasītas: {selected}`,
@@ -14194,6 +14551,17 @@
         'backendSettings.feedback.reachable': `Kết nối thành công. Backend đã sẵn sàng.`,
         'backendSettings.feedback.degraded': `Backend truy cập được nhưng bị suy giảm (mô hình hoặc chỉ mục chưa được tải).`,
         'backendSettings.feedback.unreachable': `Không thể truy cập backend. Kiểm tra URL và đảm bảo backend đang chạy.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `KHUNG HÌNH HIỆN TẠI`,
         'faceMatch.close': `Đóng`,
         'faceMatch.facesSelected': `Tìm thấy {faces} khuôn mặt · đã chọn {selected}`,
@@ -14331,6 +14699,17 @@
         'backendSettings.feedback.reachable': `Ühendus õnnestus. Backend on valmis.`,
         'backendSettings.feedback.degraded': `Backend on kättesaadav, kuid halvendatud (mudelid või indeks pole laaditud).`,
         'backendSettings.feedback.unreachable': `Backend ei ole kättesaadav. Kontrolli URL-i ja et backend töötab.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `PRAEGUNE KAADER`,
         'faceMatch.close': `Sule`,
         'faceMatch.facesSelected': `Leitud {faces} nägu · valitud {selected}`,
@@ -14468,6 +14847,17 @@
         'backendSettings.feedback.reachable': `Tilkobling vellykket. Backend er klar.`,
         'backendSettings.feedback.degraded': `Backend er tilgjengelig, men redusert (modeller eller indeks er ikke lastet inn).`,
         'backendSettings.feedback.unreachable': `Backend er utilgjengelig. Sjekk URL-en og at backend kjører.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `GJELDENDE RAMME`,
         'faceMatch.close': `Lukk`,
         'faceMatch.facesSelected': `{faces} ansikter funnet · {selected} valgt`,
@@ -14605,6 +14995,17 @@
         'backendSettings.feedback.reachable': `Bağlantı başarılı. Backend hazır.`,
         'backendSettings.feedback.degraded': `Backend erişilebilir ancak düşük performanslı (modeller veya dizin yüklenmemiş).`,
         'backendSettings.feedback.unreachable': `Backend\u2019e ulaşılamıyor. URL'yi ve backend\u2019in çalıştığını kontrol edin.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `MEVCUT KARE`,
         'faceMatch.close': `Kapat`,
         'faceMatch.facesSelected': `{faces} yüz bulundu · {selected} seçildi`,
@@ -14741,6 +15142,17 @@
         'backendSettings.feedback.reachable': `連線成功。後端已就緒。`,
         'backendSettings.feedback.degraded': `後端可連線但已降級（模型或索引未載入）。`,
         'backendSettings.feedback.unreachable': `後端無法連線。請檢查 URL 並確認後端正在執行。`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `目前影格`,
         'faceMatch.close': `關閉`,
         'faceMatch.facesSelected': `找到 {faces} 張臉 · 已選擇 {selected}`,
@@ -14878,6 +15290,17 @@
         'backendSettings.feedback.reachable': `Conexiune reușită. Backend-ul este pregătit.`,
         'backendSettings.feedback.degraded': `Backend-ul este accesibil, dar degradat (modelele sau indexul nu sunt încărcate).`,
         'backendSettings.feedback.unreachable': `Backend-ul este inaccesibil. Verifică URL-ul și că backend-ul rulează.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `CADRUL CURENT`,
         'faceMatch.close': `Închide`,
         'faceMatch.facesSelected': `{faces} fețe găsite · {selected} selectate`,
@@ -15014,6 +15437,17 @@
         'backendSettings.feedback.reachable': `Pripojenie úspešné. Backend je pripravený.`,
         'backendSettings.feedback.degraded': `Backend dosiahnuteľný, ale degradovaný (modely alebo index nie sú načítané).`,
         'backendSettings.feedback.unreachable': `Backend je nedosiahnuteľný. Skontrolujte URL a uistite sa, že backend beží.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `AKTUÁLNY SNÍMOK`,
         'faceMatch.close': `Zavrieť`,
         'faceMatch.facesSelected': `Nájdených tvárí: {faces} · vybratých: {selected}`,
@@ -15150,6 +15584,17 @@
         'backendSettings.feedback.reachable': `Połączenie udane. Backend jest gotowy.`,
         'backendSettings.feedback.degraded': `Backend osiągalny, ale zdegradowany (modele lub indeks nie zostały załadowane).`,
         'backendSettings.feedback.unreachable': `Backend nieosiągalny. Sprawdź URL i upewnij się, że backend działa.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `AKTUALNA KLATKA`,
         'faceMatch.close': `Zamknij`,
         'faceMatch.facesSelected': `Znaleziono twarzy: {faces} · wybrano: {selected}`,
@@ -15287,6 +15732,17 @@
         'backendSettings.feedback.reachable': `Η σύνδεση ήταν επιτυχής. Το backend είναι έτοιμο.`,
         'backendSettings.feedback.degraded': `Το backend είναι προσβάσιμο αλλά υποβαθμισμένο (τα μοντέλα ή το ευρετήριο δεν έχουν φορτωθεί).`,
         'backendSettings.feedback.unreachable': `Το backend δεν είναι προσβάσιμο. Ελέγξτε το URL και ότι το backend εκτελείται.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `ΤΡΕΧΟΝ ΚΑΡΕ`,
         'faceMatch.close': `Κλείσιμο`,
         'faceMatch.facesSelected': `{faces} πρόσωπα βρέθηκαν · {selected} επιλέχθηκαν`,
@@ -15423,6 +15879,17 @@
         'backendSettings.feedback.reachable': `接続に成功しました。バックエンドは利用可能です。`,
         'backendSettings.feedback.degraded': `バックエンドには接続できますが、機能が制限されています（モデルまたはインデックスが読み込まれていません）。`,
         'backendSettings.feedback.unreachable': `バックエンドに接続できません。URL を確認し、バックエンドが実行中であることを確認してください。`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `現在のフレーム`,
         'faceMatch.close': `閉じる`,
         'faceMatch.facesSelected': `{faces} 個の顔を検出 · {selected} 個を選択`,
@@ -15560,6 +16027,17 @@
         'backendSettings.feedback.reachable': `Anslutningen lyckades. Backend är redo.`,
         'backendSettings.feedback.degraded': `Backend är nåbar men försämrad (modeller eller index är inte inlästa).`,
         'backendSettings.feedback.unreachable': `Backend är onåbar. Kontrollera URL:en och att backend körs.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         'faceMatch.title': `AKTUELL RUTA`,
         'faceMatch.close': `Stäng`,
         'faceMatch.facesSelected': `{faces} ansikten hittade · {selected} valda`,
@@ -15698,6 +16176,17 @@
         'backendSettings.feedback.reachable': `Connessione riuscita. Il backend è pronto.`,
         'backendSettings.feedback.degraded': `Backend raggiungibile ma degradato (modelli o indice non caricati).`,
         'backendSettings.feedback.unreachable': `Backend non raggiungibile. Controlla l'URL e che il backend sia in esecuzione.`,
+        // ---- Stash Sync ----
+        'backendSettings.sync.title': `Stash Sync`,
+        'backendSettings.sync.lastSynced': `Last synced: {time}`,
+        'backendSettings.sync.neverSynced': `Never synced`,
+        'backendSettings.sync.performers': `{count} performers in index`,
+        'backendSettings.sync.button': `Sync`,
+        'backendSettings.sync.syncing': `Syncing\u2026`,
+        'backendSettings.sync.done': `Done`,
+        'backendSettings.sync.alreadyRunning': `Sync already in progress`,
+        'backendSettings.sync.error': `Sync failed`,
+        'backendSettings.sync.connectionLost': `Connection lost`,
         // ---- FaceMatchModal.tsx ----
         'faceMatch.title': `FOTO CORRENTE`,
         'faceMatch.close': `Chiudi`,
