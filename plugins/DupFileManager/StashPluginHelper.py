@@ -990,6 +990,12 @@ class mergeMetadata: # A class to merge scene metadata from source scene to dest
     def merge(self, SrcData, DestData):
         self.srcData = SrcData
         self.destData = DestData
+        # find_duplicate_scenes_diff returns a reduced scene fragment which has none of the
+        # playback fields, so re-read both scenes when they are missing. Without this the
+        # history merge below silently does nothing when called from the duplicate report.
+        if 'play_history' not in self.srcData or 'play_history' not in self.destData:
+            self.srcData = self.stash.find_scene(int(self.srcData['id']))
+            self.destData = self.stash.find_scene(int(self.destData['id']))
         ORG_DATA_DICT = {'id' : self.destData['id']}
         self.dataDict = ORG_DATA_DICT.copy()
         self.mergeItems('tags', 'tag_ids', [], excludeName=self.excludeMergeTags)
@@ -1007,11 +1013,37 @@ class mergeMetadata: # A class to merge scene metadata from source scene to dest
         self.mergeItem('details')
         self.mergeItem('rating100')
         self.mergeItem('code')
+        self.mergeItem('organized')
+        self.mergePlayDuration()
         if self.dataDict != ORG_DATA_DICT:
             self.stash.Trace(f"Updating scene ID({self.destData['id']}) with {self.dataDict}; path={self.destData['files'][0]['path']}", toAscii=True)
             self.result = self.stash.update_scene(self.dataDict)
+        self.mergeHistory()
         return self.result
-    
+
+    def mergePlayDuration(self): # Total time played is cumulative, so the two scenes' durations are summed
+        srcDuration = self.srcData['play_duration'] if 'play_duration' in self.srcData else None
+        if not srcDuration:
+            return
+        destDuration = self.destData['play_duration'] if 'play_duration' in self.destData else None
+        self.dataDict.update({'play_duration' : (destDuration if destDuration else 0) + srcDuration})
+
+    def mergeHistory(self): # Play and O history can not go through update_scene
+        # play_count and o_counter are deprecated as unsupported on SceneUpdateInput, so setting
+        # them there is silently dropped. sceneAddPlay and sceneAddO take a list of timestamps,
+        # which merges the actual history rather than only bumping a counter.
+        destId = self.destData['id']
+        for fieldName, mutationName in (('play_history', 'sceneAddPlay'), ('o_history', 'sceneAddO')):
+            times = self.srcData[fieldName] if fieldName in self.srcData else None
+            if not times:
+                continue
+            self.stash.Trace(f"Merging {len(times)} {fieldName} entries into scene ID({destId})")
+            self.stash.call_GQL(
+                "mutation MergeHistory($id: ID!, $times: [Timestamp!]) {"
+                f" {mutationName}(id: $id, times: $times) " + "{ count } }",
+                {"id" : destId, "times" : times})
+            self.result = "Merged"
+
     def Nothing(self, Data):
         if not Data or Data == "" or (type(Data) is str and Data.strip() == ""):
             return True
@@ -1020,6 +1052,8 @@ class mergeMetadata: # A class to merge scene metadata from source scene to dest
     def mergeItem(self,fieldName, updateFieldName=None, subField=None):
         if updateFieldName == None:
             updateFieldName = fieldName
+        if fieldName not in self.srcData or fieldName not in self.destData: # Not every query returns every field
+            return
         if self.Nothing(self.destData[fieldName]) and not self.Nothing(self.srcData[fieldName]):
             if subField == None:
                 self.dataDict.update({ updateFieldName : self.srcData[fieldName]})
