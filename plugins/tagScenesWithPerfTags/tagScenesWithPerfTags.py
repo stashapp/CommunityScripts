@@ -38,7 +38,7 @@ def processAll():
         performers = stash.find_performers(
             f=query,
             filter={"page": page, "per_page": PERFORMER_PAGE_SIZE},
-            fragment="id name tags { id name }"
+            fragment="id name tags { id name ignore_auto_tag }"
         )
 
         if not performers:
@@ -54,6 +54,8 @@ def processAll():
             performer_tags_names = set()
 
             for tag in perf["tags"]:
+                if settings["excludeTagWithIgnoreAutoTag"] and tag["ignore_auto_tag"]:
+                  continue
                 performer_tags_ids.add(tag["id"])
                 performer_tags_names.add(tag["name"])
 
@@ -112,7 +114,10 @@ def processScene(scene: dict):
 
     perf_tag_ids = set()
     for perf in scene.get("performers", []):
-        perf_tag_ids.update(map(lambda tag: tag["id"], perf.get("tags", [])))
+        for tag in perf.get("tags", []):
+          if settings["excludeTagWithIgnoreAutoTag"] and tag["ignore_auto_tag"]:
+              continue
+          perf_tag_ids.add(tag["id"])
 
     # Skip if no performer tags
     if not perf_tag_ids:
@@ -142,7 +147,8 @@ config = stash.get_configuration()
 
 settings = {
     "excludeSceneWithTag": "",
-    "excludeSceneOrganized": False
+    "excludeSceneOrganized": False,
+    "excludeTagWithIgnoreAutoTag": False
 }
 if "tagScenesWithPerfTags" in config["plugins"]:
     settings.update(config["plugins"]["tagScenesWithPerfTags"])
@@ -161,6 +167,6 @@ elif "hookContext" in json_input["args"]:
         and len(json_input["args"]["hookContext"]["inputFields"]) > 1
     ):
         # Enforce explicit studio object allocation inside our graphQL post-hook criteria
-        scene = stash.find_scene(id, fragment="id organized tags { id name } performers { id tags { id } }")
+        scene = stash.find_scene(id, fragment="id organized tags { id name } performers { id tags { id ignore_auto_tag } }")
         if scene:
             processScene(scene)
