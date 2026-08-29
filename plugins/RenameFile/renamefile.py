@@ -388,12 +388,12 @@ def rename_scene(scene_id):
     original_file_name  = Path(original_file_path).name
     new_filename        = form_filename(original_file_stem, scene_details)  
     max_filename_length = int(config["max_filename_length"])
-    if len(new_filename) > max_filename_length:
-        extension_length = len(Path(original_file_path).suffix)
-        max_base_filename_length = max_filename_length - extension_length
-        truncated_filename = new_filename[:max_base_filename_length]
+    extension_length = len(Path(original_file_path).suffix)
+    if len(new_filename) + extension_length > max_filename_length:
         hash_suffix = hashlib.md5(new_filename.encode()).hexdigest()
-        new_filename = truncated_filename + '_' + hash_suffix + Path(original_file_path).suffix
+        max_base_filename_length = max_filename_length - extension_length - len(hash_suffix) - 1
+        truncated_filename = new_filename[:max_base_filename_length]
+        new_filename = truncated_filename + '_' + hash_suffix
     newFilenameWithExt  = new_filename + Path(original_file_path).suffix
     new_file_path       = f"{original_parent_directory}{os.sep}{new_filename}{Path(original_file_name).suffix}"
     org_file_root_stem  = f"{original_parent_directory}{os.sep}{original_file_stem}"
