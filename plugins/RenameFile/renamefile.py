@@ -444,15 +444,15 @@ def rename_scene(scene_id):
             stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
             stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
         if targetDidExist:
-            raise
+            return None
         if os.path.isfile(new_file_path):
             if os.path.isfile(original_file_path):
                 os.remove(original_file_path)
             pass
         else:
             # ToDo: Add delay rename here
-            raise
-    
+            return None
+
     if dry_run:
         stash.Log("Dry-Run, so skipping DB renaming")
     elif stash.renameFileNameInDB(scene_details['files'][0]['id'], original_file_name, newFilenameWithExt):

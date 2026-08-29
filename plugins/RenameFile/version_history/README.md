@@ -16,3 +16,6 @@
 - Fixed Dry-Run bug, which changed the file name in the database when Dry-Run was enabled.
 ### 1.0.1
 - 
+### 1.0.2
+- Fixed OSError "File name too long" (macOS) caused by the long-filename truncation logic appending the file extension twice and not reserving space for the hash suffix.
+- Rename/move failures now log a single clear error message instead of also dumping a raw Python traceback to the log.
