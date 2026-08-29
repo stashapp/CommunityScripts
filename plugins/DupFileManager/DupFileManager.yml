@@ -1,6 +1,6 @@
 name: DupFileManager
 description: Manages duplicate files.
-version: 1.0.0
+version: 1.0.1
 url: https://discourse.stashapp.cc/t/dupfilemanager/1331
 ui:
   javascript:

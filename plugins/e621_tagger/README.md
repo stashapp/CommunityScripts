@@ -14,8 +14,15 @@ Go to Tasks -> e621_tagger -> Press Tag Everything
 
 ## Configuration
 
-You can configure which tags it will skip. By default, it will skip `e621_tagged` tag
+- You can configure which tags it will skip. By default, it will skip `e621_tagged` tag.
+- e621 requires UserAgent to be set in this format: `Project/1.1 (by yourname on e621)`, otherwise, it will block requests with 403.
 
-## Rate limit
 
-Be aware, that e621 has rate limit. In script it's hardcoded 2 seconds on wait time
+
+## Changelog
+#### 0.7
+- Breaking changes: now you have to configure extra fields:
+  -  Delay between e621 requests in milliseconds
+  -  List of tags to skip (comma separated)
+  -  e621 User-Agent
+- Fixed 403 on e621 requests. Now e621 requires UserAgent to be set in this format: `Project/1.1 (by yourname on e621)`. Generic or browser-like strings are rejected with 403. Default - `Stash-e621-Tagger/1.1 (by anonymous on e621)`

@@ -1,6 +1,6 @@
 name: Thumbnail Previews
-description: Displays preview videos on thumbnail cards.
-version: 0.1
+description: Displays preview videos, images, and gallery covers on thumbnail cards.
+version: 1.0
 url: https://discourse.stashapp.cc/t/thumbnail-previews/1947
 ui:
   javascript:
