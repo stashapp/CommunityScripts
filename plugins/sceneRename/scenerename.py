@@ -17,7 +17,16 @@ except ModuleNotFoundError:
     print("stashapi not found", file=sys.stderr)
     sys.exit(1)
 
-SCENE_FRAGMENT = "id title code studio {name} files {id path width height} date"
+SCENE_FRAGMENT = "id title code studio {name} files {id path width height parent_folder {id}} date custom_fields"
+
+ORIGINAL_NAME_FIELD = "original_filename"
+
+# Filesystem name limits are in bytes, not characters (255 on ext4/btrfs).
+NAME_MAX_BYTES = 255
+
+# Illegal or troublesome in filenames. ":" is here because clean_title() only
+# strips it from titles - studio names and codes reach the filename untouched.
+ILLEGAL_CHARS = ["<", ">", '"', "/", "\\", "|", "?", "*", ":"]
 
 
 def get_json_input():
@@ -56,9 +65,28 @@ def get_settings(json_input, stash):
 
 
 def replace_illegal_chars(filename):
-    for ch in ["<", ">", '"', "/", "\\", "|", "?", "*"]:
+    for ch in ILLEGAL_CHARS:
         filename = filename.replace(ch, "-")
-    return filename
+
+    # Control characters (NUL, newline, tab) are legal on Linux but make the
+    # file miserable to handle in a shell, over SMB, or on any other platform.
+    filename = "".join(
+        " " if ord(c) < 32 or ord(c) == 127 else c for c in filename
+    )
+
+    # Tidy up the whitespace those substitutions can leave behind.
+    filename = " ".join(filename.split())
+
+    # A leading dot hides the file; trailing dots and spaces break elsewhere.
+    return filename.strip(" .")
+
+
+def truncate_to_bytes(name, max_bytes):
+    """Trim to a byte budget without splitting a multi-byte character."""
+    if len(name.encode("utf-8")) <= max_bytes:
+        return name
+    trimmed = name.encode("utf-8")[:max_bytes].decode("utf-8", "ignore")
+    return trimmed.strip(" .")
 
 
 def get_resolution_label(height):
@@ -84,7 +112,7 @@ def clean_title(title):
     return title.replace(":", ",")
 
 
-def form_filename(scene):
+def form_filename(scene, max_stem_bytes=NAME_MAX_BYTES):
     """Build filename: Studio #Code - Title [Resolution]"""
     # Studio Name
     studio = scene.get("studio")
@@ -106,8 +134,9 @@ def form_filename(scene):
     # Full title with colons replaced by commas
     title = clean_title(scene.get("title", ""))
 
-    # Skip files without a studio name
-    if not studio_name:
+    # Studio and title are both required. Without a title the name collapses to
+    # just the studio (plus resolution), which is worse than the original.
+    if not studio_name or not title.strip():
         return None
 
     # Build: "Studio #Code - Title [Resolution]"
@@ -127,11 +156,36 @@ def form_filename(scene):
         new_name = "{} [{}]".format(new_name, resolution)
 
     new_name = replace_illegal_chars(new_name)
+    new_name = truncate_to_bytes(new_name, max_stem_bytes)
 
-    if len(new_name) > 240:
-        new_name = new_name[:240]
+    # Sanitising can empty the stem, e.g. a studio and title of only dots.
+    if not new_name:
+        return None
 
     return new_name
+
+
+def record_original_name(stash, scene, original_name):
+    """Save the pre-rename basename to the scene's custom fields.
+
+    Only written once, so the earliest known filename survives later renames.
+    Uses a partial update so any other custom fields are left alone.
+    """
+    existing = scene.get("custom_fields") or {}
+    if existing.get(ORIGINAL_NAME_FIELD):
+        return
+
+    try:
+        stash.update_scene({
+            "id": scene["id"],
+            "custom_fields": {"partial": {ORIGINAL_NAME_FIELD: original_name}},
+        })
+        file_logger.info("  Recorded {} = {}".format(ORIGINAL_NAME_FIELD, original_name))
+    except Exception as e:
+        # Bookkeeping failure must not be reported as a failed rename.
+        msg = "Renamed, but could not record original filename: {}".format(e)
+        log.warning(msg)
+        file_logger.warning(msg)
 
 
 def rename_scene(stash, scene_id, dry_run=False, debug=False):
@@ -154,9 +208,18 @@ def rename_scene(stash, scene_id, dry_run=False, debug=False):
     ext = Path(original_path).suffix
     parent = Path(original_path).parent
 
-    new_stem = form_filename(scene)
+    # Budget the stem in bytes, leaving room for the extension and a possible
+    # " (2)" duplicate suffix.
+    max_stem_bytes = NAME_MAX_BYTES - len(ext.encode("utf-8")) - len(" (999)")
+    new_stem = form_filename(scene, max_stem_bytes)
     if not new_stem:
-        msg = "Could not form new filename - missing metadata (need at least one of: studio, code, title)"
+        missing = []
+        if not (scene.get("studio") or {}).get("name"):
+            missing.append("studio")
+        if not clean_title(scene.get("title", "")).strip():
+            missing.append("title")
+        msg = "Skipping '{}' - missing required metadata: {}".format(
+            original_name, ", ".join(missing))
         log.info(msg)
         file_logger.info(msg)
         return None
@@ -206,13 +269,27 @@ def rename_scene(stash, scene_id, dry_run=False, debug=False):
     if dry_run:
         return new_stem
 
+    # Let Stash do the rename via moveFiles: it renames on disk and updates the
+    # file record in one transaction, so no rescan is needed and the DB never
+    # points at a stale path. A destination folder is required even for an
+    # in-place rename, so pass the file's current one.
+    move_input = {
+        "ids": [files[0]["id"]],
+        "destination_basename": new_name,
+    }
+    parent_folder = files[0].get("parent_folder") or {}
+    if parent_folder.get("id"):
+        move_input["destination_folder_id"] = parent_folder["id"]
+    else:
+        move_input["destination_folder"] = str(parent)
+
     try:
-        os.rename(original_path, new_path)
+        stash.move_files(move_input)
         msg = "Renamed successfully: {}".format(new_path)
         log.info(msg)
         file_logger.info(msg)
-        stash.metadata_scan(paths=[str(parent)])
-    except OSError as e:
+        record_original_name(stash, scene, original_name)
+    except Exception as e:
         msg = "Failed to rename: {}".format(e)
         log.error(msg)
         file_logger.error(msg)
