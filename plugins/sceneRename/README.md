@@ -10,6 +10,9 @@ Simple plugin to help organize scene files into a clean, consistent format. It i
 * Graceful handling of already-renamed files
 * Does not fail if Scene ID or resolution are missing
 * Requires a Studio and Title to proceed
+* Renames through Stash's `moveFiles` API, so the database stays in sync without a rescan
+* Records the pre-rename filename in the scene's `original_filename` custom field
+* Strips illegal and control characters, and truncates to the filesystem's byte limit
 
 The code is simple and the plugin UI includes clear usage instructions.
 
@@ -25,7 +28,7 @@ The code is simple and the plugin UI includes clear usage instructions.
 The `Scene Rename` plugin renames scene files using the following format:
 
 ```
-Studio #StudioID [Resolution] - Title.mp4
+Studio #Code - Title [Resolution].mp4
 ```
 
 For example, a file in my library that still has its default name:
@@ -37,7 +40,7 @@ wodhhd_06_1080p.mp4
 Is renamed to:
 
 ```
-TitanMen #395 [1080p] - Coyote Point, Dakota Rivers.mp4
+TitanMen #395 - Coyote Point, Dakota Rivers [1080p].mp4
 ```
 
 This format keeps filenames consistent and easy to scan. It also makes it simple to group files by studio if desired, or keep everything in a single directory while maintaining a clean, uniform structure.
