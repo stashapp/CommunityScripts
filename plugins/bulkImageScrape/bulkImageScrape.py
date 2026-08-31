@@ -292,7 +292,7 @@ def update_image(client: StashInterface, update: dict) -> dict | None:
 
 json_input: dict = json.loads(sys.stdin.read())
 FRAGMENT_SERVER: dict = json_input["server_connection"]
-stash: StashInterface = StashInterface(FRAGMENT_SERVER)
+stash: StashInterface = StashInterface(FRAGMENT_SERVER, force_api_key=True)
 log.info("Starting Bulk Image Scrape Plugin")
 
 config: dict = stash.get_configuration()["plugins"]
