@@ -16,9 +16,9 @@ It is mandatory to enter the Scraper ID of the Scraper you want to use. In this 
 
 ![Settings](./res/settings.png)
 
-- `Create Missing movies/groups from scrape result`
+- `Create Missing tags from scrape result`
 
-> If the scraper returns a movie/group and it is not already in your stash, the plugin will create it if enabled
+> If the scraper returns a tag and it is not already in your stash, the plugin will create it if enabled
 
 - `Create Missing performer from scrape result`
 
