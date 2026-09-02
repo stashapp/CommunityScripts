@@ -1,7 +1,11 @@
 import sys, json
 
-import stashapi.log as log
-from stashapi.stashapp import StashInterface
+try:
+    import stashapi.log as log
+    from stashapi.stashapp import StashInterface
+except ModuleNotFoundError:
+    print("stashapi not found", file=sys.stderr)
+    sys.exit(1)
 
 SVG_IMAGE = (
     "data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIi"
@@ -49,12 +53,12 @@ def main():
 
 def update_image(image_id, paths):
     update = stash.update_image(
-    {'id': image_id, 'urls': paths})
+    {'id': image_id, 'urls': list(paths or [])})
     return update
 
 def update_scene(scene_id, paths):
     update = stash.update_scene(
-    {'id': scene_id, 'urls': paths})
+    {'id': scene_id, 'urls': list(paths or [])})
     return update
 
 def find_images(find_images_tag):
@@ -64,7 +68,7 @@ def find_images(find_images_tag):
         "tags": {"modifier": "EXCLUDES", "value": find_images_tag},
     },
     filter={
-        "per_page": "-1"
+        "per_page": -1
     },
     get_count=True,
 
@@ -78,7 +82,7 @@ def find_scenes(find_scenes_tag):
         "tags": {"modifier": "EXCLUDES", "value": find_scenes_tag},
     },
     filter={
-        "per_page": "-1"
+        "per_page": -1
     },
     get_count=True,
 )
@@ -122,7 +126,7 @@ def images_delete():
         for i, file in enumerate(image["visual_files"]):
             if i == 0:  # skip first ID
                 continue
-            delete = stash.destroy_files(file["id"])
+            delete = stash.destroy_files([file["id"]])
             if delete is True:
                 log.info(f"Image ID:{image['id']} - File ID:{file['id']} - Deleted: {file['path']}")
             else:
@@ -139,14 +143,14 @@ def images_delete_record_paths():
 
     for j, image in enumerate(images):
         image_id = image["id"]
-        paths = image["urls"]
+        paths = list(image.get("urls") or [])
         log.progress(j / image_count)
 
         for i, file in enumerate(image["visual_files"]):
             if i == 0:  # skip first ID
                 continue
             path = file["path"]
-            delete = stash.destroy_files(file["id"])
+            delete = stash.destroy_files([file["id"]])
             if delete is True:
                 log.info(f"Image ID:{image['id']} - File ID:{file['id']} - Deleted: {path}")
                 paths.append("File: " + path)
@@ -173,7 +177,7 @@ def scenes_delete():
         for i, file in enumerate(scene["files"]):
             if i == 0:  # skip first ID
                 continue
-            delete = stash.destroy_files(file["id"])
+            delete = stash.destroy_files([file["id"]])
             if delete is True:
                 log.info(f"Scene ID:{scene['id']} - File ID:{file['id']} - Deleted: {file['path']}")
             else:
@@ -192,13 +196,13 @@ def scenes_delete_record_paths():
         log.progress(j / scene_count)
 
         scene_id = scene["id"]
-        paths = scene["urls"]
+        paths = list(scene.get("urls") or [])
 
         for i, file in enumerate(scene["files"]):
             if i == 0:  # skip first ID
                 continue
             path = file["path"]
-            delete = stash.destroy_files(file["id"])
+            delete = stash.destroy_files([file["id"]])
             if delete is True:
                 log.info(f"Scene ID:{scene['id']} - File ID:{file['id']} - Deleted: {path}")
                 paths.append("File: " + path)
