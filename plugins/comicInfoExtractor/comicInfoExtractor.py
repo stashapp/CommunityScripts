@@ -1,12 +1,11 @@
 import stashapi.log as log
 from stashapi.stashapp import StashInterface
 import stashapi.marker_parse as mp
-import yaml
 import json
-import os
 import sys
 import xml.etree.ElementTree as ET
 import zipfile
+from config import ImportList as CONFIG_IMPORT_LIST
 
 per_page = 100
 
@@ -122,23 +121,7 @@ json_input = json.loads(sys.stdin.read())
 FRAGMENT_SERVER = json_input["server_connection"]
 stash = StashInterface(FRAGMENT_SERVER)
 
-# Load Config
-with open(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yml"), "r"
-) as f:
-    try:
-        config = yaml.safe_load(f)
-    except yaml.YAMLError as exc:
-        log.error("Could not load config.yml: " + str(exc))
-        sys.exit(1)
-try:
-    ImportList = config["ImportList"]
-except KeyError as key:
-    log.error(
-        str(key)
-        + " is not defined in config.yml, but is needed for this script to proceed"
-    )
-    sys.exit(1)
+ImportList = CONFIG_IMPORT_LIST.copy()
 
 if "mode" in json_input["args"]:
     PLUGIN_ARGS = json_input["args"]["mode"]
