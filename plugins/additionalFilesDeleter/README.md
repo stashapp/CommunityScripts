@@ -1,20 +1,20 @@
 # Addtional Files Deleter
 
- https://discourse.stashapp.cc/t/addtional-files-deleter/1337
+https://discourse.stashapp.cc/t/addtional-files-deleter/1337
 
-This is a plugin that will scan your Stash for either scenes or images where the file count is above 1. It will then skip over the primary file for each scene or image object and delete these extra files. Usually scene that contain multiple files are identical Phash matches (Unless you have manually merged unidentical Phashed files). Image objects that contain multiple files are grouped together under identical checksums, not Phashes. (You can't manually merge images as of yet.)
+This plugin scans your Stash library for scenes or images where the file count is greater than 1\. It skips the primary file for each object and deletes the additional files. In most cases, duplicate scene files are identical phash matches unless a scene was manually merged. Image objects with multiple files are typically grouped by identical checksums.
 
 ## Usage
 
-Copy repository into Stash plugins folder or add via the new plugins system and refresh your plugins from the Settings.
+Copy the repository into your Stash plugins folder or add it through the plugin system and refresh plugins from the Settings screen.
 
-If on first run you may want to run the Create Tag task, which creates an ignore tag that you can apply to Scenes or Images, so that they are bypassed when any of the other tasks are run.
+If this is your first run, use the Create Tag task to create an ignore tag that can be applied to Scenes or Images so they are skipped when the other tasks run.
 
-Other than Create Tag task you can run the following tasks.
+Other than the Create Tag task, you can run the following tasks:
 
-Images - Delete
-Images - Delete & Record
-Scenes - Delete
-Scenes - Delete & Record
+- Images - Delete
+- Images - Delete & Record
+- Scenes - Delete
+- Scenes - Delete & Record
 
-Tasks that just specify delete will just delete addtional files from their respective objects and Delete & Record will take the file paths of the files to be deleted, prefix them with "File: " (For latter easy searching) and it will append them to the current list of urls the object has and update the object. This is just a precaution to record perhaps usefull metadata an additional file path may hold for later use.
+Tasks that just specify Delete remove the additional files from the object. Delete & Record saves the deleted file paths with a "File: " prefix, appends them to the object's current URL list, and updates the object. This is a precaution to preserve metadata that may be useful later.
