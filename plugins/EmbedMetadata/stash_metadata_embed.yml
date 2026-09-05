@@ -1,0 +1,30 @@
+name: Metadata Embedder
+description: Embeds Stash scene metadata (title, performers, tags, studio, date, rating, cover image) into MKV/MP4 files using ffmpeg.
+version: 1.0.0
+url: ""
+
+exec:
+  - python
+  - "{pluginDir}/stash_metadata_embed.py"
+
+interface: raw
+errLog: info
+
+tasks:
+  - name: Embed Metadata + Cover Image
+    description: Embed metadata tags and cover image (thumbnail) into all MKV/MP4 files.
+    defaultArgs:
+      dry_run: "false"
+      embed_cover: "true"
+
+  - name: Embed Metadata Only
+    description: Embed metadata tags only — skips attaching the cover image.
+    defaultArgs:
+      dry_run: "false"
+      embed_cover: "false"
+
+  - name: Dry Run (log only)
+    description: Log what would be embedded without modifying any files.
+    defaultArgs:
+      dry_run: "true"
+      embed_cover: "true"
