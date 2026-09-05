@@ -1,6 +1,6 @@
 name: Stash Scheduler
 description: Schedule automatic library scans with an optional identify pass after each scan.
-version: "0.6.0"
+version: 0.6.1
 url: https://discourse.stashapp.cc/t/stash-scheduler/7059
 
 exec:
@@ -46,24 +46,28 @@ settings:
     displayName: Scan Frequency
     description: >
       How often to run the library scan.
-      Valid values: hourly, daily, weekly.
-      Hourly ignores the Time of Day setting.
+      Simple values: hourly, daily, weekly. Hourly ignores the Time of Day
+      setting. For more control, enter a standard 5-field crontab expression
+      instead (e.g. "10 7,17 * * *" fires at 7:10 AM and 5:10 PM every day;
+      "0 3 * * 1" fires at 3:00 AM every Monday). When a crontab expression
+      is entered, the Time of Day and Day of Week settings below are ignored.
+      Cron field order: minute hour day-of-month month day-of-week.
     type: STRING
 
   time_of_day:
     displayName: Time of Day (HH:MM)
     description: >
       The time to run the scan in 24-hour HH:MM format. Used for Daily and
-      Weekly schedules; ignored for Hourly. Examples: 02:00, 14:30, 20:45.
-      Defaults to 02:00 if not set.
+      Weekly schedules; ignored for Hourly and when Frequency is a crontab
+      expression. Examples: 02:00, 14:30, 20:45. Defaults to 02:00 if not set.
     type: STRING
 
   day_of_week:
     displayName: Day of Week (Weekly only)
     description: >
       The day of the week on which to run the scan when Frequency is set to
-      Weekly. Valid values: mon, tue, wed, thu, fri, sat, sun.
-      Defaults to sun if not set.
+      Weekly. Valid values: mon, tue, wed, thu, fri, sat, sun. Ignored when
+      Frequency is a crontab expression. Defaults to sun if not set.
     type: STRING
 
   timezone:

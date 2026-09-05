@@ -183,15 +183,47 @@ def _parse_time_of_day(raw, warn):
         return 2, 0
 
 
+def _is_cron_expr(value):
+    """Return True if value looks like a 5-field crontab expression."""
+    import re as _re
+    parts = _re.split(r'\s+', str(value).strip())
+    return len(parts) == 5 and any(c in value for c in (' ', '\t'))
+
+
 def validate_and_coerce_settings(settings, warn):
     VALID_FREQUENCIES = {"hourly", "daily", "weekly"}
     VALID_DAYS = {"mon", "tue", "wed", "thu", "fri", "sat", "sun"}
 
-    freq = str(settings.get("frequency", "daily")).strip().lower()
-    if freq not in VALID_FREQUENCIES:
-        warn(f"[Stash Scheduler] Invalid frequency {freq!r} — defaulting to 'daily'.")
-        freq = "daily"
-    settings["frequency"] = freq
+    raw_freq = str(settings.get("frequency", "daily")).strip()
+
+    if _is_cron_expr(raw_freq):
+        # Validate the cron expression via APScheduler if available; otherwise
+        # trust the structural check and let the daemon catch any errors at start.
+        cron_valid = True
+        try:
+            from apscheduler.triggers.cron import CronTrigger
+            CronTrigger.from_crontab(raw_freq)
+        except ImportError:
+            pass  # APScheduler not installed yet; daemon will catch invalid exprs at start
+        except Exception as exc:
+            cron_valid = False
+            warn(
+                f"[Stash Scheduler] Invalid cron expression {raw_freq!r} ({exc})"
+                " — defaulting to 'daily'."
+            )
+
+        if cron_valid:
+            settings["frequency"] = "cron"
+            settings["cron_expr"] = raw_freq
+        else:
+            raw_freq = "daily"
+
+    if settings.get("frequency") not in ("cron",):
+        freq = raw_freq.lower()
+        if freq not in VALID_FREQUENCIES:
+            warn(f"[Stash Scheduler] Invalid frequency {freq!r} — defaulting to 'daily'.")
+            freq = "daily"
+        settings["frequency"] = freq
 
     raw_time = settings.get("time_of_day", "02:00")
     hour, minute = _parse_time_of_day(raw_time, warn)
@@ -604,6 +636,16 @@ def run_daemon():
     if frequency == "hourly":
         scheduler.add_job(trigger="cron", minute=0, **job_kwargs)
         log.info(f"Schedule: every hour at :00 ({timezone})")
+    elif frequency == "cron":
+        from apscheduler.triggers.cron import CronTrigger
+        cron_expr = settings["cron_expr"]
+        try:
+            cron_trigger = CronTrigger.from_crontab(cron_expr, timezone=timezone)
+        except Exception as exc:
+            log.error(f"Invalid cron expression {cron_expr!r}: {exc}. Daemon exiting.")
+            sys.exit(1)
+        scheduler.add_job(trigger=cron_trigger, **job_kwargs)
+        log.info(f"Schedule: crontab '{cron_expr}' ({timezone})")
     elif frequency == "weekly":
         scheduler.add_job(
             trigger="cron", day_of_week=day_of_week, hour=hour, minute=minute, **job_kwargs
@@ -691,6 +733,8 @@ def task_start_scheduler(stash, server_connection, settings):
     tz = settings.get("timezone", "UTC")
     if freq == "hourly":
         schedule_desc = f"every hour at :00 ({tz})"
+    elif freq == "cron":
+        schedule_desc = f"crontab '{settings['cron_expr']}' ({tz})"
     elif freq == "weekly":
         schedule_desc = f"weekly on {dow.upper()} at {time_str} ({tz})"
     else:
