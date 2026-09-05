@@ -1,6 +1,6 @@
 name: Stash Scheduler
 description: Schedule automatic library scans with an optional identify pass after each scan.
-version: "0.6.0"
+version: 0.6.1
 url: https://discourse.stashapp.cc/t/stash-scheduler/7059
 
 exec:
