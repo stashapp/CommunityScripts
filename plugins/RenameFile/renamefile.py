@@ -388,12 +388,12 @@ def rename_scene(scene_id):
     original_file_name  = Path(original_file_path).name
     new_filename        = form_filename(original_file_stem, scene_details)  
     max_filename_length = int(config["max_filename_length"])
-    if len(new_filename) > max_filename_length:
-        extension_length = len(Path(original_file_path).suffix)
-        max_base_filename_length = max_filename_length - extension_length
-        truncated_filename = new_filename[:max_base_filename_length]
+    extension_length = len(Path(original_file_path).suffix)
+    if len(new_filename) + extension_length > max_filename_length:
         hash_suffix = hashlib.md5(new_filename.encode()).hexdigest()
-        new_filename = truncated_filename + '_' + hash_suffix + Path(original_file_path).suffix
+        max_base_filename_length = max_filename_length - extension_length - len(hash_suffix) - 1
+        truncated_filename = new_filename[:max_base_filename_length]
+        new_filename = truncated_filename + '_' + hash_suffix
     newFilenameWithExt  = new_filename + Path(original_file_path).suffix
     new_file_path       = f"{original_parent_directory}{os.sep}{new_filename}{Path(original_file_name).suffix}"
     org_file_root_stem  = f"{original_parent_directory}{os.sep}{original_file_stem}"
@@ -444,15 +444,15 @@ def rename_scene(scene_id):
             stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
             stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
         if targetDidExist:
-            raise
+            return None
         if os.path.isfile(new_file_path):
             if os.path.isfile(original_file_path):
                 os.remove(original_file_path)
             pass
         else:
             # ToDo: Add delay rename here
-            raise
-    
+            return None
+
     if dry_run:
         stash.Log("Dry-Run, so skipping DB renaming")
     elif stash.renameFileNameInDB(scene_details['files'][0]['id'], original_file_name, newFilenameWithExt):
