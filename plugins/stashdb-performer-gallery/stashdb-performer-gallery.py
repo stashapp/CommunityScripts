@@ -423,16 +423,37 @@ def relink_images(performer_id=None):
     #    else:
     #        query["file_count"] = {"modifier": "NOT_EQUALS", "value": 1}
 
-    total = stash.find_images(f=query, get_count=True)[0]
-    i = 0
+    # Collect the images up front. processImages() attaches galleries, which
+    # drops images out of the "is_missing: galleries" result set and would
+    # shift later pages back onto offsets we have already read past.
     images = []
-    while i < total:
-        images = stash.find_images(f=query, filter={"page": i, "per_page": per_page})
-        for img in images:
-            log.debug("image: %s" % (img,))
-            processImages(img)
-            i = i + 1
-            log.progress((i / total))
+    page = 1
+    while True:
+        batch = stash.find_images(
+            f=query,
+            filter={
+                "page": page,
+                "per_page": per_page,
+                "sort": "created_at",
+                "direction": "ASC",
+            },
+            fragment=FRAGMENT_IMAGE,
+        )
+        if not batch:
+            break
+        images.extend(batch)
+        page = page + 1
+
+    total = len(images)
+    if total == 0:
+        log.info("no images found to relink")
+        return
+
+    log.info("relinking %s images" % (total,))
+    for i, img in enumerate(images, start=1):
+        log.debug("image: %s" % (img,))
+        processImages(img)
+        log.progress(i / total)
 
 
 json_input = json.loads(sys.stdin.read())
