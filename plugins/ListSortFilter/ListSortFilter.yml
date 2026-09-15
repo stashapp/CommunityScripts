@@ -1,0 +1,27 @@
+name: List Sort Filter
+description: Trims the "sort by" dropdown of every list down to the options you actually use - untick an entry and it stops appearing in that list's menu. Display only, so saved filters and ?sortby= URLs are unaffected. Nothing is hard-coded - each list's sort options are read from the filter Stash hands its list components, and labelled with Stash's own message IDs, so no update is needed when Stash changes its sort options or you change UI language. Lists appear in the settings below once you have opened them.
+version: 1.0.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/ListSortFilter
+ui:
+  javascript:
+    - ListSortFilter.js
+settings:
+  # Only the master switch is a real setting. The per-entry checkboxes cannot
+  # live here: Stash's plugin settings are static YAML, so listing every sort
+  # option would be exactly what needs maintaining whenever Stash changes one.
+  # ListSortFilter.js draws them instead, from the menus it has discovered.
+  enabled:
+    displayName: Enable this plugin
+    description: Turn off to show every sort option again, in every list. Default on.
+    type: BOOLEAN
+  # Storage, not preferences: the discovered menus and the hidden entries, as
+  # JSON. Kept in the plugin config (rather than the browser) so the choices
+  # follow you across devices. Their rows are hidden by the plugin's own UI.
+  lists:
+    displayName: 'Internal: discovered lists (JSON)'
+    description: Managed by the plugin. Clear it to forget every discovered list; they are re-read next time you open one.
+    type: STRING
+  hidden:
+    displayName: 'Internal: hidden entries (JSON)'
+    description: Managed by the plugin. Clear it to show every sort option again.
+    type: STRING
