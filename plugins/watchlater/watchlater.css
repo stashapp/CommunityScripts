@@ -1,0 +1,152 @@
+.watch-later-overlay {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0.4rem;
+  z-index: 5;
+}
+.watch-later-btn {
+  background: rgba(0, 0, 0, 0.55) !important;
+  border: none !important;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem !important;
+  line-height: 1;
+  /* the icon is an emoji, not a vector glyph: "color" doesn't tint it, only "filter" does */
+  filter: grayscale(1) brightness(1.5);
+}
+.watch-later-btn:hover {
+  filter: grayscale(1) brightness(2);
+}
+.watch-later-btn.watch-later-on {
+  filter: none;
+}
+.watch-later-btn.watch-later-on:hover {
+  filter: brightness(1.2);
+}
+
+.watchlater-nav-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+.watchlater-page {
+  padding: 1rem 1.5rem;
+}
+
+.watchlater-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.watchlater-page-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.watchlater-kofi-link {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  white-space: nowrap;
+}
+.watchlater-kofi-link:hover {
+  opacity: 1;
+  border-color: rgba(255, 255, 255, 0.35);
+  color: inherit;
+}
+
+.watchlater-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 1rem;
+}
+
+.watchlater-row {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.watchlater-row-thumb-link {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.watchlater-row-thumb {
+  width: 140px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  background: #111;
+  border-radius: 4px;
+}
+
+.watchlater-row-duration {
+  position: absolute;
+  bottom: 0.15rem;
+  right: 0.15rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+}
+
+.watchlater-row-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.watchlater-row-title {
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.watchlater-row-studio {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.watchlater-row-performers {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.watchlater-row-tags {
+  font-size: 0.75rem;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.watchlater-remove-btn {
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
+.watchlater-remove-btn:hover {
+  opacity: 1;
+  color: #e05555 !important;
+}
