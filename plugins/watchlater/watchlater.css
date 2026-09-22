@@ -57,33 +57,56 @@
 .watchlater-list-selector {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   margin-top: 0.6rem;
+  flex-wrap: wrap;
 }
-.watchlater-list-selector select {
+.watchlater-list-tab {
   background: rgba(255, 255, 255, 0.06);
   color: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  padding: 0.2rem 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem !important;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+.watchlater-list-tab:hover {
+  opacity: 1;
+}
+.watchlater-list-tab-active {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  opacity: 1;
+  font-weight: 600;
 }
 .watchlater-new-list-btn {
   font-size: 0.8rem;
-  opacity: 0.75;
+  opacity: 0.6;
 }
 .watchlater-new-list-btn:hover {
   opacity: 1;
 }
 
+.watchlater-move-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
 .watchlater-move-select {
   flex: 0 0 auto;
   max-width: 130px;
-  background: rgba(255, 255, 255, 0.06);
-  color: inherit;
+  background: #fff;
+  color: #111 !important;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   padding: 0.15rem 0.3rem;
   font-size: 0.8rem;
+}
+.watchlater-move-select option {
+  color: #111;
+  background: #fff;
 }
 
 .watchlater-kofi-link {

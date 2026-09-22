@@ -2,8 +2,6 @@
   "use strict";
   const api = window.PluginApi;
   const { React, patch, libraries, register } = api;
-  const { faTrash } = libraries.FontAwesomeSolid;
-  const { Icon } = api.components;
   // Use Link (not a plain <a href>): a plain <a> triggers a full page load, which hits the
   // server and 404s on /plugin/watchlater (the route only exists client-side, not server-side) -
   // real bug found and fixed by testing live in the browser.
@@ -287,16 +285,20 @@
       ),
       lists && lists.length > 1
         ? React.createElement(
-            "select",
-            {
-              className: "watchlater-move-select",
-              value: activeListId,
-              onChange: moveTo,
-              disabled: moving,
-              title: "Move to another list",
-            },
-            lists.map((l) =>
-              React.createElement("option", { key: l.id, value: l.id }, l.name)
+            "div",
+            { className: "watchlater-move-select-wrap", title: "Move to another list" },
+            "➜",
+            React.createElement(
+              "select",
+              {
+                className: "watchlater-move-select",
+                value: activeListId,
+                onChange: moveTo,
+                disabled: moving,
+              },
+              lists.map((l) =>
+                React.createElement("option", { key: l.id, value: l.id }, l.name)
+              )
             )
           )
         : null,
@@ -308,7 +310,7 @@
           onClick: remove,
           disabled: removing,
         },
-        React.createElement(Icon, { icon: faTrash })
+        "🔖"
       )
     );
   }
@@ -481,14 +483,17 @@
         ? React.createElement(
             "div",
             { className: "watchlater-list-selector" },
-            React.createElement(
-              "select",
-              {
-                value: activeListId || "",
-                onChange: (e) => setActiveListId(e.target.value),
-              },
-              lists.map((l) =>
-                React.createElement("option", { key: l.id, value: l.id }, l.name)
+            lists.map((l) =>
+              React.createElement(
+                "button",
+                {
+                  key: l.id,
+                  className:
+                    "minimal watchlater-list-tab" +
+                    (l.id === activeListId ? " watchlater-list-tab-active" : ""),
+                  onClick: () => setActiveListId(l.id),
+                },
+                l.name
               )
             ),
             React.createElement(
