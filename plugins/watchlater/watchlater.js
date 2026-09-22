@@ -10,10 +10,14 @@
   const { Link } = libraries.ReactRouterDOM;
 
   const TAG_NAME = "Watch Later";
+  const LIST_PREFIX = "Watch Later: ";
   const KOFI_URL = "https://ko-fi.com/greenthumb80";
   const FEEDBACK_URL = "https://github.com/spesometro2026/stash-watchlater-plugin/issues/new";
   let tagId = null;
   let tagPromise = null;
+  // ids of the root tag + every sub-list tag, so we can tell "any Watch Later membership"
+  // apart from unrelated tags when moving a scene between lists. Populated by ensureLists().
+  let familyIds = new Set();
 
   async function gql(query, variables) {
     const res = await fetch("/graphql", {
@@ -36,6 +40,7 @@
       );
       if (found.findTags.tags.length) {
         tagId = found.findTags.tags[0].id;
+        familyIds.add(tagId);
         return tagId;
       }
       const created = await gql(
@@ -43,17 +48,68 @@
         { input: { name: TAG_NAME, description: "Created by the Watch Later plugin" } }
       );
       tagId = created.tagCreate.id;
+      familyIds.add(tagId);
       return tagId;
     })();
     return tagPromise;
   }
 
-  async function removeFromWatchLater(scene) {
-    const tid = await ensureTag();
+  // Lists = the root "Watch Later" tag ("All") plus its child tags ("Watch Later: <name>").
+  // Kept as plain Stash tag hierarchy - no state of our own, browsable/filterable outside the
+  // plugin too, same reasoning as the root tag itself.
+  async function ensureLists() {
+    const rootId = await ensureTag();
+    const d = await gql(
+      "query($id: ID!) { findTag(id: $id) { children { id name } } }",
+      { id: rootId }
+    );
+    const children = (d.findTag && d.findTag.children) || [];
+    familyIds = new Set([rootId, ...children.map((c) => c.id)]);
+    return {
+      rootId,
+      lists: [
+        { id: rootId, name: "All" },
+        ...children.map((c) => ({
+          id: c.id,
+          name: c.name.startsWith(LIST_PREFIX) ? c.name.slice(LIST_PREFIX.length) : c.name,
+        })),
+      ],
+    };
+  }
+
+  async function createList(name) {
+    const rootId = await ensureTag();
+    const created = await gql(
+      "mutation($input: TagCreateInput!) { tagCreate(input: $input) { id } }",
+      {
+        input: {
+          name: `${LIST_PREFIX}${name}`,
+          parent_ids: [rootId],
+          description: "Watch Later list, created by the Watch Later plugin",
+        },
+      }
+    );
+    familyIds.add(created.tagCreate.id);
+    return created.tagCreate.id;
+  }
+
+  async function removeFromWatchLater(scene, listTagId) {
+    const tid = listTagId || (await ensureTag());
     const currentIds = (scene.tags || []).map((t) => t.id);
     await gql(
       "mutation($input: SceneUpdateInput!) { sceneUpdate(input: $input) { id } }",
       { input: { id: scene.id, tag_ids: currentIds.filter((x) => x !== tid) } }
+    );
+  }
+
+  // Moves a scene to exactly one list: drops any other Watch Later family tag it might carry
+  // (root or another sub-list) and applies the target one, leaving unrelated tags untouched.
+  async function moveSceneToList(scene, targetListId) {
+    const currentIds = (scene.tags || []).map((t) => t.id);
+    const withoutFamily = currentIds.filter((x) => !familyIds.has(x));
+    await gql(
+      "mutation($input: SceneUpdateInput!) { sceneUpdate(input: $input) { id } }",
+      { input: { id: scene.id, tag_ids: [...withoutFamily, targetListId] } }
     );
   }
 
@@ -82,8 +138,12 @@
       e.preventDefault();
       e.stopPropagation();
       if (busy) return;
-      setBusy(true);
+      const prevOn = on;
       const nextOn = !on;
+      // Optimistic: flip the color immediately, don't make the click feel dead while the
+      // GraphQL round-trip is in flight. Roll back on failure.
+      setOn(nextOn);
+      setBusy(true);
       try {
         const tid = await ensureTag();
         const currentIds = (scene.tags || []).map((t) => t.id);
@@ -94,12 +154,9 @@
           "mutation($input: SceneUpdateInput!) { sceneUpdate(input: $input) { id tags { id } } }",
           { input: { id: scene.id, tag_ids: newIds } }
         );
-        // Do NOT mutate scene.tags: the object comes from the Apollo cache and is frozen (seen
-        // in the console: "Cannot assign to read only property") - setOn alone is enough, "on"
-        // is already independent React state, scene itself doesn't need to stay in sync.
-        setOn(nextOn);
       } catch (err) {
         console.error("[Watch Later] toggle error:", err);
+        setOn(prevOn);
       } finally {
         setBusy(false);
       }
@@ -142,8 +199,9 @@
     return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
   }
 
-  function WatchLaterCard({ scene, onRemoved }) {
+  function WatchLaterCard({ scene, onRemoved, lists, activeListId, onMoved }) {
     const [removing, setRemoving] = React.useState(false);
+    const [moving, setMoving] = React.useState(false);
     const file = scene.files && scene.files[0];
 
     async function remove(e) {
@@ -152,11 +210,24 @@
       if (removing) return;
       setRemoving(true);
       try {
-        await removeFromWatchLater(scene);
+        await removeFromWatchLater(scene, activeListId);
         onRemoved(scene.id);
       } catch (err) {
         console.error("[Watch Later] remove error:", err);
         setRemoving(false);
+      }
+    }
+
+    async function moveTo(e) {
+      const targetId = e.target.value;
+      if (!targetId || targetId === activeListId || moving) return;
+      setMoving(true);
+      try {
+        await moveSceneToList(scene, targetId);
+        onMoved(scene.id);
+      } catch (err) {
+        console.error("[Watch Later] move error:", err);
+        setMoving(false);
       }
     }
 
@@ -202,23 +273,38 @@
               scene.performers.map((p) => p.name).join(", ")
             )
           : null,
-        // the "Watch Later" tag itself isn't informative here, exclude it from the shown list.
-        scene.tags && scene.tags.some((t) => t.id !== tagId)
+        // Watch Later family tags (root + every list) aren't informative here, exclude them.
+        scene.tags && scene.tags.some((t) => !familyIds.has(t.id))
           ? React.createElement(
               "div",
               { className: "watchlater-row-tags" },
               scene.tags
-                .filter((t) => t.id !== tagId)
+                .filter((t) => !familyIds.has(t.id))
                 .map((t) => t.name)
                 .join(" · ")
             )
           : null
       ),
+      lists && lists.length > 1
+        ? React.createElement(
+            "select",
+            {
+              className: "watchlater-move-select",
+              value: activeListId,
+              onChange: moveTo,
+              disabled: moving,
+              title: "Move to another list",
+            },
+            lists.map((l) =>
+              React.createElement("option", { key: l.id, value: l.id }, l.name)
+            )
+          )
+        : null,
       React.createElement(
         "button",
         {
           className: "watchlater-remove-btn minimal",
-          title: "Remove from Watch Later",
+          title: "Remove from this list",
           onClick: remove,
           disabled: removing,
         },
@@ -230,13 +316,28 @@
   function WatchLaterPage() {
     const [scenes, setScenes] = React.useState(null);
     const [error, setError] = React.useState(null);
+    const [autoRemoved, setAutoRemoved] = React.useState(0);
+    const [lists, setLists] = React.useState(null);
+    const [activeListId, setActiveListId] = React.useState(null);
 
-    // "updated_at" is used as a stand-in for "date added to Watch Later": Stash doesn't keep a
+    React.useEffect(() => {
+      let alive = true;
+      ensureLists().then(({ rootId, lists: ls }) => {
+        if (!alive) return;
+        setLists(ls);
+        setActiveListId((prev) => prev || rootId);
+      });
+      return () => {
+        alive = false;
+      };
+    }, []);
+
+    // "updated_at" is used as a stand-in for "date added to a list": Stash doesn't keep a
     // per-tag timestamp, but tagging a scene bumps its updated_at - so the most recently added
     // scene ends up on top, as requested ("sort by when it was added, not by name").
     const load = React.useCallback(async () => {
+      if (!activeListId) return;
       try {
-        const tid = await ensureTag();
         const d = await gql(
           `query($id: ID!) {
             findScenes(
@@ -245,7 +346,7 @@
             ) {
               count
               scenes {
-                id title date
+                id title date updated_at play_history
                 studio { name }
                 files { basename duration }
                 paths { screenshot }
@@ -254,22 +355,94 @@
               }
             }
           }`,
-          { id: tid }
+          { id: activeListId }
         );
-        setScenes(d.findScenes.scenes);
+        const fetched = d.findScenes.scenes;
+
+        // Auto-remove scenes watched since they were added to this list: "updated_at" is our
+        // only proxy for "when added" (see the comment above), so a scene counts as
+        // watched-since-add if any play_history entry is newer than it. Fires the removal in
+        // the background; the UI already reflects the filtered list.
+        const stillPending = [];
+        const toAutoRemove = [];
+        for (const s of fetched) {
+          const watchedSinceAdd = (s.play_history || []).some(
+            (t) => new Date(t) > new Date(s.updated_at)
+          );
+          (watchedSinceAdd ? toAutoRemove : stillPending).push(s);
+        }
+        setScenes(stillPending);
+        setAutoRemoved(toAutoRemove.length);
+        for (const s of toAutoRemove) {
+          removeFromWatchLater(s, activeListId).catch((err) =>
+            console.error("[Watch Later] auto-remove error:", err)
+          );
+        }
       } catch (err) {
         console.error("[Watch Later] load error:", err);
         setError(String(err));
       }
-    }, []);
+    }, [activeListId]);
 
     React.useEffect(() => {
       load();
     }, [load]);
 
+    async function newList() {
+      const name = window.prompt("New list name:");
+      if (!name || !name.trim()) return;
+      try {
+        const id = await createList(name.trim());
+        setLists((prev) => [...(prev || []), { id, name: name.trim() }]);
+        setActiveListId(id);
+      } catch (err) {
+        console.error("[Watch Later] create list error:", err);
+      }
+    }
+
+    function onMoved(id) {
+      setScenes((prev) => (prev || []).filter((s) => s.id !== id));
+    }
+
     function onRemoved(id) {
       setScenes((prev) => (prev || []).filter((s) => s.id !== id));
     }
+
+    function exportList() {
+      const rows = (scenes || []).map((s) => ({
+        title: s.title || (s.files && s.files[0] && s.files[0].basename) || "",
+        studio: (s.studio && s.studio.name) || "",
+        performers: (s.performers || []).map((p) => p.name).join(", "),
+        date: s.date || "",
+        duration_seconds: (s.files && s.files[0] && s.files[0].duration) || null,
+        url: `${location.origin}/scenes/${s.id}`,
+      }));
+      const blob = new Blob([JSON.stringify(rows, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "watch-later.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    const exportLink = React.createElement(
+      "a",
+      {
+        className: "watchlater-kofi-link",
+        href: "#",
+        title: "Export this list as JSON",
+        onClick: (e) => {
+          e.preventDefault();
+          exportList();
+        },
+      },
+      "⬇ Export"
+    );
 
     const kofiLink = React.createElement(
       "a",
@@ -298,9 +471,33 @@
     const pageLinks = React.createElement(
       "div",
       { className: "watchlater-page-links" },
+      exportLink,
       feedbackLink,
       kofiLink
     );
+
+    const listSelector =
+      lists && lists.length
+        ? React.createElement(
+            "div",
+            { className: "watchlater-list-selector" },
+            React.createElement(
+              "select",
+              {
+                value: activeListId || "",
+                onChange: (e) => setActiveListId(e.target.value),
+              },
+              lists.map((l) =>
+                React.createElement("option", { key: l.id, value: l.id }, l.name)
+              )
+            ),
+            React.createElement(
+              "button",
+              { className: "minimal watchlater-new-list-btn", onClick: newList },
+              "+ New list"
+            )
+          )
+        : null;
 
     if (error) {
       return React.createElement(
@@ -329,6 +526,14 @@
         React.createElement("h3", null, `Watch Later (${scenes.length})`),
         pageLinks
       ),
+      listSelector,
+      autoRemoved > 0
+        ? React.createElement(
+            "p",
+            { className: "watchlater-auto-removed-note" },
+            `${autoRemoved} scene${autoRemoved === 1 ? "" : "s"} auto-removed: already watched since being added.`
+          )
+        : null,
       scenes.length === 0
         ? React.createElement(
             "p",
@@ -343,6 +548,9 @@
                 key: s.id,
                 scene: s,
                 onRemoved,
+                onMoved,
+                lists,
+                activeListId,
               })
             )
           )

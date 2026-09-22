@@ -41,11 +41,49 @@
   flex-wrap: wrap;
 }
 
+.watchlater-auto-removed-note {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin: 0.4rem 0 0;
+}
+
 .watchlater-page-links {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.watchlater-list-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.watchlater-list-selector select {
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+}
+.watchlater-new-list-btn {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.watchlater-new-list-btn:hover {
+  opacity: 1;
+}
+
+.watchlater-move-select {
+  flex: 0 0 auto;
+  max-width: 130px;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 0.15rem 0.3rem;
+  font-size: 0.8rem;
 }
 
 .watchlater-kofi-link {
