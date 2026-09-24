@@ -348,7 +348,7 @@ def setTagId_withRetry(tagName, sceneDetails, DupFileToKeep, TagReason="", ignor
             if errMsg != None:
                 stash.Warn(errMsg)
             return setTagId(tagName, sceneDetails, DupFileToKeep, TagReason, ignoreAutoTag)
-        except (requests.exceptions.ConnectionError, ConnectionResetError):
+        except (requests.exceptions.ConnectionError, ConnectionResetError) as e:
             tb = traceback.format_exc()
             errMsg = f"[setTagId] Exception calling setTagId. Will retry; count({i}); Error: {e}\nTraceBack={tb}"
         except Exception as e:
