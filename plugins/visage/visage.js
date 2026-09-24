@@ -1,8 +1,8 @@
 (function () {
     'use strict';
 
-    const React$h = window.PluginApi.React;
-    const { createContext, useContext, useReducer, useCallback: useCallback$7 } = React$h;
+    const React$i = window.PluginApi.React;
+    const { createContext, useContext, useReducer, useCallback: useCallback$8 } = React$i;
     const initialState = {
         scenario: null,
         scenarioId: null,
@@ -83,76 +83,76 @@
             scenario: scenario || null,
             scenarioId: scenarioId || null,
         });
-        const setScenario = useCallback$7((scenario, id) => {
+        const setScenario = useCallback$8((scenario, id) => {
             dispatch({ type: 'SET_SCENARIO', scenario, id });
         }, []);
-        const setMatches = useCallback$7((matches) => {
+        const setMatches = useCallback$8((matches) => {
             dispatch({ type: 'SET_MATCHES', matches });
         }, []);
-        const setFacesData = useCallback$7((data, url) => {
+        const setFacesData = useCallback$8((data, url) => {
             dispatch({ type: 'SET_FACES_DATA', data, url });
         }, []);
-        const setSelectedFace = useCallback$7((id) => {
+        const setSelectedFace = useCallback$8((id) => {
             dispatch({ type: 'SET_SELECTED_FACE', id });
         }, []);
-        const setLoading = useCallback$7((key, value) => {
+        const setLoading = useCallback$8((key, value) => {
             dispatch({ type: 'SET_LOADING', key, value });
         }, []);
-        const clearLoading = useCallback$7((key) => {
+        const clearLoading = useCallback$8((key) => {
             dispatch({ type: 'CLEAR_LOADING', key });
         }, []);
-        const showMatchModalFn = useCallback$7((show) => {
+        const showMatchModalFn = useCallback$8((show) => {
             dispatch({ type: 'SHOW_MATCH_MODAL', show });
         }, []);
-        const showFrameSelectorFn = useCallback$7((show) => {
+        const showFrameSelectorFn = useCallback$8((show) => {
             dispatch({ type: 'SHOW_FRAME_SELECTOR', show });
         }, []);
-        const showSpriteModalFn = useCallback$7((show) => {
+        const showSpriteModalFn = useCallback$8((show) => {
             dispatch({ type: 'SHOW_SPRITE_MODAL', show });
         }, []);
-        const clearMatches = useCallback$7(() => {
+        const clearMatches = useCallback$8(() => {
             dispatch({ type: 'CLEAR_MATCHES' });
         }, []);
-        const startMatchSearch = useCallback$7(() => {
+        const startMatchSearch = useCallback$8(() => {
             dispatch({ type: 'START_MATCH_SEARCH' });
         }, []);
-        const setSpriteResult = useCallback$7((result) => {
+        const setSpriteResult = useCallback$8((result) => {
             dispatch({ type: 'SET_SPRITE_RESULT', result });
         }, []);
-        const clearSpriteResult = useCallback$7(() => {
+        const clearSpriteResult = useCallback$8(() => {
             dispatch({ type: 'CLEAR_SPRITE_RESULT' });
         }, []);
-        const setDetectionMode = useCallback$7((mode) => {
+        const setDetectionMode = useCallback$8((mode) => {
             dispatch({ type: 'SET_DETECTION_MODE', mode });
         }, []);
-        const setScanProgress = useCallback$7((progress, desc) => {
+        const setScanProgress = useCallback$8((progress, desc) => {
             dispatch({ type: 'SET_SCAN_PROGRESS', progress, desc });
         }, []);
-        const reset = useCallback$7(() => {
+        const reset = useCallback$8(() => {
             dispatch({ type: 'RESET' });
         }, []);
-        const showError = useCallback$7((message) => {
+        const showError = useCallback$8((message) => {
             dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'error' });
         }, []);
-        const showWarning = useCallback$7((message) => {
+        const showWarning = useCallback$8((message) => {
             dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'warning' });
         }, []);
-        const showSuccess = useCallback$7((message) => {
+        const showSuccess = useCallback$8((message) => {
             dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'success' });
         }, []);
-        const hideErrorDialog = useCallback$7(() => {
+        const hideErrorDialog = useCallback$8(() => {
             dispatch({ type: 'HIDE_ERROR_DIALOG' });
         }, []);
-        const showHealthBanner = useCallback$7((message) => {
+        const showHealthBanner = useCallback$8((message) => {
             dispatch({ type: 'SHOW_HEALTH_BANNER', message });
         }, []);
-        const hideHealthBanner = useCallback$7(() => {
+        const hideHealthBanner = useCallback$8(() => {
             dispatch({ type: 'HIDE_HEALTH_BANNER' });
         }, []);
-        const openSettings = useCallback$7(() => {
+        const openSettings = useCallback$8(() => {
             dispatch({ type: 'SHOW_SETTINGS' });
         }, []);
-        const closeSettings = useCallback$7(() => {
+        const closeSettings = useCallback$8(() => {
             dispatch({ type: 'HIDE_SETTINGS' });
         }, []);
         const value = {
@@ -183,7 +183,7 @@
             openSettings,
             closeSettings,
         };
-        return React$h.createElement(VisageContext.Provider, { value }, children);
+        return React$i.createElement(VisageContext.Provider, { value }, children);
     }
     function useVisage() {
         const context = useContext(VisageContext);
@@ -8849,9 +8849,46 @@
             await update(contentId, currentIds);
         }
     }
+    async function getPerformerStashIds(performerId) {
+        var _a, _b, _c;
+        const result = await getClient().query({
+            query: GQL.FindPerformerDocument,
+            variables: { id: performerId },
+        });
+        return (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.findPerformer) === null || _b === void 0 ? void 0 : _b.stash_ids) !== null && _c !== void 0 ? _c : [];
+    }
+    /**
+     * Append candidate stash IDs onto a performer's stash_ids list. Preserves
+     * existing entries and skips stash_ids already present (repeat confirms are
+     * no-ops). Endpoint comes from Stash config via the candidate's source name;
+     * the Gradio response does not carry endpoints.
+     */
+    async function linkCandidatesToPerformer(performerId, entries) {
+        var _a;
+        const existing = await getPerformerStashIds(performerId);
+        const next = [...existing];
+        const seen = new Set(existing.map(s => s.stash_id));
+        for (const { id, source } of entries) {
+            if (seen.has(id))
+                continue;
+            const endpoint = await getStashboxEndpoint(source);
+            if (!endpoint)
+                throw new Error('No stash-box endpoint configured');
+            next.push({ endpoint, stash_id: id });
+            seen.add(id);
+        }
+        if (next.length === existing.length)
+            return;
+        const res = await getClient().mutate({
+            mutation: GQL.PerformerUpdateDocument,
+            variables: { input: { id: performerId, stash_ids: next } },
+        });
+        if ((_a = res.errors) === null || _a === void 0 ? void 0 : _a.length)
+            throw new Error(res.errors[0].message);
+    }
 
     function getScenarioAndID() {
-        const result = document.URL.match(/(scenes|images)\/(\d+)/);
+        const result = document.URL.match(/(scenes|images|performers)\/(\d+)/);
         if (!result) {
             throw new Error('Could not parse scenario and ID from URL');
         }
@@ -8973,6 +9010,7 @@
         'faceMatch.toast.noProvider': 'No provider named "StashDB" found. Rename your provider to "StashDB" in Settings → Metadata Providers to enable performer import.',
         'faceMatch.toast.configureProvider': 'Configure a stash-box provider in Settings → Metadata Providers to enable performer import.',
         'faceMatch.toast.addedMultiple': 'Added {count} performer{s} to the {target}.',
+        'faceMatch.toast.linked': 'Linked {count} stash ID{s} to this performer.',
         // ---- SpriteResultModal.tsx ----
         'sprite.title': 'SCENE PERFORMERS',
         'sprite.close': 'Close',
@@ -9028,6 +9066,9 @@
         'search.selectFaceVideo': 'Select a face within the video player area.',
         'search.menuItemTitle': 'Drag a box around a face, or press Enter to scan the whole frame, to search StashDB for matches',
         'search.currentFrame': 'Visage: Current Frame',
+        'search.identifyFromImage': 'Visage: Identify from image',
+        'search.identifyMenuTitle': "Search this performer's image against StashDB and link a matched stash ID",
+        'search.noPerformerImage': 'No performer image found on this page.',
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': 'No sprite sheet or preview video found for this scene. Generate them in Scene settings, then try again.',
         'scene.noFaces': 'No faces or performers found in this scene’s sprite sheet or preview video.',
@@ -9124,15 +9165,15 @@
 
     // React via Stash PluginApi, matching the pattern used across the plugin.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const React$g = window.PluginApi.React;
+    const React$h = window.PluginApi.React;
     // Re-renders the component when the active locale changes. Stash does not sync
     // the <html lang> attribute to the UI locale, so the real locale is resolved
     // from the GraphQL configuration (configuration.interface.language) and applied
     // via setActiveLocale. Stash reloads the page when the language changes, so a
     // mount-time fetch is sufficient.
     function useLocale() {
-        const [locale, setLocale] = React$g.useState(() => getLocale());
-        React$g.useEffect(() => {
+        const [locale, setLocale] = React$h.useState(() => getLocale());
+        React$h.useEffect(() => {
             let cancelled = false;
             (async () => {
                 const lang = await getStashLanguage();
@@ -9154,8 +9195,8 @@
         return locale;
     }
 
-    const React$f = window.PluginApi.React;
-    const { useCallback: useCallback$6 } = React$f;
+    const React$g = window.PluginApi.React;
+    const { useCallback: useCallback$7 } = React$g;
     let overlayDiv = null;
     let selectionDiv = null;
     let keyHandler = null;
@@ -9388,7 +9429,7 @@
         const { state, setLoading, setMatches, setScenario, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal } = useVisage();
         const loadingKey = 'face-search';
         const isLoading = state.loading[loadingKey] || false;
-        const recognize = useCallback$6(async () => {
+        const recognize = useCallback$7(async () => {
             if (isLoading)
                 return;
             const [scenario, scenarioId] = getScenarioAndID();
@@ -9451,7 +9492,7 @@
             });
         }, [setLoading, setMatches, setScenario, isLoading, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal]);
         if (menuItem) {
-            return React$f.createElement('a', {
+            return React$g.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
@@ -9459,18 +9500,88 @@
                 onClick: (e) => { e.preventDefault(); closeDropdown(); recognize(); },
             }, t('search.currentFrame'));
         }
-        return React$f.createElement('button', {
+        return React$g.createElement('button', {
             id: 'visage-frame-search',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: recognize,
             disabled: isLoading,
             title: t('search.currentFrame'),
-        }, React$f.createElement('svg', {
+        }, React$g.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
-        }, React$f.createElement('path', {
+        }, React$g.createElement('path', {
             d: 'M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z',
         })));
+    }
+
+    const React$f = window.PluginApi.React;
+    const { useCallback: useCallback$6 } = React$f;
+    // The performer page's main image, resolved server-side first (image_path
+    // includes the cache-busting token), with a DOM fallback for Stash versions
+    // that do not expose it via FindPerformer.
+    async function fetchPerformerBlob(performerId) {
+        var _a, _b, _c, _d;
+        let url = null;
+        try {
+            const GQL = window.PluginApi.GQL;
+            const client = window.PluginApi.utils.StashService.getClient();
+            const res = await client.query({
+                query: GQL.FindPerformerDocument,
+                variables: { id: performerId },
+            });
+            url = (_c = (_b = (_a = res.data) === null || _a === void 0 ? void 0 : _a.findPerformer) === null || _b === void 0 ? void 0 : _b.image_path) !== null && _c !== void 0 ? _c : null;
+        }
+        catch ( /* fall through to DOM */_e) { /* fall through to DOM */ }
+        if (!url) {
+            const img = document.querySelector('img[src*="/performer/"]');
+            url = (_d = img === null || img === void 0 ? void 0 : img.src) !== null && _d !== void 0 ? _d : null;
+        }
+        if (!url)
+            return null;
+        try {
+            const response = await fetch(url);
+            if (!response.ok)
+                return null;
+            const blob = await response.blob();
+            return blob.type ? blob : new Blob([blob], { type: 'image/jpeg' });
+        }
+        catch (_f) {
+            return null;
+        }
+    }
+    function IdentifyPerformerButton() {
+        useLocale();
+        const { state, setLoading, setMatches, setScenario, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal } = useVisage();
+        const loadingKey = 'face-search';
+        const isLoading = state.loading[loadingKey] || false;
+        const identify = useCallback$6(async () => {
+            if (isLoading)
+                return;
+            const [, scenarioId] = getScenarioAndID();
+            setScenario('performers', scenarioId);
+            setLoading(loadingKey, true);
+            try {
+                const blob = await fetchPerformerBlob(scenarioId);
+                if (!blob) {
+                    showWarning(t('search.noPerformerImage'));
+                    return;
+                }
+                await dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+            }
+            catch (error) {
+                showError(t('search.captureFail', { error: getErrorMessage(error) }));
+            }
+            finally {
+                setLoading(loadingKey, false);
+            }
+        }, [isLoading, setLoading, setMatches, setScenario, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal]);
+        return React$f.createElement('button', {
+            id: 'visage-performer-identify',
+            className: `btn btn-secondary visage-performer-identify${isLoading ? ' visage-scanning' : ''}`,
+            onClick: identify,
+            disabled: isLoading,
+            title: t('search.identifyMenuTitle'),
+        }, t('search.identifyFromImage'));
     }
 
     function pad(n, width = 2) {
@@ -10230,7 +10341,9 @@
             return value;
         return `data:image/jpeg;base64,${value}`;
     };
-    function FaceMatchModal() {
+    // onConfirm overrides the default scene/image add flow (used on performer
+    // pages to link stash_ids instead of adding performers to content).
+    function FaceMatchModal({ onConfirm } = {}) {
         var _a, _b, _c, _d, _e;
         useLocale();
         const { state, setLoading, showMatchModal, showError, showSuccess, showWarning, openSettings } = useVisage();
@@ -10300,6 +10413,17 @@
                     catch (_e) { }
                 })();
             }
+            else if (scenario === 'performers') {
+                // Already-linked stash_ids block re-selection, same as in-scene faces.
+                (async () => {
+                    try {
+                        const ids = await getPerformerStashIds(id);
+                        if (!abortRef.current)
+                            setSceneStashIds(new Set(ids.map(s => s.stash_id)));
+                    }
+                    catch (_a) { }
+                })();
+            }
             (async () => {
                 try {
                     const status = await getStashboxStatus();
@@ -10333,6 +10457,12 @@
             const [scenario] = getScenarioAndID();
             setAdding(true);
             try {
+                if (onConfirm) {
+                    await onConfirm([{ id: stashId, source }]);
+                    showSuccess(t('faceMatch.toast.linked', { count: 1, s: '' }));
+                    close();
+                    return;
+                }
                 const ok = await addSinglePerformer(stashId, source);
                 if (ok) {
                     showSuccess(t('faceMatch.toast.added', { target: scenario === 'scenes' ? 'scene' : 'image' }));
@@ -10346,7 +10476,7 @@
             finally {
                 setAdding(false);
             }
-        }, [adding, sceneStashIds]);
+        }, [adding, sceneStashIds, onConfirm]);
         const { selectedFaceIndex, selectedCardIndex, hasNavigated } = useKeyboardNav({
             faceCount: matches.length,
             getPerformerCount,
@@ -10412,6 +10542,12 @@
             setAdding(true);
             let addedCount = 0;
             try {
+                if (onConfirm) {
+                    await onConfirm(entries);
+                    showSuccess(t('faceMatch.toast.linked', { count: entries.length, s: entries.length !== 1 ? 's' : '' }));
+                    close();
+                    return;
+                }
                 for (const { id: stashId, source: sourceName } of entries) {
                     const ok = await addSinglePerformer(stashId, sourceName);
                     if (ok)
@@ -11295,6 +11431,7 @@
         'faceMatch.toast.noProvider': `Geen provider genaamd "StashDB" gevonden. Hernoem je provider naar "StashDB" in Instellingen → Metadata-providers om het importeren van performers in te schakelen.`,
         'faceMatch.toast.configureProvider': `Configureer een stash-boxprovider in Instellingen → Metadata-providers om het importeren van performers in te schakelen.`,
         'faceMatch.toast.addedMultiple': `{count} performer{s} toegevoegd aan de {target}.`,
+        'faceMatch.toast.linked': `{count} stash-ID{s} gekoppeld aan deze performer.`,
         // ---- SpriteResultModal.tsx ----
         'sprite.title': `SCÈNE-PERFORMERS`,
         'sprite.close': `Sluiten`,
@@ -11350,6 +11487,9 @@
         'search.selectFaceVideo': `Selecteer een gezicht binnen het videoplayergebied.`,
         'search.menuItemTitle': `Sleep een kader rond een gezicht, of druk op Enter om het hele frame te scannen, om in StashDB naar overeenkomsten te zoeken`,
         'search.currentFrame': `Visage: Huidig frame`,
+        'search.identifyFromImage': `Visage: Identificeer vanaf afbeelding`,
+        'search.identifyMenuTitle': `Doorzoek de afbeelding van deze performer op StashDB en koppel een passende stash-ID`,
+        'search.noPerformerImage': `Geen performer-afbeelding gevonden op deze pagina.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Geen sprite sheet of voorbeeldvideo gevonden voor deze scène. Genereer ze in de scène-instellingen en probeer het opnieuw.`,
         'scene.noFaces': `Geen gezichten of performers gevonden in het sprite sheet of de voorbeeldvideo van deze scène.`,
@@ -11452,6 +11592,7 @@
         'faceMatch.toast.noProvider': `לא נמצא ספק בשם "StashDB". שנה את שם הספק שלך ל-"StashDB" בהגדרות ← ספקי מטא-נתונים כדי להפעיל ייבוא מבצעים.`,
         'faceMatch.toast.configureProvider': `הגדר ספק stash-box בהגדרות ← ספקי מטא-נתונים כדי להפעיל ייבוא מבצעים.`,
         'faceMatch.toast.addedMultiple': `נוספו {count} מבצעים{s} אל {target}.`,
+        'faceMatch.toast.linked': `{count} stash ID{s} קושרו למבצע הזה.`,
         'sprite.title': `מבצעי הסצנה`,
         'sprite.close': `סגירה`,
         'sprite.foundConfirmed': `נמצאו {found} · אושרו {confirmed}`,
@@ -11504,6 +11645,9 @@
         'search.selectFaceVideo': `בחר פנים בתוך אזור נגן הווידאו.`,
         'search.menuItemTitle': `גרור תיבה סביב פנים, או לחץ Enter לסריקת הפריים כולו, כדי לחפש התאמות ב-StashDB`,
         'search.currentFrame': `Visage: פריים נוכחי`,
+        'search.identifyFromImage': `Visage: זיהוי מתמונה`,
+        'search.identifyMenuTitle': `חיפוש התמונה של המבצע הזה ב-StashDB וקישור stash ID מתאים`,
+        'search.noPerformerImage': `לא נמצאה תמונת מבצע בדף הזה.`,
         'scene.noSprite': `אין גיליון ספייריט או וידאו תצוגה מקדימה לסצנה זו. צור אותם בהגדרות הסצנה, ואז נסה שוב.`,
         'scene.noFaces': `לא נמצאו פנים או מבצעים בגיליון הספייריט או בווידאו התצוגה המקדימה של סצנה זו.`,
         'scene.healthBanner': `ממשק זיהוי הפנים אינו נגיש. הפעל את צד-השרת ונסה שוב.`,
@@ -11599,6 +11743,7 @@
         'faceMatch.toast.noProvider': `Teikėjas „StashDB“ nerastas. Pervadinkite teikėją į „StashDB“ programoje Settings → Metadata Providers, kad įgalintumėte atlikėjų importavimą.`,
         'faceMatch.toast.configureProvider': `Sukonfigūruokite stash-box teikėją programoje Settings → Metadata Providers, kad įgalintumėte atlikėjų importavimą.`,
         'faceMatch.toast.addedMultiple': `Pridėta atlikėjų: {count} į {target}.`,
+        'faceMatch.toast.linked': `Susieti {count} stash ID{s} su šiuo atlikėju.`,
         'sprite.title': `SCENOS ATLIKĖJAI`,
         'sprite.close': `Uždaryti`,
         'sprite.foundConfirmed': `Rasta: {found} · patvirtinta: {confirmed}`,
@@ -11651,6 +11796,9 @@
         'search.selectFaceVideo': `Pasirinkite veidą vaizdo grotuvo srityje.`,
         'search.menuItemTitle': `Vilkite langelį aplink veidą arba paspauskite Enter, kad nuskaitytumėte visą kadrą, ir ieškokite atitikmenų StashDB`,
         'search.currentFrame': `Visage: dabartinis kadras`,
+        'search.identifyFromImage': `Visage: Atpažinti iš paveikslėlio`,
+        'search.identifyMenuTitle': `Ieškoti šio atlikėjo paveikslėlio StashDB ir susieti tinkantį stash ID`,
+        'search.noPerformerImage': `Šiame puslapyje atlikėjo paveikslėlio nerasta.`,
         'scene.noSprite': `Šiai scenai nerastas nei sprite lapas, nei peržiūros vaizdo įrašas. Sugeneruokite juos scenos nustatymuose ir bandykite dar kartą.`,
         'scene.noFaces': `Šios scenos sprite lape arba peržiūros vaizdo įraše nerasta veidų ar atlikėjų.`,
         'scene.healthBanner': `Veidų atpažinimo API nepasiekiama. Paleiskite pamatinę sistemą ir bandykite dar kartą.`,
@@ -11749,6 +11897,7 @@
         'faceMatch.toast.noProvider': `No se encontró ningún proveedor llamado "StashDB". Renombra tu proveedor a "StashDB" en Configuración → Proveedores de metadatos para activar la importación de intérpretes.`,
         'faceMatch.toast.configureProvider': `Configura un proveedor stash-box en Configuración → Proveedores de metadatos para activar la importación de intérpretes.`,
         'faceMatch.toast.addedMultiple': `{count} intérprete{s} añadido{s} a {target}.`,
+        'faceMatch.toast.linked': `Se vinculó {count} stash ID{s} a este intérprete.`,
         // ---- SpriteResultModal.tsx ----
         'sprite.title': `INTÉRPRETES DE LA ESCENA`,
         'sprite.close': `Cerrar`,
@@ -11804,6 +11953,9 @@
         'search.selectFaceVideo': `Selecciona una cara dentro del área del reproductor de vídeo.`,
         'search.menuItemTitle': `Arrastra un recuadro alrededor de una cara o pulsa Enter para escanear toda la foto, para buscar coincidencias en StashDB`,
         'search.currentFrame': `Visage: Fotograma actual`,
+        'search.identifyFromImage': `Visage: Identificar desde la imagen`,
+        'search.identifyMenuTitle': `Buscar la imagen de este intérprete en StashDB y vincular un stash ID coincidente`,
+        'search.noPerformerImage': `No se encontró imagen del intérprete en esta página.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `No se encontró ninguna hoja de sprites ni vídeo de vista previa para esta escena. Genéralos en la configuración de la escena y vuelve a intentarlo.`,
         'scene.noFaces': `No se encontraron caras ni intérpretes en la hoja de sprites o el vídeo de vista previa de esta escena.`,
@@ -11906,6 +12058,7 @@
         'faceMatch.toast.noProvider': `لم يتم العثور على موفّر باسم "StashDB". أعد تسمية الموفّر لديك إلى "StashDB" في الإعدادات ← موفّرو البيانات الوصفية لتفعيل استيراد المؤدين.`,
         'faceMatch.toast.configureProvider': `هيّئ موفّر stash-box في الإعدادات ← موفّرو البيانات الوصفية لتفعيل استيراد المؤدين.`,
         'faceMatch.toast.addedMultiple': `تمت إضافة {count} من المؤدين{s} إلى {target}.`,
+        'faceMatch.toast.linked': `تم ربط {count} stash ID{s} بهذا المؤدي.`,
         'sprite.title': `مؤدو المشهد`,
         'sprite.close': `إغلاق`,
         'sprite.foundConfirmed': `تم العثور على {found} · تم تأكيد {confirmed}`,
@@ -11958,6 +12111,9 @@
         'search.selectFaceVideo': `اختر وجهًا داخل منطقة مشغّل الفيديو.`,
         'search.menuItemTitle': `اسحب صندوقًا حول وجه، أو اضغط Enter لمسح الإطار بأكمله، للبحث عن تطابقات في StashDB`,
         'search.currentFrame': `Visage: الإطار الحالي`,
+        'search.identifyFromImage': `Visage: التعرف من الصورة`,
+        'search.identifyMenuTitle': `البحث عن صورة هذا المؤدي في StashDB وربط stash ID مطابق`,
+        'search.noPerformerImage': `لم يتم العثور على صورة مؤدي في هذه الصفحة.`,
         'scene.noSprite': `لا توجد لوحة لقطات (sprite sheet) أو فيديو معاينة لهذا المشهد. أنشئها في إعدادات المشهد، ثم حاول مرة أخرى.`,
         'scene.noFaces': `لم يتم العثور على وجوه أو مؤدين في لوحة اللقطات أو فيديو المعاينة لهذا المشهد.`,
         'scene.healthBanner': `واجهة برمجة تطبيقات التعرف على الوجوه غير قابلة للوصول. ابدأ الواجهة الخلفية وحاول مرة أخرى.`,
@@ -12056,6 +12212,7 @@
         'faceMatch.toast.noProvider': `Aucun fournisseur nommé « StashDB » trouvé. Renommez votre fournisseur en « StashDB » dans Paramètres → Fournisseurs de métadonnées pour activer l'import d'interprètes.`,
         'faceMatch.toast.configureProvider': `Configurez un fournisseur stash-box dans Paramètres → Fournisseurs de métadonnées pour activer l'import d'interprètes.`,
         'faceMatch.toast.addedMultiple': `{count} interprète{s} ajouté{s} à la {target}.`,
+        'faceMatch.toast.linked': `{count} stash ID{s} lié{s} à cet interprète.`,
         // ---- SpriteResultModal.tsx ----
         'sprite.title': `INTERPRÈTES DE LA SCÈNE`,
         'sprite.close': `Fermer`,
@@ -12111,6 +12268,9 @@
         'search.selectFaceVideo': `Sélectionnez un visage dans la zone du lecteur vidéo.`,
         'search.menuItemTitle': `Tracez un cadre autour d'un visage ou appuyez sur Enter pour analyser toute l'image, afin de rechercher des correspondances dans StashDB`,
         'search.currentFrame': `Visage : Image actuelle`,
+        'search.identifyFromImage': `Visage : Identifier depuis l'image`,
+        'search.identifyMenuTitle': `Rechercher l'image de cet interprète sur StashDB et lier un stash ID correspondant`,
+        'search.noPerformerImage': `Aucune image d'interprète trouvée sur cette page.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Aucune feuille de sprite ou vidéo d'aperçu trouvée pour cette scène. Générez-les dans les paramètres de la scène, puis réessayez.`,
         'scene.noFaces': `Aucun visage ou interprète trouvé dans la feuille de sprite ou la vidéo d'aperçu de cette scène.`,
@@ -12214,6 +12374,7 @@
         'faceMatch.toast.noProvider': `Fann ingen leverandør som heiter "StashDB". Gje leverandøren nytt namn til "StashDB" under Innstillingar → Metadata-leverandørar for å aktivere performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurer ein stash-box-leverandør under Innstillingar → Metadata-leverandørar for å aktivere performer-import.`,
         'faceMatch.toast.addedMultiple': `La til {count} performarar i {target}.`,
+        'faceMatch.toast.linked': `Lenka {count} stash-ID{s} til denne performeren.`,
         'sprite.title': `SCENE-PERFORMARAR`,
         'sprite.close': `Lukk`,
         'sprite.foundConfirmed': `{found} funne · {confirmed} stadfesta`,
@@ -12266,6 +12427,9 @@
         'search.selectFaceVideo': `Vel eit andlet i videoavspelarområdet.`,
         'search.menuItemTitle': `Dra ein boks rundt eit andlet, eller trykk Enter for å skanne heile rama, for å søkje StashDB etter treff`,
         'search.currentFrame': `Visage: Gjeldande rame`,
+        'search.identifyFromImage': `Visage: Identifiser frå bilete`,
+        'search.identifyMenuTitle': `Søk etter biletet til denne performeren mot StashDB og lenk ein matchande stash-ID`,
+        'search.noPerformerImage': `Fann inga performer-bilete på denne sida.`,
         'scene.noSprite': `Fann ingen sprite-ark eller forhåndsvisingsvideo for denne scenen. Generer dei i Scene-innstillingane, og prøv igjen.`,
         'scene.noFaces': `Fann ingen andlet eller performarar i sprite-arket eller forhåndsvisingsvideoen til denne scenen.`,
         'scene.healthBanner': `Andletsattkjenning-API-et er ikkje tilgjengeleg. Start backend og prøv igjen.`,
@@ -12361,6 +12525,7 @@
         'faceMatch.toast.noProvider': `"StashDB"라는 이름의 공급자를 찾을 수 없습니다. 설정 → 메타데이터 공급자에서 공급자 이름을 "StashDB"로 변경하면 출연자 가져오기를 활성화할 수 있습니다.`,
         'faceMatch.toast.configureProvider': `설정 → 메타데이터 공급자에서 stash-box 공급자를 구성하면 출연자 가져오기를 활성화할 수 있습니다.`,
         'faceMatch.toast.addedMultiple': `{target}에 {count}명의 출연자{s}를 추가했습니다.`,
+        'faceMatch.toast.linked': `이 출연자에게 {count}개의 stash ID{s}를 연결했습니다.`,
         'sprite.title': `장면 출연자`,
         'sprite.close': `닫기`,
         'sprite.foundConfirmed': `{found}개 발견 · {confirmed}개 확인됨`,
@@ -12413,6 +12578,9 @@
         'search.selectFaceVideo': `비디오 플레이어 영역 내에서 얼굴을 선택하세요.`,
         'search.menuItemTitle': `얼굴 주위에 박스를 드래그하거나 Enter를 눌러 전체 프레임을 스캔하여 StashDB에서 일치 항목을 검색합니다`,
         'search.currentFrame': `Visage: 현재 프레임`,
+        'search.identifyFromImage': `Visage: 이미지로 식별`,
+        'search.identifyMenuTitle': `이 출연자의 이미지로 StashDB를 검색하고 일치하는 stash ID를 연결`,
+        'search.noPerformerImage': `이 페이지에서 출연자 이미지를 찾을 수 없습니다.`,
         'scene.noSprite': `이 장면에는 스프라이트 시트나 미리보기 비디오가 없습니다. 장면 설정에서 생성한 후 다시 시도하세요.`,
         'scene.noFaces': `이 장면의 스프라이트 시트나 미리보기 비디오에서 얼굴이나 출연자를 찾을 수 없습니다.`,
         'scene.healthBanner': `얼굴 인식 API에 연결할 수 없습니다. 백엔드를 시작한 후 다시 시도하세요.`,
@@ -12508,6 +12676,7 @@
         'faceMatch.toast.noProvider': `未找到名为 "StashDB" 的提供程序。请在设置 → 元数据提供程序中重命名你的提供程序，使其为 "StashDB"，以启用表演者导入。`,
         'faceMatch.toast.configureProvider': `请在设置 → 元数据提供程序中配置 stash-box 提供程序，以启用表演者导入。`,
         'faceMatch.toast.addedMultiple': `已将 {count} 位表演者{s}添加到 {target}。`,
+        'faceMatch.toast.linked': `已将 {count} 个 stash ID{s}关联到此表演者。`,
         'sprite.title': `场景表演者`,
         'sprite.close': `关闭`,
         'sprite.foundConfirmed': `找到 {found} · 已确认 {confirmed}`,
@@ -12560,6 +12729,9 @@
         'search.selectFaceVideo': `在视频播放器区域内选择一张人脸。`,
         'search.menuItemTitle': `拖动框选一张人脸，或按 Enter 扫描整个画面，以在 StashDB 中搜索匹配项`,
         'search.currentFrame': `Visage：当前帧`,
+        'search.identifyFromImage': `Visage：从图片识别`,
+        'search.identifyMenuTitle': `在 StashDB 中搜索此表演者的图片并关联匹配的 stash ID`,
+        'search.noPerformerImage': `此页面上未找到表演者图片。`,
         'scene.noSprite': `此场景没有精灵图或预览视频。请在场景设置中生成它们，然后重试。`,
         'scene.noFaces': `在此场景的精灵图或预览视频中未找到人脸或表演者。`,
         'scene.healthBanner': `人脸识别 API 不可访问。请启动后端并重试。`,
@@ -12655,6 +12827,7 @@
         'faceMatch.toast.noProvider': `Не е намерен доставчик "StashDB". Преименувайте доставчика на "StashDB" в Settings → Metadata Providers, за да активирате импортирането на изпълнители.`,
         'faceMatch.toast.configureProvider': `Конфигурирайте доставчик на stash-box в Settings → Metadata Providers, за да активирате импортирането на изпълнители.`,
         'faceMatch.toast.addedMultiple': `Добавени изпълнители: {count} към {target}.`,
+        'faceMatch.toast.linked': `Свързани {count} stash ID{s} с този изпълнител.`,
         'sprite.title': `ИЗПЪЛНИТЕЛИ НА СЦЕНАТА`,
         'sprite.close': `Затвори`,
         'sprite.foundConfirmed': `Намерени: {found} · потвърдени: {confirmed}`,
@@ -12707,6 +12880,9 @@
         'search.selectFaceVideo': `Изберете лице в областта на видеоплейъра.`,
         'search.menuItemTitle': `Плъзнете рамка около лице или натиснете Enter, за да сканирате целия кадър, за да потърсите съвпадения в StashDB`,
         'search.currentFrame': `Visage: текущ кадър`,
+        'search.identifyFromImage': `Visage: Разпознаване от изображение`,
+        'search.identifyMenuTitle': `Търсене на изображението на този изпълнител в StashDB и свързване на съответстващ stash ID`,
+        'search.noPerformerImage': `Няма намерено изображение на изпълнител на тази страница.`,
         'scene.noSprite': `За тази сцена не е намерен нито спрайт лист, нито превю видео. Генерирайте ги в настройките на сцената и опитайте отново.`,
         'scene.noFaces': `В спрайт листа или превю видеото на тази сцена не са открити лица или изпълнители.`,
         'scene.healthBanner': `API за разпознаване на лица е недостъпен. Стартирайте бекенда и опитайте отново.`,
@@ -12802,6 +12978,7 @@
         'faceMatch.toast.noProvider': `Провайдер "StashDB" не найден. Переименуйте провайдера в "StashDB" в Settings → Metadata Providers, чтобы включить импорт исполнителей.`,
         'faceMatch.toast.configureProvider': `Настройте провайдера stash-box в Settings → Metadata Providers, чтобы включить импорт исполнителей.`,
         'faceMatch.toast.addedMultiple': `Добавлено исполнителей: {count} в {target}.`,
+        'faceMatch.toast.linked': `Привязано {count} stash ID к этому исполнителю.`,
         'sprite.title': `ИСПОЛНИТЕЛИ СЦЕНЫ`,
         'sprite.close': `Закрыть`,
         'sprite.foundConfirmed': `Найдено: {found} · подтверждено: {confirmed}`,
@@ -12854,6 +13031,9 @@
         'search.selectFaceVideo': `Выделите лицо в области видеоплеера.`,
         'search.menuItemTitle': `Перетащите рамку вокруг лица или нажмите Enter, чтобы просканировать весь кадр и выполнить поиск совпадений в StashDB`,
         'search.currentFrame': `Visage: текущий кадр`,
+        'search.identifyFromImage': `Visage: Определить по изображению`,
+        'search.identifyMenuTitle': `Поискать изображение этого исполнителя на StashDB и привязать подходящий stash ID`,
+        'search.noPerformerImage': `Изображение исполнителя на этой странице не найдено.`,
         'scene.noSprite': `Для этой сцены не найдено ни спрайт-листа, ни превью-видео. Создайте их в настройках сцены и попробуйте снова.`,
         'scene.noFaces': `В спрайт-листе или превью-видео этой сцены не найдено лиц или исполнителей.`,
         'scene.healthBanner': `API распознавания лиц недоступен. Запустите бэкенд и попробуйте снова.`,
@@ -12949,6 +13129,7 @@
         'faceMatch.toast.noProvider': `Tidak ditemukan penyedia bernama "StashDB". Ganti nama penyedia Anda menjadi "StashDB" di Pengaturan → Penyedia Metadata untuk mengaktifkan impor pemain.`,
         'faceMatch.toast.configureProvider': `Konfigurasi penyedia stash-box di Pengaturan → Penyedia Metadata untuk mengaktifkan impor pemain.`,
         'faceMatch.toast.addedMultiple': `{count} pemain{s} ditambahkan ke {target}.`,
+        'faceMatch.toast.linked': `{count} stash ID{s} ditautkan ke pemain ini.`,
         'sprite.title': `PEMERAN SCENE`,
         'sprite.close': `Tutup`,
         'sprite.foundConfirmed': `{found} ditemukan · {confirmed} dikonfirmasi`,
@@ -13001,6 +13182,9 @@
         'search.selectFaceVideo': `Pilih wajah di dalam area pemutar video.`,
         'search.menuItemTitle': `Seret kotak di sekitar wajah, atau tekan Enter untuk memindai seluruh bingkai, untuk mencari kecocokan di StashDB`,
         'search.currentFrame': `Visage: Bingkai Saat Ini`,
+        'search.identifyFromImage': `Visage: Identifikasi dari gambar`,
+        'search.identifyMenuTitle': `Cari gambar pemain ini di StashDB dan tautkan stash ID yang cocok`,
+        'search.noPerformerImage': `Gambar pemain tidak ditemukan di halaman ini.`,
         'scene.noSprite': `Tidak ada sprite sheet atau video pratinjau untuk scene ini. Buat di pengaturan Scene, lalu coba lagi.`,
         'scene.noFaces': `Tidak ada wajah atau pemain yang ditemukan di sprite sheet atau video pratinjau scene ini.`,
         'scene.healthBanner': `API pengenalan wajah tidak dapat dijangkau. Mulai backend dan coba lagi.`,
@@ -13096,6 +13280,7 @@
         'faceMatch.toast.noProvider': `Poskytovatel "StashDB" nebyl nalezen. Přejmenujte poskytovatele na "StashDB" v Settings → Metadata Providers, abyste povolili import performerů.`,
         'faceMatch.toast.configureProvider': `Nakonfigurujte poskytovatele stash-box v Settings → Metadata Providers, abyste povolili import performerů.`,
         'faceMatch.toast.addedMultiple': `Přidáno performerů: {count} do {target}.`,
+        'faceMatch.toast.linked': `K tomuto performerovi bylo přiřazeno {count} stash ID.`,
         'sprite.title': `PERFORMERI SCÉNY`,
         'sprite.close': `Zavřít`,
         'sprite.foundConfirmed': `Nalezeno: {found} · potvrzeno: {confirmed}`,
@@ -13148,6 +13333,9 @@
         'search.selectFaceVideo': `Vyberte tvář v oblasti přehrávače videa.`,
         'search.menuItemTitle': `Přetáhněte rámeček kolem tváře nebo stiskněte Enter pro skenování celého snímku, abyste vyhledali shody v StashDB`,
         'search.currentFrame': `Visage: aktuální snímek`,
+        'search.identifyFromImage': `Visage: Identifikuj ze snímku`,
+        'search.identifyMenuTitle': `Prohledat snímek tohoto performera ve StashDB a přiřadit odpovídající stash ID`,
+        'search.noPerformerImage': `Na této stránce nebyl nalezen žádný snímek performera.`,
         'scene.noSprite': `Pro tuto scénu nebyl nalezen žádný sprite list ani náhledové video. Vygenerujte je v nastavení scény a zkuste to znovu.`,
         'scene.noFaces': `Ve sprite listu nebo náhledovém videu této scény nebyly nalezeny žádné tváře ani performeři.`,
         'scene.healthBanner': `API pro rozpoznávání tváří je nedosažitelné. Spusťte backend a zkuste to znovu.`,
@@ -13243,6 +13431,7 @@
         'faceMatch.toast.noProvider': `Pružatelj "StashDB" nije pronađen. Preimenujte pružatelja u "StashDB" u Settings → Metadata Providers da biste omogućili uvoz izvođača.`,
         'faceMatch.toast.configureProvider': `Konfigurirajte pružatelja stash-box u Settings → Metadata Providers da biste omogućili uvoz izvođača.`,
         'faceMatch.toast.addedMultiple': `Dodano izvođača: {count} u {target}.`,
+        'faceMatch.toast.linked': `Povezano {count} stash ID{s} s ovim izvođačem.`,
         'sprite.title': `IZVOĐAČI SCENE`,
         'sprite.close': `Zatvori`,
         'sprite.foundConfirmed': `Pronađeno: {found} · potvrđeno: {confirmed}`,
@@ -13295,6 +13484,9 @@
         'search.selectFaceVideo': `Odaberite lice unutar područja video playera.`,
         'search.menuItemTitle': `Povucite okvir oko lica ili pritisnite Enter za skeniranje cijelog okvira, da biste pretražili podudaranja u StashDB`,
         'search.currentFrame': `Visage: trenutni okvir`,
+        'search.identifyFromImage': `Visage: Prepoznaj iz slike`,
+        'search.identifyMenuTitle': `Pretraži sliku ovog izvođača na StashDB i poveži odgovarajući stash ID`,
+        'search.noPerformerImage': `Na ovoj stranici nije pronađena slika izvođača.`,
         'scene.noSprite': `Za ovu scenu nije pronađen sprite sheet ni video pregled. Generirajte ih u postavkama scene i pokušajte ponovno.`,
         'scene.noFaces': `U sprite sheetu ili videu pregleda ove scene nisu pronađena lica ni izvođači.`,
         'scene.healthBanner': `API za prepoznavanje lica nije dostupan. Pokrenite pozadinski poslužitelj i pokušajte ponovno.`,
@@ -13390,6 +13582,7 @@
         'faceMatch.toast.noProvider': `ไม่พบผู้ให้บริการชื่อ "StashDB" เปลี่ยนชื่อผู้ให้บริการของคุณเป็น "StashDB" ในการตั้งค่า → ผู้ให้บริการเมตาดาต้าเพื่อเปิดใช้งานการนำเข้านักแสดง`,
         'faceMatch.toast.configureProvider': `กำหนดค่าผู้ให้บริการ stash-box ในการตั้งค่า → ผู้ให้บริการเมตาดาต้าเพื่อเปิดใช้งานการนำเข้านักแสดง`,
         'faceMatch.toast.addedMultiple': `เพิ่มนักแสดง {count} คน{s}ลงใน {target} แล้ว`,
+        'faceMatch.toast.linked': `เชื่อมโยง stash ID {count} รายการ{s}กับนักแสดงคนนี้แล้ว`,
         'sprite.title': `นักแสดงในฉาก`,
         'sprite.close': `ปิด`,
         'sprite.foundConfirmed': `พบ {found} · ยืนยันแล้ว {confirmed}`,
@@ -13442,6 +13635,9 @@
         'search.selectFaceVideo': `เลือกใบหน้าภายในพื้นที่เครื่องเล่นวิดีโอ`,
         'search.menuItemTitle': `ลากกล่องรอบใบหน้า หรือกด Enter เพื่อสแกนทั้งเฟรม เพื่อค้นหาการจับคู่บน StashDB`,
         'search.currentFrame': `Visage: เฟรมปัจจุบัน`,
+        'search.identifyFromImage': `Visage: ระบุตัวตนจากรูปภาพ`,
+        'search.identifyMenuTitle': `ค้นหารูปภาพของนักแสดงคนนี้ใน StashDB และเชื่อมโยง stash ID ที่ตรงกัน`,
+        'search.noPerformerImage': `ไม่พบรูปภาพนักแสดงในหน้านี้`,
         'scene.noSprite': `ไม่พบสไปรต์ชีตหรือวิดีโอตัวอย่างสำหรับฉากนี้ สร้างในการตั้งค่าฉาก แล้วลองอีกครั้ง`,
         'scene.noFaces': `ไม่พบใบหน้าหรือนักแสดงในสไปรต์ชีตหรือวิดีโอตัวอย่างของฉากนี้`,
         'scene.healthBanner': `ไม่สามารถเข้าถึง API การจดจำใบหน้า เริ่มแบ็กเอนด์แล้วลองอีกครั้ง`,
@@ -13540,6 +13736,7 @@
         'faceMatch.toast.noProvider': `Nenhum provedor chamado "StashDB" encontrado. Renomeie seu provedor para "StashDB" em Configurações → Provedores de metadados para ativar a importação de artistas.`,
         'faceMatch.toast.configureProvider': `Configure um provedor de stash-box em Configurações → Provedores de metadados para ativar a importação de artistas.`,
         'faceMatch.toast.addedMultiple': `{count} artista{s} adicionado{s} ao {target}.`,
+        'faceMatch.toast.linked': `{count} stash ID{s} vinculado{s} a este artista.`,
         // ---- SpriteResultModal.tsx ----
         'sprite.title': `ARTISTAS DA CENA`,
         'sprite.close': `Fechar`,
@@ -13595,6 +13792,9 @@
         'search.selectFaceVideo': `Selecione um rosto dentro da área do player de vídeo.`,
         'search.menuItemTitle': `Arraste uma caixa ao redor de um rosto ou pressione Enter para escanear a imagem inteira, para buscar correspondências no StashDB`,
         'search.currentFrame': `Visage: Quadro atual`,
+        'search.identifyFromImage': `Visage: Identificar da imagem`,
+        'search.identifyMenuTitle': `Buscar a imagem deste artista no StashDB e vincular um stash ID correspondente`,
+        'search.noPerformerImage': `Nenhuma imagem de artista encontrada nesta página.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Nenhuma folha de sprites ou vídeo de prévia encontrado para esta cena. Gere-os nas configurações da cena e tente novamente.`,
         'scene.noFaces': `Nenhum rosto ou artista encontrado na folha de sprites ou no vídeo de prévia desta cena.`,
@@ -13698,6 +13898,7 @@
         'faceMatch.toast.noProvider': `Ingen udbyder kaldet "StashDB" fundet. Omdøb din udbyder til "StashDB" under Indstillinger → Metadata-udbydere for at aktivere performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurér en stash-box-udbyder under Indstillinger → Metadata-udbydere for at aktivere performer-import.`,
         'faceMatch.toast.addedMultiple': `Tilføjede {count} performere til {target}.`,
+        'faceMatch.toast.linked': `Linkede {count} stash-ID{s} til denne performer.`,
         'sprite.title': `SCENE-PERFORMERE`,
         'sprite.close': `Luk`,
         'sprite.foundConfirmed': `{found} fundet · {confirmed} bekræftet`,
@@ -13750,6 +13951,9 @@
         'search.selectFaceVideo': `Vælg et ansigt inden for videoafspillerområdet.`,
         'search.menuItemTitle': `Træk en boks om et ansigt, eller tryk på Enter for at scanne hele rammen, for at søge StashDB efter matches`,
         'search.currentFrame': `Visage: Aktuelle ramme`,
+        'search.identifyFromImage': `Visage: Identificer fra billede`,
+        'search.identifyMenuTitle': `Søg efter denne performers billede mod StashDB og link et matchende stash-ID`,
+        'search.noPerformerImage': `Intet performer-billede fundet på denne side.`,
         'scene.noSprite': `Ingen sprite-ark eller forhåndsvisningsvideo fundet for denne scene. Generér dem i Scene-indstillingerne, og prøv igen.`,
         'scene.noFaces': `Ingen ansigter eller performere fundet i denne scenes sprite-ark eller forhåndsvisningsvideo.`,
         'scene.healthBanner': `Ansigtsgenkendelses-API'en er ikke tilgængelig. Start backend og prøv igen.`,
@@ -13846,6 +14050,7 @@
         'faceMatch.toast.noProvider': `Nem található "StashDB" nevű szolgáltató. Az előadó-importálás engedélyezéséhez nevezd át a szolgáltatót "StashDB"-re a Beállítások → Metaadatszolgáltatók alatt.`,
         'faceMatch.toast.configureProvider': `Az előadó-importálás engedélyezéséhez konfigurálj egy stash-box szolgáltatót a Beállítások → Metaadatszolgáltatók alatt.`,
         'faceMatch.toast.addedMultiple': `{count} előadó hozzáadva ehhez: {target}.`,
+        'faceMatch.toast.linked': `{count} stash ID{s} hozzárendelve ehhez az előadóhoz.`,
         'sprite.title': `JELENET ELŐADÓI`,
         'sprite.close': `Bezárás`,
         'sprite.foundConfirmed': `{found} található · {confirmed} megerősítve`,
@@ -13898,6 +14103,9 @@
         'search.selectFaceVideo': `Válassz egy arcot a videolejátszó területén belül.`,
         'search.menuItemTitle': `Húzz egy keretet egy arc köré, vagy nyomj Entert az egész keret vizsgálatához, hogy egyezéseket keress a StashDB-ben`,
         'search.currentFrame': `Visage: Aktuális keret`,
+        'search.identifyFromImage': `Visage: Azonosítás képről`,
+        'search.identifyMenuTitle': `Keresse meg előadó képét a StashDB-n, és rendeljen hozzá egy megfelelő stash ID-t`,
+        'search.noPerformerImage': `Nem található előadó-kép ezen az oldalon.`,
         'scene.noSprite': `Ehhez a jelenethez nem található sprite-lap vagy előnézeti videó. Hozd létre őket a Scene beállításokban, majd próbáld újra.`,
         'scene.noFaces': `A jelenet sprite-lapjában vagy előnézeti videójában nem található arc vagy előadó.`,
         'scene.healthBanner': `Az arcfelismerő API nem érhető el. Indítsd el a backendet, és próbáld újra.`,
@@ -13993,6 +14201,7 @@
         'faceMatch.toast.noProvider': `Провайдера "StashDB" не знайдено. Перейменуйте провайдера на "StashDB" у Settings → Metadata Providers, щоб увімкнути імпорт виконавців.`,
         'faceMatch.toast.configureProvider': `Налаштуйте провайдера stash-box у Settings → Metadata Providers, щоб увімкнути імпорт виконавців.`,
         'faceMatch.toast.addedMultiple': `Додано виконавців: {count} у {target}.`,
+        'faceMatch.toast.linked': `Прив'язано {count} stash ID до цього виконавця.`,
         'sprite.title': `ВИКОНАВЦІ СЦЕНИ`,
         'sprite.close': `Закрити`,
         'sprite.foundConfirmed': `Знайдено: {found} · підтверджено: {confirmed}`,
@@ -14045,6 +14254,9 @@
         'search.selectFaceVideo': `Виділіть обличчя в області відеоплеєра.`,
         'search.menuItemTitle': `Перетягніть рамку навколо обличчя або натисніть Enter, щоб просканувати весь кадр і виконати пошук збігів у StashDB`,
         'search.currentFrame': `Visage: поточний кадр`,
+        'search.identifyFromImage': `Visage: Визначити за зображенням`,
+        'search.identifyMenuTitle': `Пошук зображення цього виконавця на StashDB та прив'язка відповідного stash ID`,
+        'search.noPerformerImage': `Зображення виконавця на цій сторінці не знайдено.`,
         'scene.noSprite': `Для цієї сцени не знайдено ані спрайт-листа, ані прев'ю-відео. Створіть їх у налаштуваннях сцени та спробуйте знову.`,
         'scene.noFaces': `У спрайт-листі або прев'ю-відео цієї сцени не знайдено облич або виконавців.`,
         'scene.healthBanner': `API розпізнавання облич недоступний. Запустіть бекенд і спробуйте знову.`,
@@ -14143,6 +14355,7 @@
         'faceMatch.toast.noProvider': `Kein Anbieter namens "StashDB" gefunden. Benenne deinen Anbieter in Einstellungen → Metadaten-Anbieter in "StashDB" um, um den Performer-Import zu aktivieren.`,
         'faceMatch.toast.configureProvider': `Konfiguriere in Einstellungen → Metadaten-Anbieter einen Stash-box-Anbieter, um den Performer-Import zu aktivieren.`,
         'faceMatch.toast.addedMultiple': `{count} Performer{s} zum {target} hinzugefügt.`,
+        'faceMatch.toast.linked': `{count} stash-ID{s} mit diesem Performer verknüpft.`,
         // ---- SpriteResultModal.tsx ----
         'sprite.title': `SZENEN-PERFORMER`,
         'sprite.close': `Schließen`,
@@ -14198,6 +14411,9 @@
         'search.selectFaceVideo': `Wähle ein Gesicht im Videoplayer-Bereich aus.`,
         'search.menuItemTitle': `Ziehe ein Feld um ein Gesicht oder drücke Enter, um das ganze Bild zu scannen, um in StashDB nach Übereinstimmungen zu suchen`,
         'search.currentFrame': `Visage: Aktuelles Bild`,
+        'search.identifyFromImage': `Visage: Aus Bild identifizieren`,
+        'search.identifyMenuTitle': `Durchsuche das Bild dieses Performers in StashDB und verknüpfe eine passende stash-ID`,
+        'search.noPerformerImage': `Kein Performer-Bild auf dieser Seite gefunden.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Für diese Szene wurde kein Sprite-Sheet oder Vorschaubild gefunden. Erzeuge sie in den Szene-Einstellungen und versuche es erneut.`,
         'scene.noFaces': `Im Sprite-Sheet oder Vorschaubild dieser Szene wurden keine Gesichter oder Performer gefunden.`,
@@ -14301,6 +14517,7 @@
         'faceMatch.toast.noProvider': `Palveluntarjoajaa nimeltä "StashDB" ei löytynyt. Nimeä palveluntarjoaja uudelleen "StashDB":ksi kohdassa Asetukset → Metadatan tarjoajat aktivoidaksesi esiintyjien tuonnin.`,
         'faceMatch.toast.configureProvider': `Määritä stash-box-palveluntarjoaja kohdassa Asetukset → Metadatan tarjoajat aktivoidaksesi esiintyjien tuonnin.`,
         'faceMatch.toast.addedMultiple': `Lisätty {count} esiintyjää kohteeseen {target}.`,
+        'faceMatch.toast.linked': `Liitetty {count} stash-ID{s} tähän esiintyjään.`,
         'sprite.title': `KOHTAUKSEN ESIINTYJÄT`,
         'sprite.close': `Sulje`,
         'sprite.foundConfirmed': `{found} löydetty · {confirmed} vahvistettu`,
@@ -14353,6 +14570,9 @@
         'search.selectFaceVideo': `Valitse kasvot videotoistimen alueelta.`,
         'search.menuItemTitle': `Vedä laatikko kasvojen ympärille tai paina Enter skannataksesi koko ruudun hakeaksesi osumia StashDB:stä`,
         'search.currentFrame': `Visage: Nykyinen ruutu`,
+        'search.identifyFromImage': `Visage: Tunrista kuvasta`,
+        'search.identifyMenuTitle': `Etsi tämän esiintyjän kuva StashDB:stä ja liitä vastaava stash-ID`,
+        'search.noPerformerImage': `Esiintyjän kuvaa ei löytynyt tältä sivulta.`,
         'scene.noSprite': `Tälle kohtaukselle ei löytynyt sprite-arkkia tai esikatseluvideota. Luo ne Scene-asetuksissa ja yritä sitten uudelleen.`,
         'scene.noFaces': `Tämän kohtauksen sprite-arkista tai esikatseluvideosta ei löytynyt kasvoja tai esiintyjiä.`,
         'scene.healthBanner': `Kasvojentunnistuksen API ei ole tavoitettavissa. Käynnistä backend ja yritä uudelleen.`,
@@ -14448,6 +14668,7 @@
         'faceMatch.toast.noProvider': `Nodrošinātājs "StashDB" nav atrasts. Pārdēvējiet nodrošinātāju uz "StashDB" vietnē Settings → Metadata Providers, lai iespējotu izpildītāju importēšanu.`,
         'faceMatch.toast.configureProvider': `Konfigurējiet stash-box nodrošinātāju vietnē Settings → Metadata Providers, lai iespējotu izpildītāju importēšanu.`,
         'faceMatch.toast.addedMultiple': `Pievienoti izpildītāji: {count} uz {target}.`,
+        'faceMatch.toast.linked': `Piesaistīti {count} stash ID{s} šim izpildītājam.`,
         'sprite.title': `AINAS IZPILDĪTĀJI`,
         'sprite.close': `Aizvērt`,
         'sprite.foundConfirmed': `Atrasti: {found} · apstiprināti: {confirmed}`,
@@ -14500,6 +14721,9 @@
         'search.selectFaceVideo': `Atlasiet seju video atskaņotāja apgabalā.`,
         'search.menuItemTitle': `Velciet rāmi ap seju vai nospiediet Enter, lai skenētu visu kadrīti, lai meklētu atbilstības StashDB`,
         'search.currentFrame': `Visage: pašreizējais kadrītis`,
+        'search.identifyFromImage': `Visage: Identificēt no attēla`,
+        'search.identifyMenuTitle': `Meklēt šī izpildītāja attēlu StashDB un piesaistīt atbilstošu stash ID`,
+        'search.noPerformerImage': `Šajā lapā nav atrasts izpildītāja attēls.`,
         'scene.noSprite': `Šai ainai nav atrasts sprite lapa vai priekšskatījuma video. Ģenerējiet tos ainas iestatījumos un mēģiniet vēlreiz.`,
         'scene.noFaces': `Šīs ainas sprite lapā vai priekšskatījuma video nav atrastas sejas vai izpildītāji.`,
         'scene.healthBanner': `Seju atpazīšanas API nesasniedzams. Palaidiet pamata pakalpojumu un mēģiniet vēlreiz.`,
@@ -14595,6 +14819,7 @@
         'faceMatch.toast.noProvider': `Không tìm thấy nhà cung cấp tên "StashDB". Đổi tên nhà cung cấp của bạn thành "StashDB" trong Cài đặt → Nhà cung cấp siêu dữ liệu để bật nhập diễn viên.`,
         'faceMatch.toast.configureProvider': `Cấu hình nhà cung cấp stash-box trong Cài đặt → Nhà cung cấp siêu dữ liệu để bật nhập diễn viên.`,
         'faceMatch.toast.addedMultiple': `Đã thêm {count} diễn viên{s} vào {target}.`,
+        'faceMatch.toast.linked': `Đã liên kết {count} stash ID{s} với diễn viên này.`,
         'sprite.title': `DIỄN VIÊN TRONG CẢNH`,
         'sprite.close': `Đóng`,
         'sprite.foundConfirmed': `Tìm thấy {found} · đã xác nhận {confirmed}`,
@@ -14647,6 +14872,9 @@
         'search.selectFaceVideo': `Chọn một khuôn mặt trong vùng trình phát video.`,
         'search.menuItemTitle': `Kéo một khung quanh khuôn mặt hoặc nhấn Enter để quét toàn bộ khung hình nhằm tìm kiếm kết quả khớp trên StashDB`,
         'search.currentFrame': `Visage: Khung hình hiện tại`,
+        'search.identifyFromImage': `Visage: Nhận diện từ hình ảnh`,
+        'search.identifyMenuTitle': `Tìm hình ảnh của diễn viên này trên StashDB và liên kết stash ID phù hợp`,
+        'search.noPerformerImage': `Không tìm thấy hình ảnh diễn viên trên trang này.`,
         'scene.noSprite': `Không có sprite sheet hoặc video xem trước cho cảnh này. Hãy tạo chúng trong Cài đặt cảnh, rồi thử lại.`,
         'scene.noFaces': `Không tìm thấy khuôn mặt hoặc diễn viên nào trong sprite sheet hoặc video xem trước của cảnh này.`,
         'scene.healthBanner': `API nhận dạng khuôn mặt không truy cập được. Hãy khởi động backend và thử lại.`,
@@ -14743,6 +14971,7 @@
         'faceMatch.toast.noProvider': `Pakkujat nimega "StashDB" ei leitud. Nimeta esinejate impordi lubamiseks oma pakkuja ümber "StashDB"-ks jaotises Seaded → Metaandmete pakkujad.`,
         'faceMatch.toast.configureProvider': `Konfigureeri stash-box-pakkuja jaotises Seaded → Metaandmete pakkujad esinejate impordi lubamiseks.`,
         'faceMatch.toast.addedMultiple': `Sihtkohta {target} lisati {count} esinejat.`,
+        'faceMatch.toast.linked': `Seoti {count} stash ID{s} selle esinejaga.`,
         'sprite.title': `STSEENI ESINEJAD`,
         'sprite.close': `Sulge`,
         'sprite.foundConfirmed': `Leitud {found} · kinnitatud {confirmed}`,
@@ -14795,6 +15024,9 @@
         'search.selectFaceVideo': `Vali nägu videopleieri piirkonnast.`,
         'search.menuItemTitle': `Lohista kast ümber näo või vajuta Enter kogu kaadri skannimiseks, et otsida StashDB-st vasted`,
         'search.currentFrame': `Visage: praegune kaader`,
+        'search.identifyFromImage': `Visage: Tuvasta pildist`,
+        'search.identifyMenuTitle': `Otsi selle esineja pilti StashDB-st ja seo sobiv stash ID`,
+        'search.noPerformerImage': `Sellel lehel esineja pilti ei leitud.`,
         'scene.noSprite': `Selle stseeni jaoks ei leitud sprite-lehte ega eelvaatuse videot. Genereeri need Scene-seadetes ja proovi siis uuesti.`,
         'scene.noFaces': `Selle stseeni sprite-lehest või eelvaatuse videost ei leitud ühtegi nägu ega esinejat.`,
         'scene.healthBanner': `Näotuvastuse API ei ole kättesaadav. Käivita backend ja proovi uuesti.`,
@@ -14891,6 +15123,7 @@
         'faceMatch.toast.noProvider': `Fant ingen leverandør kalt "StashDB". Gi leverandøren nytt navn til "StashDB" under Innstillinger → Metadata-leverandører for å aktivere performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurer en stash-box-leverandør under Innstillinger → Metadata-leverandører for å aktivere performer-import.`,
         'faceMatch.toast.addedMultiple': `La til {count} performere i {target}.`,
+        'faceMatch.toast.linked': `Lenket {count} stash-ID{s} til denne performeren.`,
         'sprite.title': `SCENE-PERFORMERE`,
         'sprite.close': `Lukk`,
         'sprite.foundConfirmed': `{found} funnet · {confirmed} bekreftet`,
@@ -14943,6 +15176,9 @@
         'search.selectFaceVideo': `Velg et ansikt i videoavspillerområdet.`,
         'search.menuItemTitle': `Dra en boks rundt et ansikt, eller trykk Enter for å skanne hele rammen, for å søke StashDB etter treff`,
         'search.currentFrame': `Visage: Gjeldende ramme`,
+        'search.identifyFromImage': `Visage: Identifiser fra bilde`,
+        'search.identifyMenuTitle': `Søk etter denne performerens bilde mot StashDB og lenk en matchende stash-ID`,
+        'search.noPerformerImage': `Fant ingen performer-bilde på denne siden.`,
         'scene.noSprite': `Fant ingen sprite-ark eller forhåndsvisningsvideo for denne scenen. Generer dem i Scene-innstillingene, og prøv igjen.`,
         'scene.noFaces': `Fant ingen ansikter eller performere i denne scenens sprite-ark eller forhåndsvisningsvideo.`,
         'scene.healthBanner': `Ansiktsgjenkjennings-API-et er ikke tilgjengelig. Start backend og prøv igjen.`,
@@ -15039,6 +15275,7 @@
         'faceMatch.toast.noProvider': `"StashDB" adında bir sağlayıcı bulunamadı. Oyuncu içe aktarmayı etkinleştirmek için sağlayıcınızı Ayarlar → Meta Veri Sağlayıcıları altında "StashDB" olarak yeniden adlandırın.`,
         'faceMatch.toast.configureProvider': `Oyuncu içe aktarmayı etkinleştirmek için Ayarlar → Meta Veri Sağlayıcıları altında bir stash-box sağlayıcısı yapılandırın.`,
         'faceMatch.toast.addedMultiple': `{target} konumuna {count} oyuncu eklendi.`,
+        'faceMatch.toast.linked': `{count} stash ID{s} bu oyuncuya bağlandı.`,
         'sprite.title': `SAHNE OYUNCULARI`,
         'sprite.close': `Kapat`,
         'sprite.foundConfirmed': `{found} bulundu · {confirmed} onaylandı`,
@@ -15091,6 +15328,9 @@
         'search.selectFaceVideo': `Video oynatıcı alanı içinde bir yüz seçin.`,
         'search.menuItemTitle': `StashDB\u2019de eşleşme aramak için bir yüzün etrafına kutu çizin veya tüm kareyi taramak için Enter\u2019a basın`,
         'search.currentFrame': `Visage: Geçerli Kare`,
+        'search.identifyFromImage': `Visage: Görselden tanımla`,
+        'search.identifyMenuTitle': `Bu oyuncunun görselinde StashDB'de ara ve eşleşen bir stash ID bağla`,
+        'search.noPerformerImage': `Bu sayfada oyuncu görseli bulunamadı.`,
         'scene.noSprite': `Bu sahne için sprite sayfası veya önizleme videosu bulunamadı. Scene ayarlarından oluşturun, ardından tekrar deneyin.`,
         'scene.noFaces': `Bu sahnenin sprite sayfasında veya önizleme videosunda yüz veya oyuncu bulunamadı.`,
         'scene.healthBanner': `Yüz tanıma API\u2019sine ulaşılamıyor. Backend\u2019i başlatın ve tekrar deneyin.`,
@@ -15186,6 +15426,7 @@
         'faceMatch.toast.noProvider': `找不到名為「StashDB」的提供者。請在設定 → 中繼資料提供者中重新命名你的提供者，使其為「StashDB」，以啟用表演者匯入。`,
         'faceMatch.toast.configureProvider': `請在設定 → 中繼資料提供者中設定 stash-box 提供者，以啟用表演者匯入。`,
         'faceMatch.toast.addedMultiple': `已將 {count} 位表演者{s}加入 {target}。`,
+        'faceMatch.toast.linked': `已將 {count} 個 stash ID{s}關聯至此表演者。`,
         'sprite.title': `場景表演者`,
         'sprite.close': `關閉`,
         'sprite.foundConfirmed': `找到 {found} · 已確認 {confirmed}`,
@@ -15238,6 +15479,9 @@
         'search.selectFaceVideo': `請在影片播放器區域內選擇一張人臉。`,
         'search.menuItemTitle': `拖曳框選一張人臉，或按 Enter 掃描整個畫面，以在 StashDB 中搜尋相符項目`,
         'search.currentFrame': `Visage：目前影格`,
+        'search.identifyFromImage': `Visage：從圖片識別`,
+        'search.identifyMenuTitle': `在 StashDB 中搜尋此表演者的圖片並關聯相符的 stash ID`,
+        'search.noPerformerImage': `此頁面上未找到表演者圖片。`,
         'scene.noSprite': `此場景沒有精靈圖或預覽影片。請在場景設定中產生它們，然後重試。`,
         'scene.noFaces': `在此場景的精靈圖或預覽影片中找不到人臉或表演者。`,
         'scene.healthBanner': `人臉辨識 API 無法連線。請啟動後端並重試。`,
@@ -15334,6 +15578,7 @@
         'faceMatch.toast.noProvider': `Niciun furnizor numit "StashDB" găsit. Redenumește furnizorul în "StashDB" în Setări → Furnizori de metadate pentru a activa importul de performeri.`,
         'faceMatch.toast.configureProvider': `Configurează un furnizor stash-box în Setări → Furnizori de metadate pentru a activa importul de performeri.`,
         'faceMatch.toast.addedMultiple': `S-au adăugat {count} performeri în {target}.`,
+        'faceMatch.toast.linked': `Au fost legate {count} stash ID{s} de acest performer.`,
         'sprite.title': `PERFORMERI DIN SCENĂ`,
         'sprite.close': `Închide`,
         'sprite.foundConfirmed': `{found} găsite · {confirmed} confirmate`,
@@ -15386,6 +15631,9 @@
         'search.selectFaceVideo': `Selectează o față în zona playerului video.`,
         'search.menuItemTitle': `Trageți o casetă în jurul unei fețe, sau apăsați Enter pentru a scana întregul cadru, pentru a căuta potriviri în StashDB`,
         'search.currentFrame': `Visage: Cadrul curent`,
+        'search.identifyFromImage': `Visage: Identifică din imagine`,
+        'search.identifyMenuTitle': `Caută imaginea acestui performer pe StashDB și leagă un stash ID potrivit`,
+        'search.noPerformerImage': `Nu s-a găsit imaginea performerului pe această pagină.`,
         'scene.noSprite': `Nu s-a găsit nicio foaie de sprite sau video de previzualizare pentru această scenă. Generează-le în Setările scenei, apoi încearcă din nou.`,
         'scene.noFaces': `Nu s-au găsit fețe sau performeri în foaia de sprite sau video-ul de previzualizare al acestei scene.`,
         'scene.healthBanner': `API-ul de recunoaștere facială nu este accesibil. Pornește backend-ul și încearcă din nou.`,
@@ -15481,6 +15729,7 @@
         'faceMatch.toast.noProvider': `Poskytovateľ "StashDB" nebol nájdený. Premenujte poskytovateľa na "StashDB" v Settings → Metadata Providers, aby ste povolili import performerov.`,
         'faceMatch.toast.configureProvider': `Nakonfigurujte poskytovateľa stash-box v Settings → Metadata Providers, aby ste povolili import performerov.`,
         'faceMatch.toast.addedMultiple': `Pridaní performeri: {count} do {target}.`,
+        'faceMatch.toast.linked': `K tomuto performerovi bolo priradených {count} stash ID.`,
         'sprite.title': `PERFORMERI SCÉNY`,
         'sprite.close': `Zavrieť`,
         'sprite.foundConfirmed': `Nájdených: {found} · potvrdených: {confirmed}`,
@@ -15533,6 +15782,9 @@
         'search.selectFaceVideo': `Vyberte tvár v oblasti prehrávača videa.`,
         'search.menuItemTitle': `Pretiahnite rámček okolo tváre alebo stlačte Enter pre skenovanie celého snímku, aby ste vyhľadali zhody v StashDB`,
         'search.currentFrame': `Visage: aktuálny snímok`,
+        'search.identifyFromImage': `Visage: Identifikuj zo snímku`,
+        'search.identifyMenuTitle': `Prehľadať snímok tohto performera vo StashDB a priradiť zodpovedajúce stash ID`,
+        'search.noPerformerImage': `Na tejto stránke sa nenašiel žiadny snímok performera.`,
         'scene.noSprite': `Pre túto scénu sa nenašiel žiadny sprite list ani náhľadové video. Vygenerujte ich v nastaveniach scény a skúste to znova.`,
         'scene.noFaces': `V sprite liste alebo náhľadovom videu tejto scény sa nenašli žiadne tváre ani performeri.`,
         'scene.healthBanner': `API pre rozpoznávanie tvárí je nedosiahnuteľné. Spustite backend a skúste to znova.`,
@@ -15628,6 +15880,7 @@
         'faceMatch.toast.noProvider': `Nie znaleziono dostawcy "StashDB". Zmień nazwę dostawcy na "StashDB" w Settings → Metadata Providers, aby włączyć import wykonawców.`,
         'faceMatch.toast.configureProvider': `Skonfiguruj dostawcę stash-box w Settings → Metadata Providers, aby włączyć import wykonawców.`,
         'faceMatch.toast.addedMultiple': `Dodano wykonawców: {count} do {target}.`,
+        'faceMatch.toast.linked': `Przypisano {count} stash ID do tego wykonawcy.`,
         'sprite.title': `WYKONAWCY SCENY`,
         'sprite.close': `Zamknij`,
         'sprite.foundConfirmed': `Znaleziono: {found} · potwierdzono: {confirmed}`,
@@ -15680,6 +15933,9 @@
         'search.selectFaceVideo': `Zaznacz twarz w obszarze odtwarzacza wideo.`,
         'search.menuItemTitle': `Przeciągnij ramkę wokół twarzy lub naciśnij Enter, aby przeskanować całą klatkę i wyszukać dopasowania w StashDB`,
         'search.currentFrame': `Visage: bieżąca klatka`,
+        'search.identifyFromImage': `Visage: Identyfikuj ze zdjęcia`,
+        'search.identifyMenuTitle': `Przeszukaj zdjęcie tego wykonawcy w StashDB i przypisz pasujące stash ID`,
+        'search.noPerformerImage': `Nie znaleziono zdjęcia wykonawcy na tej stronie.`,
         'scene.noSprite': `Nie znaleziono arkusza sprite ani wideo podglądu dla tej sceny. Wygeneruj je w ustawieniach sceny, a następnie spróbuj ponownie.`,
         'scene.noFaces': `Nie znaleziono twarzy ani wykonawców w arkuszu sprite lub wideo podglądu tej sceny.`,
         'scene.healthBanner': `API rozpoznawania twarzy jest nieosiągalne. Uruchom backend i spróbuj ponownie.`,
@@ -15776,6 +16032,7 @@
         'faceMatch.toast.noProvider': `Δεν βρέθηκε πάροχος με το όνομα "StashDB". Μετονομάστε τον πάροχό σας σε "StashDB" στις Ρυθμίσεις → Πάροχοι μεταδεδομένων για να ενεργοποιήσετε την εισαγωγή ερμηνευτών.`,
         'faceMatch.toast.configureProvider': `Διαμορφώστε έναν πάροχο stash-box στις Ρυθμίσεις → Πάροχοι μεταδεδομένων για να ενεργοποιήσετε την εισαγωγή ερμηνευτών.`,
         'faceMatch.toast.addedMultiple': `Προστέθηκαν {count} ερμηνευτές στο {target}.`,
+        'faceMatch.toast.linked': `Συνδέθηκαν {count} stash ID{s} με αυτόν τον ερμηνευτή.`,
         'sprite.title': `ΕΡΜΗΝΕΥΤΕΣ ΣΚΗΝΗΣ`,
         'sprite.close': `Κλείσιμο`,
         'sprite.foundConfirmed': `{found} βρέθηκαν · {confirmed} επιβεβαιώθηκαν`,
@@ -15828,6 +16085,9 @@
         'search.selectFaceVideo': `Επιλέξτε ένα πρόσωπο στην περιοχή του προγράμματος αναπαραγωγής βίντεο.`,
         'search.menuItemTitle': `Σύρετε ένα πλαίσιο γύρω από ένα πρόσωπο ή πατήστε Enter για σάρωση ολόκληρου του καρέ, για αναζήτηση αντιστοιχιών στο StashDB`,
         'search.currentFrame': `Visage: Τρέχον καρέ`,
+        'search.identifyFromImage': `Visage: Αναγνώριση από εικόνα`,
+        'search.identifyMenuTitle': `Αναζήτηση της εικόνας αυτού του ερμηνευτή στο StashDB και σύνδεση αντίστοιχου stash ID`,
+        'search.noPerformerImage': `Δεν βρέθηκε εικόνα ερμηνευτή σε αυτήν τη σελίδα.`,
         'scene.noSprite': `Δεν βρέθηκε φύλλο sprite ή βίντεο προεπισκόπησης για αυτή τη σκηνή. Δημιουργήστε τα στις ρυθμίσεις Scene και δοκιμάστε ξανά.`,
         'scene.noFaces': `Δεν βρέθηκαν πρόσωπα ή ερμηνευτές στο φύλλο sprite ή στο βίντεο προεπισκόπησης αυτής της σκηνής.`,
         'scene.healthBanner': `Το API αναγνώρισης προσώπου δεν είναι προσβάσιμο. Εκκινήστε το backend και δοκιμάστε ξανά.`,
@@ -15923,6 +16183,7 @@
         'faceMatch.toast.noProvider': `「StashDB」という名前のプロバイダーが見つかりません。設定 → メタデータプロバイダーでプロバイダーの名前を「StashDB」に変更すると、パフォーマーのインポートが可能になります。`,
         'faceMatch.toast.configureProvider': `設定 → メタデータプロバイダーで stash-box プロバイダーを設定すると、パフォーマーのインポートが可能になります。`,
         'faceMatch.toast.addedMultiple': `{count} 人のパフォーマー{s}を {target} に追加しました。`,
+        'faceMatch.toast.linked': `{count} 件の stash ID{s}をこのパフォーマーに関連付けました。`,
         'sprite.title': `シーンのパフォーマー`,
         'sprite.close': `閉じる`,
         'sprite.foundConfirmed': `{found} 件検出 · {confirmed} 件確定`,
@@ -15975,6 +16236,9 @@
         'search.selectFaceVideo': `ビデオプレーヤー領域内の顔を選択してください。`,
         'search.menuItemTitle': `顔の周りにボックスをドラッグするか、Enter を押してフレーム全体をスキャンし、StashDB で一致を検索します`,
         'search.currentFrame': `Visage：現在のフレーム`,
+        'search.identifyFromImage': `Visage：画像から特定`,
+        'search.identifyMenuTitle': `このパフォーマーの画像を StashDB で検索し、一致する stash ID を関連付けます`,
+        'search.noPerformerImage': `このページにパフォーマーの画像が見つかりませんでした。`,
         'scene.noSprite': `このシーンにはスプライトシートまたはプレビュービデオがありません。シーン設定で生成してから、もう一度お試しください。`,
         'scene.noFaces': `このシーンのスプライトシートまたはプレビュービデオに顔やパフォーマーが見つかりませんでした。`,
         'scene.healthBanner': `顔認識 API に接続できません。バックエンドを起動して、もう一度お試しください。`,
@@ -16071,6 +16335,7 @@
         'faceMatch.toast.noProvider': `Ingen leverantör med namnet "StashDB" hittades. Byt namn på leverantören till "StashDB" under Inställningar → Metadata-leverantörer för att aktivera performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurera en stash-box-leverantör under Inställningar → Metadata-leverantörer för att aktivera performer-import.`,
         'faceMatch.toast.addedMultiple': `Lade till {count} performers i {target}.`,
+        'faceMatch.toast.linked': `Länkade {count} stash-ID{s} till denna performer.`,
         'sprite.title': `SCEN-PERFORMERS`,
         'sprite.close': `Stäng`,
         'sprite.foundConfirmed': `{found} hittade · {confirmed} bekräftade`,
@@ -16123,6 +16388,9 @@
         'search.selectFaceVideo': `Välj ett ansikte i videoavspelarområdet.`,
         'search.menuItemTitle': `Dra en ruta runt ett ansikte, eller tryck Enter för att skanna hela rutan, för att söka StashDB efter matchningar`,
         'search.currentFrame': `Visage: Aktuell ruta`,
+        'search.identifyFromImage': `Visage: Identifiera från bild`,
+        'search.identifyMenuTitle': `Sök denna performers bild mot StashDB och länka ett matchande stash-ID`,
+        'search.noPerformerImage': `Ingen performer-bild hittades på denna sida.`,
         'scene.noSprite': `Ingen sprite-ark eller förhandsvisningsvideo hittades för denna scen. Generera dem i Scene-inställningarna och försök igen.`,
         'scene.noFaces': `Inga ansikten eller performers hittades i denna scen sprite-ark eller förhandsvisningsvideo.`,
         'scene.healthBanner': `Ansiktsigenkännings-API:et är inte nåbart. Starta backend och försök igen.`,
@@ -16221,6 +16489,7 @@
         'faceMatch.toast.noProvider': `Nessun provider chiamato "StashDB" trovato. Rinomina il tuo provider in "StashDB" in Impostazioni → Provider di metadati per attivare l'importazione dei performer.`,
         'faceMatch.toast.configureProvider': `Configura un provider stash-box in Impostazioni → Provider di metadati per attivare l'importazione dei performer.`,
         'faceMatch.toast.addedMultiple': `{count} performer{s} aggiunti alla {target}.`,
+        'faceMatch.toast.linked': `Collegato {count} stash ID{s} a questo performer.`,
         // ---- SpriteResultModal.tsx ----
         'sprite.title': `PERFORMER DELLA SCENA`,
         'sprite.close': `Chiudi`,
@@ -16276,6 +16545,9 @@
         'search.selectFaceVideo': `Seleziona un volto all'interno dell'area del lettore video.`,
         'search.menuItemTitle': `Trascina una casella attorno a un volto oppure premi Invio per scansionare l'intera immagine, per cercare corrispondenze in StashDB`,
         'search.currentFrame': `Visage: Fotogramma corrente`,
+        'search.identifyFromImage': `Visage: Identifica dall'immagine`,
+        'search.identifyMenuTitle': `Cerca l'immagine di questo performer su StashDB e collega un stash ID corrispondente`,
+        'search.noPerformerImage': `Nessuna immagine del performer trovata in questa pagina.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Nessuno sprite sheet o video di anteprima trovato per questa scena. Generali nelle impostazioni della scena, poi riprova.`,
         'scene.noFaces': `Nessun volto o performer trovato nello sprite sheet o nel video di anteprima di questa scena.`,
@@ -16352,7 +16624,7 @@
             return String(props.id);
         if ((_b = (_a = props === null || props === void 0 ? void 0 : props.match) === null || _a === void 0 ? void 0 : _a.params) === null || _b === void 0 ? void 0 : _b.id)
             return props.match.params.id;
-        const match = window.location.pathname.match(/\/(scenes|images)\/(\d+)/);
+        const match = window.location.pathname.match(/\/(scenes|images|performers)\/(\d+)/);
         return match ? match[2] : null;
     }
     function useMenuPortal(renderContent) {
@@ -16398,9 +16670,66 @@
     function ImageOperationsMenuPortal() {
         return useMenuPortal((anchor) => React.createElement(FaceSearchButton, { menuItem: true }));
     }
+    // The performer page has no #operation-menu dropdown; its actions (Edit,
+    // Merge, Delete…) render inline in .details-edit. Inject next to them by CSS
+    // class, never by button text, so locale changes cannot break placement.
+    function PerformerActionsPortal() {
+        const [anchor, setAnchor] = React.useState(null);
+        React.useEffect(() => {
+            function tryInject() {
+                const row = document.querySelector('.details-edit');
+                if (!row)
+                    return false;
+                const existing = row.querySelector('.visage-performer-actions');
+                if (existing) {
+                    setAnchor(existing);
+                    return true;
+                }
+                const div = document.createElement('div');
+                div.className = 'visage-performer-actions';
+                div.style.cssText = 'display:contents';
+                // After the last .btn-secondary in the row (Merge in stock Stash) so the
+                // button sits in the action cluster regardless of label language.
+                const secondary = row.querySelectorAll('button.btn-secondary');
+                const mergeBtn = secondary[secondary.length - 1];
+                const deleteBtn = row.querySelector('button.delete');
+                if (mergeBtn)
+                    row.insertBefore(div, mergeBtn.nextSibling);
+                else if (deleteBtn)
+                    row.insertBefore(div, deleteBtn);
+                else
+                    row.appendChild(div);
+                setAnchor(div);
+                return true;
+            }
+            if (tryInject())
+                return;
+            const poll = setInterval(() => {
+                if (tryInject()) {
+                    clearInterval(poll);
+                    obs.disconnect();
+                }
+            }, 300);
+            const obs = new MutationObserver(() => {
+                if (tryInject()) {
+                    clearInterval(poll);
+                    obs.disconnect();
+                }
+            });
+            obs.observe(document.body, { childList: true, subtree: true });
+            return () => { clearInterval(poll); obs.disconnect(); };
+        }, []);
+        if (!anchor)
+            return null;
+        return ReactDOM.createPortal(React.createElement(IdentifyPerformerButton, null), anchor);
+    }
     function ModalRoot() {
         const { state, openSettings, closeSettings } = useVisage();
-        return ReactDOM.createPortal(React.createElement(React.Fragment, null, state.showMatchModal && React.createElement(FaceMatchModal, null), state.showSpriteModal && React.createElement(SpriteResultModal, null), React.createElement(ErrorDialog, null), React.createElement(BackendHealthBanner, { onOpen: openSettings }), state.settingsOpen && React.createElement(BackendSettings, { onClose: closeSettings })), document.body);
+        // Performer pages link stash_ids instead of adding performers to content.
+        const onConfirm = state.scenario === 'performers' && state.scenarioId
+            ? (entries) => linkCandidatesToPerformer(state.scenarioId, entries)
+            : undefined;
+        return ReactDOM.createPortal(React.createElement(React.Fragment, null, state.showMatchModal && React.createElement(FaceMatchModal, { onConfirm }), state.showSpriteModal && React.createElement(SpriteResultModal, null), React.createElement(ErrorDialog, null), React.createElement(BackendHealthBanner, { onOpen: openSettings }), state.settingsOpen && React.createElement(BackendSettings, { onClose: closeSettings })), document.body);
     }
     const ONBOARDED_KEY = 'visage_onboarded';
     function isOnboarded() {
@@ -16455,23 +16784,27 @@
     function ImageVisageWrapper({ scenarioId }) {
         return React.createElement(VisageProvider, { scenario: 'images', scenarioId }, React.createElement(ThemeDetector, null), React.createElement(ImageOperationsMenuPortal, null), React.createElement(ModalRoot, null));
     }
-    let imageContainer = null;
-    function mountImage(scenarioId) {
-        if (imageContainer) {
-            ReactDOM.unmountComponentAtNode(imageContainer);
-            imageContainer.remove();
+    function PerformerVisageWrapper({ scenarioId }) {
+        return React.createElement(VisageProvider, { scenario: 'performers', scenarioId }, React.createElement(ThemeDetector, null), React.createElement(PerformerActionsPortal, null), React.createElement(ModalRoot, null));
+    }
+    let pageContainer = null;
+    function mountPage(scenario, scenarioId) {
+        if (pageContainer) {
+            ReactDOM.unmountComponentAtNode(pageContainer);
+            pageContainer.remove();
         }
-        imageContainer = document.createElement('div');
-        imageContainer.id = 'visage-image-root';
-        imageContainer.style.display = 'contents';
-        document.body.appendChild(imageContainer);
-        ReactDOM.render(React.createElement(ImageVisageWrapper, { scenarioId }), imageContainer);
+        pageContainer = document.createElement('div');
+        pageContainer.id = 'visage-page-root';
+        pageContainer.style.display = 'contents';
+        document.body.appendChild(pageContainer);
+        const Wrapper = scenario === 'performers' ? PerformerVisageWrapper : ImageVisageWrapper;
+        ReactDOM.render(React.createElement(Wrapper, { scenarioId }), pageContainer);
     }
     function cleanup() {
-        if (imageContainer) {
-            ReactDOM.unmountComponentAtNode(imageContainer);
-            imageContainer.remove();
-            imageContainer = null;
+        if (pageContainer) {
+            ReactDOM.unmountComponentAtNode(pageContainer);
+            pageContainer.remove();
+            pageContainer = null;
         }
     }
     PluginApi.patch.after('ScenePage', (props, _, result) => {
@@ -16485,24 +16818,26 @@
         const pathname = ((_c = (_b = (_a = e.detail) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.location) === null || _c === void 0 ? void 0 : _c.pathname) || '';
         const match = pathname.match(/\/images\/(\d+)/);
         if (match) {
-            requestAnimationFrame(() => mountImage(match[1]));
+            requestAnimationFrame(() => mountPage('images', match[1]));
         }
     });
     PluginApi.Event.addEventListener('stash:location', (e) => {
         var _a, _b, _c;
         const pathname = ((_c = (_b = (_a = e.detail) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.location) === null || _c === void 0 ? void 0 : _c.pathname) || '';
-        const imageMatch = pathname.match(/\/images\/(\d+)/);
-        if (imageMatch) {
-            requestAnimationFrame(() => mountImage(imageMatch[1]));
+        const match = pathname.match(/\/(images|performers)\/(\d+)/);
+        if (match) {
+            const scenario = match[1];
+            requestAnimationFrame(() => mountPage(scenario, match[2]));
         }
         else {
             cleanup();
         }
     });
     const initialPath = window.location.pathname;
-    const imageMatch = initialPath.match(/\/images\/(\d+)/);
-    if (imageMatch) {
-        requestAnimationFrame(() => mountImage(imageMatch[1]));
+    const initialMatch = initialPath.match(/\/(images|performers)\/(\d+)/);
+    if (initialMatch) {
+        const scenario = initialMatch[1];
+        requestAnimationFrame(() => mountPage(scenario, initialMatch[2]));
     }
     const firstRunRoot = document.createElement('div');
     firstRunRoot.id = 'visage-firstrun-root';
