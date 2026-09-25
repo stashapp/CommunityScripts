@@ -1,0 +1,11 @@
+name: Watch Later
+description: Adds a quick bookmark button on scene cards to add/remove a "Watch Later" tag (auto-created on first use), plus a dedicated page to browse your queue.
+version: 1.0.0
+url: https://github.com/spesometro2026/stash-watchlater-plugin
+ui:
+    javascript:
+        - watchlater.js
+    css:
+        - watchlater.css
+    assets:
+        /: .
