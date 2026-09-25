@@ -10,8 +10,9 @@ It searches the configured source by the performer's name, takes the best name-m
 
 - **Best name match, or skip.** The candidate with the highest name-match score (exact = 1.0, otherwise fuzzy) is used. If the best score is below the configurable threshold, nothing is done.
 - **Fill empty only (default).** Only empty fields are written, so manual edits and other scrapers' data are preserved. Each field can be switched to "overwrite existing" individually.
-- **Primary name policy.** For each origin (Identify vs. manual creation) you can choose whether the created name stays primary (scraper name goes to aliases) or the scraper's canonical name becomes primary (created name goes to aliases).
+- **Primary name policy.** For each origin (Identify vs. manual creation) you can choose whether the created name stays primary (scraper name goes to aliases) or the scraper's canonical name becomes primary (created name goes to aliases). Either way, a name that only differs in casing or spacing is always corrected to the scraper's spelling — typing `yua mikami` gives you `Yua Mikami`.
 - **Duplicate merge.** When the scraper name would become primary but a performer with that name already exists, the newly-created one is merged into the existing performer (`performerMerge`) — scenes are re-linked, the created name and the stash-box id are carried over, and the duplicate is removed.
+- **Stash-box id stored.** When the source is a stash-box, the matched performer's remote id is saved as a `stash_id`, so Identify and the Tagger recognise the performer from then on.
 - **Measurements normalisation.** `91H-56-88` → `91(H)-56-88`.
 - **Asynchronous image.** The image is downloaded and set in a detached background process, so the hook returns immediately and Stash never blocks on a slow remote image fetch.
 
@@ -24,12 +25,12 @@ It searches the configured source by the performer's name, takes the best name-m
 
 | Setting | Description |
 | --- | --- |
-| Scraper (Identify) / Scraper (manual) | Source per origin: a stash-box endpoint URL or a `scraper_id`. Empty = javstash. |
-| Use scraper name (Identify) / (manual) | Make the scraper's canonical name the primary name for that origin. Default: Identify ON, manual OFF. |
+| Scraper (Identify) / Scraper (manual) | Source per origin. Easiest: the name of a stash-box you already configured in Stash (`StashDB`), or part of its name/endpoint (`stashdb`). A full endpoint URL or a performer scraper name/`scraper_id` (`Minnano-AV-JP`) also work. Empty = javstash if configured, otherwise your first configured stash-box. |
+| Use scraper name (Identify) / (manual) | Make the scraper's canonical name the primary name for that origin. Default: Identify ON, manual OFF. With it OFF, the created name is kept but its casing/spacing is still corrected. |
 | Name-match threshold | Skip if the best match score is below this (default 0.9). |
 | Overwrite: *field* | Per-field toggle. OFF = fill only when empty (default); ON = overwrite even if a value already exists. For URLs / aliases, ON replaces and OFF appends; for the image, ON replaces an existing image. |
 
 ## Notes
 
-- The source scrape is proxied through Stash's own `scrapeSinglePerformer`, so no API keys are needed in the plugin itself.
+- The source scrape is proxied through Stash's own `scrapeSinglePerformer`, so no API keys are needed in the plugin itself. Stash only accepts stash-box endpoints that are configured under **Settings → Metadata Providers**, which is why a name or partial match is resolved back to your configured endpoint.
 - Identify-origin creations are detected by the presence of `stash_ids` in the create input.

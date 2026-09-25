@@ -1,6 +1,6 @@
 name: Javstash Autofill
 description: Autofill new performers from a scraper. Empty fields are filled, overwrites are optional, and name collisions merge performers.
-version: 1.3
+version: 1.4
 url: https://discourse.stashapp.cc/t/javstash-autofill/11502
 exec:
   - python3
@@ -9,19 +9,19 @@ interface: raw
 settings:
   identifySource:
     displayName: Scraper (Identify)
-    description: Source for performers auto-created by Identify. A stash-box endpoint URL (e.g. https://javstash.org/graphql) or a scraper_id (e.g. Minnano-AV-JP). Empty = javstash.
+    description: "Source for performers auto-created by Identify. Just the name of one of your configured stash-boxes (e.g. StashDB), or part of it (e.g. stashdb) - no URL needed. A full endpoint URL or a performer scraper name/id (e.g. Minnano-AV-JP) also work. Empty = javstash if configured, else your first stash-box."
     type: STRING
   identifyUseScraperName:
     displayName: Identify - use scraper name as primary
-    description: When ON, Identify-created performers get the scraper's canonical name as primary (created name -> alias; merged if a same-named performer exists). When OFF, keep the created name. Default ON.
+    description: When ON, Identify-created performers get the scraper's canonical name as primary (created name -> alias; merged if a same-named performer exists). When OFF, keep the created name - casing is still corrected to the scraper's. Default ON.
     type: BOOLEAN
   manualSource:
     displayName: Scraper (manual)
-    description: Source for manually-created performers. Endpoint URL or scraper_id. Empty = javstash.
+    description: "Source for manually-created performers. Same format as above: a configured stash-box name (e.g. StashDB), an endpoint URL, or a performer scraper name/id. Empty = javstash if configured, else your first stash-box."
     type: STRING
   manualUseScraperName:
     displayName: Manual - use scraper name as primary
-    description: When ON, manually-created performers also get the scraper's canonical name as primary. When OFF, keep the created name. Default OFF.
+    description: When ON, manually-created performers also get the scraper's canonical name as primary. When OFF, keep the created name - casing is still corrected to the scraper's (typing "yua mikami" becomes "Yua Mikami"). Default OFF.
     type: BOOLEAN
   threshold:
     displayName: Name-match threshold (0-1)
