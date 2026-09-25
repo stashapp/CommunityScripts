@@ -1,0 +1,34 @@
+name: Auto Group
+description: Automatically creates and assigns Stash Groups from customizable filename rules (regex).
+version: 1.0.0
+url: https://github.com/spesometro2026/stash-autogroup-plugin
+exec:
+  - python
+  - "{pluginDir}/autoGroup.py"
+interface: raw
+
+settings:
+  rules:
+    displayName: Rules (JSON)
+    description: >-
+      JSON array of {"pattern": <regex>, "group": <template>}. "pattern" is matched against
+      each scene's file basename (not the full path) with Python re.search; named capture
+      groups (?P<name>...) can be
+      referenced in "group" as {name}. A capture group literally named "index" is used as the
+      scene's position in the group (e.g. episode number), if present. First matching rule
+      wins. Leave empty to use the built-in default rule. See the plugin's README for examples.
+    type: STRING
+  onlyUngrouped:
+    displayName: Skip scenes that already have a group
+    description: When enabled (default), scenes that already belong to at least one group are left untouched, so re-running the task only picks up newly added scenes.
+    type: BOOLEAN
+  dryRun:
+    displayName: Dry run (log only, write nothing)
+    description: When enabled (default), matches are only logged - no Group is created and no scene is changed. Turn this off once you've checked the log and are happy with the matches.
+    type: BOOLEAN
+
+tasks:
+  - name: Run
+    description: Scan the library and apply the configured rules.
+    defaultArgs:
+      mode: run
