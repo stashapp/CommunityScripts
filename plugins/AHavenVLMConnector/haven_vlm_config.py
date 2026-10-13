@@ -76,6 +76,20 @@ VLM_ENGINE_CONFIG = {
                     "max_concurrent": 2
                 }
             ],
+            # Optional: System One (Jev) endpoints. Only for endpoints that speak
+            # the /v1/systemone wire contract - they never serve chat completions,
+            # so keep them out of multiplexer_endpoints. Leave absent for
+            # traditional LLM/VLM endpoints (the default).
+            # "systemone_endpoints": [
+            #     {
+            #         "base_url": "http://localhost:1234/v1",
+            #         "api_key": "",
+            #         "name": "jev-local",
+            #         "weight": 5,
+            #         "is_fallback": False,
+            #         "max_concurrent": 4
+            #     }
+            # ],
             "tag_list": [
                 "Anal Fucking", "Ass Licking", "Ass Penetration", "Ball Licking/Sucking", "Blowjob", "Cum on Person",
                 "Cum Swapping", "Cumshot", "Deepthroat", "Double Penetration", "Fingering", "Fisting", "Footjob",
