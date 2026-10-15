@@ -519,7 +519,7 @@ class StashPluginHelper(StashInterface):
                     SrcData = self.find_scene(SrcData)
                     DestData = self.find_scene(DestData)
                 return self._mergeMetadata.merge(SrcData, DestData)
-            except (requests.exceptions.ConnectionError, ConnectionResetError):
+            except (requests.exceptions.ConnectionError, ConnectionResetError) as e:
                 tb = traceback.format_exc()
                 errMsg = f"Exception calling [mergeMetadata]. Will retry; count({i}); Error: {e}\nTraceBack={tb}"
             except Exception as e:
@@ -710,7 +710,7 @@ class StashPluginHelper(StashInterface):
                 dataDict.update({'tag_ids' : tagIds})
                 self.update_scene(dataDict)
                 return True
-            except (ConnectionResetError):
+            except (ConnectionResetError) as e:
                 tb = traceback.format_exc()
                 errMsg = f"Exception calling [addTag]. Will retry; count({i}); Error: {e}\nTraceBack={tb}"
             except Exception as e:
@@ -745,7 +745,7 @@ class StashPluginHelper(StashInterface):
                 if errMsg != None:
                     self.Warn(errMsg)
                 return self.update_scene(update_input, create)
-            except (ConnectionResetError):
+            except (ConnectionResetError) as e:
                 tb = traceback.format_exc()
                 errMsg = f"Exception calling [updateScene]. Will retry; count({i}); Error: {e}\nTraceBack={tb}"
             except Exception as e:
@@ -766,7 +766,7 @@ class StashPluginHelper(StashInterface):
                         self.Warn(f"Scene {scene_id} not found in Stash.")
                         return False
                 return self.destroy_scene(scene_id, delete_file)
-            except (ConnectionResetError):
+            except (ConnectionResetError) as e:
                 tb = traceback.format_exc()
                 errMsg = f"Exception calling [updateScene]. Will retry; count({i}); Error: {e}\nTraceBack={tb}"
             except Exception as e:
