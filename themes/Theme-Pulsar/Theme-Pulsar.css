@@ -1,4 +1,4 @@
-/*	StashApp Pulsar Theme - Fonzie 2020-21 v1.8.1  	 */
+/*	StashApp Pulsar Theme - Fonzie 2020-21 v1.8.1, refreshed for Stash v0.31 (v2.0)	 */
 /* ---------------------------------------------------- */
 /* --------- Updated to Stash version 0.12.0 ---------- */
 
@@ -21,33 +21,52 @@
 /* ===================== General ===================== */
 
 body {
-  background-image: url("https://i.imgur.com/gQtSoev.jpg"); /*	Aphonus		*/
-  /*	background-image:url("https://i.imgur.com/6BBd6aa.jpg");	/*	Plex		*/
-  /*	background-image:url("https://i.imgur.com/xAzxryr.jpg");	/*	Almora		*/
-  /*	background-image:url("https://i.imgur.com/0iN75zD.jpg");	/*	Dacirus		*/
-  /*	background-image:url("https://i.imgur.com/g5ECcdD.jpg");	/*	Drionope	*/
-  /*	background-image:url("https://i.imgur.com/dhVsc3d.jpg");	/*	Elein		*/
-  /*	background-image:url("https://i.imgur.com/B5hdvQG.jpg");	/*	FreePhion	*/
-  /*	background-image:url("https://i.imgur.com/LcSat6V.jpg");	/*	Lilac		*/
-  /*	background-image:url("https://i.imgur.com/kn9wixj.jpg");	/*	Nolrirus	*/
-  /*	background-image:url("https://i.imgur.com/190rDim.jpg");	/*	Ongion		*/
-  /*	background-image:url("https://i.imgur.com/IpvdJVn.jpg");	/*	PurpleRough	*/
-  /*	background-image:url("https://i.imgur.com/hAHylub.jpg");	/*	Tesioria	*/
-  /*	background-image:url("https://i.imgur.com/QKiFSvE.jpg");	/*	Ichix		*/
-  /*	background-image:url("https://i.imgur.com/8cIqGWj.jpg");	/*	SeaGreen	*/
-  /*	background-image:url("https://i.imgur.com/WNXNwV3.jpg");	/*	BrownBlur	*/
-  /*	background-image:url("./custom/background.jpg");		/*	Local Background	*/
-
   font-family: Helvetica, Verdana;
   width: 100%;
   height: 100%;
-  padding: 0 0 0;
   background-size: cover;
   background-repeat: no-repeat;
-  background-color: #127aa5;
+  background-color: #10304a;
   background-attachment: fixed;
   background-position: center;
   color: #f9fbfd;
+}
+
+/* --- The backdrop: the original Aphonus image as a soft field of colour,
+   redrawn in CSS (nine radial gradients fitted to the blurred image), so it
+   is crisp at any size and makes no external request. It is painted on a
+   square layer cropped like a cover-fitted photo, so it frames the same way
+   on a phone, a tablet or a wide screen.
+   To use an image instead, replace the background line with
+     background: url("...") center / cover no-repeat; filter: blur(48px);
+   using one of the original images:
+	https://i.imgur.com/gQtSoev.jpg		Aphonus
+	https://i.imgur.com/6BBd6aa.jpg		Plex
+	https://i.imgur.com/xAzxryr.jpg		Almora
+	https://i.imgur.com/0iN75zD.jpg		Dacirus
+	https://i.imgur.com/g5ECcdD.jpg		Drionope
+	https://i.imgur.com/dhVsc3d.jpg		Elein
+	https://i.imgur.com/B5hdvQG.jpg		FreePhion
+	https://i.imgur.com/LcSat6V.jpg		Lilac
+	https://i.imgur.com/kn9wixj.jpg		Nolrirus
+	https://i.imgur.com/190rDim.jpg		Ongion
+	https://i.imgur.com/IpvdJVn.jpg		PurpleRough
+	https://i.imgur.com/hAHylub.jpg		Tesioria
+	https://i.imgur.com/QKiFSvE.jpg		Ichix
+	https://i.imgur.com/8cIqGWj.jpg		SeaGreen
+	https://i.imgur.com/WNXNwV3.jpg		BrownBlur
+	./custom/background.jpg			Local Background --- */
+body::before {
+  content: "";
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: calc(max(100vw, 100vh) + 120px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  pointer-events: none;
+  background: var(--pulsar-backdrop);
 }
 
 h1,
@@ -60,10 +79,38 @@ h6 {
 }
 :root {
   --HeaderFont: Helvetica, "Helvetica Neue", "The Sans", "Segoe UI";
-  --std-txt-shadow: 2px 2px 1px #000;
-  --light-txt-shadow: 1px 2px 1px #222;
+  --std-txt-shadow: none;    /* glass is dark enough for white text; no shadow */
+  --light-txt-shadow: none;
   --white: #ffffff;
   --stars: url("https://i.imgur.com/YM1nCqo.png");
+
+  --pulsar-backdrop:
+    radial-gradient(ellipse 38% 30% at -6% 54%, rgba(0, 2, 10, 1.00), transparent),
+    radial-gradient(ellipse 51% 34% at 10% 4%, rgba(43, 0, 101, 0.73), transparent),
+    radial-gradient(ellipse 82% 22% at 36% 52%, rgba(195, 76, 96, 0.42), transparent),
+    radial-gradient(ellipse 53% 25% at 93% 50%, rgba(14, 0, 75, 0.68), transparent),
+    radial-gradient(ellipse 38% 25% at 13% 26%, rgba(11, 175, 209, 1.00), transparent),
+    radial-gradient(ellipse 150% 26% at 129% 80%, rgba(0, 21, 54, 0.78), transparent),
+    radial-gradient(ellipse 150% 32% at 90% 96%, rgba(12, 7, 17, 1.00), transparent),
+    radial-gradient(ellipse 116% 24% at 83% 18%, rgba(1, 153, 172, 1.00), transparent),
+    radial-gradient(ellipse 47% 16% at 101% 54%, rgba(0, 69, 62, 1.00), transparent),
+    linear-gradient(180deg, #046881, #3a6eb4, #011734);
+  --pulsar-bar: rgba(8, 24, 40, 0.62);      /* top bar, sidebar */
+  --pulsar-glass: rgba(6, 24, 40, 0.72);    /* cards, toolbar boxes, panels */
+  --pulsar-raised: rgba(255, 255, 255, 0.14); /* active pill, hover */
+  --pulsar-hero: #10171d;                   /* performer header */
+  --pulsar-line: rgba(255, 255, 255, 0.1);  /* every hairline */
+  --pulsar-line-hover: rgba(124, 196, 245, 0.7);
+  --pulsar-text: #ffffff;
+  --pulsar-text-2: #c9d6e0;
+  --pulsar-text-3: #9fb3c2;
+  --pulsar-blue: #1b74b9;                   /* fills behind white text (AA) */
+  --pulsar-blue-text: #7cc4f5;              /* blue as text on glass */
+  --pulsar-danger: #d9363e;
+  --pulsar-radius-in: 6px;
+  --pulsar-radius: 8px;
+  --pulsar-radius-card: 12px;
+  --pulsar-blur: blur(14px) saturate(1.2);
 }
 
 /* --- The Home button in the top left corner of each page. Remove the last 3 lines if you don't like the logo --- */
@@ -79,7 +126,9 @@ button.minimal.brand-link.d-inline-block.btn.btn-primary {
 
 /* --- Makes the background of the Navigation Bar at the Top half-transparent --- */
 nav.bg-dark {
-  background: rgba(10, 20, 25, 0.5) !important;
+  background: var(--pulsar-bar) !important;
+  backdrop-filter: var(--pulsar-blur);
+  border-bottom: 1px solid var(--pulsar-line);
 }
 .bg-dark {
   background: none !important;
@@ -101,12 +150,8 @@ nav.bg-dark {
   padding: 0.13rem 1rem;
 }
 
-/* --- Changes how the Bar at the top of the page behaves --- */
-.fixed-bottom,
-.fixed-top {
-  position: relative !important;
-  top: 0px !important;
-}
+/* --- The bar at the top stays pinned, as in stock Stash: the list toolbar,
+   filter sidebar and scene player are pinned just below it --- */
 
 /* The pagination at the top and at the bottom of the Scenes/Performer/Images/... pages; 
 transparent background, rounded corners, etc. */
@@ -133,19 +178,13 @@ transparent background, rounded corners, etc. */
 .card {
   padding: 20px;
   margin: 4px 0.5% 14px;
-  /* --- Adds a glowing shimmer effect --- */
-  background-image: linear-gradient(
-    130deg,
-    rgba(60, 70, 85, 0.21),
-    rgba(150, 155, 160, 0.3),
-    rgba(35, 40, 45, 0.22),
-    rgba(160, 160, 165, 0.21),
-    rgba(50, 60, 65, 0.3)
-  );
-  background-color: rgba(16, 20, 25, 0.25);
-  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.55);
-  /* --- Increases the rounded borders of each item on the Scenes/Performers/... pages for 6px in 10px --- */
-  border-radius: 10px;
+  /* --- Frosted glass: a darkened tint blurred over the backdrop, with a white hairline --- */
+  background-image: none;
+  background-color: var(--pulsar-glass);
+  backdrop-filter: var(--pulsar-blur);
+  border: 1px solid var(--pulsar-line);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-radius: var(--pulsar-radius-card);
 }
 
 /* --- Removes the glowing shimmer effect on the start page & the settings for readability purpose --- */
@@ -330,13 +369,8 @@ div.card-section hr {
 /* --- In Full screen HD 1920x1080 you now see 8 performers per row instead of 6 --- */
 /*.performer-card-image, .performer-card, .card-image {  min-width: 160px; width: calc(108px + 10.625vw / 2); max-width: 230px }  */
 /*.performer-card-image, .performer-card, .card-image {  min-width: 160px; width: calc(108px + 19vw / 3.6);width:212px; max-width: 230px } */
-.performer-card-image,
-.performer-card,
-.card-image {
-  min-width: 160px;
-  width: calc(100px + 11.2vw / 1.92);
-  max-width: 230px;
-}
+/* Since Stash v0.31 the card size slider sets each card's width inline, so the
+   theme no longer sizes performer cards here; the image fills the card at 2:3. */
 
 /* --- Changes the height of the Performer Card to keep the 2x3 picture ratio --- */
 /*.performer-card-image, .justify-content-center .card-image { min-height:240px; height: calc((108px + 10.625vw / 2) * 1.5); max-height: 345px}  */
@@ -884,14 +918,7 @@ h5.card-section-title,
   font-weight: bold;
   bottom: 1.4%;
   letter-spacing: 0.035rem;
-  text-shadow:
-    2px 2px 1px #000,
-    4px 4px 5px #444,
-    7px 0px 5px #444,
-    -3px 2px 5px #444,
-    -5px 0px 5px #444,
-    -1px -4px 5px #444,
-    3px -2px 6px #444;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 .overlay-resolution {
   color: #eee;
@@ -908,27 +935,16 @@ h5.card-section-title,
 }
 
 /* --- Tightens the space between the Tags-, Performer-, O-Counter-, Gallery- and Movie-Icons --- */
-.btn-primary {
-  margin: 0 -3px 0 -9px;
+.card-popovers .btn-primary {
+  margin: 0;
 }
 
-/* --- Moves the Tags-, Performer-, O-Counter-, Gallery- and Movie-Icon from below the description to the bottom right corner of the card --- */
+/* --- Right-aligns the Tags-, Performer-, O-Counter-, Gallery- and Movie-Icons at the bottom of the card,
+below the description (pulling them up beside it overlapped the text since Stash v0.29) --- */
 .scene-popovers,
 .card-popovers {
   min-width: 0;
-  margin-bottom: 3px;
-  margin-top: -40px;
   justify-content: flex-end;
-}
-
-/* --- Adds an invisible dot after the description text, Also leaves ~80 pixels space to enforce a line break, 
-so it leaves some space in the bottom right corner of the card for the icons in the Selector above --- */
-.card-section p:after {
-  font-size: 1px;
-  color: rgba(0, 0, 0, 0.01);
-  padding-right: 3.2vw;
-  margin-right: 2.8vw;
-  content: " ";
 }
 
 /* -- The whole section replaces the ratings banner with a star rating in the bottom left corner --- */
@@ -1056,10 +1072,9 @@ div.scene-file-info .text-truncate {
   padding-left: 10px !important;
 }
 
+/* Zoom levels: since Stash v0.31 the size slider sets each card's width
+   inline, so only the cover sizing is left here */
 /* Zoom 0 */
-.zoom-0 {
-  width: 290px;
-}
 .zoom-0 .video-section {
   height: 181px;
 }
@@ -1076,11 +1091,6 @@ div.scene-file-info .text-truncate {
 }
 
 /* Zoom 1 */
-.zoom-1 {
-  min-width: 300px;
-  width: calc(234px + 24vw / 3.84);
-  max-width: 430px;
-}
 /* Improves the way the scene picture is displayed when the resolution isn't 16:9 (e.g. 4:3) --- */
 .zoom-1 .video-section {
   height: calc((234px + 24vw / 3.84) / 1.63);
@@ -1103,11 +1113,6 @@ div.scene-file-info .text-truncate {
 }
 
 /* Zoom 2 */
-.zoom-2 {
-  min-width: 350px;
-  width: calc(315px + 26vw / 3.84);
-  max-width: 495px;
-}
 .zoom-2 .video-section {
   height: calc((334px + 26vw / 3.84) / 1.63);
   max-height: 295px;
@@ -1129,11 +1134,6 @@ div.scene-file-info .text-truncate {
 }
 
 /* Zoom 3 */
-.zoom-3 {
-  min-width: 400px;
-  width: calc(530px + 18vw / 5.76);
-  max-width: 590px;
-}
 .zoom-3 .video-section {
   height: 375px;
 }
@@ -2184,76 +2184,37 @@ div.movie-card.grid-card.card p {
 
 /* ==============  SETTINGS ==============  */
 
+/* One frosted panel holds the menu and the settings. The settings themselves
+   keep Stash's own layout: the old two-column restyle was written for an
+   earlier settings page and no longer lines up with Stash v0.31. */
 #settings-container {
   padding-left: 230px;
   background-image: none !important;
-  background-color: rgba(16, 20, 25, 0.4) !important;
-  box-shadow: 2px 2px 7px rgb(0 0 0 / 75%);
-  border-radius: 10px;
+  background-color: var(--pulsar-glass) !important;
+  backdrop-filter: var(--pulsar-blur);
+  border: 1px solid var(--pulsar-line);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-radius: var(--pulsar-radius-card);
   padding-top: 25px;
   min-height: 450px;
 }
 
 #settings-container .card {
-  margin-bottom: 25px;
   background-image: none !important;
-  background-color: rgba(16, 20, 25, 0);
-  box-shadow: 0px 0px 0px rgb(0 0 0 / 75%);
-  border-radius: 0px;
+  background-color: rgba(0, 0, 0, 0.18);
+  backdrop-filter: none;
+  box-shadow: none;
+  border-radius: var(--pulsar-radius);
 }
 
 #settings-container .bg-dark {
   background-color: rgba(16, 20, 25, 0.12) !important;
 }
 
-.form-group > .form-group {
-  margin-top: 0.5em;
-  margin-bottom: 0.5rem;
-}
-
-#configuration-tabs-tabpane-tasks > .form-group {
-  margin-bottom: 2rem;
-  margin-top: 1em;
-}
-
-#configuration-tabs-tabpane-tasks h6 {
-  margin-top: 3.5em;
-  font-weight: bold;
-  margin-bottom: 1em;
-}
-#configuration-tabs-tabpane-tasks h5 {
-  margin-top: 2em;
-  font-weight: bold;
-  letter-spacing: 0.09rem;
-}
-
-.form-group h4 {
-  margin-top: 2em;
-}
-
-#parser-container.mx-auto {
-  max-width: 1400px;
-  margin-right: auto !important;
-}
-.scene-parser-row .parser-field-title {
-  width: 62ch;
-}
-
-.job-table.card {
-  margin-top: -32px !important;
-  background-color: rgba(16, 20, 25, 0.2) !important;
-  border-radius: 10px !important;
-}
-
-.mx-auto {
-  margin-right: 1% !important;
-}
-.mx-auto.card .row .col-md-2 .flex-column {
-  position: fixed;
-  min-height: 400px;
-}
-.mx-auto.card > .row {
-  min-height: 360px;
+.setting-section h1,
+#tasks-panel h1 {
+  font-size: 28px;
+  font-weight: 700;
 }
 
 .loading-indicator {
@@ -2261,195 +2222,9 @@ div.movie-card.grid-card.card p {
   zoom: 2;
 }
 
-/* --- Settings - Tasks ---- */
-
-#configuration-tabs-tabpane-tasks > .form-group .card {
-  padding: 20px;
-  margin: 4px 0.4% 14px;
-  background-image: none;
-  background-color: rgba(16, 20, 25, 0);
-  box-shadow: none;
-  border-radius: 10px;
+.scraper-table tr:nth-child(2n) {
+  background-color: rgba(16, 20, 25, 0.12);
 }
-
-#tasks-panel h1 {
-  margin-top: 3em;
-}
-.setting-section h1,
-#tasks-panel h1 {
-  font-size: 1.55rem;
-  max-width: 180px;
-}
-
-@media (min-width: 576px) and (min-height: 600px) {
-  #tasks-panel .tasks-panel-queue {
-    background: none !important;
-    margin-top: -2.6rem;
-    padding-bottom: 0.25rem;
-    padding-top: 0rem;
-    position: relative;
-    top: 0rem;
-    z-index: 2;
-  }
-}
-
-#tasks-panel hr {
-  border-top: 0px solid rgba(140, 142, 160, 0.38);
-}
-#tasks-panel h1 {
-  margin-top: 1.8em;
-}
-#tasks-panel h1 {
-  margin-top: 0.8em;
-}
-
-#configuration-tabs-tabpane-tasks {
-  margin-top: 40px;
-}
-
-#configuration-tabs-tabpane-tasks
-  .form-group:last-child
-  .setting-section
-  .setting
-  div:last-child {
-  margin-right: 0% !important;
-  margin-left: 0px;
-  margin-top: 2px;
-}
-
-#configuration-tabs-tabpane-tasks .setting-section .sub-heading {
-  margin-bottom: 1em;
-}
-#configuration-tabs-tabpane-tasks .setting-section .collapsible-section {
-  margin-bottom: 3em;
-}
-#configuration-tabs-tabpane-tasks #video-preview-settings button {
-  width: 250px;
-  margin-top: 22px;
-  margin-left: -57px;
-}
-#configuration-tabs-tabpane-tasks
-  .tasks-panel-tasks
-  .setting-section:nth-child(3) {
-  margin-top: 5em;
-}
-
-.tasks-panel-tasks .setting a {
-  color: #ccccd3;
-}
-
-@media (min-width: 1000px) {
-  #settings-container .card {
-    margin-top: -43px;
-    margin-left: 255px;
-  }
-}
-
-#settings-container .col-form-label {
-  padding-top: calc(0.55rem);
-  padding-bottom: calc(0.55rem);
-}
-
-.setting-section .setting-group > .setting:not(:first-child),
-.setting-section .setting-group .collapsible-section .setting {
-  margin-left: 4rem;
-}
-
-.setting-section .setting h3 {
-  font-size: 1.4rem;
-  margin: 0.6em 0 0.4em;
-}
-
-.setting-section:not(:first-child) {
-  margin-top: 1em;
-}
-.setting-section .setting-group > .setting:not(:first-child).sub-setting,
-.setting-section .setting-group .collapsible-section .setting.sub-setting {
-  padding-left: 3rem;
-}
-
-@media (min-width: 1200px) {
-  .offset-xl-2 {
-    max-width: 1250px;
-    margin-left: 15%;
-    margin-right: auto;
-  }
-
-  #settings-container .tab-content,
-  .mx-auto {
-    max-width: none;
-  }
-}
-
-.setting-section .setting:not(:last-child) {
-  border-bottom: 0px solid #000;
-}
-
-/* --- Checkboxes instead of Switches ---*/
-
-.custom-switch {
-  padding-left: 2.25rem;
-}
-.custom-control {
-  min-height: 1.5rem;
-  padding-left: 0.5rem;
-  margin-right: 1em;
-}
-.custom-control-input:checked ~ .custom-control-label:before {
-  color: rgb(0 0 0 / 0%);
-  border-color: rgb(0 0 0 / 0%);
-  background-color: rgb(0 0 0 / 0%);
-}
-.custom-switch .custom-control-label:before {
-  pointer-events: auto;
-  border-radius: 0;
-}
-.custom-switch .custom-control-input:checked ~ .custom-control-label:after {
-  background-color: blue;
-  transform: auto;
-}
-.custom-switch .custom-control-label:after {
-  top: auto;
-  left: auto;
-  width: auto;
-  height: auto;
-  background-color: blue;
-  border-radius: 0;
-  transform: none;
-  transition: none;
-}
-
-.custom-control-label:before {
-  display: none;
-}
-.custom-control-input {
-  position: absolute;
-  top: 2px;
-  left: 0;
-  z-index: -1;
-  width: 1.2rem;
-  height: 1.35rem;
-  opacity: 1;
-  background-color: #10659a;
-  color: #10659a;
-}
-
-.setting-section {
-  margin-bottom: 0.8em;
-}
-.setting-section .setting-group > .setting:not(:first-child),
-.setting-section .setting-group .collapsible-section .setting {
-  padding-bottom: 3px;
-  padding-top: 4px;
-  margin-right: 0rem;
-}
-.setting-section .sub-heading {
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  margin-bottom: 3rem;
-}
-
-/* --- Settings - Interface ---- */
 
 @media (min-width: 768px) {
   .offset-md-3 {
@@ -2461,55 +2236,12 @@ div.movie-card.grid-card.card p {
     width: 200px;
     padding-top: 25px;
   }
-
-  #configuration-tabs-tabpane-interface
-    .setting-section:first-child
-    .card
-    .setting
-    div:nth-child(2) {
-    width: 64%;
-    min-width: 300px;
-    padding-top: 6px;
-  }
-  #configuration-tabs-tabpane-interface
-    .setting-section:first-child
-    .card
-    .setting
-    div
-    .sub-heading {
-    margin-top: -28px;
-    margin-left: 255px;
-    width: 700px;
-  }
-  #language .input-control {
-    width: 250px;
-  }
-
-  #configuration-tabs-tabpane-interface
-    .setting-section
-    .setting-group
-    > .setting:not(:first-child) {
-    margin-left: 275px;
-  }
-  #configuration-tabs-tabpane-interface
-    .setting-section
-    .setting-group
-    > .setting:nth-child(2) {
-    margin-top: -40px;
-  }
-  #configuration-tabs-tabpane-interface .setting-section:first-child h3 {
-    font-size: 1.55rem;
-  }
 }
 
 @media (min-width: 1200px) {
   .offset-md-3 {
     margin-left: 14%;
     margin-right: 2%;
-  }
-  .setting-section h1,
-  #tasks-panel h1 {
-    max-width: 220px;
   }
   #settings-menu-container {
     padding-top: 25px;
@@ -2532,10 +2264,6 @@ div.movie-card.grid-card.card p {
   #settings-container {
     padding-left: 180px;
   }
-  .setting-section h1,
-  #tasks-panel h1 {
-    max-width: 300px;
-  }
 }
 
 @media (max-width: 576px) {
@@ -2554,10 +2282,6 @@ div.movie-card.grid-card.card p {
 }
 
 @media (max-width: 1004px) {
-  .setting-section h1,
-  #tasks-panel h1 {
-    max-width: 400px;
-  }
   .job-table.card {
     margin-top: 2px !important;
   }
@@ -2569,214 +2293,1096 @@ div.movie-card.grid-card.card p {
   background-color: rgba(10, 20, 20, 0.15);
 }
 
-@media (min-width: 1000px) {
-  #settings-container
-    #configuration-tabs-tabpane-interface
-    .setting-section
-    > .setting {
-    padding: 15px 0px;
-  }
-  #settings-container
-    #configuration-tabs-tabpane-interface
-    .setting-section
-    .setting-group
-    .setting
-    > div:first-item {
-    margin-left: 4% !important;
-  }
+/* ===================== Stash v0.29+ refresh ===================== */
 
-  #settings-container #stash-table {
-    margin-top: 25px;
-  }
-  #configuration-tabs-tabpane-interface .setting-section:first-child .card {
-    margin-top: -5px;
-    margin-left: -1%;
-  }
-
-  #language .input-control {
-    width: 250px;
-  }
-
-  #configuration-tabs-tabpane-interface
-    .setting-section:first-child
-    .card
-    > .setting
-    div:nth-child(1) {
-    width: 255px;
-  }
-
-  #configuration-tabs-tabpane-interface
-    .setting-section:first-child
-    .card
-    .setting
-    div:nth-child(2) {
-    width: 68%;
-    padding-top: 6px;
-  }
-  #configuration-tabs-tabpane-interface
-    .setting-section:first-child
-    .card
-    .setting
-    div
-    .sub-heading {
-    margin-top: -28px;
-    margin-left: 255px;
-    width: 700px;
-  }
-
-  #configuration-tabs-tabpane-interface #language {
-    margin-bottom: 15px;
-  }
-  #configuration-tabs-tabpane-library #stashes .sub-heading {
-    margin-top: -26px;
-    margin-left: 235px;
-    width: 700px;
-  }
-}
-
-#configuration-tabs-tabpane-metadata-providers .setting,
-#configuration-tabs-tabpane-security .setting,
-#configuration-tabs-tabpane-tasks .setting,
-#configuration-tabs-tabpane-system .setting-section .setting,
-#settings-dlna .setting-section .setting,
-#configuration-tabs-tabpane-interface .setting-section .setting {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-#configuration-tabs-tabpane-interface .setting-section:nth-child(1) h1 {
+.btn-primary.btn.donate.minimal {
   display: none;
 }
 
-#configuration-tabs-tabpane-interface
-  .setting-section
-  .setting-group
-  > .setting:not(:first-child)
-  h3 {
-  font-size: 1rem;
-  margin-left: 2em;
+/* Titles and names: no text shadow on glass */
+.card-section-title,
+.scene-tabs .scene-header,
+.performer-name,
+.detail-header h2 {
+  text-shadow: none !important;
 }
 
-#configuration-tabs-tabpane-interface
-  .setting-section
-  .setting-group
-  .setting
-  > div:last-child {
-  margin-right: 95% !important;
-  margin-left: 0px;
-  margin-top: -32px;
+/* Buttons: one blue fill with white text, red Delete, glass for the rest */
+.btn-primary {
+  color: #fff;
+  background-color: var(--pulsar-blue);
+  border-color: var(--pulsar-blue);
+}
+.btn-primary:hover {
+  background-color: #2384cf;
+  border-color: #2384cf;
+}
+.btn-secondary {
+  color: var(--pulsar-text);
+  background-color: var(--pulsar-glass);
+  border-color: var(--pulsar-line);
+}
+.btn-secondary:hover {
+  background-color: var(--pulsar-raised);
+  border-color: var(--pulsar-line);
+}
+.btn-danger {
+  color: #fff;
+  background-color: var(--pulsar-danger);
+  border-color: var(--pulsar-danger);
+}
+.btn-link,
+a.nav-link {
+  color: var(--pulsar-blue-text);
+}
+.form-control,
+.form-control:focus,
+.input-control,
+div.react-select__control {
+  color: var(--pulsar-text);
+  background-color: var(--pulsar-glass) !important;
+  border-color: var(--pulsar-line) !important;
+}
+.dropdown-menu,
+.modal-content,
+div.react-select__menu {
+  background-color: rgba(8, 24, 40, 0.94);
+  backdrop-filter: var(--pulsar-blur);
+  border: 1px solid var(--pulsar-line);
+  border-radius: var(--pulsar-radius);
+}
+.dropdown-item {
+  color: var(--pulsar-text);
+  border-radius: var(--pulsar-radius-in);
+}
+.dropdown-item:hover,
+.dropdown-item.active {
+  color: var(--pulsar-text);
+  background-color: var(--pulsar-raised);
+}
+.modal-header,
+.modal-footer {
+  border-color: var(--pulsar-line);
 }
 
-.setting-section .setting > div:first-child {
-  max-width: 415px;
+/* Top nav: uppercase wordmark, words only, the active page on a dark pill */
+button.minimal.brand-link.d-none.d-md-inline-block.btn.btn-primary,
+button.minimal.brand-link.d-inline-block.btn.btn-primary {
+  background: none !important;
+  padding-left: 12px;
+  border: 0;
+  letter-spacing: 0.04em;
+}
+.navbar-collapse > .navbar-nav > div > a {
+  display: flex !important;
+  flex-direction: row !important; /* stock stacks icon over label */
+  align-items: center;
+  height: 32px;
+  padding: 0 12px !important;
+  color: var(--pulsar-text) !important;
+  background: none !important;
+  border: 0 !important;
+  border-radius: var(--pulsar-radius) !important;
+  font-weight: 600;
+}
+.navbar-collapse > .navbar-nav > div > a.active {
+  background-color: rgba(0, 0, 0, 0.35) !important;
+}
+@media (min-width: 1200px) {
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: none !important;   /* words only on desktop */
+  }
+}
+.navbar-buttons .btn.minimal {
+  color: var(--pulsar-text);
+  background: none;
+  border-color: transparent;
+}
+.top-nav a[href$="/new"] .btn {
+  color: var(--pulsar-text);
+  background: none;
+  border: 1px solid var(--pulsar-text);
 }
 
-#configuration-tabs-tabpane-interface
-  .setting-section
-  .setting
-  > div:last-child {
-  min-width: 20px;
-  text-align: left;
-  width: 38%;
+/* List toolbar: dark glass 34px boxes, no slate band */
+.filtered-list-toolbar {
+  background-color: transparent !important;
+  gap: 8px;
 }
-
-#configuration-tabs-tabpane-interface h3 {
-  font-size: 1.25em;
+.filtered-list-toolbar .btn-group,
+.filtered-list-toolbar .sort-by-select {
+  height: 34px;
+  background-color: var(--pulsar-glass);
+  border: 1px solid var(--pulsar-line);
+  border-radius: var(--pulsar-radius);
+  padding: 2px;
+  gap: 2px;
+  align-items: center;
 }
-
-#wall-preview .input-control {
-  width: 160px;
-}
-
-.setting-section .setting-group > .setting:not(:first-child),
-.setting-section .setting-group .collapsible-section .setting {
-  padding-top: 0px;
-  padding-bottom: 0px;
-  margin-right: 0rem;
-  line-height: 100%;
-  margin-top: -3px;
-  margin-bottom: -4px;
-}
-
-#configuration-tabs-tabpane-interface .setting-section:nth-child(7) .setting {
-  margin-left: 15px !important;
-}
-#configuration-tabs-tabpane-interface
-  .setting-section:nth-child(7)
-  .setting:nth-child(1) {
-  margin-left: 0px !important;
-}
-
-#settings-dlna h5 {
-  margin-bottom: 70px;
-}
-#settings-dlna .form-group h5 {
-  margin-left: 255px;
-  margin-top: -30px;
-}
-
-#configuration-tabs-tabpane-metadata-providers #stash-boxes .sub-heading {
-  margin-top: -28px;
-  margin-left: 235px;
-  width: 700px;
-  font-size: 14px;
-}
-
-.scraper-table tr:nth-child(2n) {
-  background-color: rgba(16, 20, 25, 0.12);
-}
-
-/* --- Library ---*/
-.stash-row .col-md-2 {
-  padding-left: 4%;
-}
-#configuration-tabs-tabpane-library .setting-section .setting {
+.filtered-list-toolbar .btn-group .btn-group {
+  border: 0;
   padding: 0;
+  height: auto;
+  background: none;
+}
+.filtered-list-toolbar .btn-group > .btn-group {
+  border-left: 0 !important;
+}
+.filtered-list-toolbar .btn-group .btn,
+.filtered-list-toolbar .sort-by-select .btn {
+  height: 28px !important; /* the saved-filter button sits one group deeper */
+  margin: 0 !important;
+  padding: 0 9px;
+  color: var(--pulsar-text);
+  border: 0 !important;
+  border-radius: var(--pulsar-radius-in) !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+.filtered-list-toolbar .btn-group .btn:hover,
+.filtered-list-toolbar .btn-group .btn.active {
+  background-color: var(--pulsar-raised) !important;
+}
+.filtered-list-toolbar .btn-group .btn-danger {
+  background-color: var(--pulsar-danger) !important;
+}
+.filtered-list-toolbar .search-term-input .form-control,
+.filtered-list-toolbar .page-size-selector select,
+.clearable-text-field {
+  height: 34px;
+  color: var(--pulsar-text);
+  background-color: var(--pulsar-glass) !important;
+  border: 1px solid var(--pulsar-line) !important;
+  border-radius: var(--pulsar-radius) !important;
+}
+.filtered-list-toolbar.has-selection .selected-items-info span {
+  color: var(--pulsar-blue-text);
+  font-weight: 600;
+}
+.item-list-container .filtered-list-toolbar.has-selection {
+  background-color: var(--pulsar-bar) !important;
+  border-bottom: 1px solid var(--pulsar-line);
+}
+.sidebar-toggle-button-container .sidebar-toggle-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  margin-left: 0 !important;  /* stock hangs it half off the page; the toolbar leaves room for it here */
+  color: var(--pulsar-text);
+  background-color: var(--pulsar-glass) !important;
+  border: 1px solid var(--pulsar-line) !important;
+  border-radius: var(--pulsar-radius) !important;
+  opacity: 1;
+}
+.sidebar-pane .sidebar,
+.sidebar .sidebar-footer,
+.sidebar-toolbar {
+  background-color: var(--pulsar-bar) !important;
+  backdrop-filter: var(--pulsar-blur);
+}
+.sidebar-pane .sidebar {
+  border-right: 1px solid var(--pulsar-line);
+}
+input[type="range"],
+input[type="checkbox"] {
+  accent-color: var(--pulsar-blue);
+}
+input[type="range"].zoom-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--pulsar-blue-text);
+}
+input[type="range"].zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pulsar-text);
 }
 
-#configuration-tabs-tabpane-security .setting-section,
-#configuration-tabs-tabpane-tasks .setting-section,
-#configuration-tabs-tabpane-tasks .setting-group {
-  max-width: 915px;
+/* Pagination centred, with the result count on the same row; the floating
+   bottom pagination stays */
+.pagination-index-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.pagination-index-container > .pagination {
+  grid-column: 2;
+  margin: 0 !important;
+}
+.pagination-index-container > .paginationIndex {
+  grid-column: 3;
+  justify-self: end;
+  margin: 0 !important;
+  padding: 0;
+  font-size: 13px;
+  color: var(--pulsar-text-2);
+  background: none;
+  box-shadow: none;
+}
+.pagination-index-container > .paginationIndex:only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+.pagination.btn-group {
+  background-color: var(--pulsar-glass);
+  backdrop-filter: var(--pulsar-blur);
+  border: 1px solid var(--pulsar-line);
+  border-radius: var(--pulsar-radius);
+  padding: 2px;
+  gap: 2px;
+}
+.pagination .btn,
+.pagination .btn:first-child,
+.pagination .btn:last-child {
+  margin: 0 !important;
+  color: var(--pulsar-text);
+  border: 0 !important;
+  border-radius: var(--pulsar-radius-in) !important;
+  background: none;
+}
+.pagination .btn:hover,
+.pagination .btn.active {
+  background-color: var(--pulsar-raised);
+}
+@media (max-width: 575.98px) {
+  .pagination-index-container {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .pagination-index-container > .pagination,
+  .pagination-index-container > .paginationIndex {
+    grid-column: 1;
+    justify-self: center;
+  }
 }
 
-#configuration-tabs-tabpane-logs .setting-section,
-#configuration-tabs-tabpane-metadata-providers .setting-section,
-#configuration-tabs-tabpane-services .setting-section,
-#configuration-tabs-tabpane-system .setting-section,
-#configuration-tabs-tabpane-library .setting-section:not(:first-child),
-#configuration-tabs-tabpane-interface .setting-section {
-  max-width: 810px;
+/* Cards: hover lifts and brightens the edge; selection is a 2px light-blue ring */
+.grid-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s, border-color 0.2s;
+}
+.grid-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--pulsar-line-hover);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+}
+.grid-card:has(.card-check:checked) {
+  border-color: var(--pulsar-blue-text);
+  box-shadow: 0 0 0 1px var(--pulsar-blue-text);
+}
+.grid-card .thumbnail-section {
+  overflow: hidden;
+  flex: none; /* never squeezed by the text below it */
+}
+.grid-card .scene-card-link,
+.grid-card .video-section {
+  height: auto !important;
+}
+.grid-card .scene-card-preview,
+.grid-card .scene-card-preview-image,
+.grid-card .scene-card-preview-video {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 16 / 9;
+  object-fit: cover !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+.grid-card .card-section {
+  padding: 12px 14px 0 !important;
+  min-height: 0 !important;
+}
+.grid-card .card-section-title {
+  color: var(--pulsar-text);
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+.performer-card .card-section span,
+.performer-card .performer-name {
+  font-size: inherit !important;
+}
+.scene-card__date,
+.performer-card__age {
+  color: var(--pulsar-text-2) !important;
+  font-size: 13px;
+}
+.scene-card__details {
+  margin-bottom: 0 !important;
+}
+.scene-card__description,
+.TruncatedText.scene-card__description {
+  color: var(--pulsar-text-2);
+  font-size: 13px;
+}
+.grid-card .card-popovers {
+  margin: auto 0 0 !important;
+  padding: 12px 14px !important;
+  justify-content: flex-end !important;
+  gap: 18px;
+}
+.grid-card hr {
+  display: none;
+}
+.grid-card .card-popovers .btn {
+  color: var(--pulsar-text);
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 13px;
+}
+.grid-card .card-popovers .btn:hover {
+  color: var(--pulsar-blue-text);
+}
+.grid-card .card-popovers .btn span,
+.grid-card .card-popovers .btn svg {
+  font-size: 13px;
+}
+.scene-card .scene-specs-overlay {
+  font-size: 13px !important;
+  font-weight: 700;
+  right: 10px !important;
+  bottom: 8px !important;
+}
+.scene-card .scene-specs-overlay span {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+}
+.scene-card .extra-scene-info,
+.scene-card .overlay-filesize {
+  display: none !important;
+}
+/* Rating ribbon off the cards; the rating stays on the scene page */
+.grid-card .rating-banner {
+  display: none;
+}
+.performer-card .performer-card-image {
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  object-position: top;
+}
+.studio-card .studio-card-header,
+.tag-card .tag-card-header {
+  display: block !important;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+}
+.studio-card .studio-card-image,
+.tag-card .tag-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain;
+  padding: 10% 12%;
 }
 
-#configuration-tabs-tabpane-security .setting-section .setting > div:last-child,
-#configuration-tabs-tabpane-metadata-providers
-  .setting-section
-  .setting
-  > div:last-child,
-#configuration-tabs-tabpane-services .setting-section .setting > div:last-child,
-#configuration-tabs-tabpane-system .setting-section .setting > div:last-child,
-#configuration-tabs-tabpane-library .setting-section .setting > div:last-child,
-#configuration-tabs-tabpane-interface
-  .setting-section
-  .setting
-  > div:last-child,
-#configuration-tabs-tabpane-tasks .setting-section .setting > div:last-child {
-  min-width: 20px;
-  text-align: right;
+/* Studio chip top-left on the cover */
+.scene-card .studio-overlay {
+  top: 8px !important;
+  left: 8px !important;
+  right: auto !important;
+  max-width: 60%;
+  height: auto !important;
+  padding: 3px 7px;
+  border-radius: var(--pulsar-radius-in);
+  background-color: rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  line-height: 0;
+}
+.scene-card .studio-overlay a {
+  display: block;
+  height: auto !important;
+}
+.scene-card .studio-overlay .image-thumbnail {
+  height: 18px !important;
+  max-height: 18px !important;
   width: auto;
+  max-width: 100% !important;
+  object-fit: contain;
 }
 
-#configuration-tabs-tabpane-tasks
-  .setting-section
-  .collapsible-section
-  .setting
-  div:last-child {
-  margin-right: 95% !important;
-  margin-left: -12px;
-  margin-top: -15px;
+/* Card heart: the same size as the select checkbox, mirrored in the
+   opposite corner */
+.grid-card .favorite-button {
+  top: 10px !important;
+  right: 7px !important;
+  padding: 0 !important;
+  line-height: 1;
+}
+.grid-card .favorite-button svg {
+  width: 21px !important;
+  height: 21px !important;
+  font-size: 21px !important;
+  margin: 0 !important;
 }
 
-#configuration-tabs-tabpane-system .setting-section .sub-heading {
-  margin-bottom: 1.2rem;
+/* Home carousels: slides pulled in so the arrows sit inside the page (stock
+   pushes the next arrow off a phone screen), arrows centred on the cards
+   rather than the cards plus the dots, every card one width and a row one
+   height */
+.recommendation-row .slick-slider {
+  margin: 0 30px 30px;
+}
+.recommendation-row .slick-prev {
+  left: -28px;
+}
+.recommendation-row .slick-next {
+  right: -28px;
+}
+.recommendation-row .slick-dots {
+  position: absolute;
+  top: 100%;
+}
+.recommendation-row .slick-track {
+  display: flex !important;
+  margin-bottom: 0;
+}
+.recommendation-row .slick-arrow {
+  top: 0;
+  height: 100%;
+  transform: none;
+}
+.recommendation-row .slick-slide {
+  height: auto !important;
+}
+.recommendation-row .slick-slide > div {
+  height: 100%;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: 320px !important;
+  height: calc(100% - 10px);
+  margin: 5px 7px !important; /* the same 14px gap as the grid pages */
+  box-shadow: none; /* the carousel clips it into a hard band */
+}
+
+/* Detail pages: near-black performer hero with a full-bleed portrait */
+.detail-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--pulsar-line);
+}
+.detail-header:has(.performer-head) {
+  background-color: var(--pulsar-hero) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+}
+.detail-header:has(.performer-head) .detail-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.detail-header:has(.performer-head) .detail-header-image {
+  position: relative;
+  flex: 0 0 420px;
+  width: 420px;
+  height: 400px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.detail-header:has(.performer-head) .detail-header-image .btn-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0 !important;
+}
+.detail-header:has(.performer-head) img.performer {
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  max-height: none;
+  object-fit: cover;
+  object-position: center top;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.detail-header:has(.performer-head) .detail-header-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 55%, var(--pulsar-hero));
+}
+.detail-header:has(.performer-head) > .detail-container > .row {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 24px 36px 0;
+}
+.detail-header:has(.performer-head) .performer-head .col,
+.detail-header:has(.performer-head) .performer-head .row {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.detail-header .performer-name {
+  font-size: 40px;
+  font-weight: 700;
+}
+.detail-header .detail-item {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.detail-header .detail-group {
+  row-gap: 5px;
+}
+.detail-header .detail-item-title {
+  width: 130px;
+  color: var(--pulsar-text-3);
+}
+.details-edit {
+  gap: 8px;
+}
+.details-edit .btn {
+  margin: 0 !important;
+}
+@media (max-width: 767.98px) {
+  .detail-header:has(.performer-head) .detail-container {
+    flex-direction: column;
+  }
+  .detail-header:has(.performer-head) .detail-header-image {
+    flex-basis: auto;
+    width: 100%;
+    height: 430px;
+  }
+  .detail-header:has(.performer-head) .detail-header-image::after {
+    background: linear-gradient(180deg, transparent 55%, var(--pulsar-hero));
+  }
+  .detail-header:has(.performer-head) > .detail-container > .row {
+    padding: 14px;
+  }
+}
+
+/* Tabs: blue active tab on a dark pill with a blue underline */
+.nav-tabs {
+  border-bottom: 1px solid var(--pulsar-line);
+}
+.nav-tabs .nav-link {
+  color: var(--pulsar-text);
+  border: 0;
+  border-radius: var(--pulsar-radius-in) var(--pulsar-radius-in) 0 0;
+}
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link.active:hover {
+  color: var(--pulsar-blue-text);
+  background-color: rgba(0, 0, 0, 0.35);
+  border-bottom: 2px solid var(--pulsar-blue-text);
+}
+.nav-tabs .badge,
+.badge-pill.badge-secondary,
+.tag-item.badge-secondary {
+  color: var(--pulsar-text);
+  background-color: var(--pulsar-raised);
+}
+.tag-item.badge-secondary a {
+  color: inherit;
+}
+
+/* Scene page */
+.scene-tabs .scene-header,
+.scene-tabs .scene-header .TruncatedText {
+  font-size: 32px !important;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.scene-tabs .tab-content h6 a,
+.scene-tabs .tab-content .scene-details a {
+  color: var(--pulsar-blue-text);
+}
+.scene-tabs .tab-content p.pre {
+  color: var(--pulsar-text-2);
+}
+.scene-tabs,
+.scene-divider {
+  background-color: var(--pulsar-bar);
+}
+.scene-divider .btn {
+  color: var(--pulsar-blue-text);
+  background: none;
+  border: 0;
+}
+.video-js .vjs-play-progress,
+.video-js .vjs-volume-level {
+  background-color: var(--pulsar-blue-text);
+}
+.video-js .vjs-big-play-button {
+  width: 72px !important;
+  height: 72px !important;
+  margin-left: -36px !important;
+  margin-top: -36px !important;
+  font-size: 36px !important;
+  line-height: 72px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: rgba(16, 23, 29, 0.8) !important;
+}
+.video-js:hover .vjs-big-play-button {
+  background-color: var(--pulsar-blue) !important;
+}
+.video-js .vjs-big-play-button .vjs-icon-placeholder::before {
+  font-size: 36px !important;
+  line-height: 72px !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-indent: 3px;
+}
+.scrubber-button {
+  color: var(--pulsar-text) !important;
+  background-color: var(--pulsar-glass) !important;
+  border: 1px solid var(--pulsar-line) !important;
+}
+/* Two performers side by side in the details panel */
+.scene-performers .performer-card {
+  width: calc(50% - 10px) !important;
+  margin: 5px !important;
+}
+
+/* Settings: frosted panel, blue active item, blue toggles */
+.nav-pills .nav-link {
+  color: var(--pulsar-text);
+  border-radius: var(--pulsar-radius-in);
+}
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  color: var(--pulsar-text);
+  background-color: var(--pulsar-raised) !important;
+}
+#settings-container h1,
+#tasks-panel h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+#tasks-panel .tasks-panel-queue {
+  background-color: transparent !important;
+}
+.job-table.card {
+  background-color: var(--pulsar-glass) !important;
+}
+#settings-container .btn-primary {
+  color: #fff;
+  background-color: var(--pulsar-blue);
+  border-color: var(--pulsar-blue);
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--pulsar-blue);
+  border-color: var(--pulsar-blue);
+}
+
+/* Theme Switch menu: its sections are spaced apart, so keep the full outline
+   that Bootstrap's accordion style strips from all but the last */
+.theme-plugin-menu .accordion > .card {
+  border-bottom: 1px solid var(--pulsar-line) !important;
+  border-radius: var(--pulsar-radius) !important;
+}
+
+/* Empty lists */
+.item-list-container .sidebar-pane-content:not(:has(.grid-card, .table-list, .scene-wall, .wall, .tagger-container, .card)) > .pagination-index-container::after {
+  content: "Nothing here yet";
+  grid-column: 1 / -1;
+  margin-top: 18vh;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--pulsar-text-2);
+}
+
+/* Home carousels: whole cards only. The number of cards that fits at about
+   320px, sized to fill the row exactly, so none is cut off at the edge */
+.recommendation-row .slick-list {
+  container-type: inline-size;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: calc(100cqw / max(1, round(100cqw / 334px, 1)) - 14px) !important;
+  max-width: none !important;
+}
+
+/* Detail-page tab bars: Stash pads them below, which lifts the active
+   underline off the bar's line */
+.nav-tabs {
+  padding-bottom: 0 !important;
+}
+
+/* The pinned header on the top bar's glass, not see-through */
+.detail-header.sticky {
+  background-color: var(--pulsar-bar) !important;
+  backdrop-filter: var(--pulsar-blur);
+  border-bottom: 1px solid var(--pulsar-line);
+}
+
+/* The slim header Stash pins when a detail page scrolls slides down only as
+   the full header's bottom edge passes under the top bar, instead of
+   appearing as soon as the page moves. It follows the scroll position, so
+   scrolling back up reverses it; browsers without scroll-driven animations
+   show it as Stash does. */
+@supports (animation-timeline: view()) {
+  .main {
+    timeline-scope: --detail-header;
+  }
+  .detail-header:not(.sticky) {
+    view-timeline: --detail-header block;
+  }
+  .detail-header.sticky {
+    animation: detail-header-sticky-in linear both;
+    animation-timeline: --detail-header;
+    animation-range: exit calc(100% - 130px) exit calc(100% - 50px);
+  }
+  @keyframes detail-header-sticky-in {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* Filter sidebar on small screens. Stash slides it over the page below 768px,
+   covering the button that closes it. Phones get a full-screen sheet whose
+   "Show N results" button is the way out; small tablets get the desktop
+   layout, the content pushed aside to a single column. */
+@media (max-width: 575.98px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    z-index: 1020; /* above the performer header, which is its own layer */
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100dvh - 46px) !important; /* down to the bottom bar */
+    max-height: none !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 12px 15px 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    z-index: 1020;
+    background-color: rgba(8, 24, 40, 0.97) !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer {
+    margin-top: auto;
+    bottom: 0;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 12px 0 15px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer .btn {
+    width: 100%;
+    height: 44px;
+  }
+}
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .sidebar-pane:not(.hide-sidebar) > .sidebar-pane-content {
+    margin-left: 235px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+    left: 257px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .grid-card {
+    width: calc(100% - 30px) !important; /* one column beside the filters */
+  }
+}
+
+/* Detail fields on phones: the label above its value, so long values like a
+   Stash ID get the full width; an ID that still doesn't fit ends in an
+   ellipsis (the link opens the full ID) */
+@media (max-width: 575.98px) {
+  .detail-header .detail-item {
+    display: block !important;
+  }
+  .detail-header .detail-item-title {
+    display: block;
+    width: auto !important;
+    margin-bottom: 1px;
+  }
+  .detail-header > .detail-container > .row {
+    align-self: stretch;
+    max-width: 100%;
+  }
+  .detail-header .performer-head,
+  .detail-header .detail-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.stash-id-pill {
+  display: inline-flex !important;
+  max-width: 100%;
+  min-width: 0;
+}
+.stash-id-pill span {
+  flex: none;
+}
+.stash-id-pill a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-item-value.stash-ids,
+.detail-item-value.stash-ids ul,
+.detail-item-value.stash-ids li {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.detail-item-value.stash-ids {
+  overflow: hidden;
+}
+
+/* Phones: dialogs (Edit filter and the rest) fill the screen down to the
+   bottom bar; the body scrolls and the buttons stay at the foot */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: calc(100dvh - 46px);
+  }
+  .modal-content {
+    height: 100%;
+    border-radius: 0 !important;
+    border: 0 !important;
+    background-color: rgba(8, 24, 40, 0.97) !important;
+  }
+  .modal-body {
+    flex: 1;
+    max-height: none !important; /* Stash caps it at a fixed height */
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Phone and tablet menu (the ☰ button): an even grid of tiles, small icon
+   above its label, the current page on a soft tile, utility icons in a row
+   beneath a hairline (stock crams large icons beside the words) */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.show,
+  .navbar-collapse.collapsing {
+    background-color: rgba(8, 24, 40, 0.94) !important;
+    border-top: 1px solid var(--pulsar-line);
+    padding: 10px 24px 6px !important;
+    margin: 0 -14px; /* edge to edge across the bar's padding */
+  }
+  .navbar-collapse > .navbar-nav:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 3 across on phones */
+    gap: 6px;
+  }
+  .navbar-collapse > .navbar-nav:first-child > div {
+    max-width: none !important;
+    flex: none !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px;
+    height: 64px !important;
+    padding: 6px !important;
+    color: var(--pulsar-text) !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+    color: var(--pulsar-text-2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active {
+    color: var(--pulsar-blue-text) !important;
+    background-color: rgba(124, 196, 245, 0.14) !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--pulsar-blue-text);
+  }
+  .navbar-collapse > .navbar-nav:not(:first-child) {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--pulsar-line);
+  }
+  .navbar-collapse .nav-utility svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Phones: the list toolbar on two rows. The space for the filter button is
+   kept on the first row only (search stretches beside it, then the
+   saved-filter and filter buttons); the rest slims down to share row two. */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important; /* stock keeps 40px each side */
+    justify-content: flex-start !important;
+    gap: 8px 6px !important;
+  }
+  .filtered-list-toolbar > .search-term-input {
+    margin-left: 40px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+  .filtered-list-toolbar > .search-term-input .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .sort-by-select .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .page-size-selector,
+  .filtered-list-toolbar > .page-size-selector select {
+    width: 56px !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .btn-group:not(.pagination) .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .btn-group:last-of-type {
+    margin-left: auto; /* the view buttons close the second row on the right */
+  }
+  /* row 1: search + the filter buttons; a zero-height break; row 2: the rest */
+  .filtered-list-toolbar > * {
+    order: 3;
+  }
+  .filtered-list-toolbar > .search-term-input,
+  .filtered-list-toolbar > .search-term-input + .btn-group {
+    order: 1;
+  }
+  .filtered-list-toolbar::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
+/* The phone menu button wears the same colour as the nav icons beside it */
+.top-nav .nav-menu-toggle,
+.top-nav .nav-menu-toggle:hover,
+.top-nav .nav-menu-toggle:focus {
+  color: #fff;
+}
+
+/* Theme Switch menu: solid, on the theme's menu colours (stock leaves its
+   sections on Bootstrap's slate, and see-through over the cards) */
+.theme-plugin-menu.dropdown-menu {
+  padding: 6px !important;
+  color: var(--pulsar-text);
+  background: rgba(8, 26, 42, 0.96) !important;
+  border: 1px solid var(--pulsar-line) !important;
+  border-radius: var(--pulsar-radius-card) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.theme-plugin-menu .accordion {
+  max-width: none !important;
+}
+.theme-plugin-menu .modal-header {
+  margin: 0 0 6px;
+  padding: 6px 8px 10px !important;
+  color: var(--pulsar-text) !important;
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--pulsar-line) !important;
+  border-radius: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: none;
+}
+.theme-plugin-menu .accordion > .card {
+  margin: 0 0 4px !important;
+  color: var(--pulsar-text) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--pulsar-line) !important;
+  border-radius: var(--pulsar-radius-in) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .card-body {
+  color: var(--pulsar-text) !important;
+  background: none !important;
+  border: 0 !important;
+  text-shadow: none;
+}
+.theme-plugin-menu .card-header {
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header svg {
+  color: var(--pulsar-text-2);
+}
+.theme-plugin-menu legend {
+  color: var(--pulsar-text) !important;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  color: var(--pulsar-text-2) !important;
+  background: color-mix(in srgb, var(--pulsar-text-2) 30%, transparent) !important;
+  border-color: transparent !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  color: #fff !important;
+  background: var(--pulsar-blue) !important;
+  border-color: var(--pulsar-blue) !important;
+}
+/* A blurred bar turns everything drawn inside it see-through, the open
+   menu included: while the menu is open the bar drops its blur */
+.top-nav:has(.theme-plugin-menu.show) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.top-nav:has(.theme-plugin-menu.show) {
+  background-color: rgba(8, 26, 42, 0.96) !important;
 }
