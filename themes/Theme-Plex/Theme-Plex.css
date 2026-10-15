@@ -1,106 +1,160 @@
 /*
-Originally created by Fidelio 2020
-StashApp Plex Theme - v1.0.5
+Plex theme, originally by Fidelio 2020; refreshed for Stash v0.31.
+Classic dark media-server look: a blurred warm-grey backdrop, translucent
+black cards, flat 4px boxes and one warm gold for whatever is active.
 */
 
+:root {
+  /* Blurred-art backdrop as a gradient: slate at the top, warm brown below */
+  --plex-backdrop:
+    radial-gradient(ellipse 60% 40% at 20% 8%, rgba(82, 100, 106, 0.9), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 92%, rgba(104, 78, 56, 0.9), transparent 70%),
+    radial-gradient(ellipse 45% 30% at 65% 48%, rgba(38, 40, 42, 0.95), transparent 70%),
+    linear-gradient(180deg, #39464a 0%, #2c3234 40%, #3a332d 75%, #463b30 100%);
+  --plex-bg: #1f2427;          /* behind the backdrop */
+  --plex-bar: rgba(16, 19, 21, 0.92); /* top bar, sidebar */
+  --plex-card: rgba(0, 0, 0, 0.34);   /* cards, panels */
+  --plex-control: rgba(0, 0, 0, 0.3); /* toolbar boxes, inputs */
+  --plex-raised: rgba(255, 255, 255, 0.1); /* active item, secondary buttons */
+  --plex-solid: #161a1c;       /* menus, dialogs, phone sheets */
+  --plex-line: rgba(255, 255, 255, 0.08); /* every hairline */
+  --plex-text: #f1f1f1;
+  --plex-text-2: #bfc3c6;
+  --plex-text-3: #8e9497;
+  --plex-gold: #e0a526;        /* fills, rings, toggles */
+  --plex-gold-text: #f0bb45;   /* gold as text, AA on the dark chrome */
+  --plex-ink: #1d1500;         /* text on a gold fill */
+  --plex-danger: #d64545;
+  --plex-radius: 4px;          /* controls and buttons */
+  --plex-radius-sm: 3px;
+  --plex-radius-card: 6px;     /* cards, panels, menus, dialogs */
+}
+
 body {
-  background-image: url("https://user-images.githubusercontent.com/63812189/79506691-4af78900-7feb-11ea-883e-87b8e05ceb1c.png");
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-color: #3f4245;
-  background-attachment: fixed;
-  background-position: center;
+  color: var(--plex-text);
+  background-color: var(--plex-bg);
 }
-
-#root {
-  background: rgba(0, 0, 0, 0)
-    url("https://user-images.githubusercontent.com/63812189/79506696-4c28b600-7feb-11ea-8176-12a46454d87a.png")
-    repeat scroll 0% 0%;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-}
-
-* {
-  scrollbar-color: hsla(0, 0%, 100%, 0.2) transparent;
+/* The backdrop on its own fixed layer, so it stays put on phones too
+   (background-attachment: fixed is ignored there) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--plex-backdrop);
 }
 
 .bg-dark {
-  background-color: #1f2326 !important;
+  background-color: var(--plex-bar) !important;
 }
 
-.job-table.card,
 .card {
-  background-color: #30404d;
-  border-radius: 3px;
-  box-shadow:
-    0 0 0 1px rgba(16, 22, 26, 0.4),
-    0 0 0 rgba(16, 22, 26, 0),
-    0 0 0 rgba(16, 22, 26, 0);
-  padding: 20px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: var(--plex-card);
+  border: 1px solid var(--plex-line);
+  border-radius: var(--plex-radius-card);
+  box-shadow: none;
 }
 
 .bg-secondary {
-  background-color: #313437 !important;
+  background-color: var(--plex-control) !important;
 }
 
 .text-white {
-  color: #eee !important;
+  color: var(--plex-text) !important;
 }
 
 .border-secondary {
-  border-color: #2f3335 !important;
-}
-
-.btn-secondary.filter-item.col-1.d-none.d-sm-inline.form-control {
-  background-color: rgba(0, 0, 0, 0.15);
+  border-color: var(--plex-line) !important;
 }
 
 .btn-secondary {
-  color: #eee;
-  background-color: rgba(0, 0, 0, 0.15);
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+  border-color: var(--plex-line);
+}
+
+.btn-secondary:hover {
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+  border-color: var(--plex-line);
 }
 
 a {
-  color: hsla(0, 0%, 100%, 0.45);
+  color: var(--plex-text-2);
 }
 
 .btn.active {
-  background-color: #2f3335;
-  color: #f5f8fa;
+  background-color: var(--plex-raised);
+  color: var(--plex-gold-text);
 }
 
-minimal.w-100.active.btn.btn-primary {
-  background-color: #2f3335;
-  color: #f5f8fa;
-}
-
+/* Primary actions: gold fill with dark text; Delete filled red */
 .btn-primary {
+  color: var(--plex-ink);
+  background-color: var(--plex-gold);
+  border-color: var(--plex-gold);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  color: var(--plex-ink);
+  background-color: var(--plex-gold-text);
+  border-color: var(--plex-gold-text);
+}
+
+.btn-primary:not(:disabled):not(.disabled).active,
+.btn-primary:not(:disabled):not(.disabled):active,
+.show > .btn-primary.dropdown-toggle {
+  color: var(--plex-ink);
+  background-color: var(--plex-gold-text);
+  border-color: var(--plex-gold-text);
+}
+
+.btn-danger {
   color: #fff;
-  background-color: #1f2326;
-  border-color: #374242;
+  background-color: var(--plex-danger);
+  border-color: var(--plex-danger);
 }
 
-.nav-tabs .nav-link.active {
-  color: #eee;
-}
-
-.nav-tabs .nav-link.active:hover {
-  border-bottom-color: #eee;
-  outline: 0;
+.nav-tabs {
+  border-bottom: 1px solid var(--plex-line);
 }
 
 .nav-tabs .nav-link {
   outline: 0;
+  color: var(--plex-text-2);
+  border: 0;
+  border-radius: var(--plex-radius-sm) var(--plex-radius-sm) 0 0;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link.active:hover {
+  color: var(--plex-text);
+  background-color: var(--plex-control);
+  border-bottom: 2px solid var(--plex-gold);
+  outline: 0;
+}
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}
+
+.btn-primary.btn.help-button.minimal {
+  display: none;
+}
+
+.changelog {
+  display: none;
 }
 
 .input-control,
-.input-control:focus {
-  background-color: rgba(16, 22, 26, 0.3);
+.input-control:focus,
+.form-control,
+.form-control:focus {
+  color: var(--plex-text);
+  background-color: var(--plex-control);
+  border-color: var(--plex-line);
 }
 
 #performer-page .image-container .performer {
@@ -108,32 +162,21 @@ minimal.w-100.active.btn.btn-primary {
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
 }
 
-.btn-primary:not(:disabled):not(.disabled).active,
-.btn-primary:not(:disabled):not(.disabled):active,
-.show > .btn-primary.dropdown-toggle {
-  color: #fff;
-  border-color: #eee;
+/* Settings: the active item on a lighter box */
+.nav-pills .nav-link {
+  color: var(--plex-text-2);
+  border-radius: var(--plex-radius-sm);
 }
 
 .nav-pills .nav-link.active,
 .nav-pills .show > .nav-link {
-  background-color: #1f2326;
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
 }
 
-.btn-primary.focus,
-.btn-primary:focus,
-.btn-primary:not(:disabled):not(.disabled).active:focus,
-.btn-primary:not(:disabled):not(.disabled):active:focus,
-.show > .btn-primary.dropdown-toggle:focus {
-  box-shadow: none;
-}
-
-.btn-primary:not(:disabled):not(.disabled).active,
-.btn-primary:not(:disabled):not(.disabled):active,
-.show > .btn-primary.dropdown-toggle {
-  color: #fff;
-  background-color: #2f3335;
-  border-color: #eee;
+input[type="range"],
+input[type="checkbox"] {
+  accent-color: var(--plex-gold);
 }
 
 input[type="range"]::-moz-range-track {
@@ -141,14 +184,18 @@ input[type="range"]::-moz-range-track {
 }
 
 input[type="range"]::-moz-range-thumb {
-  background: #bcbcbc;
+  background: var(--plex-text);
 }
 
 div.react-select__control {
-  background-color: hsla(0, 0%, 39.2%, 0.4);
-  color: #182026;
-  border-color: #394b59;
+  background-color: var(--plex-control);
+  color: var(--plex-text);
+  border-color: var(--plex-line);
   cursor: pointer;
+}
+
+div.react-select__menu {
+  background-color: var(--plex-solid);
 }
 
 .scene-wall-item-text-container {
@@ -157,57 +204,1129 @@ div.react-select__control {
     rgba(50, 50, 50, 0.5) 50%,
     #323232 100%
   );
-  color: #eee;
-}
-
-.filter-container,
-.operation-container {
-  background-color: rgba(0, 0, 0, 0.15);
-  box-shadow: none;
-  margin-top: -10px;
-  padding: 10px;
-}
-
-.container-fluid,
-.container-lg,
-.container-md,
-.container-sm,
-.container-xl {
-  width: 100%;
-  margin-right: 0px;
-  margin-left: 0px;
+  color: var(--plex-text);
 }
 
 .btn-link {
   font-weight: 500;
-  color: #eee;
+  color: var(--plex-gold-text);
   text-decoration: none;
 }
 
+/* Top nav: icons beside the labels, the active page on a lighter box */
 button.minimal.brand-link.d-none.d-md-inline-block.btn.btn-primary {
-  text-transform: uppercase;
-  font-weight: bold;
+  color: var(--plex-text);
+  font-weight: 600;
+  border: 0;
+}
+
+a.minimal {
+  font-weight: 500;
+  color: var(--plex-text);
 }
 
 a:hover {
-  color: hsla(0, 0%, 100%, 0.7);
+  color: var(--plex-text);
 }
 
 option {
-  background-color: #1f2326;
-}
-.folder-list .btn-link {
-  color: #2c2e30;
+  background-color: var(--plex-solid);
 }
 
-#performer-scraper-popover {
-  z-index: 10;
+.scrubber-tags-background {
+  background-color: var(--plex-raised);
 }
 
+/* Top-right icons: neutral, not the stock blue (or the old green logout) */
+.navbar-buttons .btn.minimal,
+.btn-primary.btn.settings-button.minimal,
+.btn-primary.btn.logout-button.minimal {
+  color: var(--plex-text-2);
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.scrubber-viewport {
+  background-color: var(--plex-solid);
+}
+
+/* ---------- Stash v0.29+ refresh ---------- */
+
+.navbar {
+  border-bottom: 1px solid var(--plex-line);
+}
+.navbar-collapse > .navbar-nav > div > a {
+  display: flex !important;
+  flex-direction: row !important; /* stock stacks icon over label */
+  align-items: center;
+  height: 32px;
+  padding: 0 12px !important;
+  border-radius: var(--plex-radius);
+  font-size: 13px;
+}
+.navbar-collapse > .navbar-nav > div > a.active {
+  color: var(--plex-text) !important;
+  background-color: var(--plex-raised) !important;
+}
+@media (min-width: 1200px) {
+  .navbar-collapse > .navbar-nav > div > a {
+    gap: 7px;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    width: 12px !important;
+    height: 12px !important;
+    margin: 0 !important;
+    color: var(--plex-text-2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--plex-text);
+  }
+}
+.top-nav a[href$="/new"] .btn {
+  color: var(--plex-ink);
+  background-color: var(--plex-gold);
+  border: 1px solid var(--plex-gold);
+  font-weight: 600;
+}
+
+/* List toolbar: dark translucent 34px boxes, light glyphs, gold active view */
+.filtered-list-toolbar {
+  background-color: transparent !important;
+  gap: 8px;
+}
+.filtered-list-toolbar .btn-group,
+.filtered-list-toolbar .sort-by-select {
+  height: 34px;
+  background-color: var(--plex-control);
+  border: 1px solid var(--plex-line);
+  border-radius: var(--plex-radius);
+  padding: 2px;
+  gap: 2px;
+  align-items: center;
+}
+.filtered-list-toolbar .btn-group .btn-group {
+  border: 0;
+  padding: 0;
+  height: auto;
+  background: none;
+}
+.filtered-list-toolbar .btn-group .btn,
+.filtered-list-toolbar .sort-by-select .btn {
+  height: 28px !important; /* the saved-filter button sits one group deeper */
+  padding: 0 9px;
+  color: var(--plex-text);
+  border: 0 !important;
+  border-radius: var(--plex-radius-sm) !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+.filtered-list-toolbar .btn-group .btn:hover {
+  background-color: var(--plex-raised) !important;
+}
+.filtered-list-toolbar .btn-group .btn.active {
+  color: var(--plex-ink) !important;
+  background-color: var(--plex-gold) !important;
+}
+.filtered-list-toolbar .btn-group .btn-danger {
+  color: #fff !important;
+  background-color: var(--plex-danger) !important;
+}
+.filtered-list-toolbar .search-term-input .form-control,
+.filtered-list-toolbar .page-size-selector select {
+  height: 34px;
+  background-color: var(--plex-control) !important;
+  border: 1px solid var(--plex-line) !important;
+  border-radius: var(--plex-radius) !important;
+}
+.filtered-list-toolbar .page-size-selector select {
+  color: var(--plex-text);
+}
+.filtered-list-toolbar.has-selection .selected-items-info span {
+  color: var(--plex-gold-text);
+  font-weight: 600;
+}
+.item-list-container .filtered-list-toolbar.has-selection {
+  background-color: var(--plex-bar) !important;
+  border-bottom: 1px solid var(--plex-line);
+}
+.sidebar-toggle-button-container .sidebar-toggle-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  margin-left: 0 !important;  /* stock hangs it half off the page */
+  color: var(--plex-text);
+  background-color: var(--plex-control) !important;
+  border: 1px solid var(--plex-line) !important;
+  border-radius: var(--plex-radius) !important;
+  opacity: 1;
+}
+.sidebar-pane .sidebar,
+.sidebar .sidebar-footer,
+.sidebar-toolbar {
+  background-color: var(--plex-bar) !important;
+}
+.sidebar-pane .sidebar {
+  border-right: 1px solid var(--plex-line);
+}
+.zoom-slider {
+  accent-color: var(--plex-gold);
+}
+/* Size slider: gold track, white thumb (stock is blue) */
+input[type="range"].zoom-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--plex-gold);
+}
+input[type="range"].zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--plex-text) !important;
+}
+.zoom-slider::-moz-range-track {
+  height: 4px;
+  background: var(--plex-gold) !important;
+}
+.zoom-slider::-moz-range-thumb {
+  border: 0;
+  background: var(--plex-text);
+}
+
+/* Pagination centred, with the result count on the same row; the floating
+   bottom pagination stays */
+.pagination-index-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.pagination-index-container > .pagination {
+  grid-column: 2;
+  margin: 0 !important;
+}
+.pagination-index-container > .paginationIndex {
+  grid-column: 3;
+  justify-self: end;
+  margin: 0 !important;
+  font-size: 13px;
+  color: var(--plex-text-2);
+}
+.pagination-index-container > .paginationIndex:only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+.pagination.btn-group {
+  background-color: var(--plex-control);
+  border: 1px solid var(--plex-line);
+  border-radius: var(--plex-radius);
+  padding: 2px;
+  gap: 2px;
+}
+.pagination .btn,
+.pagination .btn:first-child,
+.pagination .btn:last-child {
+  color: var(--plex-text-2);
+  border: 0 !important;
+  border-radius: var(--plex-radius-sm) !important;
+  background: none;
+}
+.pagination .btn:hover {
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+}
+.pagination .btn.active,
+.pagination .btn:disabled {
+  color: var(--plex-text);
+}
+@media (max-width: 575.98px) {
+  .pagination-index-container {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .pagination-index-container > .pagination,
+  .pagination-index-container > .paginationIndex {
+    grid-column: 1;
+    justify-self: center;
+  }
+}
+
+/* Cards: hover lifts 2px with a gold hairline; selection is a 2px gold ring;
+   the cover fades into the card above a hairline and centred counts */
+.grid-card {
+  overflow: hidden;
+  border-color: transparent;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s, border-color 0.2s;
+}
+.grid-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(224, 165, 38, 0.7);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+.grid-card:has(.card-check:checked) {
+  border-color: var(--plex-gold);
+  box-shadow: 0 0 0 1px var(--plex-gold);
+}
+.grid-card .thumbnail-section {
+  position: relative;
+  overflow: hidden;
+  flex: none; /* never squeezed by the text below it */
+}
+.scene-card .thumbnail-section::after,
+.gallery-card .thumbnail-section::after,
+.group-card .thumbnail-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.6));
+}
+.grid-card .scene-specs-overlay,
+.grid-card .studio-overlay,
+.grid-card .favorite-button,
+.grid-card .card-check {
+  z-index: 2;
+}
+.grid-card .card-section {
+  padding: 12px 14px 12px !important; /* keeps the text off the footer band */
+}
+.grid-card .card-section-title {
+  color: var(--plex-text);
+  font-size: 16px !important;
+  font-weight: 500 !important;
+}
+.scene-card__date,
+.performer-card__age {
+  color: var(--plex-text-2) !important;
+  font-size: 13px;
+}
+.scene-card__details {
+  margin-bottom: 0 !important;
+}
+.scene-card__description,
+.TruncatedText.scene-card__description {
+  color: var(--plex-text-2);
+  font-size: 13px;
+}
+.grid-card .card-popovers {
+  margin: auto 0 0 !important;
+  padding: 10px 14px !important;
+  border-top: 1px solid var(--plex-line);
+  justify-content: center !important;
+  gap: 24px;
+}
+.grid-card hr {
+  display: none;
+}
+.grid-card .card-popovers .btn {
+  color: var(--plex-text);
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.grid-card .card-popovers .btn:hover {
+  color: var(--plex-gold-text);
+}
+.scene-card .scene-specs-overlay {
+  font-size: 12px !important;
+  font-weight: 700;
+  color: #fff;
+}
+.scene-card .scene-specs-overlay span {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.scene-card .scene-specs-overlay .overlay-resolution + .overlay-duration::before {
+  content: "\00a0";
+}
+.scene-card .extra-scene-info,
+.scene-card .overlay-filesize {
+  display: none !important;
+}
+/* Rating ribbon off the cards; the rating stays on the scene page */
+.grid-card .rating-banner {
+  display: none;
+}
+.performer-card .performer-card-image {
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  object-position: top;
+}
+.studio-card .studio-card-header,
+.tag-card .tag-card-header {
+  display: block !important;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+}
+.studio-card .studio-card-image,
+.tag-card .tag-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain;
+  padding: 10% 12%;
+}
+
+/* Studio chip top-left on the cover */
+.scene-card .studio-overlay {
+  top: 8px !important;
+  left: 8px !important;
+  right: auto !important;
+  max-width: 60%;
+  height: auto !important;
+  padding: 3px 7px;
+  border-radius: var(--plex-radius-sm);
+  background-color: rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  line-height: 0;
+}
+.scene-card .studio-overlay a {
+  display: block;
+  height: auto !important;
+}
+.scene-card .studio-overlay .image-thumbnail {
+  height: 18px !important;
+  max-height: 18px !important;
+  width: auto;
+  max-width: 100% !important;
+  object-fit: contain;
+}
+
+/* Card heart: the same size as the select checkbox, mirrored in the
+   opposite corner */
+.grid-card .favorite-button {
+  top: 10px !important;
+  right: 8px !important;
+  padding: 0 !important;
+  line-height: 1;
+}
+.grid-card .favorite-button svg {
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 17px !important;
+  margin: 0 !important;
+}
+
+/* Home carousels: slides pulled in so the arrows sit inside the page (stock
+   pushes the next arrow off a phone screen), arrows centred on the cards (not
+   the cards plus the dots below), every card in a row as tall as the tallest */
+.recommendation-row .slick-slider {
+  margin: 0 30px;
+}
+.recommendation-row .slick-prev {
+  left: -28px;
+}
+.recommendation-row .slick-next {
+  right: -28px;
+}
+.recommendation-row .slick-slider {
+  margin-bottom: 30px;
+}
+.recommendation-row .slick-dots {
+  position: absolute;  /* out of the flow, so the slider is exactly the cards' height */
+  top: 100%;
+}
+.recommendation-row .slick-track {
+  margin-bottom: 0;
+}
+.recommendation-row .slick-arrow {
+  top: 0;
+  height: 100%;
+  transform: none;
+  color: var(--plex-gold-text);
+}
+.recommendation-row .slick-track {
+  display: flex !important;
+}
+.recommendation-row .slick-slide {
+  height: auto !important;
+}
+.recommendation-row .slick-slide > div {
+  height: 100%;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: 320px !important; /* studios too, not just scenes and performers */
+  height: calc(100% - 10px);
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+/* Detail pages: white titles, grey labels */
+.detail-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--plex-line);
+}
+.detail-header.sticky {
+  background-color: var(--plex-solid) !important; /* pinned over scrolling content */
+}
+/* Performer page: full-bleed portrait fading into the header */
+.detail-header:has(.performer-head) {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+}
+.detail-header:has(.performer-head) .detail-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.detail-header:has(.performer-head) .detail-header-image {
+  position: relative;
+  flex: 0 0 420px;
+  width: 420px;
+  height: 400px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.detail-header:has(.performer-head) .detail-header-image .btn-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0 !important;
+}
+.detail-header:has(.performer-head) img.performer {
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  max-height: none;
+  object-fit: cover;
+  object-position: center top;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.detail-header:has(.performer-head) .detail-header-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 55%, transparent);
+}
+.detail-header:has(.performer-head) > .detail-container > .row {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 24px 36px 0;
+}
+.detail-header:has(.performer-head) .performer-head .col,
+.detail-header:has(.performer-head) .performer-head .row {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.detail-header .detail-item {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.detail-header .detail-group {
+  row-gap: 5px;
+}
+.detail-header .detail-item-title {
+  width: 130px;
+}
+@media (max-width: 767.98px) {
+  .detail-header:has(.performer-head) .detail-container {
+    flex-direction: column;
+  }
+  .detail-header:has(.performer-head) .detail-header-image {
+    flex-basis: auto;
+    width: 100%;
+    height: 430px;
+  }
+  .detail-header:has(.performer-head) .detail-header-image::after {
+    background: linear-gradient(180deg, transparent 55%, transparent);
+  }
+  .detail-header:has(.performer-head) > .detail-container > .row {
+    padding: 14px;
+  }
+}
+.detail-header .performer-name,
+.detail-header .studio-name,
+.detail-header h2 {
+  color: var(--plex-text);
+  font-size: 40px;
+  font-weight: 500;
+}
+.detail-header .detail-item-title {
+  color: var(--plex-text-3);
+}
+.detail-header .detail-item-value {
+  color: var(--plex-text);
+}
+.details-edit {
+  gap: 8px;
+}
+.details-edit .btn {
+  margin: 0 !important;
+}
+.details-edit .btn-secondary {
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+  border-color: var(--plex-raised);
+}
+.details-edit .btn-primary,
+.details-edit .edit {
+  color: var(--plex-ink);
+  background-color: var(--plex-gold);
+  border-color: var(--plex-gold);
+}
+
+/* Scene page */
+.scene-tabs .scene-header,
+.scene-tabs .scene-header .TruncatedText {
+  color: var(--plex-text);
+  font-size: 32px !important;
+  font-weight: 500;
+  line-height: 1.15;
+}
+/* Scene details: white labels and headings, gold links, grey paragraphs */
+.scene-tabs .tab-content h6 {
+  color: var(--plex-text);
+  font-size: 13px;
+}
+.scene-tabs .tab-content h6 a {
+  color: var(--plex-gold-text);
+}
+.scene-tabs .tab-content p.pre {
+  color: var(--plex-text-2);
+  font-size: 13px;
+}
+.tag-item.badge-secondary {
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+  border: 1px solid var(--plex-line);
+}
+.nav-tabs .badge,
+.badge-pill.badge-secondary {
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+}
+.tag-item.badge-secondary a {
+  color: inherit;
+}
+.video-js .vjs-play-progress,
+.video-js .vjs-volume-level {
+  background-color: var(--plex-gold);
+}
+.video-js .vjs-big-play-button {
+  width: 72px !important;
+  height: 72px !important;
+  margin-left: -36px !important;
+  margin-top: -36px !important;
+  font-size: 36px !important;
+  line-height: 72px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: rgba(40, 40, 40, 0.85) !important;
+}
+.video-js:hover .vjs-big-play-button {
+  color: var(--plex-ink) !important;
+  background-color: var(--plex-gold) !important;
+}
+.video-js .vjs-big-play-button .vjs-icon-placeholder::before {
+  font-size: 36px !important;
+  line-height: 72px !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-indent: 3px;
+}
+.scrubber-button {
+  color: var(--plex-gold-text) !important;
+  background-color: var(--plex-control) !important;
+  border: 1px solid var(--plex-line) !important;
+}
+/* Two performers side by side in the details panel */
+.scene-performers .performer-card {
+  width: calc(50% - 10px) !important;
+  margin: 5px !important;
+}
+
+/* Settings: white headings, gold toggles */
+#settings-container h1,
+#tasks-panel h1,
+.setting-section h1 {
+  color: var(--plex-text);
+  font-size: 28px;
+  font-weight: 500;
+}
+.setting-section .setting h3,
+.setting-section > h2 {
+  color: var(--plex-text);
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--plex-gold);
+  border-color: var(--plex-gold);
+}
+
+/* Dialogs and menus on the card tone */
+.modal-content,
+.dropdown-menu {
+  background-color: var(--plex-solid);
+  border: 1px solid var(--plex-line);
+  border-radius: var(--plex-radius-card);
+}
+.dropdown-menu {
+  padding: 6px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.dropdown-item {
+  border-radius: var(--plex-radius);
+}
+.modal-header {
+  border-bottom: 1px solid var(--plex-line);
+  color: var(--plex-text);
+}
+.modal-footer {
+  border-top: 1px solid var(--plex-line);
+}
+.modal-footer .btn-primary {
+  color: var(--plex-ink);
+  background-color: var(--plex-gold);
+  border-color: var(--plex-gold);
+}
+.dropdown-item {
+  color: var(--plex-text);
+}
+.dropdown-item:hover,
+.dropdown-item.active {
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+}
+
+/* Theme Switch menu: its sections are spaced apart, so keep the full outline
+   that Bootstrap's accordion style strips from all but the last */
+.theme-plugin-menu .accordion > .card {
+  border-bottom: 1px solid var(--plex-line) !important;
+  border-radius: var(--plex-radius) !important;
+}
+
+/* Empty lists */
+.item-list-container .sidebar-pane-content:not(:has(.grid-card, .table-list, .scene-wall, .wall, .tagger-container, .card)) > .pagination-index-container::after {
+  content: "Nothing here yet";
+  grid-column: 1 / -1;
+  margin-top: 18vh;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--plex-text-2);
+}
+
+/* Task queue and job cards: off the stock blue-grey */
 #tasks-panel .tasks-panel-queue {
-  background: rgba(0, 0, 0, 0);
+  background-color: transparent !important;
+}
+.job-table.card {
+  background-color: var(--plex-card) !important;
+  border: 1px solid var(--plex-line);
+}
+/* Settings buttons are secondary; the scene-page panel toggle keeps the theme */
+#settings-container .btn-primary {
+  color: var(--plex-text);
+  background-color: var(--plex-raised);
+  border-color: var(--plex-raised);
+}
+.scene-divider .btn {
+  color: var(--plex-text-2);
+  background: none;
+  border: 0;
 }
 
-div.react-select__menu-portal {
-  z-index: 1050;
+/* Home carousels: whole cards only. The number of cards that fits at about
+   320px, sized to fill the row exactly, so none is cut off at the edge */
+.recommendation-row .slick-list {
+  container-type: inline-size;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: calc(100cqw / max(1, round(100cqw / 330px, 1)) - 10px) !important;
+  max-width: none !important;
+}
+
+/* Detail-page tab bars: Stash pads them below, which lifts the active
+   underline off the bar's line */
+.nav-tabs {
+  padding-bottom: 0 !important;
+}
+
+/* The slim header Stash pins when a detail page scrolls slides down only as
+   the full header's bottom edge passes under the top bar, instead of
+   appearing as soon as the page moves. It follows the scroll position, so
+   scrolling back up reverses it; browsers without scroll-driven animations
+   show it as Stash does. */
+@supports (animation-timeline: view()) {
+  .main {
+    timeline-scope: --detail-header;
+  }
+  .detail-header:not(.sticky) {
+    view-timeline: --detail-header block;
+  }
+  .detail-header.sticky {
+    animation: detail-header-sticky-in linear both;
+    animation-timeline: --detail-header;
+    animation-range: exit calc(100% - 130px) exit calc(100% - 50px);
+  }
+  @keyframes detail-header-sticky-in {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* Filter sidebar on small screens. Stash slides it over the page below 768px,
+   covering the button that closes it. Phones get a full-screen sheet whose
+   "Show N results" button is the way out; small tablets get the desktop
+   layout, the content pushed aside to a single column. */
+@media (max-width: 575.98px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    z-index: 1020; /* above the performer header, which is its own layer */
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100dvh - 46px) !important; /* down to the bottom bar */
+    max-height: none !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 12px 15px 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    z-index: 1020;
+    background-color: var(--plex-solid) !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer {
+    margin-top: auto;
+    bottom: 0;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 12px 0 15px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer .btn {
+    width: 100%;
+    height: 44px;
+  }
+}
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .sidebar-pane:not(.hide-sidebar) > .sidebar-pane-content {
+    margin-left: 235px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+    left: 257px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .grid-card {
+    width: calc(100% - 30px) !important; /* one column beside the filters */
+  }
+}
+
+/* Detail fields on phones: the label above its value, so long values like a
+   Stash ID get the full width; an ID that still doesn't fit ends in an
+   ellipsis (the link opens the full ID) */
+@media (max-width: 575.98px) {
+  .detail-header .detail-item {
+    display: block !important;
+  }
+  .detail-header .detail-item-title {
+    display: block;
+    width: auto !important;
+    margin-bottom: 1px;
+  }
+  .detail-header > .detail-container > .row {
+    align-self: stretch;
+    max-width: 100%;
+  }
+  .detail-header .performer-head,
+  .detail-header .detail-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.stash-id-pill {
+  display: inline-flex !important;
+  max-width: 100%;
+  min-width: 0;
+}
+.stash-id-pill span {
+  flex: none;
+}
+.stash-id-pill a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-item-value.stash-ids,
+.detail-item-value.stash-ids ul,
+.detail-item-value.stash-ids li {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.detail-item-value.stash-ids {
+  overflow: hidden;
+}
+
+/* Dialog panels on the dialog's own colour, not Stash's slate */
+.modal-content {
+  background-color: var(--plex-solid) !important;
+}
+.modal-header,
+.modal-body,
+.modal-footer {
+  background: transparent !important;
+}
+
+/* Phones: dialogs (Edit filter and the rest) fill the screen down to the
+   bottom bar; the body scrolls and the buttons stay at the foot */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: calc(100dvh - 46px);
+  }
+  .modal-content {
+    height: 100%;
+    border-radius: 0 !important;
+    border: 0 !important;
+    background-color: var(--plex-solid) !important;
+  }
+  .modal-body {
+    flex: 1;
+    max-height: none !important; /* Stash caps it at a fixed height */
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Phone and tablet menu (the ☰ button): an even grid of tiles, small icon
+   above its label, the current page on a soft tile, utility icons in a row
+   beneath a hairline (stock crams large icons beside the words) */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.show,
+  .navbar-collapse.collapsing {
+    background-color: var(--plex-solid) !important;
+    border-top: 1px solid var(--plex-line);
+    padding: 10px 24px 6px !important;
+    margin: 0 -14px; /* edge to edge across the bar's padding */
+  }
+  .navbar-collapse > .navbar-nav:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 3 across on phones */
+    gap: 6px;
+  }
+  .navbar-collapse > .navbar-nav:first-child > div {
+    max-width: none !important;
+    flex: none !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px;
+    height: 64px !important;
+    padding: 6px !important;
+    color: var(--plex-text) !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+    color: var(--plex-text-2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active {
+    color: var(--plex-gold-text) !important;
+    background-color: var(--plex-raised) !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--plex-gold-text);
+  }
+  .navbar-collapse > .navbar-nav:not(:first-child) {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--plex-line);
+  }
+  .navbar-collapse .nav-utility svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Phones: the list toolbar on two rows. The space for the filter button is
+   kept on the first row only (search stretches beside it, then the
+   saved-filter and filter buttons); the rest slims down to share row two. */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important; /* stock keeps 40px each side */
+    justify-content: flex-start !important;
+    gap: 8px 6px !important;
+  }
+  .filtered-list-toolbar > .search-term-input {
+    margin-left: 40px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+  .filtered-list-toolbar > .search-term-input .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .sort-by-select .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .page-size-selector,
+  .filtered-list-toolbar > .page-size-selector select {
+    width: 56px !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .btn-group:not(.pagination) .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .btn-group:last-of-type {
+    margin-left: auto; /* the view buttons close the second row on the right */
+  }
+  /* row 1: search + the filter buttons; a zero-height break; row 2: the rest */
+  .filtered-list-toolbar > * {
+    order: 3;
+  }
+  .filtered-list-toolbar > .search-term-input,
+  .filtered-list-toolbar > .search-term-input + .btn-group {
+    order: 1;
+  }
+  .filtered-list-toolbar::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
+/* The phone menu button wears the same colour as the nav icons beside it */
+.top-nav .nav-menu-toggle,
+.top-nav .nav-menu-toggle:hover,
+.top-nav .nav-menu-toggle:focus {
+  color: var(--plex-text-2);
+}
+
+/* Theme Switch menu: solid, on the theme's menu colours (stock leaves its
+   sections on Bootstrap's slate, and see-through over the cards) */
+.theme-plugin-menu.dropdown-menu {
+  padding: 6px !important;
+  color: var(--plex-text);
+  background: var(--plex-solid) !important;
+  border: 1px solid var(--plex-line) !important;
+  border-radius: var(--plex-radius-card) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.theme-plugin-menu .accordion {
+  max-width: none !important;
+}
+.theme-plugin-menu .modal-header {
+  margin: 0 0 6px;
+  padding: 6px 8px 10px !important;
+  color: var(--plex-text) !important;
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--plex-line) !important;
+  border-radius: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: none;
+}
+.theme-plugin-menu .accordion > .card {
+  margin: 0 0 4px !important;
+  color: var(--plex-text) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--plex-line) !important;
+  border-radius: var(--plex-radius) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .card-body {
+  color: var(--plex-text) !important;
+  background: none !important;
+  border: 0 !important;
+  text-shadow: none;
+}
+.theme-plugin-menu .card-header {
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header svg {
+  color: var(--plex-text-2);
+}
+.theme-plugin-menu legend {
+  color: var(--plex-text) !important;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  color: var(--plex-text-2) !important;
+  background: color-mix(in srgb, var(--plex-text-2) 30%, transparent) !important;
+  border-color: transparent !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  color: #fff !important;
+  background: var(--plex-gold) !important;
+  border-color: var(--plex-gold) !important;
+}
+/* A blurred bar turns everything drawn inside it see-through, the open
+   menu included: while the menu is open the bar drops its blur */
+.top-nav:has(.theme-plugin-menu.show) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Ratings in gold */
+.rating-stars .filled,
+.rating-stars .star-fill-full,
+.rating-number .text-input {
+  color: var(--plex-gold) !important;
 }
