@@ -75,3 +75,13 @@
     border-bottom: 0 !important;
   }
 }
+
+/* section titles at page size; settings stay card-less */
+#settings-container h1,
+#settings-container .setting-section > h1,
+#tasks-panel h1 {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+  margin: 24px 0 14px;
+}

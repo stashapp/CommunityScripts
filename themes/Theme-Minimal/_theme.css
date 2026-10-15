@@ -74,8 +74,8 @@
   --primary-6: #3c393f;
   --primary-7: #49474e;
   --primary-8: #625f69;
-  --primary-9: #6f6d78;
-  --primary-10: #7c7a85;
+  --primary-9: #78767f; /* lifted from #6f6d78 */
+  --primary-10: #8a8892; /* lifted from #7c7a85: meta text passes AA on --primary-1 */
   --primary-11: #b5b2bc;
   --primary-12: #eeeef0;
   --primary-a1: #00000000;

@@ -38,6 +38,27 @@
 
   .navbar-brand {
     font-size: inherit;
+    .brand-link {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--primary-12);
+    }
+  }
+
+  /* desktop menu: words only, the active page lit */
+  @media (min-width: 1200px) {
+    .navbar-nav .nav-link > a.btn {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px !important;
+      border-radius: 10px;
+      .nav-menu-icon {
+        display: none !important; /* stock uses d-xl-inline, which is !important */
+      }
+      &.active {
+        background-color: var(--primary-3) !important;
+      }
+    }
   }
 
   .navbar-collapse {
@@ -61,5 +82,204 @@
   padding: 0;
   svg {
     color: var(--primary-11);
+  }
+}
+
+/* Phone and tablet menu (the ☰ button): an even grid of tiles, small icon
+   above its label, the current page on a soft tile, utility icons in a row
+   beneath a hairline (stock crams large icons beside the words) */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.show,
+  .navbar-collapse.collapsing {
+    background-color: var(--primary-2) !important;
+    border-top: 1px solid var(--white-a2);
+    padding: 10px 24px 6px !important;
+    margin: 0 -14px; /* edge to edge across the bar's padding */
+  }
+  .navbar-collapse > .navbar-nav:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 3 across on phones */
+    gap: 6px;
+  }
+  .navbar-collapse > .navbar-nav:first-child > div {
+    max-width: none !important;
+    flex: none !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px;
+    height: 64px !important;
+    padding: 6px !important;
+    color: var(--primary-12) !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+    color: var(--primary-11);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active {
+    color: var(--primary-12) !important;
+    background-color: var(--primary-4) !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--primary-12);
+  }
+  .navbar-collapse > .navbar-nav:not(:first-child) {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--white-a2);
+  }
+  .navbar-collapse .nav-utility svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Phones: the list toolbar on two rows. The space for the filter button is
+   kept on the first row only (search stretches beside it, then the
+   saved-filter and filter buttons); the rest slims down to share row two. */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important; /* stock keeps 40px each side */
+    justify-content: flex-start !important;
+    gap: 8px 6px !important;
+  }
+  .filtered-list-toolbar > .search-term-input {
+    margin-left: 40px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+  .filtered-list-toolbar > .search-term-input .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .sort-by-select .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .page-size-selector,
+  .filtered-list-toolbar > .page-size-selector select {
+    width: 56px !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .btn-group:not(.pagination) .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .btn-group:last-of-type {
+    margin-left: auto; /* the view buttons close the second row on the right */
+  }
+  /* row 1: search + the filter buttons; a zero-height break; row 2: the rest */
+  .filtered-list-toolbar > * {
+    order: 3;
+  }
+  .filtered-list-toolbar > .search-term-input,
+  .filtered-list-toolbar > .search-term-input + .btn-group {
+    order: 1;
+  }
+  .filtered-list-toolbar::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
+/* The phone menu button wears the same colour as the nav icons beside it */
+.top-nav .nav-menu-toggle,
+.top-nav .nav-menu-toggle:hover,
+.top-nav .nav-menu-toggle:focus {
+  color: rgb(120, 118, 127);
+}
+
+/* Theme Switch menu: solid, on the theme's menu colours (stock leaves its
+   sections on Bootstrap's slate, and see-through over the cards) */
+.theme-plugin-menu.dropdown-menu {
+  padding: 6px !important;
+  color: var(--primary-12);
+  background: var(--primary-2) !important;
+  border: 1px solid var(--primary-6) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.theme-plugin-menu .accordion {
+  max-width: none !important;
+}
+.theme-plugin-menu .modal-header {
+  margin: 0 0 6px;
+  padding: 6px 8px 10px !important;
+  color: var(--primary-12) !important;
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--primary-6) !important;
+  border-radius: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: none;
+}
+.theme-plugin-menu .accordion > .card {
+  margin: 0 0 4px !important;
+  color: var(--primary-12) !important;
+  background: var(--primary-3) !important;
+  border: 1px solid var(--primary-6) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .card-body {
+  color: var(--primary-12) !important;
+  background: none !important;
+  border: 0 !important;
+  text-shadow: none;
+}
+.theme-plugin-menu .card-header {
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header svg {
+  color: var(--primary-11);
+}
+.theme-plugin-menu legend {
+  color: var(--primary-12) !important;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  color: var(--primary-11) !important;
+  background: color-mix(in srgb, var(--primary-11) 30%, transparent) !important;
+  border-color: transparent !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  color: #fff !important;
+  background: var(--primary-11) !important;
+  border-color: var(--primary-11) !important;
+}
+/* A blurred bar turns everything drawn inside it see-through, the open
+   menu included: while the menu is open the bar drops its blur */
+.top-nav:has(.theme-plugin-menu.show) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Phones: the bar sits at the top, so the performer header no longer tucks
+   up under it */
+@media (max-width: 575.98px) {
+  .detail-header.full-width {
+    margin-top: 0 !important;
   }
 }

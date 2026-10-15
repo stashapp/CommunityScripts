@@ -3,7 +3,7 @@
 }
 
 .detail-header {
-  --performer-image-size: 15rem;
+  --performer-image-size: 18rem;
 
   overflow: unset;
   .background-image-container {
@@ -29,6 +29,7 @@
       align-items: flex-start;
       img {
         max-width: var(--performer-image-size);
+        border-radius: 12px;
       }
     }
     .row {
@@ -43,7 +44,7 @@
         .detail-group {
           display: flex;
           column-gap: 0rem;
-          row-gap: 1.5rem;
+          row-gap: 6px;
           .detail-item {
             .detail-item-title {
               font-size: var(--text-xs);
@@ -59,7 +60,24 @@
         }
 
         .performer-name {
-          font-size: var(--text-xl);
+          font-size: 40px;
+          font-weight: 500;
+          line-height: 1;
+        }
+
+        /* one light primary (Edit); the other actions are quiet grey pills */
+        .details-edit {
+          gap: 8px;
+          .btn {
+            margin: 0;
+          }
+          .btn-secondary {
+            background-color: var(--primary-3);
+            border-radius: 10px;
+            &:hover {
+              background-color: var(--primary-4);
+            }
+          }
         }
       }
     }
@@ -140,5 +158,172 @@
         }
       }
     }
+  }
+}
+
+/* Performer header: the portrait fills the left edge and fades into the page */
+.detail-header:has(.performer-head) {
+  padding: 0 !important;
+  margin: -15px -15px 0 !important; /* flush with the window edge, under the nav */
+  width: auto !important;
+  max-width: none !important;
+  .detail-container {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: flex-start;
+  }
+  .detail-header-image {
+    position: relative;
+    flex: 0 0 420px;
+    width: 420px;
+    height: 400px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+
+    .btn-link {
+      display: block;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+    }
+    img.performer {
+      width: 100%;
+      height: 100%;
+      max-width: none !important;
+      max-height: none;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 0 !important;
+      box-shadow: none;
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent 55%, var(--primary-1));
+    }
+  }
+  .row {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 24px 36px 0;
+  }
+  /* fields as a tight two-column list, as in the mockup */
+  .detail-group {
+    row-gap: 5px !important;
+    margin-top: 4px;
+    .detail-item {
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 0 !important;
+      padding: 0 !important;
+      .detail-item-title {
+        width: 130px;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: var(--primary-10) !important;
+      }
+      .detail-item-value {
+        font-size: 13px !important;
+      }
+    }
+  }
+  .details-edit {
+    margin: 10px 0 0 !important;
+    padding: 0 !important;
+  }
+  /* stock nests the actions in a padded .col/.row; line them up with the fields */
+  .performer-head .col,
+  .performer-head .row {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .rating-stars {
+    margin: 6px 0 !important;
+  }
+}
+@media (max-width: 767.98px) {
+  .detail-header:has(.performer-head) {
+    .detail-container {
+      flex-direction: column;
+    }
+    .detail-header-image {
+      flex-basis: auto;
+      width: 100%;
+      height: 430px;
+      &::after {
+        background: linear-gradient(180deg, transparent 55%, var(--primary-1));
+      }
+    }
+    .row {
+      padding: 14px;
+    }
+  }
+}
+
+/* Detail fields on phones: the label above its value, so long values like a
+   Stash ID get the full width; an ID that still doesn't fit ends in an
+   ellipsis (the link opens the full ID) */
+@media (max-width: 575.98px) {
+  .detail-header .detail-item {
+    display: block !important;
+  }
+  .detail-header .detail-item-title {
+    display: block;
+    width: auto !important;
+    margin-bottom: 1px;
+  }
+  .detail-header > .detail-container > .row {
+    align-self: stretch;
+    max-width: 100%;
+  }
+  .detail-header .performer-head,
+  .detail-header .detail-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.stash-id-pill {
+  display: inline-flex !important;
+  max-width: 100%;
+  min-width: 0;
+}
+.stash-id-pill span {
+  flex: none;
+}
+.stash-id-pill a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-item-value.stash-ids,
+.detail-item-value.stash-ids ul,
+.detail-item-value.stash-ids li {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.detail-item-value.stash-ids {
+  overflow: hidden;
+}
+
+/* Phones: the full-bleed performer header is exactly the screen's width, not
+   its widest content's */
+@media (max-width: 767.98px) {
+  .detail-header:has(.performer-head) {
+    flex: none !important;
+    width: calc(100% + 30px) !important;
+    min-width: 0;
+  }
+  .detail-header:has(.performer-head) .detail-container {
+    max-width: 100%;
+    min-width: 0;
   }
 }
