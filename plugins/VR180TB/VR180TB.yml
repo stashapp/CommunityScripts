@@ -1,0 +1,7 @@
+name: VR 180 TB
+description: Adds 180-degree top/bottom stereoscopic playback to Stash's VR projection selector.
+version: 1.0.0
+
+ui:
+  javascript:
+    - VR180TB.js
