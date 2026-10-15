@@ -1,19 +1,233 @@
-/* Black Hole Theme by BViking78 v2.0 */
+/* Black Hole Theme by BViking78 v2.0, refreshed for Stash v0.31 (v3.0) */
+/* True black, steel-blue hairlines, covers that fade into the card, one blue.
+   One border colour and one 6px radius everywhere. Pure CSS; system fonts. */
+
 /* STASH GENERAL */
+:root {
+  --bh-black: #000;
+  --bh-raised: #0f1215;       /* inputs, toolbar segments, menus */
+  --bh-steel: #1b2834;        /* active nav, secondary buttons */
+  --bh-line: #2a3744;         /* every border */
+  --bh-line-hover: #4da3ff;
+  --bh-text: #f2f4f6;
+  --bh-text-2: #aeb7c0;
+  --bh-text-3: #7a8591;
+  --bh-blue: #1e6fd0;         /* fills behind white text (passes AA) */
+  --bh-blue-text: #4da3ff;    /* links, active labels, icons on black */
+  --bh-danger: #e5484d;
+  --bh-radius: 6px;
+  --bh-radius-in: 4px;
+  --bh-ctl-h: 34px;
+  --bh-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --bh-glow: 0 0 0 1px var(--bh-line-hover), 0 8px 24px rgba(77, 163, 255, 0.18);
+}
+
 /* Set Background to Black & Optional Custom Image */
 body {
   background: black url("") no-repeat fixed center;
   background-size: contain;
+  color: var(--bh-text);
+  font-family: var(--bh-font);
+}
+a {
+  color: var(--bh-blue-text);
+}
+h1, h2, h3, h4, h5 {
+  font-weight: 500;
+}
+.text-muted {
+  color: var(--bh-text-3) !important;
 }
 
 /* Change Top Nav Bar Colors */
 .bg-dark {
   background-color: #000000 !important;
 }
+.top-nav {
+  border-bottom: 1px solid var(--bh-line);
+}
+.top-nav .navbar-brand .brand-link {
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--bh-text) !important;
+}
+.top-nav .navbar-nav .nav-link > a.btn {
+  border-radius: var(--bh-radius) !important;
+  color: var(--bh-text-2) !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+.top-nav .navbar-nav .nav-link > a.btn.active,
+.top-nav .navbar-nav .nav-link > a.btn:hover {
+  background-color: var(--bh-steel) !important;
+  color: var(--bh-text) !important;
+}
 
-/* Set Red Border on Button on Hover */
-.btn-primary.btn:hover {
-  border: 1px solid red;
+/* Buttons: blue fill for primary actions, steel for the rest,
+   outlined red for destructive ones. (Was: red border on hover.) */
+.btn {
+  border-radius: var(--bh-radius);
+  font-size: 13px;
+  font-weight: 500;
+}
+.btn-primary:not(.minimal),
+.btn-success {
+  background-color: var(--bh-blue) !important;
+  border-color: var(--bh-blue) !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+.btn-primary:not(.minimal):hover,
+.btn-success:hover {
+  background-color: #2a7fe2 !important;
+  border-color: #2a7fe2 !important;
+}
+.btn-secondary {
+  background-color: var(--bh-steel) !important;
+  border-color: transparent !important;
+  color: var(--bh-text) !important;
+}
+.btn-secondary:hover {
+  background-color: #243545 !important;
+}
+.btn-danger {
+  background-color: transparent !important;
+  border: 1px solid var(--bh-danger) !important;
+  color: var(--bh-danger) !important;
+}
+.btn-danger:hover {
+  background-color: var(--bh-danger) !important;
+  color: #fff !important;
+}
+.btn.minimal {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: var(--bh-text-2) !important;
+}
+.btn.minimal:hover {
+  color: var(--bh-text) !important;
+}
+.btn:focus,
+.btn.focus {
+  box-shadow: none !important;
+}
+.btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--bh-blue-text) !important;
+}
+
+/* Inputs: raised black with a steel hairline */
+.form-control,
+.custom-select,
+.input-control,
+.text-input,
+div.react-select__control {
+  background-color: var(--bh-raised) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius) !important;
+  color: var(--bh-text) !important;
+  box-shadow: none !important;
+}
+.form-control:focus,
+div.react-select__control--is-focused {
+  border-color: var(--bh-blue-text) !important;
+}
+.form-control::placeholder {
+  color: var(--bh-text-3) !important;
+}
+.react-select__menu,
+.dropdown-menu,
+.popover {
+  background-color: var(--bh-raised) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55) !important;
+}
+.dropdown-item,
+.dropdown-menu .bg-secondary.dropdown-item {
+  background-color: transparent !important;
+  color: var(--bh-text-2) !important;
+  border-radius: var(--bh-radius-in);
+  font-size: 13px;
+}
+.dropdown-item:hover,
+.dropdown-item.active,
+.dropdown-menu .bg-secondary.dropdown-item:hover {
+  background-color: var(--bh-steel) !important;
+  color: var(--bh-text) !important;
+}
+.react-select__option--is-focused {
+  background-color: var(--bh-steel) !important;
+}
+.react-select__single-value,
+.react-select__multi-value__label,
+.react-select__input-container {
+  color: var(--bh-text) !important;
+}
+.react-select__multi-value,
+.tag-item,
+.badge-secondary {
+  background-color: var(--bh-steel) !important;
+  color: var(--bh-text) !important;
+  border-radius: var(--bh-radius) !important;
+}
+.bg-secondary {
+  background-color: var(--bh-raised) !important;
+}
+
+/* Toggles and range sliders in blue */
+.custom-switch .custom-control-label::before {
+  background-color: var(--bh-steel) !important;
+  border-color: var(--bh-steel) !important;
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--bh-blue) !important;
+  border-color: var(--bh-blue) !important;
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+  background-color: #fff !important;
+}
+input[type="range"],
+input[type="checkbox"] {
+  accent-color: var(--bh-blue);
+}
+
+/* Tabs: blue underline, blue active label */
+.nav-tabs {
+  border-bottom: 1px solid var(--bh-line) !important;
+}
+.nav-tabs .nav-link {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  color: var(--bh-text-2) !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+.nav-tabs .nav-link.active {
+  border-bottom-color: var(--bh-blue) !important;
+  color: var(--bh-blue-text) !important;
+}
+.nav-tabs .nav-link .left-spacing,
+.nav-tabs .badge {
+  background-color: var(--bh-steel) !important;
+  color: var(--bh-text) !important;
+  border-radius: var(--bh-radius) !important;
+}
+
+/* Modals share the card border and radius */
+.modal-content {
+  background-color: var(--bh-black) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+.modal-header,
+.modal-footer {
+  border-color: var(--bh-line) !important;
+}
+.modal-backdrop.show {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Set Background to Transparent for Tags/Performers Popups*/
@@ -34,39 +248,397 @@ body {
   opacity: 100%;
 }
 
-/* Making Checkbox Slightly Bigger */
-.grid-card .card-check {
-  top: 0.9rem;
-  width: 1.75rem;
+/* LIST PAGES */
+/* Toolbar: every control 34px, raised black with a hairline, one row */
+.filtered-list-toolbar {
+  background-color: transparent !important;
+  padding-top: 12px !important;
+  gap: 8px !important;
+}
+.filtered-list-toolbar > * {
+  margin: 0 !important;
+}
+.filtered-list-toolbar .btn-group,
+.filtered-list-toolbar .sort-by-select {
+  height: var(--bh-ctl-h);
+  background-color: var(--bh-raised);
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius);
+  padding: 2px;
+  gap: 2px;
+  align-items: center;
+}
+.filtered-list-toolbar .btn-group .btn-group {
+  border: 0 !important;
+  padding: 0;
+  height: auto;
+}
+.filtered-list-toolbar .btn-group .btn,
+.filtered-list-toolbar .sort-by-select .btn {
+  height: 28px;
+  min-width: 30px;
+  padding: 0 9px;
+  margin: 0 !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: var(--bh-radius-in) !important;
+  color: var(--bh-text-2) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.filtered-list-toolbar .btn-group .btn:hover,
+.filtered-list-toolbar .sort-by-select .btn:hover {
+  background-color: var(--bh-steel) !important;
+  color: var(--bh-text) !important;
+}
+.filtered-list-toolbar .btn-group .btn.active {
+  background-color: var(--bh-steel) !important;
+  color: var(--bh-blue-text) !important;
+}
+.filtered-list-toolbar .sort-by-select .input-group-prepend {
+  margin: 0;
+  border-right: 1px solid var(--bh-line);
+}
+.filtered-list-toolbar .sort-by-select .input-group-prepend .btn {
+  color: var(--bh-text) !important;
+  padding: 0 12px;
+}
+.filtered-list-toolbar .sort-by-select .dropdown-toggle::after {
+  display: none;
+}
+.filtered-list-toolbar .search-term-input .form-control,
+.filtered-list-toolbar .page-size-selector select {
+  height: var(--bh-ctl-h);
+}
+.filtered-list-toolbar .search-term-input .form-control {
+  width: 220px;
+}
+.filtered-list-toolbar .btn-danger,
+.filtered-list-toolbar .btn-group > .btn.btn-danger {
+  background-color: var(--bh-danger) !important;
+  color: #fff !important;
+}
+input[type="range"].zoom-slider {
+  width: 70px;
+}
+.sidebar-toggle-button-container .sidebar-toggle-button {
+  width: var(--bh-ctl-h);
+  height: var(--bh-ctl-h);
+  padding: 0 !important;
+  background-color: var(--bh-raised) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius) !important;
+  color: var(--bh-text-2) !important;
+  opacity: 1 !important;
+  margin-left: 0 !important;
+  top: calc(48.75px + 12px) !important;
 }
 
-/* Center Titles on Cards */
-.grid-card a .card-section-title {
-  text-align: center;
+/* Selection toolbar is sticky over the grid: give it a solid black backing */
+.item-list-container .filtered-list-toolbar.has-selection {
+  background-color: var(--bh-black) !important;
+  border: 1px solid var(--bh-line);
+  border-radius: var(--bh-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  padding: 6px 8px !important;
+}
+.filtered-list-toolbar.has-selection .selected-items-info span {
+  color: var(--bh-blue-text) !important;
+  font-weight: 600;
 }
 
-/* Setting Background on Cards to Black and Borders to "Stash Grey" */
+/* Pagination centred, the result count on the same row at the right */
+.pagination-index-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 0 16px;
+}
+.pagination-index-container > .pagination {
+  grid-column: 2;
+  margin: 0 !important;
+}
+.pagination-index-container > .paginationIndex {
+  grid-column: 3;
+  justify-self: end;
+  margin: 0 !important;
+  font-size: 13px;
+  color: var(--bh-text-2) !important;
+}
+.pagination-index-container > .paginationIndex:only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+.pagination.btn-group {
+  height: 32px;
+  background-color: var(--bh-raised);
+  border: 1px solid var(--bh-line);
+  border-radius: var(--bh-radius);
+  padding: 2px;
+  gap: 2px;
+}
+.pagination .btn {
+  height: 26px;
+  min-width: 28px;
+  padding: 0 8px !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: var(--bh-radius-in) !important;
+  color: var(--bh-text) !important;
+  font-size: 12px;
+}
+.pagination .btn:hover:not(:disabled) {
+  background-color: var(--bh-steel) !important;
+}
+.pagination .btn:disabled {
+  color: var(--bh-text-3) !important;
+  opacity: 1;
+}
+/* The floating copy at the bottom of the page stays, on the black ground */
+.pagination-footer-container .pagination.btn-group {
+  background-color: var(--bh-black);
+}
+
+/* Filter sidebar */
+.sidebar-pane .sidebar,
+.sidebar .sidebar-footer,
+.sidebar-toolbar,
+.table-list table thead {
+  background-color: var(--bh-black) !important;
+}
+.sidebar-pane .sidebar,
+.sidebar .sidebar-footer {
+  background-color: var(--bh-raised) !important; /* the drawer stands off the page */
+}
+.sidebar-pane .sidebar {
+  border-right: 1px solid var(--bh-line);
+}
+
+/* CARDS */
+/* Setting Background on Cards to Black and Borders to the steel hairline */
 .card {
   background-color: black;
-  border: 1px solid #30404d;
+  border: 1px solid var(--bh-line);
+  border-radius: var(--bh-radius);
+  box-shadow: none;       /* stock adds a faint 1px ring outside the border */
+}
+.grid-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s, border-color 0.2s;
+}
+.grid-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--bh-line-hover);
+  box-shadow: var(--bh-glow);
+}
+.grid-card hr {
+  display: none;
+}
+
+/* Covers fade into the card */
+.grid-card .thumbnail-section {
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;       /* keep blurred or zoomed covers inside, under the fade */
+}
+/* Flag, favourite and studio logo sit above the fade */
+.grid-card .thumbnail-section .performer-card__country-flag,
+.grid-card .thumbnail-section .favorite-button,
+.grid-card .thumbnail-section .studio-overlay,
+.grid-card .thumbnail-section .rating-banner {
+  z-index: 2;
+}
+.scene-card .thumbnail-section::after,
+.performer-card .thumbnail-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 45%, #000 100%);
+}
+.performer-card .thumbnail-section::after {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, #000 100%);
+}
+.scene-card .scene-card-preview,
+.scene-card .scene-card-preview-image,
+.scene-card .scene-card-preview-video {
+  border-radius: 0 !important;
+}
+.performer-card .performer-card-image {
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* Resolution and duration, bottom right, over the fade */
+.scene-card .scene-specs-overlay {
+  z-index: 2;
+  font-size: 12px !important;
+  color: var(--bh-text) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+.scene-card .scene-specs-overlay span {
+  font-weight: 600 !important;
+}
+.scene-card .extra-scene-info {
+  display: none !important;
+}
+
+/* Making Checkbox Slightly Bigger (20px, matched by the heart); a 2px blue
+   ring marks a selected card */
+.grid-card .card-check {
+  top: 0.9rem;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--bh-blue);
+}
+.grid-card:has(.card-check:checked) {
+  box-shadow: 0 0 0 2px var(--bh-blue-text) !important;
+  border-color: var(--bh-blue-text);
+}
+
+/* Card text: title 16/500, date and description stepped down
+   (was: centred titles, everything white) */
+.grid-card .card-section {
+  padding: 12px 14px 4px !important;
+  /* Opaque and above the cover, so a blurred cover (Theme Switch's NSFW blur,
+     browser extensions) can't bleed into the text below it. */
+  position: relative;
+  z-index: 1;
+  background: #000 !important;
+}
+.grid-card .card-popovers {
+  position: relative;
+  z-index: 1;
+  background: #000;
+}
+.grid-card a .card-section-title {
+  text-align: left;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.25;
+  color: var(--bh-text) !important;
+}
+.card-section-title span,
+.card-section-title .gender-icon {
+  font-size: inherit !important;
+}
+.grid-card .scene-card__date,
+.grid-card .performer-card__age,
+.grid-card .studio-card__details,
+.grid-card .studio-card__details a {
+  font-size: 12px !important;
+  color: var(--bh-text-2) !important;
+}
+.grid-card .scene-card__description {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  color: var(--bh-text-2) !important;
+}
+
+/* Centred icon counts in the card footer */
+.grid-card .card-popovers {
+  justify-content: center !important;
+  gap: 24px;
+  margin: auto 0 0 !important;  /* footer pinned to the bottom, so counts line up across a row */
+  padding: 12px 14px 14px !important;
+}
+.grid-card .card-popovers .btn {
+  padding: 0 !important;
+  font-size: 13px !important;
+  color: var(--bh-text) !important;
+  background: transparent !important;
+}
+
+/* Studio and tag logos sit on black, the same 16:9 box for every card */
+.studio-card .studio-card-header,
+.tag-card .tag-card-header {
+  display: block !important;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+}
+.studio-card .studio-card-image,
+.tag-card .tag-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain;
+  padding: 10% 12%;
 }
 
 /* STASH MAIN PAGE*/
 /* Change Card Header Color */
 .card-header {
   background: black;
-  border: 1px solid white;
+  border-bottom: 1px solid var(--bh-line);
 }
 /* Change Markdown Color */
 .card-body {
   background: black;
-  border: 1px solid white;
+}
+/* Home page carousels: fixed card width, as in stock */
+.recommendation-row .grid-card {
+  width: 320px !important;
 }
 
 /* SCENE PAGE */
-/* Hide the scene scrubber */
-.scrubber-wrapper {
-  display: none;
+.scene-tabs {
+  border-right: 1px solid var(--bh-line);
+}
+/* The collapse handle between the details and the player: a quiet strip, not a blue bar */
+.scene-divider .btn {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: var(--bh-text-3) !important;
+}
+.scene-divider .btn:hover {
+  background-color: var(--bh-raised) !important;
+  color: var(--bh-blue-text) !important;
+}
+.scene-tabs .scene-header {
+  font-size: 32px !important;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.scene-subheader {
+  color: var(--bh-text-2);
+  font-size: 13px;
+}
+.scene-details a,
+.scene-file-info a {
+  color: var(--bh-blue-text) !important;
+}
+
+/* Scrubber kept (v2 hid it), styled to match */
+.scrubber-wrapper .scrubber-button {
+  background-color: var(--bh-raised) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius-in) !important;
+  color: var(--bh-blue-text) !important;
+}
+.scrubber-content {
+  border-radius: var(--bh-radius-in);
+}
+
+/* Player accents */
+.video-js .vjs-play-progress,
+.video-js .vjs-volume-level {
+  background-color: var(--bh-blue) !important;
 }
 
 /* Setting Row "Scrape With" Background to Black */
@@ -79,14 +651,722 @@ div.react-select__control {
   background-color: black;
 }
 
+/* DETAIL PAGES (performer, studio, tag) */
+.detail-header {
+  background-color: var(--bh-black) !important;
+  border-bottom: 1px solid var(--bh-line);
+}
+.detail-header h2 {
+  font-weight: 500;
+}
+.detail-header .detail-item-title {
+  color: var(--bh-text-3);
+}
+
+/* EMPTY LISTS */
+.item-list-container .sidebar-pane-content:not(:has(.grid-card, .table-list, .scene-wall, .wall, .tagger-container, .card)) > .pagination-index-container::after {
+  content: "Nothing here yet";
+  grid-column: 1 / -1;
+  margin-top: 18vh;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--bh-text-2);
+}
+
+/* STATS */
+#stats-page .stats-element .title,
+.stats .title {
+  font-size: 52px !important;
+  font-weight: 500 !important;
+}
+#stats-page .stats-element .heading,
+.stats .heading {
+  font-size: 11px !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bh-text-3) !important;
+}
+
 /* SETTING */
-/* Setting Text Input Border to White */
+/* Settings menu: blue-filled active item, as before */
+.nav-pills .nav-link {
+  border-radius: var(--bh-radius) !important;
+  color: var(--bh-text-2) !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+.nav-pills .nav-link.active {
+  background-color: var(--bh-blue) !important;
+  color: #fff !important;
+}
+/* Settings cards and dialogs share the card border and radius */
+.setting-section .card,
+#settings-container .card,
+.job-table.card {
+  background-color: var(--bh-black) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius) !important;
+}
+.setting-section .setting {
+  border-color: var(--bh-line) !important;
+}
+
+/* Setting Text Input Border (was white; now the steel hairline) */
 .input-control,
 .text-input {
-  border: 1px solid white;
+  border: 1px solid var(--bh-line);
 }
 
 /* Setting Background on Task Queue to Black */
 #tasks-panel .tasks-panel-queue {
   background-color: black;
+}
+
+/* PHONE */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar .search-term-input .form-control {
+    width: 100%;
+  }
+  .pagination-index-container {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .pagination-index-container > .pagination,
+  .pagination-index-container > .paginationIndex {
+    grid-column: 1;
+    justify-self: center;
+  }
+}
+
+/* DETAIL PAGE ACTIONS */
+/* Even 8px gaps (stock spacing collapses between some buttons), and only
+   Edit gets the blue fill; the other actions are secondary. */
+.details-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.details-edit .btn,
+.details-edit > div {
+  margin: 0 !important;
+}
+.details-edit > div:empty {
+  display: none;
+}
+.details-edit .btn-primary:not(.edit):not(.save):not(.minimal) {
+  background-color: var(--bh-steel) !important;
+  border-color: transparent !important;
+  color: var(--bh-text) !important;
+  font-weight: 500;
+}
+
+/* THEME SWITCH PLUGIN MENU */
+/* Flat list with hairline dividers, like the filter sidebar; labels on the
+   left, blue toggles on the right. */
+.theme-plugin-menu.dropdown-menu {
+  background-color: var(--bh-black) !important;
+  padding: 6px 10px 10px !important;
+}
+.theme-plugin-menu .modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--bh-line) !important;
+  padding: 8px 2px 12px !important;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bh-text);
+}
+.theme-plugin-menu .card {
+  box-shadow: none !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--bh-line) !important;
+  border-radius: 0 !important;
+}
+.theme-plugin-menu .card-header {
+  background: transparent !important;
+  border: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bh-text-2);
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header:hover {
+  color: var(--bh-text);
+}
+.theme-plugin-menu .collapse-icon {
+  color: var(--bh-text-3);
+  margin-right: 6px;
+}
+.theme-plugin-menu .card-body {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 4px 0 6px 18px !important;   /* rows line up with the section chevrons */
+}
+.theme-plugin-menu .checkbox-switch fieldset {
+  padding: 0 !important;
+  display: block;
+}
+.theme-plugin-menu .checkbox-switch-form-row {
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  margin: 0 !important;
+}
+.theme-plugin-menu .legend-right {
+  display: block;
+  flex: 1;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--bh-text);
+}
+.theme-plugin-menu .checkbox-right {
+  transform: none !important;
+  margin: 0 !important;
+  flex: none;
+  cursor: pointer;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  float: none !important;
+  transform: none !important;
+  display: block;
+  width: 34px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  font-size: 0 !important;
+  content: "" !important;
+  background: radial-gradient(circle at 10px 50%, #fff 0 7px, transparent 7.5px), var(--bh-steel) !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  background: radial-gradient(circle at 24px 50%, #fff 0 7px, transparent 7.5px), var(--bh-blue) !important;
+}
+
+/* Favourite heart: the checkbox's size (18px) in the mirrored corner,
+   with a soft shadow instead of stock's hard black glow */
+.grid-card button.btn.favorite-button {
+  top: 10px !important;   /* + the 1px card border = 11px, level with the checkbox */
+  right: 7px !important;
+  left: auto !important;
+  width: 18px;
+  height: 18px;
+  padding: 0 !important;
+  display: grid;
+  place-items: center;
+  background: none !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)) !important;
+}
+.grid-card button.btn.favorite-button svg {
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 18px !important;
+  margin: 0 !important;
+}
+.grid-card button.btn.favorite-button.favorite {
+  color: var(--bh-danger) !important;
+}
+
+/* Big play button: a soft translucent circle with the icon optically centred */
+.video-js .vjs-big-play-button {
+  width: 72px !important;
+  height: 72px !important;
+  margin-left: -36px !important;
+  margin-top: -36px !important;
+  font-size: 36px !important;
+  line-height: 72px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(6px);
+}
+.video-js:hover .vjs-big-play-button,
+.video-js .vjs-big-play-button:focus {
+  background-color: rgba(77, 163, 255, 0.35) !important;
+}
+.video-js .vjs-big-play-button .vjs-icon-placeholder::before {
+  font-size: 36px !important;
+  line-height: 72px !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-indent: 3px;
+}
+
+/* Rating: a small chip at the bottom left of the cover, opposite resolution
+   and duration, instead of stock's diagonal ribbon across the corner */
+.grid-card .rating-banner {
+  transform: none !important;
+  top: auto !important;
+  right: auto !important;
+  left: 8px !important;
+  bottom: 8px !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 2px 7px !important;
+  line-height: 1.4 !important;
+  border-radius: var(--bh-radius-in) !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid var(--bh-line);
+  color: var(--bh-text) !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: none !important;
+  z-index: 2;
+}
+/* Stars in the text colour rather than stock yellow */
+.rating-stars .star-fill-100 .filled-star,
+.rating-stars .filled-star svg,
+.rating-stars button.star-fill-100 svg {
+  color: var(--bh-text) !important;
+}
+
+/* ---------- Review fixes ---------- */
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}
+
+/* Card heart: the same size as the select checkbox, mirrored in the
+   opposite corner */
+.grid-card .favorite-button {
+  top: 0.9rem !important;
+  right: 8px !important;
+  padding: 0 !important;
+  line-height: 1;
+}
+.grid-card .favorite-button svg {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 20px !important;
+  margin: 0 !important;
+}
+
+/* Card text sits close to the counts (stock leaves 14px under the details) */
+.scene-card__details {
+  margin-bottom: 0 !important;
+}
+
+/* Home carousels: slides pulled in so the arrows sit inside the page (stock
+   pushes the next arrow off a phone screen), arrows centred on the cards
+   rather than the cards plus the dots, every card in a row one height */
+.recommendation-row .slick-slider {
+  margin: 0 30px 30px;
+}
+.recommendation-row .slick-prev {
+  left: -28px;
+}
+.recommendation-row .slick-next {
+  right: -28px;
+}
+.recommendation-row .slick-dots {
+  position: absolute;
+  top: 100%;
+}
+.recommendation-row .slick-track {
+  display: flex !important;
+  margin-bottom: 0;
+}
+.recommendation-row .slick-arrow {
+  top: 0;
+  height: 100%;
+  transform: none;
+}
+.recommendation-row .slick-slide {
+  height: auto !important;
+}
+.recommendation-row .slick-slide > div {
+  height: 100%;
+}
+.recommendation-row .slick-slide .grid-card {
+  height: calc(100% - 10px);
+}
+
+/* Scene page: two performers side by side in the details panel */
+.scene-performers .performer-card {
+  width: calc(50% - 10px) !important;
+  margin: 5px !important;
+}
+
+/* Home carousels: whole cards only. The number of cards that fits at about
+   320px, sized to fill the row exactly, so none is cut off at the edge */
+.recommendation-row .slick-list {
+  container-type: inline-size;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: calc(100cqw / max(1, round(100cqw / 330px, 1)) - 10px) !important;
+  max-width: none !important;
+}
+
+/* Detail-page tab bars: Stash pads them below, which lifts the active
+   underline off the bar's line */
+.nav-tabs {
+  padding-bottom: 0 !important;
+}
+
+/* The slim header Stash pins when a detail page scrolls slides down only as
+   the full header's bottom edge passes under the top bar, instead of
+   appearing as soon as the page moves. It follows the scroll position, so
+   scrolling back up reverses it; browsers without scroll-driven animations
+   show it as Stash does. */
+@supports (animation-timeline: view()) {
+  .main {
+    timeline-scope: --detail-header;
+  }
+  .detail-header:not(.sticky) {
+    view-timeline: --detail-header block;
+  }
+  .detail-header.sticky {
+    animation: detail-header-sticky-in linear both;
+    animation-timeline: --detail-header;
+    animation-range: exit calc(100% - 130px) exit calc(100% - 50px);
+  }
+  @keyframes detail-header-sticky-in {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* Filter sidebar on small screens. Stash slides it over the page below 768px,
+   covering the button that closes it. Phones get a full-screen sheet whose
+   "Show N results" button is the way out; small tablets get the desktop
+   layout, the content pushed aside to a single column. */
+@media (max-width: 575.98px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    z-index: 1020; /* above the performer header, which is its own layer */
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100dvh - 46px) !important; /* down to the bottom bar */
+    max-height: none !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 12px 15px 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    z-index: 1020;
+    background-color: var(--bh-raised) !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer {
+    margin-top: auto;
+    bottom: 0;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 12px 0 15px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer .btn {
+    width: 100%;
+    height: 44px;
+  }
+}
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .sidebar-pane:not(.hide-sidebar) > .sidebar-pane-content {
+    margin-left: 235px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+    left: 257px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .grid-card {
+    width: calc(100% - 30px) !important; /* one column beside the filters */
+  }
+}
+
+/* Detail fields on phones: the label above its value, so long values like a
+   Stash ID get the full width; an ID that still doesn't fit ends in an
+   ellipsis (the link opens the full ID) */
+@media (max-width: 575.98px) {
+  .detail-header .detail-item {
+    display: block !important;
+  }
+  .detail-header .detail-item-title {
+    display: block;
+    width: auto !important;
+    margin-bottom: 1px;
+  }
+  .detail-header > .detail-container > .row {
+    align-self: stretch;
+    max-width: 100%;
+  }
+  .detail-header .performer-head,
+  .detail-header .detail-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.stash-id-pill {
+  display: inline-flex !important;
+  max-width: 100%;
+  min-width: 0;
+}
+.stash-id-pill span {
+  flex: none;
+}
+.stash-id-pill a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-item-value.stash-ids,
+.detail-item-value.stash-ids ul,
+.detail-item-value.stash-ids li {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.detail-item-value.stash-ids {
+  overflow: hidden;
+}
+
+/* Dialog panels on the dialog's own colour, not Stash's slate */
+.modal-content {
+  background-color: var(--bh-raised) !important;
+}
+.modal-header,
+.modal-body,
+.modal-footer {
+  background: transparent !important;
+}
+
+/* Phones: dialogs (Edit filter and the rest) fill the screen down to the
+   bottom bar; the body scrolls and the buttons stay at the foot */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: calc(100dvh - 46px);
+  }
+  .modal-content {
+    height: 100%;
+    border-radius: 0 !important;
+    border: 0 !important;
+    background-color: var(--bh-raised) !important;
+  }
+  .modal-body {
+    flex: 1;
+    max-height: none !important; /* Stash caps it at a fixed height */
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Phone and tablet menu (the ☰ button): an even grid of tiles, small icon
+   above its label, the current page on a soft tile, utility icons in a row
+   beneath a hairline (stock crams large icons beside the words) */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.show,
+  .navbar-collapse.collapsing {
+    background-color: var(--bh-black) !important;
+    border-top: 1px solid var(--bh-line);
+    padding: 10px 24px 6px !important;
+    margin: 0 -14px; /* edge to edge across the bar's padding */
+  }
+  .navbar-collapse > .navbar-nav:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 3 across on phones */
+    gap: 6px;
+  }
+  .navbar-collapse > .navbar-nav:first-child > div {
+    max-width: none !important;
+    flex: none !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px;
+    height: 64px !important;
+    padding: 6px !important;
+    color: var(--bh-text) !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+    color: var(--bh-text-2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active {
+    color: var(--bh-blue-text) !important;
+    background-color: var(--bh-steel) !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--bh-blue-text);
+  }
+  .navbar-collapse > .navbar-nav:not(:first-child) {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--bh-line);
+  }
+  .navbar-collapse .nav-utility svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Phones: the list toolbar on two rows. The space for the filter button is
+   kept on the first row only (search stretches beside it, then the
+   saved-filter and filter buttons); the rest slims down to share row two. */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important; /* stock keeps 40px each side */
+    justify-content: flex-start !important;
+    gap: 8px 6px !important;
+  }
+  .filtered-list-toolbar > .search-term-input {
+    margin-left: 40px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+  .filtered-list-toolbar > .search-term-input .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .sort-by-select .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .page-size-selector,
+  .filtered-list-toolbar > .page-size-selector select {
+    width: 56px !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .btn-group:not(.pagination) .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .btn-group:last-of-type {
+    margin-left: auto; /* the view buttons close the second row on the right */
+  }
+  /* row 1: search + the filter buttons; a zero-height break; row 2: the rest */
+  .filtered-list-toolbar > * {
+    order: 3;
+  }
+  .filtered-list-toolbar > .search-term-input,
+  .filtered-list-toolbar > .search-term-input + .btn-group {
+    order: 1;
+  }
+  .filtered-list-toolbar::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+@media (max-width: 575.98px) {
+  /* the toolbar's first row starts 12px down; on phones the top bar is at the
+     foot of the screen, so the desktop sticky offset would drop the filter
+     button onto the second row */
+  .sidebar-toggle-button-container .sidebar-toggle-button {
+    top: 12px !important;
+  }
+}
+
+/* The phone menu button wears the same colour as the nav icons beside it */
+.top-nav .nav-menu-toggle,
+.top-nav .nav-menu-toggle:hover,
+.top-nav .nav-menu-toggle:focus {
+  color: rgb(174, 183, 192);
+}
+
+/* Theme Switch menu: solid, on the theme's menu colours (stock leaves its
+   sections on Bootstrap's slate, and see-through over the cards) */
+.theme-plugin-menu.dropdown-menu {
+  padding: 6px !important;
+  color: var(--bh-text);
+  background: var(--bh-raised) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.theme-plugin-menu .accordion {
+  max-width: none !important;
+}
+.theme-plugin-menu .modal-header {
+  margin: 0 0 6px;
+  padding: 6px 8px 10px !important;
+  color: var(--bh-text) !important;
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--bh-line) !important;
+  border-radius: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: none;
+}
+.theme-plugin-menu .accordion > .card {
+  margin: 0 0 4px !important;
+  color: var(--bh-text) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid var(--bh-line) !important;
+  border-radius: var(--bh-radius-in) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .card-body {
+  color: var(--bh-text) !important;
+  background: none !important;
+  border: 0 !important;
+  text-shadow: none;
+}
+.theme-plugin-menu .card-header {
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header svg {
+  color: var(--bh-text-2);
+}
+.theme-plugin-menu legend {
+  color: var(--bh-text) !important;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  color: var(--bh-text-2) !important;
+  background: color-mix(in srgb, var(--bh-text-2) 30%, transparent) !important;
+  border-color: transparent !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  color: #fff !important;
+  background: var(--bh-blue) !important;
+  border-color: var(--bh-blue) !important;
+}
+/* A blurred bar turns everything drawn inside it see-through, the open
+   menu included: while the menu is open the bar drops its blur */
+.top-nav:has(.theme-plugin-menu.show) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
