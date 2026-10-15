@@ -1,0 +1,69 @@
+name: Stash RAG
+description: Chat with your library in plain language, get recommendations, and try to fetch content you're looking for - all from a tab inside Stash. Bring your own LLM (local or cloud).
+version: 1.0.0
+url: https://github.com/spesometro2026/stash-rag-plugin
+exec:
+  - python
+  - "{pluginDir}/stashRag.py"
+interface: raw
+ui:
+  javascript:
+    - stashRag.js
+  css:
+    - stashRag.css
+  assets:
+    /: .
+
+settings:
+  llmProvider:
+    displayName: Chat LLM provider
+    description: "ollama | unsloth | openai | anthropic | moonshot | custom (any OpenAI-compatible endpoint). Default: ollama"
+    type: STRING
+  llmBaseUrl:
+    displayName: Chat LLM base URL
+    description: "For ollama/unsloth/moonshot/custom: the OpenAI-compatible base URL, e.g. http://127.0.0.1:11434/v1. Not needed for openai/anthropic (their default endpoint is used)."
+    type: STRING
+  llmApiKey:
+    displayName: Chat LLM API key
+    description: Leave empty for a local server that doesn't require one (e.g. plain Ollama).
+    type: STRING
+  llmModel:
+    displayName: Chat LLM model name
+    description: "e.g. qwen3:14b, gpt-4o-mini, claude-sonnet-5, moonshot-v1-8k"
+    type: STRING
+  embedProvider:
+    displayName: Embedding provider
+    description: "ollama | unsloth | openai | custom. Default: same as llmProvider if left empty."
+    type: STRING
+  embedBaseUrl:
+    displayName: Embedding base URL
+    type: STRING
+  embedApiKey:
+    displayName: Embedding API key
+    type: STRING
+  embedModel:
+    displayName: Embedding model name
+    description: "e.g. nomic-embed-text, text-embedding-3-small"
+    type: STRING
+  downloadPath:
+    displayName: Download folder
+    description: Absolute path where fetched content is saved. Leave empty to disable downloading.
+    type: STRING
+  siteFeeds:
+    displayName: Site feeds (RSS)
+    description: One RSS feed URL per line, for sites you like. Used by the "Sites" tab - generic, no per-site scraping code. Leave empty to disable.
+    type: STRING
+
+tasks:
+  - name: Rebuild index
+    description: Re-embed your whole library from scratch (run once after install, or after big library changes).
+    defaultArgs:
+      mode: reindex
+  - name: Update index
+    description: Embed only scenes added or changed since the last index run.
+    defaultArgs:
+      mode: index
+  - name: Install / update yt-dlp
+    description: Explicit, one-time opt-in that turns on the Download tab and the Sites download buttons. The plugin never installs yt-dlp on its own - run this yourself when you want that feature.
+    defaultArgs:
+      mode: install_ytdlp
