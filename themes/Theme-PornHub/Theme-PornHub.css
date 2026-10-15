@@ -1,969 +1,1339 @@
-/* NEEDS PLEX THEME TO BE INSTALLED AND ENABLED */
-/* Stashub: A pornhub inspired stash theme by neurokinin */
-/* Variables */
+/*
+Stashub, a tube-site inspired theme by neurokinin; refreshed for Stash v0.31.
+True black, charcoal boxes, one hot orange and bold white type.
+*/
+
 :root {
-  --color-black: #000;
-  --color-text: #c6c6c6;
-  --color-text-dim: #969696;
-  --color-border: var(--color-black);
-  --color-hubs: #f90;
-  --color-cod-gray: #151515;
-  --color-silver: #cacaca;
-  --color-dark: #1b1b1b;
-  --color-dim: #2f2f2f;
-  --color-icon-toggled: #5faa01;
-  --color-star: #f5c518;
-  --color-white: #fff;
-  --color-favorite: #c71d1d;
+  --hub-bg: #000;              /* page */
+  --hub-bar: #161616;          /* top bar */
+  --hub-card: #0f0f0f;         /* cards, panels, sidebar */
+  --hub-control: #1b1b1b;      /* toolbar boxes, inputs */
+  --hub-raised: #2a2a2a;       /* active item, secondary buttons */
+  --hub-solid: #1b1b1b;        /* menus, dialogs, phone sheets */
+  --hub-line: rgba(255, 255, 255, 0.08); /* every hairline */
+  --hub-text: #fff;
+  --hub-text-2: #c7c7c7;
+  --hub-text-3: #8f8f8f;
+  --hub-orange: #f7941d;       /* fills, rings, toggles */
+  --hub-orange-text: #f7a533;  /* orange as text, AA on black */
+  --hub-ink: #000;             /* text on an orange fill */
+  --hub-danger: #d9363e;
+  --hub-radius: 4px;           /* controls, buttons, cards */
+  --hub-radius-sm: 3px;
+  --hub-radius-card: 4px;
 }
 
 body {
-  background-attachment: fixed;
-  background-color: var(--color-black);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  color: var(--color-text);
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Oxygen-Sans,
-    Ubuntu,
-    Cantarell,
-    Helvetica Neue,
-    sans-serif;
-  height: 100%;
-  padding: 6rem 0 0;
-  /* background-image: url("https://user-images.githubusercontent.com/63812189/79506691-4af78900-7feb-11ea-883e-87b8e05ceb1c.png"); */
-  width: 100%;
+  color: var(--hub-text);
+  background-color: var(--hub-bg);
 }
-
-body.login {
-  padding-top: 0 !important;
-}
-
-@media (max-width: 1200px) {
-  body {
-    padding-top: 0 !important;
-  }
-
-  .main.container-fluid {
-    padding-top: 2.2rem !important;
-  }
-}
-
-.top-nav .navbar-toggler {
-  width: auto !important;
-}
-
-.top-nav a[href="/scenes/new"] button.btn {
-  color: var(--color-hubs);
-  font-size: 14px !important;
-}
-
-body .badge,
-body a,
-body .tag-item {
-  transition: all 100ms;
-}
-
-body div,
-body p,
-body a {
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Oxygen-Sans,
-    Ubuntu,
-    Cantarell,
-    Helvetica Neue,
-    sans-serif;
-}
-
-.show-carat.dropdown .btn,
-.fa-icon,
-.btn.minimal {
-  color: var(--color-silver) !important;
-}
-
-.rating-stars .set {
-  color: var(--color-star) !important;
-}
-
-.organized-button.organized svg {
-  color: var(--color-icon-toggled) !important;
-}
-
-.favorite svg,
-.favorite {
-  color: var(--color-favorite) !important;
-  filter: none !important;
-}
-
-.thumbnail-section .favorite svg {
-  height: 20px;
-  width: 20px;
-}
-
-.show-carat.dropdown .btn,
-.btn.minimal {
-  background-color: transparent !important;
-  border: 0 !important;
-}
-
-#root {
-  height: 100%;
-  /* background: rgba(0, 0, 0, 0) url("https://user-images.githubusercontent.com/63812189/79506696-4c28b600-7feb-11ea-8176-12a46454d87a.png") repeat scroll 0% 0%; */
-  position: absolute;
-  width: 100%;
-  z-index: 2;
-}
-
-* {
-  scrollbar-color: hsl(0deg 0% 100% / 0.2) transparent;
-}
-
 .bg-dark {
-  background-color: var(--color-black) !important;
+  background-color: var(--hub-bar) !important;
 }
 
 .card {
-  background-color: var(--color-black);
-  background-color: rgb(0 0 0 / 0.3);
-  border-radius: 3px;
-  box-shadow:
-    0 0 0 1px rgb(16 22 26 / 0.4),
-    0 0 0 rgb(16 22 26 / 0),
-    0 0 0 rgb(16 22 26 / 0);
-  padding: 20px;
+  background-color: var(--hub-card);
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-radius-card);
+  box-shadow: none;
 }
 
 .bg-secondary {
-  background-color: var(--color-black) !important;
+  background-color: var(--hub-control) !important;
 }
 
-.pagination .btn {
-  align-items: center;
-  appearance: none;
-  background-color: var(--color-cod-gray) !important;
-  border: none;
-  border-radius: 4px;
-  color: var(--color-text) !important;
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 20px !important;
-  font-weight: 700;
-  height: 60px !important;
-  justify-content: center;
-  margin: 0 4px !important;
-  min-width: 60px !important;
-  outline: 0 none;
-  padding: 0 20px;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-  vertical-align: top;
-}
-
-.pagination .btn:hover,
-.pagination .btn:focus {
-  background-color: var(--color-dim) !important;
-}
-
-.pagination .btn:first-of-type,
-.pagination .btn:last-of-type {
-  background: var(--color-black) !important;
-}
-
-.pagination .btn.active {
-  background: var(--color-hubs) !important;
-}
-
-.text-white,
-body p {
-  color: var(--color-text) !important;
+.text-white {
+  color: var(--hub-text) !important;
 }
 
 .border-secondary {
-  border-color: var(--color-border) !important;
+  border-color: var(--hub-line) !important;
 }
 
-.btn-secondary.filter-item.col-1.d-none.d-sm-inline.form-control {
-  background-color: rgb(0 0 0 / 0.15);
-}
-
-.btn.active,
 .btn-secondary {
-  color: var(--color-black) !important;
-  font-weight: 700;
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+  border-color: var(--hub-line);
 }
 
-.btn-primary.disabled,
-.btn-primary:disabled,
-.btn-primary:hover,
-.btn-primary:focus,
-.btn-primary.focus,
-minimal.w-100.active.btn.btn-primary,
+.btn-secondary:hover {
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+  border-color: var(--hub-line);
+}
+
+a {
+  color: var(--hub-text-2);
+}
+
+.btn.active {
+  background-color: var(--hub-raised);
+  color: var(--hub-orange-text);
+}
+
+/* Primary actions: orange fill with black text; Delete filled red */
 .btn-primary {
-  background-color: var(--color-hubs);
-  border-color: var(--color-hubs);
-  box-shadow: none !important;
-  color: var(--color-black);
-  font-weight: 700;
-  outline: 0 !important;
+  color: var(--hub-ink);
+  background-color: var(--hub-orange);
+  border-color: var(--hub-orange);
 }
 
-.nav-tabs .nav-link.active:hover,
-.nav-tabs .nav-link.active:focus {
-  border-bottom-color: var(--color-text);
-  outline: 0;
-}
-
-.nav-tabs .nav-link {
-  outline: 0;
+.btn-primary:hover,
+.btn-primary:focus {
+  color: var(--hub-ink);
+  background-color: var(--hub-orange-text);
+  border-color: var(--hub-orange-text);
 }
 
 .btn-primary:not(:disabled):not(.disabled).active,
 .btn-primary:not(:disabled):not(.disabled):active,
 .show > .btn-primary.dropdown-toggle {
-  border-color: var(--color-text);
-  color: var(--color-text);
+  color: var(--hub-ink);
+  background-color: var(--hub-orange-text);
+  border-color: var(--hub-orange-text);
+}
+
+.btn-danger {
+  color: #fff;
+  background-color: var(--hub-danger);
+  border-color: var(--hub-danger);
+}
+
+.nav-tabs {
+  border-bottom: 1px solid var(--hub-line);
+}
+
+.nav-tabs .nav-link {
+  outline: 0;
+  font-weight: 600;
+  color: var(--hub-text-2);
+  border: 0;
+  border-radius: var(--hub-radius-sm) var(--hub-radius-sm) 0 0;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link.active:hover {
+  color: var(--hub-orange-text);
+  background-color: transparent;
+  border-bottom: 2px solid var(--hub-orange);
+  outline: 0;
+}
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}
+
+.btn-primary.btn.help-button.minimal {
+  display: none;
+}
+
+.changelog {
+  display: none;
+}
+
+.input-control,
+.input-control:focus,
+.form-control,
+.form-control:focus {
+  color: var(--hub-text);
+  background-color: var(--hub-control);
+  border-color: var(--hub-line);
+}
+
+#performer-page .image-container .performer {
+  background-color: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Settings: the active item on a lighter box */
+.nav-pills .nav-link {
+  color: var(--hub-text-2);
+  border-radius: var(--hub-radius-sm);
 }
 
 .nav-pills .nav-link.active,
 .nav-pills .show > .nav-link {
-  background-color: var(--color-black);
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+}
+
+input[type="range"],
+input[type="checkbox"] {
+  accent-color: var(--hub-orange);
 }
 
 input[type="range"]::-moz-range-track {
-  background: hsl(0deg 0% 100% / 0.25);
+  background: hsla(0, 0%, 100%, 0.25);
 }
 
 input[type="range"]::-moz-range-thumb {
-  background: #bcbcbc;
+  background: var(--hub-text);
 }
 
 div.react-select__control {
-  background-color: hsl(0deg 0% 39.2% / 0.4);
-  border-color: #394b59;
-  color: #182026;
+  background-color: var(--hub-control);
+  color: var(--hub-text);
+  border-color: var(--hub-line);
   cursor: pointer;
 }
 
-.navbar-nav a,
-.navbar-nav button {
-  background: none !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-
-.TruncatedText {
-  line-height: 1.3;
-}
-
-.navbar-nav {
-  gap: 1rem;
+div.react-select__menu {
+  background-color: var(--hub-solid);
 }
 
 .scene-wall-item-text-container {
   background: radial-gradient(
     farthest-corner at 50% 50%,
-    rgb(50 50 50 / 0.5) 50%,
+    rgba(50, 50, 50, 0.5) 50%,
     #323232 100%
   );
-  color: #eee;
-}
-
-body .scene-header {
-  color: var(--color-white);
-  font-size: 17px;
-  font-weight: 700;
-  word-break: break-word;
-  word-wrap: break-word;
-}
-
-.filter-container,
-.operation-container {
-  box-shadow: none;
-  color: var(--color-text-dim) !important;
-  margin-top: -10px;
-  padding: 10px;
-}
-
-.container-fluid,
-.container-lg,
-.container-md,
-.container-sm,
-.container-xl {
-  margin-left: 0;
-  margin-right: 0;
-  width: 100%;
+  color: var(--hub-text);
 }
 
 .btn-link {
-  color: #eee;
   font-weight: 500;
+  color: var(--hub-orange-text);
   text-decoration: none;
 }
 
+/* Top nav: bold labels with icons beside them, the active page in orange */
 button.minimal.brand-link.d-none.d-md-inline-block.btn.btn-primary {
-  font-weight: bold;
-  text-transform: uppercase;
+  color: var(--hub-text);
+  font-weight: 800;
+  border: 0;
 }
 
-a:hover,
-a:focus {
-  color: hsl(0deg 0% 100% / 0.7);
+a.minimal {
+  font-weight: 600;
+  color: var(--hub-text);
+}
+
+a:hover {
+  color: var(--hub-text);
 }
 
 option {
-  background-color: var(--color-black);
-  color: var(--color-white);
+  background-color: var(--hub-solid);
 }
 
-select:focus > option:checked,
-select option:hover,
-option:checked,
-option:hover,
-option:focus {
-  background-color: var(--color-hubs) !important;
-  color: var(--color-black) !important;
+.scrubber-tags-background {
+  background-color: var(--hub-raised);
 }
 
-.folder-list .btn-link {
-  color: #2c2e30;
+/* Top-right icons: neutral, not the stock blue (or the old green logout) */
+.navbar-buttons .btn.minimal,
+.btn-primary.btn.settings-button.minimal,
+.btn-primary.btn.logout-button.minimal {
+  color: var(--hub-text-2);
+  background-color: transparent;
+  border-color: transparent;
 }
 
-#performer-scraper-popover {
-  z-index: 10;
+.scrubber-viewport {
+  background-color: var(--hub-solid);
 }
 
-#root,
-body {
-  background: var(--color-black) !important;
+/* ---------- Stash v0.29+ refresh ---------- */
+
+.navbar {
+  border-bottom: 1px solid var(--hub-line);
+}
+.navbar-collapse > .navbar-nav > div > a {
+  display: flex !important;
+  flex-direction: row !important; /* stock stacks icon over label */
+  align-items: center;
+  height: 32px;
+  padding: 0 12px !important;
+  border-radius: var(--hub-radius);
+  font-size: 13px;
+}
+.navbar-collapse > .navbar-nav > div > a.active {
+  color: var(--hub-orange-text) !important;
+  background-color: transparent !important;
+}
+@media (min-width: 1200px) {
+  .navbar-collapse > .navbar-nav > div > a {
+    gap: 7px;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    width: 12px !important;
+    height: 12px !important;
+    margin: 0 !important;
+    color: var(--hub-text-2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--hub-orange-text);
+  }
+}
+.top-nav a[href$="/new"] .btn {
+  color: var(--hub-ink);
+  background-color: var(--hub-orange);
+  border: 1px solid var(--hub-orange);
+  font-weight: 600;
 }
 
-.card {
-  background: var(--color-black) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-/* .btn-primary {
-  color: #fff;
-  background-color: #131313 !important;;
-  border-color: #131313 !important;;
-} */
-
-.nav-pills .nav-link.active,
-.nav-pills .show > .nav-link {
-  background-color: #131313 !important;
-  border-color: #131313 !important;
-}
-
-#tasks-panel .tasks-panel-queue {
-  background-color: var(--color-black) !important;
-}
-
-.top-nav .bg-dark,
-.top-nav.navbar {
-  background: var(--color-dark) !important;
-}
-
-body .top-nav {
-  border-radius: 0 !important;
-  padding: 10px 15px !important;
-}
-
-.top-nav .btn {
-  border: 0 !important;
-  border-radius: 0 !important;
-  display: inline-flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  font-size: 16px !important;
-  font-weight: 400 !important;
+/* List toolbar: charcoal 34px boxes, bold labels, orange active view */
+.filtered-list-toolbar {
+  background-color: transparent !important;
   gap: 8px;
-  padding: 6px 8px !important;
 }
-
-.top-nav .btn:hover svg,
-.top-nav .btn:focus svg,
-.top-nav .btn:hover,
-.top-nav .btn:focus {
-  color: var(--color-white) !important;
-  opacity: 1 !important;
+.filtered-list-toolbar .btn-group,
+.filtered-list-toolbar .sort-by-select {
+  height: 34px;
+  background-color: var(--hub-control);
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-radius);
+  padding: 2px;
+  gap: 2px;
+  align-items: center;
 }
-
-.top-nav .btn .fa-icon {
-  margin: 0 !important;
-}
-
-body .top-nav .navbar-brand {
-  margin-left: 0 !important;
-  margin-right: 1.5rem;
-  padding: 0 !important;
-}
-
-body .top-nav .navbar-brand button {
-  color: var(--color-white) !important;
-  display: inline-block !important;
-  font-weight: 700 !important;
-  padding: 0 !important;
-}
-
-body .top-nav .navbar-brand button::after {
-  background: var(--color-hubs);
-  border-radius: 3px;
-  color: var(--color-black);
-  content: "hub";
-  display: inline-block;
-  font-weight: 700 !important;
-  margin: 0 0 0 3px;
-  padding: 0 2px;
-}
-
-.top-nav .btn.active {
-  border: 0 !important;
-  color: var(--color-white) !important;
-}
-
-.navbar-dark .navbar-toggler {
-  border-color: transparent !important;
-}
-
-button[title="Donate"] {
-  display: none !important;
-}
-
-* {
-  outline: none !important;
-}
-
-.grid-card a .card-section-title,
-.section-title {
-  color: var(--color-text) !important;
-  font-size: 15px !important;
-  line-height: 17px !important;
-}
-
-.card-section > a + span,
-.card-section > a + span + p {
-  color: var(--color-text-dim) !important;
-}
-
-.bg-secondary,
-.btn-secondary,
-.border-secondary {
-  background-color: var(--color-hubs) !important;
-  border-color: var(--color-black) !important;
-}
-
-/* [Scenes tab] Allow for longer string when displaying "Studio as Text" on scene thumbnails */
-.scene-studio-overlay {
-  font-weight: 600 !important;
-  opacity: 1 !important;
-  text-overflow: ellipsis !important;
-  width: 60% !important;
-}
-
-/* [Scenes tab] Hide studio logo/text from scene card */
-.scene-studio-overlay {
-  display: none;
-}
-
-/* [Scenes tab] Fit more thumbnails on each row */
-.grid {
-  padding: 0 !important;
-}
-
-/* [Scenes tab] Make the list of tags take up less width */
-.bs-popover-bottom {
-  max-width: 500px;
-}
-
-/* [Scenes tab] Adjust the mouse over behaviour in wall mode */
-@media (min-width: 576px) {
-  .wall-item:hover::before,
-  .wall-item:focus::before {
-    opacity: 0;
-  }
-
-  .wall-item:hover .wall-item-container,
-  .wall-item:focus .wall-item-container {
-    transform: scale(1.5);
-  }
-}
-
-/* [Scenes tab] Disable zoom on hover in wall mode */
-.wall-item:hover .wall-item-container,
-.wall-item:focus .wall-item-container {
-  transform: none;
-}
-
-.wall-item::before {
-  opacity: 0 !important;
-}
-
-/* [Scenes tab] Hide the scene scrubber and max out the player's height */
-.scrubber-wrapper {
-  display: none;
-}
-
-/* [Scenes Tab] - Hide the truncated text on scene card */
-.TruncatedText.scene-card__description {
-  display: none;
-}
-
-/*
-.performer-image-container {
-  flex: 0 0 50%;
-  max-width: 50%;
-}*/
-
-/* Changing .col-md-8 settings also affects studios and tags display. 50% should be good enough. */
-.col-md-8 {
-  flex: 0 0 50%;
-  max-width: 50%;
-}
-
-/* [Performers tab] Move the buttons in the Performer's edit panel to the top instead of bottom (in newer version of Stash, the buttons are already positioned both at top and bottom.  */
-form#performer-edit {
-  display: flex;
-  flex-direction: column;
-}
-
-#performer-edit > .row {
-  order: 1;
-}
-
-#performer-edit > .row:last-child {
-  margin-bottom: 1rem;
-  order: 0;
-}
-
-/* [Performers tab] Move the tags row in the Performer's edit panel to the second position (just after name).  */
-form#performer-edit {
-  display: flex;
-  flex-direction: column;
-}
-
-#performer-edit > .row:nth-child(21) {
-  order: -1;
-}
-
-#performer-edit > .row:first-child {
-  order: -2;
-}
-
-.scene-tabs .studio-logo {
-  display: none !important;
-}
-
-/* Custom rating banner */
-body .rating-banner {
-  background: transparent;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  color: #fff;
-  display: block;
-  font-size: 0.86rem;
-  font-weight: 400;
-  height: 0;
-  left: 0;
-  letter-spacing: 1px;
-  line-height: 1.6rem;
-  margin: 6px 10px;
-  padding: 10px;
-  position: absolute;
-  text-indent: 0;
-  top: 0;
-  transform: none;
-  visibility: hidden;
-  width: 88px;
-}
-
-body .rating-banner {
+.filtered-list-toolbar .btn-group .btn-group {
+  border: 0;
+  padding: 0;
+  height: auto;
   background: none;
 }
-
-body .rating-banner::after {
-  background: var(--color-star);
-  border-radius: 5px;
-  color: var(--color-black);
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 800;
-  height: 30px;
-  left: 0;
-  margin-top: 5px;
-  padding: 5px;
-  position: absolute;
-  text-indent: 0;
-  top: 0;
-  visibility: visible;
-  width: 30px;
+.filtered-list-toolbar .btn-group .btn,
+.filtered-list-toolbar .sort-by-select .btn {
+  height: 28px !important; /* the saved-filter button sits one group deeper */
+  padding: 0 9px;
+  font-weight: 600;
+  color: var(--hub-text);
+  border: 0 !important;
+  border-radius: var(--hub-radius-sm) !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+.filtered-list-toolbar .btn-group .btn:hover {
+  background-color: var(--hub-raised) !important;
+}
+.filtered-list-toolbar .btn-group .btn.active {
+  color: var(--hub-orange-text) !important;
+  background-color: var(--hub-raised) !important;
+}
+.filtered-list-toolbar .btn-group .btn-danger {
+  color: #fff !important;
+  background-color: var(--hub-danger) !important;
+}
+.filtered-list-toolbar .search-term-input .form-control,
+.filtered-list-toolbar .page-size-selector select {
+  height: 34px;
+  background-color: var(--hub-control) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: var(--hub-radius) !important;
+}
+.filtered-list-toolbar .page-size-selector select {
+  color: var(--hub-text);
+}
+.filtered-list-toolbar.has-selection .selected-items-info span {
+  color: var(--hub-orange-text);
+  font-weight: 600;
+}
+.item-list-container .filtered-list-toolbar.has-selection {
+  background-color: var(--hub-bar) !important;
+  border-bottom: 1px solid var(--hub-line);
+}
+.sidebar-toggle-button-container .sidebar-toggle-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  margin-left: 0 !important;  /* stock hangs it half off the page */
+  color: var(--hub-text);
+  background-color: var(--hub-control) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: var(--hub-radius) !important;
+  opacity: 1;
+}
+.sidebar-pane .sidebar,
+.sidebar .sidebar-footer,
+.sidebar-toolbar {
+  background-color: var(--hub-bar) !important;
+}
+.sidebar-pane .sidebar {
+  border-right: 1px solid var(--hub-line);
+}
+.zoom-slider {
+  accent-color: var(--hub-orange);
+}
+/* Size slider: orange track, white thumb (stock is blue) */
+input[type="range"].zoom-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--hub-orange);
+}
+input[type="range"].zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--hub-text) !important;
+}
+.zoom-slider::-moz-range-track {
+  height: 4px;
+  background: var(--hub-orange) !important;
+}
+.zoom-slider::-moz-range-thumb {
+  border: 0;
+  background: var(--hub-text);
 }
 
-body .rating-banner.rating-3::after {
-  content: "3";
-}
-
-body .rating-banner.rating-4::after {
-  content: "4";
-}
-
-body .rating-banner.rating-5::after {
-  content: "5";
-}
-
-.wall-item-text {
-  display: none !important;
-}
-
-body .scene-card-preview-video,
-.scene-card-preview.portrait .scene-card-preview-image,
-.scene-card-preview.portrait .scene-card-preview-video,
-.gallery-card-preview.portrait .scene-card-preview-image,
-.gallery-card-preview.portrait .scene-card-preview-video {
-  object-fit: cover !important;
-  object-position: center !important;
-}
-
-.bs-popover-bottom > .arrow::after,
-.bs-popover-auto[x-placement^="bottom"] > .arrow::after,
-.bs-popover-bottom > .arrow::before,
-.bs-popover-auto[x-placement^="bottom"] > .arrow::before {
-  border-bottom-color: var(--color-cod-gray) !important;
-}
-
-[role="tooltip"],
-.popover,
-.input-control,
-.input-control:focus,
-.input-control:disabled,
-.dropdown-menu,
-.dropdown-menu .bg-secondary,
-.dropdown-menu .btn-secondary,
-.dropdown-menu a,
-.scraper-group .btn,
-.scraper-group input,
-[role="toolbar"] ::-webkit-keygen-select,
-[role="toolbar"] input,
-[role="toolbar"] .btn,
-[role="toolbar"] .btn-secondary {
-  background-color: var(--color-cod-gray) !important;
-  border-color: var(--color-cod-gray) !important;
-  color: var(--color-silver) !important;
-}
-
-.tag-item {
-  background: var(--color-dark);
-  border-radius: 8px;
-  color: var(--color-white);
-  display: inline-block;
-  font-size: 14px;
-  font-weight: 400;
-  margin-bottom: 8px;
-  padding: 8px 18px;
-  text-transform: capitalize;
-  white-space: nowrap;
-}
-
-.tag-item:hover,
-.tag-item:focus {
-  background: var(--color-dim);
-}
-
-.tag-item:first-of-type {
-  margin-left: 0;
-}
-
-.row h6 {
+/* Pagination centred, with the result count on the same row; the floating
+   bottom pagination stays */
+.pagination-index-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
   margin-top: 10px;
 }
-
-body .nav-tabs .nav-link {
-  border-bottom: 1px solid transparent !important;
-  border-radius: 0 !important;
-  color: var(--color-text);
-  font-size: 11px;
-  padding: 8px 15px;
+.pagination-index-container > .pagination {
+  grid-column: 2;
+  margin: 0 !important;
 }
-
-.nav-tabs .nav-link.active,
-.nav-tabs .nav-item.show .nav-link,
-body .nav-tabs .nav-link.active {
-  background-color: var(--color-black) !important;
-  border-bottom: 1px solid var(--color-hubs) !important;
-  color: var(--color-white) !important;
+.pagination-index-container > .paginationIndex {
+  grid-column: 3;
+  justify-self: end;
+  margin: 0 !important;
+  font-size: 13px;
+  color: var(--hub-text-2);
 }
-
-@media (min-width: 1200px) {
-  body .navbar-expand-xl .navbar-nav .nav-link {
-    padding-left: 0;
-    padding-right: 0;
+.pagination-index-container > .paginationIndex:only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+.pagination.btn-group {
+  background-color: var(--hub-control);
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-radius);
+  padding: 2px;
+  gap: 2px;
+}
+.pagination .btn,
+.pagination .btn:first-child,
+.pagination .btn:last-child {
+  color: var(--hub-text-2);
+  border: 0 !important;
+  border-radius: var(--hub-radius-sm) !important;
+  background: none;
+}
+.pagination .btn:hover {
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+}
+.pagination .btn.active,
+.pagination .btn:disabled {
+  color: var(--hub-text);
+}
+@media (max-width: 575.98px) {
+  .pagination-index-container {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .pagination-index-container > .pagination,
+  .pagination-index-container > .paginationIndex {
+    grid-column: 1;
+    justify-self: center;
   }
 }
 
-body .text-muted {
-  color: var(--color-text-dim) !important;
-}
-
-/* Range input */
-input::-webkit-slider-runnable-track,
-input::-moz-range-track,
-input::-ms-track,
-input,
-input[type="range"] {
-  accent-color: var(--color-hubs) !important;
-  appearance: none;
-}
-
-.custom-control-input:checked ~ .custom-control-label::before {
-  background-color: var(--color-hubs) !important;
-  border-color: var(--color-hubs) !important;
-}
-
-input[type="range"] {
-  appearance: none;
-  height: 38px;
-  margin: 10px 0;
-  width: 100%;
-}
-
-input[type="range"]:focus {
-  outline: none;
-}
-
-input[type="range"]::-webkit-slider-runnable-track {
-  background: var(--color-hubs);
-  border-radius: 5px;
-  cursor: pointer;
-  height: 8px;
-  width: 100%;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  background: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  height: 20px;
-  width: 8px;
-}
-
-input[type="range"]:focus::-webkit-slider-runnable-track {
-  background: var(--color-hubs);
-}
-
-input[type="range"]::-moz-range-track {
-  background: var(--color-hubs);
-  border-radius: 5px;
-  cursor: pointer;
-  height: 10px;
-  width: 100%;
-}
-
-input[type="range"]::-moz-range-thumb {
-  background: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  height: 30px;
-  width: 12px;
-}
-
-input[type="range"]::-ms-track {
-  background: transparent;
+/* Cards: hover lifts 2px with an orange hairline; selection is a 2px orange
+   ring; the cover fades into the card above a hairline and centred counts */
+.grid-card {
+  overflow: hidden;
   border-color: transparent;
-  color: transparent;
-  cursor: pointer;
-  height: 10px;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s, border-color 0.2s;
 }
-
-input[type="range"]::-ms-fill-lower {
-  background: var(--color-hubs);
-  border-radius: 10px;
+.grid-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(247, 148, 29, 0.7);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
 }
-
-input[type="range"]::-ms-fill-upper {
-  background: var(--color-hubs);
-  border-radius: 10px;
+.grid-card:has(.card-check:checked) {
+  border-color: var(--hub-orange);
+  box-shadow: 0 0 0 1px var(--hub-orange);
 }
-
-input[type="range"]::-ms-thumb {
-  background: #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  height: 30px;
-  margin-top: 1px;
-  width: 12px;
+.grid-card .thumbnail-section {
+  position: relative;
+  overflow: hidden;
+  flex: none; /* never squeezed by the text below it */
 }
-
-input[type="range"]:focus::-ms-fill-lower {
-  background: var(--color-hubs);
+.scene-card .thumbnail-section::after,
+.gallery-card .thumbnail-section::after,
+.group-card .thumbnail-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 45%, var(--hub-card));
 }
-
-input[type="range"]:focus::-ms-fill-upper {
-  background: var(--color-hubs);
+.grid-card .scene-specs-overlay,
+.grid-card .studio-overlay,
+.grid-card .favorite-button,
+.grid-card .card-check {
+  z-index: 2;
 }
-
-.top-nav .navbar-buttons .btn[title="Help"],
-.top-nav .navbar-buttons .btn.donate {
+.grid-card .card-section {
+  padding: 12px 14px 12px !important; /* keeps the text off the footer band */
+}
+.grid-card .card-section-title {
+  color: var(--hub-text);
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+.scene-card__date,
+.performer-card__age {
+  color: var(--hub-text-2) !important;
+  font-size: 13px;
+}
+.scene-card__details {
+  margin-bottom: 0 !important;
+}
+.scene-card__description,
+.TruncatedText.scene-card__description {
+  color: var(--hub-text-2);
+  font-size: 13px;
+}
+.grid-card .card-popovers {
+  margin: auto 0 0 !important;
+  padding: 10px 14px !important;
+  border-top: 1px solid var(--hub-line);
+  justify-content: center !important;
+  gap: 24px;
+}
+.grid-card hr {
+  display: none;
+}
+.grid-card .card-popovers .btn {
+  color: var(--hub-text);
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.grid-card .card-popovers .btn:hover {
+  color: var(--hub-orange-text);
+}
+.scene-card .scene-specs-overlay {
+  font-size: 12px !important;
+  font-weight: 700;
+  color: #fff;
+}
+.scene-card .scene-specs-overlay span {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.scene-card .scene-specs-overlay .overlay-resolution + .overlay-duration::before {
+  content: "\00a0";
+}
+.scene-card .extra-scene-info,
+.scene-card .overlay-filesize {
   display: none !important;
 }
-
-.stats-element .title {
-  color: var(--color-white) !important;
-  font-weight: 700 !important;
+/* Rating ribbon off the cards; the rating stays on the scene page */
+.grid-card .rating-banner {
+  display: none;
+}
+.performer-card .performer-card-image {
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  object-position: top;
+}
+.studio-card .studio-card-header,
+.tag-card .tag-card-header {
+  display: block !important;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+}
+.studio-card .studio-card-image,
+.tag-card .tag-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain;
+  padding: 10% 12%;
 }
 
-div[role="toolbar"] + .d-flex > .tag-item.badge.badge-secondary {
-  align-items: center;
-  background: none !important;
-  bottom: 0;
-  display: inline-flex;
-  gap: 10px;
+/* Studio chip top-left on the cover */
+.scene-card .studio-overlay {
+  top: 8px !important;
+  left: 8px !important;
+  right: auto !important;
+  max-width: 60%;
+  height: auto !important;
+  padding: 3px 7px;
+  border-radius: var(--hub-radius-sm);
+  background-color: rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  line-height: 0;
+}
+.scene-card .studio-overlay a {
+  display: block;
+  height: auto !important;
+}
+.scene-card .studio-overlay .image-thumbnail {
+  height: 18px !important;
+  max-height: 18px !important;
+  width: auto;
+  max-width: 100% !important;
+  object-fit: contain;
 }
 
-div[role="toolbar"]
-  + .d-flex
-  > .tag-item.badge.badge-secondary
-  button[type="button"] {
-  align-items: center;
-  background: none !important;
-  bottom: 0 !important;
-  display: inline-flex;
+/* Card heart: the same size as the select checkbox, mirrored in the
+   opposite corner */
+.grid-card .favorite-button {
+  top: 10px !important;
+  right: 8px !important;
+  padding: 0 !important;
+  line-height: 1;
+}
+.grid-card .favorite-button svg {
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 17px !important;
   margin: 0 !important;
 }
 
-.recommendation-row.studio-recommendations,
-.recommendation-row.movie-recommendations {
-  display: none !important;
+/* Home carousels: slides pulled in so the arrows sit inside the page (stock
+   pushes the next arrow off a phone screen), arrows centred on the cards (not
+   the cards plus the dots below), every card in a row as tall as the tallest */
+.recommendation-row .slick-slider {
+  margin: 0 30px;
+}
+.recommendation-row .slick-prev {
+  left: -28px;
+}
+.recommendation-row .slick-next {
+  right: -28px;
+}
+.recommendation-row .slick-slider {
+  margin-bottom: 30px;
+}
+.recommendation-row .slick-dots {
+  position: absolute;  /* out of the flow, so the slider is exactly the cards' height */
+  top: 100%;
+}
+.recommendation-row .slick-track {
+  margin-bottom: 0;
+}
+.recommendation-row .slick-arrow {
+  top: 0;
+  height: 100%;
+  transform: none;
+  color: var(--hub-orange-text);
+}
+.recommendation-row .slick-track {
+  display: flex !important;
+}
+.recommendation-row .slick-slide {
+  height: auto !important;
+}
+.recommendation-row .slick-slide > div {
+  height: 100%;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: 320px !important; /* studios too, not just scenes and performers */
+  height: calc(100% - 10px);
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
-a {
-  color: var(--color-hubs);
+/* Detail pages: white titles, grey labels */
+.detail-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--hub-line);
 }
-
-.btn,
-.btn-primary,
-.btn-secondary {
-  border-radius: 3px !important;
+.detail-header.sticky {
+  background-color: var(--hub-solid) !important; /* pinned over scrolling content */
 }
-
-/* Slick fixes */
-.slick-slider .slick-prev,
-.slick-slider .slick-next {
-  display: none !important;
+/* Performer page: full-bleed portrait fading into the header */
+.detail-header:has(.performer-head) {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  max-width: none !important;
 }
-
-.recommendations-container {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+.detail-header:has(.performer-head) .detail-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
 }
-
-h2 {
-  text-transform: unset !important;
-}
-
-.recommendation-row-head {
+.detail-header:has(.performer-head) .detail-header-image {
   position: relative;
-  z-index: 100;
+  flex: 0 0 420px;
+  width: 420px;
+  height: 400px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
-
-.recommendation-row-head a {
-  font-size: 14px;
+.detail-header:has(.performer-head) .detail-header-image .btn-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0 !important;
 }
-
-@media (max-width: 1200px) {
-  .container,
-  .container-xl,
-  .container-lg,
-  .container-md,
-  .container-sm {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    width: unset !important;
+.detail-header:has(.performer-head) img.performer {
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  max-height: none;
+  object-fit: cover;
+  object-position: center top;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.detail-header:has(.performer-head) .detail-header-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 55%, transparent);
+}
+.detail-header:has(.performer-head) > .detail-container > .row {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 24px 36px 0;
+}
+.detail-header:has(.performer-head) .performer-head .col,
+.detail-header:has(.performer-head) .performer-head .row {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.detail-header .detail-item {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.detail-header .detail-group {
+  row-gap: 5px;
+}
+.detail-header .detail-item-title {
+  width: 130px;
+}
+@media (max-width: 767.98px) {
+  .detail-header:has(.performer-head) .detail-container {
+    flex-direction: column;
   }
-
-  .filter-container {
-    flex-wrap: wrap !important;
-    margin: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-
-  .top-nav .navbar-buttons {
-    margin-left: unset !important;
-    margin-right: unset !important;
-  }
-
-  .fixed-top {
-    justify-content: space-between !important;
-    margin-left: unset !important;
-    margin-right: unset !important;
-    position: unset !important;
-  }
-
-  .navbar-dark .navbar-nav .nav-link {
-    display: block;
-    flex-basis: 100%;
-    max-width: 100%;
+  .detail-header:has(.performer-head) .detail-header-image {
+    flex-basis: auto;
     width: 100%;
+    height: 430px;
   }
-
-  .navbar-nav {
-    gap: 0;
+  .detail-header:has(.performer-head) .detail-header-image::after {
+    background: linear-gradient(180deg, transparent 55%, transparent);
   }
+  .detail-header:has(.performer-head) > .detail-container > .row {
+    padding: 14px;
+  }
+}
+.detail-header .performer-name,
+.detail-header .studio-name,
+.detail-header h2 {
+  color: var(--hub-text);
+  font-size: 40px;
+  font-weight: 700;
+}
+.detail-header .detail-item-title {
+  color: var(--hub-text-3);
+}
+.detail-header .detail-item-value {
+  color: var(--hub-text);
+}
+.details-edit {
+  gap: 8px;
+}
+.details-edit .btn {
+  margin: 0 !important;
+}
+.details-edit .btn-secondary {
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+  border-color: var(--hub-raised);
+}
+.details-edit .btn-primary,
+.details-edit .edit {
+  color: var(--hub-ink);
+  background-color: var(--hub-orange);
+  border-color: var(--hub-orange);
+}
 
-  .navbar-dark .navbar-nav .nav-link a {
-    gap: 14px;
+/* Scene page */
+.scene-tabs .scene-header,
+.scene-tabs .scene-header .TruncatedText {
+  color: var(--hub-text);
+  font-size: 30px !important;
+  font-weight: 700;
+  line-height: 1.15;
+}
+/* Scene details: white labels and headings, orange links, grey paragraphs */
+.scene-tabs .tab-content h6 {
+  color: var(--hub-text);
+  font-size: 13px;
+}
+.scene-tabs .tab-content h6 a {
+  color: var(--hub-orange-text);
+}
+.scene-tabs .tab-content p.pre {
+  color: var(--hub-text-2);
+  font-size: 13px;
+}
+.tag-item.badge-secondary {
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+  border: 1px solid var(--hub-line);
+}
+.nav-tabs .badge,
+.badge-pill.badge-secondary {
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+}
+.tag-item.badge-secondary a {
+  color: inherit;
+}
+.video-js .vjs-play-progress,
+.video-js .vjs-volume-level {
+  background-color: var(--hub-orange);
+}
+.video-js .vjs-big-play-button {
+  width: 72px !important;
+  height: 72px !important;
+  margin-left: -36px !important;
+  margin-top: -36px !important;
+  font-size: 36px !important;
+  line-height: 72px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: rgba(40, 40, 40, 0.85) !important;
+}
+.video-js:hover .vjs-big-play-button {
+  color: var(--hub-ink) !important;
+  background-color: var(--hub-orange) !important;
+}
+.video-js .vjs-big-play-button .vjs-icon-placeholder::before {
+  font-size: 36px !important;
+  line-height: 72px !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-indent: 3px;
+}
+.scrubber-button {
+  color: var(--hub-orange-text) !important;
+  background-color: var(--hub-control) !important;
+  border: 1px solid var(--hub-line) !important;
+}
+/* Two performers side by side in the details panel */
+.scene-performers .performer-card {
+  width: calc(50% - 10px) !important;
+  margin: 5px !important;
+}
+
+/* Settings: white headings, orange toggles */
+#settings-container h1,
+#tasks-panel h1,
+.setting-section h1 {
+  color: var(--hub-text);
+  font-size: 28px;
+  font-weight: 500;
+}
+.setting-section .setting h3,
+.setting-section > h2 {
+  color: var(--hub-text);
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--hub-orange);
+  border-color: var(--hub-orange);
+}
+
+/* Dialogs and menus on the card tone */
+.modal-content,
+.dropdown-menu {
+  background-color: var(--hub-solid);
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-radius-card);
+}
+.dropdown-menu {
+  padding: 6px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.dropdown-item {
+  border-radius: var(--hub-radius);
+}
+.modal-header {
+  border-bottom: 1px solid var(--hub-line);
+  color: var(--hub-text);
+}
+.modal-footer {
+  border-top: 1px solid var(--hub-line);
+}
+.modal-footer .btn-primary {
+  color: var(--hub-ink);
+  background-color: var(--hub-orange);
+  border-color: var(--hub-orange);
+}
+.dropdown-item {
+  color: var(--hub-text);
+}
+.dropdown-item:hover,
+.dropdown-item.active {
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+}
+
+/* Theme Switch menu: its sections are spaced apart, so keep the full outline
+   that Bootstrap's accordion style strips from all but the last */
+.theme-plugin-menu .accordion > .card {
+  border-bottom: 1px solid var(--hub-line) !important;
+  border-radius: var(--hub-radius) !important;
+}
+
+/* Empty lists */
+.item-list-container .sidebar-pane-content:not(:has(.grid-card, .table-list, .scene-wall, .wall, .tagger-container, .card)) > .pagination-index-container::after {
+  content: "Nothing here yet";
+  grid-column: 1 / -1;
+  margin-top: 18vh;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--hub-text-2);
+}
+
+/* Task queue and job cards: off the stock blue-grey */
+#tasks-panel .tasks-panel-queue {
+  background-color: transparent !important;
+}
+.job-table.card {
+  background-color: var(--hub-card) !important;
+  border: 1px solid var(--hub-line);
+}
+/* Settings buttons are secondary; the scene-page panel toggle keeps the theme */
+#settings-container .btn-primary {
+  color: var(--hub-text);
+  background-color: var(--hub-raised);
+  border-color: var(--hub-raised);
+}
+.scene-divider .btn {
+  color: var(--hub-text-2);
+  background: none;
+  border: 0;
+}
+
+/* Home carousels: whole cards only. The number of cards that fits at about
+   320px, sized to fill the row exactly, so none is cut off at the edge */
+.recommendation-row .slick-list {
+  container-type: inline-size;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: calc(100cqw / max(1, round(100cqw / 330px, 1)) - 10px) !important;
+  max-width: none !important;
+}
+
+/* Detail-page tab bars: Stash pads them below, which lifts the active
+   underline off the bar's line */
+.nav-tabs {
+  padding-bottom: 0 !important;
+}
+
+/* The slim header Stash pins when a detail page scrolls slides down only as
+   the full header's bottom edge passes under the top bar, instead of
+   appearing as soon as the page moves. It follows the scroll position, so
+   scrolling back up reverses it; browsers without scroll-driven animations
+   show it as Stash does. */
+@supports (animation-timeline: view()) {
+  .main {
+    timeline-scope: --detail-header;
+  }
+  .detail-header:not(.sticky) {
+    view-timeline: --detail-header block;
+  }
+  .detail-header.sticky {
+    animation: detail-header-sticky-in linear both;
+    animation-timeline: --detail-header;
+    animation-range: exit calc(100% - 130px) exit calc(100% - 50px);
+  }
+  @keyframes detail-header-sticky-in {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* Filter sidebar on small screens. Stash slides it over the page below 768px,
+   covering the button that closes it. Phones get a full-screen sheet whose
+   "Show N results" button is the way out; small tablets get the desktop
+   layout, the content pushed aside to a single column. */
+@media (max-width: 575.98px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    z-index: 1020; /* above the performer header, which is its own layer */
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100dvh - 46px) !important; /* down to the bottom bar */
+    max-height: none !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 12px 15px 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    z-index: 1020;
+    background-color: var(--hub-solid) !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer {
+    margin-top: auto;
+    bottom: 0;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 12px 0 15px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer .btn {
+    width: 100%;
+    height: 44px;
+  }
+}
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .sidebar-pane:not(.hide-sidebar) > .sidebar-pane-content {
+    margin-left: 235px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+    left: 257px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .grid-card {
+    width: calc(100% - 30px) !important; /* one column beside the filters */
+  }
+}
+
+/* Detail fields on phones: the label above its value, so long values like a
+   Stash ID get the full width; an ID that still doesn't fit ends in an
+   ellipsis (the link opens the full ID) */
+@media (max-width: 575.98px) {
+  .detail-header .detail-item {
+    display: block !important;
+  }
+  .detail-header .detail-item-title {
+    display: block;
+    width: auto !important;
+    margin-bottom: 1px;
+  }
+  .detail-header > .detail-container > .row {
+    align-self: stretch;
+    max-width: 100%;
+  }
+  .detail-header .performer-head,
+  .detail-header .detail-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.stash-id-pill {
+  display: inline-flex !important;
+  max-width: 100%;
+  min-width: 0;
+}
+.stash-id-pill span {
+  flex: none;
+}
+.stash-id-pill a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-item-value.stash-ids,
+.detail-item-value.stash-ids ul,
+.detail-item-value.stash-ids li {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.detail-item-value.stash-ids {
+  overflow: hidden;
+}
+
+/* Dialog panels on the dialog's own colour, not Stash's slate */
+.modal-content {
+  background-color: var(--hub-solid) !important;
+}
+.modal-header,
+.modal-body,
+.modal-footer {
+  background: transparent !important;
+}
+
+/* Phones: dialogs (Edit filter and the rest) fill the screen down to the
+   bottom bar; the body scrolls and the buttons stay at the foot */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: calc(100dvh - 46px);
+  }
+  .modal-content {
+    height: 100%;
+    border-radius: 0 !important;
+    border: 0 !important;
+    background-color: var(--hub-solid) !important;
+  }
+  .modal-body {
+    flex: 1;
+    max-height: none !important; /* Stash caps it at a fixed height */
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Phone and tablet menu (the ☰ button): an even grid of tiles, small icon
+   above its label, the current page on a soft tile, utility icons in a row
+   beneath a hairline (stock crams large icons beside the words) */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.show,
+  .navbar-collapse.collapsing {
+    background-color: var(--hub-solid) !important;
+    border-top: 1px solid var(--hub-line);
+    padding: 10px 24px 6px !important;
+    margin: 0 -14px; /* edge to edge across the bar's padding */
+  }
+  .navbar-collapse > .navbar-nav:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 3 across on phones */
+    gap: 6px;
+  }
+  .navbar-collapse > .navbar-nav:first-child > div {
+    max-width: none !important;
+    flex: none !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px;
+    height: 64px !important;
+    padding: 6px !important;
+    color: var(--hub-text) !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+    color: var(--hub-text-2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active {
+    color: var(--hub-orange-text) !important;
+    background-color: var(--hub-raised) !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--hub-orange-text);
+  }
+  .navbar-collapse > .navbar-nav:not(:first-child) {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--hub-line);
+  }
+  .navbar-collapse .nav-utility svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Phones: the list toolbar on two rows. The space for the filter button is
+   kept on the first row only (search stretches beside it, then the
+   saved-filter and filter buttons); the rest slims down to share row two. */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important; /* stock keeps 40px each side */
     justify-content: flex-start !important;
-    padding-bottom: 15px !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    padding-top: 15px !important;
+    gap: 8px 6px !important;
   }
-
-  .top-nav .btn .fa-icon {
-    height: 22px;
-    width: 22px;
+  .filtered-list-toolbar > .search-term-input {
+    margin-left: 40px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
   }
-
-  .top-nav .navbar-collapse .navbar-nav {
-    justify-content: flex-start;
-    padding-bottom: 0;
-    padding-top: 1rem;
+  .filtered-list-toolbar > .search-term-input .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
   }
-
-  .pagination .btn {
-    font-size: 16px !important;
-    height: 40px !important;
-    min-width: 40px !important;
+  .filtered-list-toolbar .sort-by-select .btn {
+    padding: 0 6px !important;
   }
-
-  .slick-slide .card {
-    height: unset;
+  .filtered-list-toolbar > .page-size-selector,
+  .filtered-list-toolbar > .page-size-selector select {
+    width: 56px !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .btn-group:not(.pagination) .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .btn-group:last-of-type {
+    margin-left: auto; /* the view buttons close the second row on the right */
+  }
+  /* row 1: search + the filter buttons; a zero-height break; row 2: the rest */
+  .filtered-list-toolbar > * {
+    order: 3;
+  }
+  .filtered-list-toolbar > .search-term-input,
+  .filtered-list-toolbar > .search-term-input + .btn-group {
+    order: 1;
+  }
+  .filtered-list-toolbar::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
   }
 }
 
-[data-rb-event-key="https://opencollective.com/stashapp"]
-{
-  display: none !important;
+/* The phone menu button wears the same colour as the nav icons beside it */
+.top-nav .nav-menu-toggle,
+.top-nav .nav-menu-toggle:hover,
+.top-nav .nav-menu-toggle:focus {
+  color: var(--hub-text-2);
 }
 
-@media (max-width: 576px) {
-  .top-nav .navbar-collapse .navbar-nav {
-    padding-bottom: 1rem;
-    padding-top: 0;
+/* Theme Switch menu: solid, on the theme's menu colours (stock leaves its
+   sections on Bootstrap's slate, and see-through over the cards) */
+.theme-plugin-menu.dropdown-menu {
+  padding: 6px !important;
+  color: var(--hub-text);
+  background: var(--hub-solid) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: var(--hub-radius-card) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.theme-plugin-menu .accordion {
+  max-width: none !important;
+}
+.theme-plugin-menu .modal-header {
+  margin: 0 0 6px;
+  padding: 6px 8px 10px !important;
+  color: var(--hub-text) !important;
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--hub-line) !important;
+  border-radius: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: none;
+}
+.theme-plugin-menu .accordion > .card {
+  margin: 0 0 4px !important;
+  color: var(--hub-text) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: var(--hub-radius) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .card-body {
+  color: var(--hub-text) !important;
+  background: none !important;
+  border: 0 !important;
+  text-shadow: none;
+}
+.theme-plugin-menu .card-header {
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header svg {
+  color: var(--hub-text-2);
+}
+.theme-plugin-menu legend {
+  color: var(--hub-text) !important;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  color: var(--hub-text-2) !important;
+  background: color-mix(in srgb, var(--hub-text-2) 30%, transparent) !important;
+  border-color: transparent !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  color: #fff !important;
+  background: var(--hub-orange) !important;
+  border-color: var(--hub-orange) !important;
+}
+/* A blurred bar turns everything drawn inside it see-through, the open
+   menu included: while the menu is open the bar drops its blur */
+.top-nav:has(.theme-plugin-menu.show) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Phones: the bar stays at the top, as on desktop. The filter sheet opens
+   below it and dialogs fill the whole screen. */
+@media (max-width: 575.98px) {
+  .top-nav {
+    top: 0 !important;
+    bottom: auto !important;
   }
+  body {
+    padding-top: 62px !important; /* the bar is 50px tall */
+    padding-bottom: 0 !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar {
+    top: 50px !important;
+    height: calc(100dvh - 50px) !important;
+  }
+  .modal-dialog {
+    height: 100dvh;
+  }
+  .top-nav .navbar-collapse {
+    order: 3; /* the ☰ menu opens below the bar, not above it */
+  }
+}
+
+/* A plain heavy "Stash" wordmark */
+.top-nav .navbar-brand,
+.top-nav .navbar-brand .btn {
+  color: var(--hub-text) !important;
+  font-weight: 800 !important;
 }
