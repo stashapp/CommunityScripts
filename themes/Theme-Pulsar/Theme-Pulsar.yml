@@ -1,6 +1,6 @@
 name: Theme - Pulsar
 description: Plex Theme for Stash by Fonzie 2020-21
-version: 1.8.1
+version: 2.0
 url: https://discourse.stashapp.cc/t/pulsar/1429
 ui:
   css:
