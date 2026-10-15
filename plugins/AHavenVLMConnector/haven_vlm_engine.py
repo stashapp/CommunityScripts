@@ -182,6 +182,28 @@ class HavenVLMEngine:
                         }
                     )
 
+                # Process systemone_endpoints (Jev /v1/systemone). These are a
+                # separate pool: those endpoints only speak the /v1/systemone
+                # wire contract and never serve chat completions.
+                systemone_endpoints = []
+                for endpoint in model_data.get("systemone_endpoints", []):
+                    # Validate that max_concurrent is present
+                    if "max_concurrent" not in endpoint:
+                        raise ValueError(
+                            f"System One endpoint '{endpoint.get('name', 'unnamed')}' is missing required 'max_concurrent' parameter"
+                        )
+
+                    systemone_endpoints.append(
+                        {
+                            "base_url": endpoint["base_url"],
+                            "api_key": endpoint.get("api_key", ""),
+                            "name": endpoint["name"],
+                            "weight": endpoint.get("weight", 5),
+                            "is_fallback": endpoint.get("is_fallback", False),
+                            "max_concurrent": endpoint["max_concurrent"],
+                        }
+                    )
+
                 models[model_name] = ModelConfig(
                     type=model_data["type"],
                     model_file_name=model_data["model_file_name"],
@@ -196,6 +218,7 @@ class HavenVLMEngine:
                     instance_count=model_data.get("instance_count", 1),
                     max_batch_size=model_data.get("max_batch_size", 1),
                     multiplexer_endpoints=multiplexer_endpoints,
+                    systemone_endpoints=systemone_endpoints,
                     tag_list=model_data.get("tag_list", []),
                 )
             else:

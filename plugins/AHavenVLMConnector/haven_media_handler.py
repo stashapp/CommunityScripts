@@ -13,7 +13,7 @@ import json
 # Use PythonDepManager for dependency management
 try:
     from PythonDepManager import ensure_import
-    ensure_import("stashapi:stashapp-tools==0.2.58")
+    ensure_import("stashapi:stashapp-tools==0.2.59")
     
     from stashapi.stashapp import StashInterface, StashVersion
     import stashapi.log as log

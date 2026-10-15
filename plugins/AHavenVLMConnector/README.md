@@ -13,7 +13,7 @@ A StashApp plugin for Vision-Language Model (VLM) based content tagging and anal
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.10+
 - StashApp
 - PythonDepManager plugin (automatically handles dependencies)
 - OpenAI-compatible VLM endpoints (local or cloud-based)
@@ -66,6 +66,15 @@ By default locahost is included in the config, **remove cloud endpoint if you do
     "is_fallback": False
 }
 ```
+
+### Traditional LLM vs System One endpoints
+
+No mode switch is needed — endpoints are routed by which pool they belong to:
+
+- `multiplexer_endpoints` — traditional OpenAI-compatible `/chat/completions` endpoints (LM Studio, cloud, etc.). This is what all tagging pipelines use.
+- `systemone_endpoints` — dedicated [Jev](https://github.com/Haven-hvn) endpoints that only speak the `/v1/systemone` wire contract. They get their own connection pool inside the engine and are never sent chat completion requests.
+
+Each pool is configured independently, and an endpoint in the wrong pool fails loudly (the wire contracts are incompatible), so there is no ambiguous "model type" choice to make. Most users only need `multiplexer_endpoints`.
 
 ### Tag Configuration
 

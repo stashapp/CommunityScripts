@@ -32,11 +32,11 @@ try:
 
     # Install and ensure all required dependencies with specific versions
     ensure_import(
-        "stashapi:stashapp-tools==0.2.58",
-        "aiohttp==3.12.13",
-        "pydantic==2.12.5",
-        "vlm-engine==1.0.1",
-        "pyyaml==6.0.2",
+        "stashapi:stashapp-tools==0.2.59",
+        "aiohttp==3.14.5",
+        "pydantic==2.14.1",
+        "vlm-engine==1.1.0",
+        "pyyaml==6.0.3",
     )
 
     # Import the dependencies after ensuring they're available
