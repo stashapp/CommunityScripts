@@ -4,7 +4,9 @@
 Stash plugin: Performer.Create.Post hook.
 When a performer is created, search the configured source (default: the javstash
 stash-box) by name, take the best name-matching candidate and fill only the empty
-fields (skip if the best score is below THRESHOLD).
+fields (skip if the best score is below THRESHOLD). The source can be named by its
+Stash-configured stash-box name (e.g. "StashDB") instead of retyping the endpoint URL, and
+the matched stash-box id is written back as a stash_id.
 
 The primary-name handling depends on the creation origin (Identify vs. manual;
 detected by the presence of stash_ids in the create input):
@@ -83,7 +85,7 @@ def to_int(s):
 # ---------- scraper ----------
 JAV_FIELDS = ("name gender birthdate death_date ethnicity country hair_color eye_color "
               "height weight measurements fake_tits career_length tattoos piercings "
-              "details twitter instagram aliases images")
+              "details twitter instagram aliases images urls remote_site_id")
 def scrape_source(gql, name, source_input):
     q = ("query($s:ScraperSourceInput!,$i:ScrapeSinglePerformerInput!){"
          " scrapeSinglePerformer(source:$s,input:$i){ %s } }" % JAV_FIELDS)
@@ -99,10 +101,66 @@ def get_settings(gql):
     except Exception:
         return {}
 
-def build_source(source_str):
-    # A URL is treated as a stash-box endpoint; anything else as a scraper_id.
-    s = (source_str or JAV).strip()
-    return {"stash_box_endpoint": s} if s.startswith("http") else {"scraper_id": s}
+# ---------- source resolution ----------
+JAV_HINT = "javstash"
+
+def get_stash_boxes(gql):
+    """The stash-box instances already configured in Settings > Metadata Providers."""
+    q = "{ configuration { general { stashBoxes { name endpoint } } } }"
+    try:
+        return ((gql(q).get("configuration") or {}).get("general") or {}).get("stashBoxes") or []
+    except Exception as e:
+        log(f"stashBoxes error: {e}"); return []
+
+def get_performer_scrapers(gql):
+    try:
+        return gql("{ listScrapers(types:[PERFORMER]){ id name } }").get("listScrapers") or []
+    except Exception as e:
+        log(f"listScrapers error: {e}"); return []
+
+def _ep_key(u):
+    return (u or "").strip().rstrip("/").lower()
+
+def resolve_source(gql, source_str):
+    """Turn a setting value into a ScraperSourceInput, reusing what Stash already knows.
+
+    Accepted, in order: empty -> a configured stash-box (javstash if present, otherwise the
+    first one); a stash-box name ("StashDB"); part of a configured name/endpoint ("stashdb");
+    a full endpoint URL; a performer scraper id or name.
+    Stash only accepts endpoints that are configured under Settings > Metadata Providers, so a
+    name or partial match is always resolved back to the configured endpoint.
+    Returns (source_input, stash_box_endpoint_or_None, label_for_the_log).
+    """
+    s = (source_str or "").strip()
+    boxes = get_stash_boxes(gql)
+
+    def box_src(b, why):
+        label = b.get("name") or b["endpoint"]
+        return {"stash_box_endpoint": b["endpoint"]}, b["endpoint"], f"stash-box '{label}' ({why})"
+
+    if not s:
+        for b in boxes:
+            if JAV_HINT in _ep_key(b["endpoint"]) or JAV_HINT in (b.get("name") or "").lower():
+                return box_src(b, "default: javstash")
+        if boxes:
+            return box_src(boxes[0], "default: first configured")
+        return {"stash_box_endpoint": JAV}, JAV, "stash-box javstash (NOT configured in Stash)"
+
+    for b in boxes:                                     # exact name, e.g. "StashDB"
+        if (b.get("name") or "").strip().lower() == s.lower():
+            return box_src(b, "by name")
+    for b in boxes:                                     # exact endpoint URL
+        if _ep_key(b["endpoint"]) == _ep_key(s):
+            return box_src(b, "by endpoint")
+    if s.startswith("http"):
+        return {"stash_box_endpoint": s}, s, f"stash-box '{s}' (NOT configured in Stash)"
+    for b in boxes:                                     # partial, e.g. "stashdb"
+        if s.lower() in _ep_key(b["endpoint"]) or s.lower() in (b.get("name") or "").lower():
+            return box_src(b, "by partial match")
+    for sc in get_performer_scrapers(gql):              # scraper id or name
+        if str(sc["id"]).lower() == s.lower() or (sc.get("name") or "").lower() == s.lower():
+            return {"scraper_id": sc["id"]}, None, f"scraper '{sc.get('name')}' ({sc['id']})"
+    return {"scraper_id": s}, None, f"scraper '{s}' (no such stash-box or performer scraper)"
 
 # ---------- performer read / write ----------
 PERF_FIELDS = ("id name alias_list gender birthdate death_date ethnicity country hair_color "
@@ -119,7 +177,7 @@ def find_by_name(gql, name, exclude_id):
     except Exception:
         return None
     for p in rows:
-        if str(p["id"]) != str(exclude_id) and nfc(p["name"]) == nfc(name):
+        if str(p["id"]) != str(exclude_id) and norm(p["name"]) == norm(name):
             return p["id"]
     return None
 def performer_update(gql, pid, upd):
@@ -137,7 +195,7 @@ def has_image(image_path):
     return bool(image_path) and "default=true" not in image_path
 
 # ---------- build the update (empty-only by default; alias/urls append-merge) ----------
-def build_update(perf, cand, primary_name, extra_aliases=None, set_name=False, ow=None):
+def build_update(perf, cand, primary_name, extra_aliases=None, set_name=False, ow=None, stash_id=None):
     ow = ow or {}
     upd = {}
     def empty(f):
@@ -161,7 +219,8 @@ def build_update(perf, cand, primary_name, extra_aliases=None, set_name=False, o
     # Writing twitter/instagram/url into the legacy fields makes performerMerge fail
     # ("Merging legacy performer URLs is not supported"), so use the modern urls list.
     # Overwrite = replace; otherwise keep existing and append the missing ones.
-    url_pool = [u.strip() for u in (cand.get("twitter"), cand.get("instagram"), cand.get("url")) if u and u.strip()]
+    url_pool = [u.strip() for u in (list(cand.get("urls") or []) +
+                [cand.get("twitter"), cand.get("instagram"), cand.get("url")]) if u and u.strip()]
     existing_urls = list(perf.get("urls") or [])
     if ow.get("urls"):
         new_urls = list(dict.fromkeys(url_pool))
@@ -187,6 +246,10 @@ def build_update(perf, cand, primary_name, extra_aliases=None, set_name=False, o
         seen.add(na); additions.append(a)
     if additions or (ow.get("alias_list") and base != list(perf.get("alias_list") or [])):
         upd["alias_list"] = base + additions
+    # stash-box id of the matched performer, so Identify/Tagger recognise it later.
+    if stash_id:
+        sids = merge_stash_ids(perf.get("stash_ids"), [stash_id])
+        if sids is not None: upd["stash_ids"] = sids
     # NB: the image is NOT included here; a slow fetch would fail the whole update, so it is applied separately.
     return upd
 
@@ -229,12 +292,14 @@ def set_image_mode(target_id, image_url):
             log(f"{target_id}: image async attempt {attempt+1} failed ({e})")
     log(f"{target_id}: image async gave up")
 
-def union_stash_ids(dest, source):
-    """Add source stash_ids for endpoints the dest does not already have. None if nothing added."""
-    by_ep = {s["endpoint"]: {"endpoint": s["endpoint"], "stash_id": s["stash_id"]}
-             for s in (dest.get("stash_ids") or [])}
+def merge_stash_ids(existing, additions):
+    """Append the additions whose endpoint is not present yet. None when nothing was added."""
+    by_ep = {}
+    for s in (existing or []):
+        if s.get("endpoint"): by_ep[s["endpoint"]] = {"endpoint": s["endpoint"], "stash_id": s["stash_id"]}
     added = False
-    for s in (source.get("stash_ids") or []):
+    for s in (additions or []):
+        if not s.get("endpoint") or not s.get("stash_id"): continue
         if s["endpoint"] not in by_ep:
             by_ep[s["endpoint"]] = {"endpoint": s["endpoint"], "stash_id": s["stash_id"]}; added = True
     return list(by_ep.values()) if added else None
@@ -274,7 +339,7 @@ def main():
         src = settings.get("manualSource")
         use_scraper_name = settings.get("manualUseScraperName")
         if use_scraper_name is None: use_scraper_name = False  # default: manual keeps the created name
-    source_input = build_source(src)
+    source_input, source_endpoint, source_label = resolve_source(gql, src)
     try:
         threshold = float(settings.get("threshold"))
         if not (0 < threshold <= 1): threshold = THRESHOLD
@@ -290,7 +355,7 @@ def main():
 
     cands = scrape_source(gql, name, source_input)
     if not cands:
-        log(f"{pid} '{name}': no candidate ({source_input}) -> skip")
+        log(f"{pid} '{name}': no candidate ({source_label}) -> skip")
         print(json.dumps({"output": "skip (no candidate)"})); return
     scored = sorted(((match_score(targets, [c.get("name")] + split_aliases(c.get("aliases"))), c)
                      for c in cands), key=lambda x: x[0], reverse=True)
@@ -300,8 +365,19 @@ def main():
         print(json.dumps({"output": f"skip (no match {top_score:.2f})"})); return
 
     cand_name = (top.get("name") or "").strip()
-    prefer_scraper = bool(use_scraper_name) and bool(cand_name) and norm(cand_name) != norm(name)
+    # Rename when the scraper name genuinely differs (only if the toggle is on), and always when
+    # it is the same name with different casing/spacing - so a typed "yua mikami" becomes
+    # "Yua Mikami" even with the toggle off.
+    same_name = norm(cand_name) == norm(name)
+    prefer_scraper = (bool(cand_name) and nfc(cand_name) != nfc(name)
+                      and (bool(use_scraper_name) or same_name))
     ctx_label = "identify" if from_identify else "manual"
+
+    # A stash-box scrape reports the remote performer id: store it as a stash_id.
+    scraped_stash_id = None
+    remote_id = (top.get("remote_site_id") or "").strip()
+    if source_endpoint and remote_id:
+        scraped_stash_id = {"endpoint": source_endpoint, "stash_id": remote_id}
 
     try:
         if prefer_scraper:
@@ -310,26 +386,30 @@ def main():
                 # duplicate -> merge the new one (pid) into the existing one (dup_id)
                 dest = get_performer(gql, dup_id)
                 extra = [perf["name"]] + list(perf.get("alias_list") or [])   # carry created name + aliases over
-                values = build_update(dest, top, primary_name=dest["name"], extra_aliases=extra, set_name=False, ow=ow)
-                sids = union_stash_ids(dest, perf)
+                values = build_update(dest, top, primary_name=dest["name"], extra_aliases=extra,
+                                      set_name=False, ow=ow, stash_id=scraped_stash_id)
+                sids = merge_stash_ids(values.get("stash_ids") or dest.get("stash_ids"), perf.get("stash_ids"))
                 if sids is not None: values["stash_ids"] = sids
                 values["id"] = dup_id   # PerformerUpdateInput requires id (the merge destination)
                 performer_merge(gql, [pid], dup_id, values)
                 apply_image_async(conn, dup_id, dest, top, overwrite=ow.get("image"))
-                log(f"{pid} '{name}' [{ctx_label}]: MERGED into {dup_id} '{dest['name']}' "
+                log(f"{pid} '{name}' [{ctx_label}] via {source_label}: MERGED into {dup_id} '{dest['name']}' "
                     f"(fields={sorted(values.keys())}, score={top_score:.2f})")
                 print(json.dumps({"output": f"merged into {dup_id}"})); return
             # no duplicate -> rename to the scraper name (created name kept as alias)
-            values = build_update(perf, top, primary_name=cand_name, extra_aliases=[perf["name"]], set_name=True, ow=ow)
+            values = build_update(perf, top, primary_name=cand_name, extra_aliases=[perf["name"]],
+                                  set_name=True, ow=ow, stash_id=scraped_stash_id)
             mode = f"{ctx_label}(rename)"
         else:
             # keep the created name as primary; the scraper name becomes an alias
-            values = build_update(perf, top, primary_name=name, extra_aliases=[], set_name=False, ow=ow)
+            values = build_update(perf, top, primary_name=name, extra_aliases=[], set_name=False,
+                                  ow=ow, stash_id=scraped_stash_id)
             mode = ctx_label
         if values:
             performer_update(gql, pid, values)
         apply_image_async(conn, pid, perf, top, overwrite=ow.get("image"))
-        log(f"{pid} '{name}' [{mode}]: filled {sorted(values.keys())} (score={top_score:.2f})")
+        log(f"{pid} '{name}' [{mode}] via {source_label}: filled {sorted(values.keys())} "
+            f"(score={top_score:.2f})")
         print(json.dumps({"output": f"filled {sorted(values.keys())}"}))
     except Exception as e:
         log(f"{pid} '{name}': apply error {e}")
