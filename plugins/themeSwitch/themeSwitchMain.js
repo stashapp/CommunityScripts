@@ -12,7 +12,7 @@
   const svgChevUP =
     '<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="chevron-right" class="svg-inline--fa fa-chevron-right fa-icon collapse-icon fa-fw" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path fill="currentColor" d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"></path></svg>';
   const svgBTN =
-    '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102 123" width="20" height="20"><title>paint-icon-svg</title><style>  .s0 { fill: #fafafa }   .s1 { fill: #efaa3a }   .s2 { fill: #25a700 }   .s3 { fill: #e22952 }   .s4 { fill: #42a3cc } </style><path id="Layer" class="s0" d="m42.6 114.5q3 0.4 6.1 0.4 3 0 6-0.4 3-0.4 6-1.2 2.9-0.8 5.7-1.9 1.1-0.5 2.2-1 1.1-0.5 2.1-1 1.1-0.6 2.1-1.2 1-0.6 2-1.2l0.7 6.9q-0.8 0.5-1.6 0.9-0.9 0.4-1.7 0.8-0.8 0.5-1.7 0.8-0.9 0.4-1.7 0.8-3.2 1.3-6.5 2.2-3.4 0.9-6.8 1.3-3.4 0.5-6.9 0.5-3.4-0.1-6.8-0.5-3.7-0.5-7.2-1.7-3.6-1.1-6.9-2.8-3.3-1.6-6.3-3.8-3-2.2-5.6-4.9-2.8-2.8-5.1-6-2.3-3.1-4.2-6.6-1.8-3.4-3.2-7.1-1.3-3.7-2.1-7.6-1-4.7-1.2-9.5-0.1-4.8 0.6-9.5 0.8-4.7 2.3-9.3 1.6-4.5 4-8.7 2.3-4.2 5.4-7.9 3.1-3.8 6.8-6.9 3.7-3.1 7.9-5.6 4.1-2.4 8.7-4 1.5-0.6 3-1 1.5-0.4 3.1-0.7 1.6-0.2 3.2-0.2 1.5-0.1 3.1 0.1 1.4 0.2 2.7 0.6 1.3 0.4 2.6 1.1 1.2 0.7 2.2 1.6 1 1 1.9 2.1 0 0 0.1 0.1 0 0.1 0 0.2 0.1 0 0.1 0.1 0.1 0.1 0.1 0.2c2.9 6.6-0.6 10.8-4 14.8-2 2.3-3.8 4.5-2.7 6.6 0.4 0.9 1.6 1.5 3.2 2q1 0.2 2 0.3 1 0.1 2 0.1 1 0 2 0 1-0.1 2-0.3c2.5-0.4 5.2-1 7.8-1.5 1.5-0.4 3-0.7 4.5-1l-2 6.8-1.3 0.3c-2.5 0.5-5.1 1.1-8.1 1.6q-1.3 0.2-2.6 0.3-1.3 0.1-2.6 0.1-1.3 0-2.7-0.2-1.3-0.2-2.6-0.5c-3.3-0.8-5.9-2.6-7.2-5.1-3-5.9 0.1-9.6 3.5-13.6 2-2.4 4.2-5 3.2-7.9q-0.5-0.6-1-1-0.6-0.5-1.2-0.8-0.7-0.3-1.4-0.5-0.6-0.2-1.4-0.3-1.2-0.1-2.4-0.1-1.2 0.1-2.4 0.2-1.2 0.2-2.3 0.5-1.2 0.3-2.3 0.8-4 1.5-7.7 3.6-3.7 2.2-7 4.9-3.2 2.8-6 6.1-2.7 3.3-4.8 7-2 3.7-3.4 7.7-1.4 4-2 8.2-0.7 4.2-0.6 8.4 0.2 4.3 1 8.4 0.7 3.4 1.9 6.7 1.2 3.3 2.9 6.3 1.6 3.1 3.6 5.9 2.1 2.8 4.5 5.3 2.3 2.3 4.9 4.2 2.5 1.9 5.4 3.4 2.8 1.4 5.9 2.4 3 0.9 6.2 1.4z"/><path id="Layer" fill-rule="evenodd" class="s1" d="m22.1 55.7c1.3 3.4 4.6 5.6 8.2 5.7 3.6 0.1 6.9-2 8.4-5.3 1.5-3.4 0.8-7.2-1.7-9.9-2.5-2.6-6.3-3.5-9.7-2.2-1.1 0.4-2.2 1.1-3 1.9-0.9 0.8-1.6 1.8-2.1 2.9-0.4 1.1-0.7 2.2-0.7 3.4 0 1.2 0.2 2.4 0.6 3.5z"/><path id="Layer" fill-rule="evenodd" class="s2" d="m16.8 82.5c1.3 3.4 4.5 5.7 8.2 5.8 3.7 0.1 7.1-2 8.6-5.3 1.5-3.4 0.8-7.3-1.7-10-2.6-2.7-6.5-3.6-9.9-2.3-1.1 0.5-2.1 1.1-3 1.9-0.9 0.9-1.6 1.9-2 2.9-0.5 1.1-0.8 2.3-0.8 3.5-0.1 1.2 0.2 2.4 0.6 3.5z"/><path id="Layer" fill-rule="evenodd" class="s3" d="m62.1 81.7q0.6 1.6 1.7 2.9 1.1 1.3 2.6 2.2 1.4 0.9 3.1 1.3 1.7 0.3 3.4 0.2l-2.1-20.7q-0.4 0-0.7 0.1-0.4 0-0.7 0.1-0.4 0.1-0.7 0.2-0.3 0.1-0.7 0.2c-1.2 0.5-2.4 1.2-3.4 2.2-1 0.9-1.8 2-2.4 3.3-0.5 1.2-0.8 2.6-0.8 4-0.1 1.3 0.1 2.7 0.6 4z"/><path id="Layer" fill-rule="evenodd" class="s0" d="m100.3 17.7c2.4 7.9 1.5 18.1-6.8 21.8q-0.8 0.4-1.6 0.6-0.9 0.2-1.7 0.2-0.8 0.1-1.7 0-0.8-0.1-1.6-0.4-1.4-0.4-2.7-1.1-1.3-0.8-2.4-1.8-1-0.9-1.9-2.1-0.9-1.2-1.5-2.5c-5.6-12.7 10.4-20.2 11.1-32.4 3.6 4.2 8.5 10.5 10.8 17.7zm-0.1 45.2l-4 54.6q0 0.5-0.1 1-0.1 0.5-0.3 1-0.2 0.5-0.4 1-0.3 0.5-0.6 0.9c-0.7 0.6-1.4 1-2.3 1.3-0.8 0.2-1.7 0.2-2.6 0-0.8-0.2-1.6-0.6-2.3-1.2-0.6-0.6-1.1-1.3-1.4-2.1q-0.1-0.4-0.2-0.9-0.1-0.4-0.2-0.8 0-0.4-0.1-0.8 0-0.5 0-0.9l-5.4-52.9q2.4 0.5 4.9 0.7 2.5 0.3 5 0.3 2.5 0 5-0.3 2.5-0.3 5-0.9zm-5.5-17.8c2.5 7.5 2.8 8.2 6 14.5-6.5 1.8-13.4 1.5-20.4 0l4.3-14.5c3.2 1.6 7.7 1 10.2 0z"/><path id="Layer" fill-rule="evenodd" class="s4" d="m40.8 101.6c1.3 3.4 4.5 5.7 8.2 5.8 3.7 0.1 7.1-2 8.6-5.4 1.5-3.3 0.8-7.3-1.7-9.9-2.6-2.7-6.5-3.6-9.9-2.3-1.1 0.5-2.1 1.1-3 1.9-0.9 0.9-1.6 1.8-2 2.9-0.5 1.1-0.8 2.3-0.8 3.5-0.1 1.2 0.2 2.4 0.6 3.5z"/></svg>';
+    '<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102 123" width="20" height="20"><title>paint-icon-svg</title><path id="Layer" fill="currentColor" d="m42.6 114.5q3 0.4 6.1 0.4 3 0 6-0.4 3-0.4 6-1.2 2.9-0.8 5.7-1.9 1.1-0.5 2.2-1 1.1-0.5 2.1-1 1.1-0.6 2.1-1.2 1-0.6 2-1.2l0.7 6.9q-0.8 0.5-1.6 0.9-0.9 0.4-1.7 0.8-0.8 0.5-1.7 0.8-0.9 0.4-1.7 0.8-3.2 1.3-6.5 2.2-3.4 0.9-6.8 1.3-3.4 0.5-6.9 0.5-3.4-0.1-6.8-0.5-3.7-0.5-7.2-1.7-3.6-1.1-6.9-2.8-3.3-1.6-6.3-3.8-3-2.2-5.6-4.9-2.8-2.8-5.1-6-2.3-3.1-4.2-6.6-1.8-3.4-3.2-7.1-1.3-3.7-2.1-7.6-1-4.7-1.2-9.5-0.1-4.8 0.6-9.5 0.8-4.7 2.3-9.3 1.6-4.5 4-8.7 2.3-4.2 5.4-7.9 3.1-3.8 6.8-6.9 3.7-3.1 7.9-5.6 4.1-2.4 8.7-4 1.5-0.6 3-1 1.5-0.4 3.1-0.7 1.6-0.2 3.2-0.2 1.5-0.1 3.1 0.1 1.4 0.2 2.7 0.6 1.3 0.4 2.6 1.1 1.2 0.7 2.2 1.6 1 1 1.9 2.1 0 0 0.1 0.1 0 0.1 0 0.2 0.1 0 0.1 0.1 0.1 0.1 0.1 0.2c2.9 6.6-0.6 10.8-4 14.8-2 2.3-3.8 4.5-2.7 6.6 0.4 0.9 1.6 1.5 3.2 2q1 0.2 2 0.3 1 0.1 2 0.1 1 0 2 0 1-0.1 2-0.3c2.5-0.4 5.2-1 7.8-1.5 1.5-0.4 3-0.7 4.5-1l-2 6.8-1.3 0.3c-2.5 0.5-5.1 1.1-8.1 1.6q-1.3 0.2-2.6 0.3-1.3 0.1-2.6 0.1-1.3 0-2.7-0.2-1.3-0.2-2.6-0.5c-3.3-0.8-5.9-2.6-7.2-5.1-3-5.9 0.1-9.6 3.5-13.6 2-2.4 4.2-5 3.2-7.9q-0.5-0.6-1-1-0.6-0.5-1.2-0.8-0.7-0.3-1.4-0.5-0.6-0.2-1.4-0.3-1.2-0.1-2.4-0.1-1.2 0.1-2.4 0.2-1.2 0.2-2.3 0.5-1.2 0.3-2.3 0.8-4 1.5-7.7 3.6-3.7 2.2-7 4.9-3.2 2.8-6 6.1-2.7 3.3-4.8 7-2 3.7-3.4 7.7-1.4 4-2 8.2-0.7 4.2-0.6 8.4 0.2 4.3 1 8.4 0.7 3.4 1.9 6.7 1.2 3.3 2.9 6.3 1.6 3.1 3.6 5.9 2.1 2.8 4.5 5.3 2.3 2.3 4.9 4.2 2.5 1.9 5.4 3.4 2.8 1.4 5.9 2.4 3 0.9 6.2 1.4z"/><path id="Layer" fill-rule="evenodd" fill="#efaa3a" d="m22.1 55.7c1.3 3.4 4.6 5.6 8.2 5.7 3.6 0.1 6.9-2 8.4-5.3 1.5-3.4 0.8-7.2-1.7-9.9-2.5-2.6-6.3-3.5-9.7-2.2-1.1 0.4-2.2 1.1-3 1.9-0.9 0.8-1.6 1.8-2.1 2.9-0.4 1.1-0.7 2.2-0.7 3.4 0 1.2 0.2 2.4 0.6 3.5z"/><path id="Layer" fill-rule="evenodd" fill="#25a700" d="m16.8 82.5c1.3 3.4 4.5 5.7 8.2 5.8 3.7 0.1 7.1-2 8.6-5.3 1.5-3.4 0.8-7.3-1.7-10-2.6-2.7-6.5-3.6-9.9-2.3-1.1 0.5-2.1 1.1-3 1.9-0.9 0.9-1.6 1.9-2 2.9-0.5 1.1-0.8 2.3-0.8 3.5-0.1 1.2 0.2 2.4 0.6 3.5z"/><path id="Layer" fill-rule="evenodd" fill="#e22952" d="m62.1 81.7q0.6 1.6 1.7 2.9 1.1 1.3 2.6 2.2 1.4 0.9 3.1 1.3 1.7 0.3 3.4 0.2l-2.1-20.7q-0.4 0-0.7 0.1-0.4 0-0.7 0.1-0.4 0.1-0.7 0.2-0.3 0.1-0.7 0.2c-1.2 0.5-2.4 1.2-3.4 2.2-1 0.9-1.8 2-2.4 3.3-0.5 1.2-0.8 2.6-0.8 4-0.1 1.3 0.1 2.7 0.6 4z"/><path id="Layer" fill-rule="evenodd" fill="currentColor" d="m100.3 17.7c2.4 7.9 1.5 18.1-6.8 21.8q-0.8 0.4-1.6 0.6-0.9 0.2-1.7 0.2-0.8 0.1-1.7 0-0.8-0.1-1.6-0.4-1.4-0.4-2.7-1.1-1.3-0.8-2.4-1.8-1-0.9-1.9-2.1-0.9-1.2-1.5-2.5c-5.6-12.7 10.4-20.2 11.1-32.4 3.6 4.2 8.5 10.5 10.8 17.7zm-0.1 45.2l-4 54.6q0 0.5-0.1 1-0.1 0.5-0.3 1-0.2 0.5-0.4 1-0.3 0.5-0.6 0.9c-0.7 0.6-1.4 1-2.3 1.3-0.8 0.2-1.7 0.2-2.6 0-0.8-0.2-1.6-0.6-2.3-1.2-0.6-0.6-1.1-1.3-1.4-2.1q-0.1-0.4-0.2-0.9-0.1-0.4-0.2-0.8 0-0.4-0.1-0.8 0-0.5 0-0.9l-5.4-52.9q2.4 0.5 4.9 0.7 2.5 0.3 5 0.3 2.5 0 5-0.3 2.5-0.3 5-0.9zm-5.5-17.8c2.5 7.5 2.8 8.2 6 14.5-6.5 1.8-13.4 1.5-20.4 0l4.3-14.5c3.2 1.6 7.7 1 10.2 0z"/><path id="Layer" fill-rule="evenodd" fill="#42a3cc" d="m40.8 101.6c1.3 3.4 4.5 5.7 8.2 5.8 3.7 0.1 7.1-2 8.6-5.4 1.5-3.3 0.8-7.3-1.7-9.9-2.6-2.7-6.5-3.6-9.9-2.3-1.1 0.5-2.1 1.1-3 1.9-0.9 0.9-1.6 1.8-2 2.9-0.5 1.1-0.8 2.3-0.8 3.5-0.1 1.2 0.2 2.4 0.6 3.5z"/></svg>';
 
   let menuCreated = false;
 
@@ -39,6 +39,35 @@
 
     // Append the sorted li elements to the ul in their new order
     lis.forEach((li) => ul.appendChild(li));
+  }
+
+  // Keep the open menu on screen. On phones Stash moves the nav bar to the
+  // bottom, so a menu that always drops downward opens below the viewport.
+  function placeMenu(button, menu) {
+    const gap = 8;
+    const b = button.getBoundingClientRect();
+    const host = menu.offsetParent || button.parentElement;
+    const h = host.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const above = b.top > window.innerHeight - b.bottom;
+    const room = above ? b.top - gap * 2 : window.innerHeight - b.bottom - gap * 2;
+
+    menu.style.setProperty("max-width", `${vw - gap * 2}px`);
+    menu.style.setProperty("min-width", `min(20rem, ${vw - gap * 2}px)`);
+    menu.style.setProperty("max-height", `${Math.max(room, 160)}px`, "important");
+    menu.style.setProperty("overflow-y", "auto");
+    if (above) {
+      menu.style.setProperty("top", "auto");
+      menu.style.setProperty("bottom", `${h.bottom - b.top + gap}px`);
+    } else {
+      menu.style.setProperty("top", `${b.bottom - h.top + gap}px`);
+      menu.style.setProperty("bottom", "auto");
+    }
+
+    // Line the menu's right edge up with the button, then clamp it to the screen.
+    const w = menu.getBoundingClientRect().width;
+    const left = Math.min(Math.max(b.right - w, gap), vw - w - gap);
+    menu.style.setProperty("left", `${left - h.left}px`);
   }
 
   function menuOrderResetButton(elementToAppend) {
@@ -248,6 +277,10 @@
     }
   }
 
+  // Bump with the plugin version so browsers fetch updated snippets instead
+  // of reusing a cached copy (Stash sends no cache headers for plugin assets).
+  const ASSET_VERSION = "2.1.3";
+
   function addStyleSheet(key, path) {
     console.log(key, path);
     const styleSheet = document.createElement("link");
@@ -256,7 +289,7 @@
         document.querySelector("base")?.getAttribute("href") ?? "/";
     styleSheet.setAttribute(
       "href",
-      `${serverURL}plugin/themeSwitch/assets${path}`
+      `${serverURL}plugin/themeSwitch/assets${path}?v=${ASSET_VERSION}`
     );
     styleSheet.setAttribute("rel", "stylesheet");
     styleSheet.setAttribute("type", "text/css");
@@ -264,59 +297,94 @@
     document.getElementsByTagName("head")[0].appendChild(styleSheet);
   }
 
-  async function applyCSS(category, key, path, pluginId, pluginSrc) {
+  // Picking a theme enables exactly that theme's plugin and disables every
+  // other theme plugin in the list, including ones enabled from the Plugins
+  // page, so themes never stack. On page load only path-based themes need
+  // re-attaching; plugin themes load themselves.
+  async function applyCSS(category, key, path, pluginId, pluginSrc, picked) {
     if (category === "Themes") {
-      // Turn Off old Theme
-      let regex = /(themeSwitchPlugin-theme-.*)/;
-
-      for (let i = 0; i < localStorage.length; i++) {
-        let storageKey = localStorage.key(i);
-        let match = storageKey.match(regex);
-        if (
-          match &&
-          storageKey !== key &&
-          JSON.parse(localStorage.getItem(storageKey)).active === true
-        ) {
-          setObject(storageKey, category, false);
-          let element = document.getElementById(storageKey);
-          if (element && !pluginId) {
-            element.remove();
-          } else {
-            const oldThemePluginId = getDataFromKey(storageKey, "pluginId");
-            if (oldThemePluginId) {
-              await enablePlugin(oldThemePluginId, false);
-              setTimeout(() => {
-                location.reload();
-              }, 1000);
-            }
-          }
-        }
+      if (!picked) {
+        // Page load: re-attach a path-based theme; plugin themes load themselves.
+        if (path && !document.getElementById(key)) addStyleSheet(key, path);
+        return;
       }
 
-      const theme = JSON.parse(localStorage.getItem(key));
+      // Turn off the old theme in storage and drop any path-based sheet.
+      const regex = /(themeSwitchPlugin-theme-.*)/;
+      for (let i = 0; i < localStorage.length; i++) {
+        const storageKey = localStorage.key(i);
+        if (storageKey.match(regex) && storageKey !== key) {
+          await setObject(storageKey, category, false);
+          document.getElementById(storageKey)?.remove();
+        }
+      }
+      await setObject(key, category, true);
+      if (path && !document.getElementById(key)) addStyleSheet(key, path);
 
-      if (!theme && key != "themeSwitchPlugin-theme-default") {
-        setObject(key, category, true).then(() => {
-          addStyleSheet(key, path);
-        });
-      } else if (!theme && key === "themeSwitchPlugin-theme-default") {
-        setObject(key, category, true);
-      } else if (theme && key === "themeSwitchPlugin-theme-default") {
-        setObject(key, category, true);
-      } else if (theme && key !== "themeSwitchPlugin-theme-default") {
-        setObject(key, category, true).then(async () => {
-          if (pluginId) {
-            if (!(await isPluginInstalled(pluginId))) {
-              await installPlugin(pluginId, pluginSrc);
-            }
-            await enablePlugin(pluginId, true);
-            setTimeout(() => {
-              location.reload();
-            }, 1000);
-          } else if (path) {
-            addStyleSheet(key, path);
+      let installed = false;
+      if (pluginId && !(await isPluginInstalled(pluginId))) {
+        // installPackages runs as a job; wait for the plugin to register.
+        await installPlugin(pluginId, pluginSrc);
+        for (let i = 0; i < 30 && !(await isPluginInstalled(pluginId)); i++) {
+          await new Promise((r) => setTimeout(r, 500));
+        }
+        installed = true;
+      }
+
+      // Exactly one theme plugin on: the chosen one (none for Default or a
+      // path-based theme).
+      const data = await csLib
+        .callGQL({
+          query: `query Plugins{plugins{id enabled paths{css javascript}}}`,
+        })
+        .catch((err) => console.error(err));
+      const plugins = new Map((data?.plugins ?? []).map((p) => [p.id, p]));
+      const enabledMap = {};
+      let needsReload = installed;
+      for (const theme of window.themeSwitchCSS.Themes) {
+        const plugin = plugins.get(theme.pluginId);
+        if (!plugin) continue;
+        const want = theme.pluginId === pluginId;
+        if (plugin.enabled !== want) enabledMap[theme.pluginId] = want;
+        // A theme's script can't be unloaded or loaded late: switching away
+        // from or to a theme that ships JavaScript still needs a reload.
+        if (plugin.paths?.javascript?.length && plugin.enabled !== want) {
+          needsReload = true;
+        }
+      }
+      if (Object.keys(enabledMap).length > 0) {
+        await csLib
+          .callGQL({
+            query:
+              "mutation SetPluginsEnabled($enabledMap: BoolMap!) { setPluginsEnabled(enabledMap: $enabledMap) }",
+            variables: { enabledMap },
+          })
+          .catch((err) => console.error(err));
+      }
+      if (needsReload) {
+        location.reload();
+        return;
+      }
+      // CSS-only themes switch in place: drop the other themes' stylesheets
+      // and add the chosen one's, with a cache-busting query so a stale copy
+      // is never reused.
+      for (const theme of window.themeSwitchCSS.Themes) {
+        const plugin = plugins.get(theme.pluginId);
+        if (!plugin) continue;
+        const marker = `/plugin/${theme.pluginId}/`;
+        const links = [...document.querySelectorAll("link[rel=stylesheet]")]
+          .filter((l) => l.href.includes(marker));
+        if (theme.pluginId !== pluginId) {
+          links.forEach((l) => l.remove());
+        } else if (!links.length) {
+          for (const href of plugin.paths?.css ?? []) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.type = "text/css";
+            link.href = `${href}${href.includes("?") ? "&" : "?"}t=${Date.now()}`;
+            document.head.appendChild(link);
           }
-        });
+        }
       }
     } else {
       // CSS Other than themes
@@ -429,6 +497,7 @@
               themesDiv.classList.add("show");
               themesDiv.style =
                 "position: absolute; top: 133%; left: 0px; margin: 0px; opacity: 1; pointer-events: auto; width: max-content; min-width: 20rem; left: -575%;";
+              placeMenu(themeSwitchPlugin, themesDiv);
             } else if (!isClickInside && !isClickInsideThemesDiv) {
               themeSwitchPlugin.setAttribute("aria-expanded", "false");
               themesDiv.classList.remove("show");
@@ -547,7 +616,8 @@
                           themeData.key,
                           themeData.path,
                           themeData.pluginId,
-                          themeData.pluginSrc
+                          themeData.pluginSrc,
+                          true
                         );
                       };
                     })(themeData),
@@ -701,7 +771,14 @@
         selectedTheme = JSON.parse(localStorage.getItem(key));
         if (selectedTheme.active === true) {
           appliedThemeOtherThanDefault.push("True");
-          applyCSS(selectedTheme.category, key, getDataFromKey(key, "path"));
+          // init() runs on every stash:location event (page changes, filter
+          // changes). Only attach what is missing: going through applyCSS
+          // here toggled an already-attached snippet back off.
+          if (selectedTheme.category === "Themes") {
+            applyCSS(selectedTheme.category, key, getDataFromKey(key, "path"));
+          } else if (!document.getElementById(key)) {
+            addStyleSheet(key, getDataFromKey(key, "path"));
+          }
         }
       }
     }
