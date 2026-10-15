@@ -19,8 +19,22 @@ img.performer,
 .scene-details .pre,
 #scene-tabs-tabpane-scene-file-info-panel span.col-8.text-truncate > a,
 .gallery .flexbin img,
-.movie-details .logo {
+.movie-details .logo,
+.group-card-image,
+.studio-card-image,
+.image-image,
+.gallery-image {
   filter: blur(12px);
+}
+
+/* Scene player (video.js, used since Stash v0.17) and its scrubber thumbnails.
+   !important: the player's own styles and themes can otherwise win. */
+.video-js video,
+.video-js .vjs-tech,
+.video-js .vjs-poster,
+.video-js .vjs-poster img,
+.scrubber-item {
+  filter: blur(20px) !important;
 }
 
 .scene-card-video {
