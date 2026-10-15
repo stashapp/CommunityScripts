@@ -1,0 +1,552 @@
+/* Scene page, entity detail headers, list/wall/tagger views, stats,
+   settings, empty states. */
+
+/* Bootstrap utility Stash uses for menus and panels */
+.bg-secondary {
+  background-color: var(--reel-bg2) !important;
+}
+.dropdown-menu .bg-secondary.dropdown-item {
+  background-color: transparent !important;
+}
+.dropdown-menu .bg-secondary.dropdown-item:hover,
+.dropdown-menu .bg-secondary.dropdown-item:focus {
+  background-color: var(--reel-bg3) !important;
+}
+.text-white {
+  color: var(--reel-t1) !important;
+}
+
+/* ================= Scene page ================= */
+.scene-tabs {
+  background-color: var(--reel-bg1);
+  border-right: 1px solid var(--reel-line);
+  padding: 0 16px 16px !important;
+}
+.scene-tabs .scene-header-container .studio-logo {
+  margin: 0 -16px 18px !important;
+  padding: 16px;
+  min-height: 0;
+}
+.scene-tabs .scene-header-container img.studio-logo {
+  max-height: 100px;
+  object-fit: contain;
+}
+.scene-tabs .scene-header {
+  font-family: var(--reel-font-title) !important;
+  font-size: var(--reel-title-page) !important;
+  line-height: 1.1 !important;
+  font-weight: 400;
+  color: var(--reel-t1);
+  margin-bottom: 6px;
+}
+.scene-subheader {
+  font-size: 13px;
+  color: var(--reel-t2);
+}
+.scene-subheader .resolution {
+  color: var(--reel-t1);
+  font-weight: 600;
+}
+.scene-subheader .divider {
+  opacity: 0;
+  margin: 0 2px;
+}
+.scene-subheader .frame-rate::after {
+  content: " ·";
+}
+.scene-toolbar {
+  color: var(--reel-t2);
+  margin-top: 4px;
+}
+.scene-tabs .nav-tabs {
+  margin-top: 10px;
+}
+.scene-details h6,
+.scene-file-info dt,
+.scene-file-info dd,
+.scene-details .detail-item {
+  font-family: var(--reel-font-body);
+  font-size: 13px !important;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--reel-t2);
+}
+.scene-details a,
+.scene-file-info a {
+  color: var(--reel-acc) !important;
+}
+.scene-description,
+.scene-details .TruncatedText {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--reel-t2);
+}
+.scene-file-info dt {
+  color: var(--reel-t1);
+  font-weight: 500;
+}
+
+/* The collapse handle between the panel and the player */
+.scene-divider .btn {
+  background-color: transparent !important;
+  border: 0 !important;
+  color: var(--reel-t3) !important;
+  width: 14px;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+.scene-divider .btn:hover {
+  background-color: var(--reel-bg2) !important;
+  color: var(--reel-t1) !important;
+}
+
+/* Player */
+.scene-player-container {
+  background-color: var(--reel-bg0);
+}
+.video-js .vjs-play-progress,
+.video-js .vjs-volume-level {
+  background-color: var(--reel-acc) !important;
+}
+.video-js .vjs-load-progress {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+.video-js .vjs-progress-holder {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-radius: 2px;
+}
+.video-js .vjs-control-bar {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.7)) !important;
+}
+.video-js .vjs-big-play-button {
+  width: 72px !important;
+  height: 72px !important;
+  line-height: 72px !important;
+  margin-left: -36px !important;
+  margin-top: -36px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(6px);
+}
+
+/* Scrubber strip under the player */
+.scrubber-wrapper {
+  gap: 8px;
+  padding: 10px 16px 12px;
+  margin: 0 !important;
+}
+.scrubber-wrapper .scrubber-button {
+  width: 22px !important;
+  min-width: 22px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: var(--reel-r-chip) !important;
+  background-color: var(--reel-bg2) !important;
+  color: var(--reel-acc) !important;
+  font-weight: 400;
+}
+.scrubber-wrapper .scrubber-button:hover {
+  background-color: var(--reel-bg3) !important;
+}
+.scrubber-content {
+  border-radius: var(--reel-r-chip);
+  background-color: var(--reel-bg1);
+  margin: 0 !important;
+}
+.scrubber-tags-background {
+  background-color: var(--reel-bg3) !important;
+}
+#scrubber-current-position {
+  background-color: var(--reel-t1) !important;
+}
+.scrubber-tag {
+  background-color: var(--reel-acc) !important;
+  color: var(--reel-acc-ink) !important;
+  border-radius: 4px;
+}
+
+/* Edit panels: Save stands out, the rest stay neutral */
+.details-edit .btn-primary:not(.edit):not(.save),
+.scraper-menu .btn-primary,
+.search-item .btn-primary:not(.minimal):not(.input-group-append .btn),
+.setting-section .btn-primary:not(.minimal),
+#settings-menu-container .btn-primary {
+  background-color: var(--reel-bg3) !important;
+  border-color: transparent !important;
+  color: var(--reel-t1) !important;
+  font-weight: 500;
+}
+#scene-edit-details .edit-buttons-container,
+.edit-buttons-container {
+  background-color: var(--reel-bg1) !important;
+}
+.form-group .col-form-label,
+.form-group label {
+  color: var(--reel-t2);
+}
+
+/* ================= Detail headers: performer, studio, tag, group ================= */
+.detail-header,
+.detail-header.full-width {
+  background-color: var(--reel-bg1) !important;
+  border-bottom: 1px solid var(--reel-line);
+  color: var(--reel-t1);
+}
+.detail-header .background-image-container {
+  opacity: 0.18;
+}
+.detail-header-image {
+  position: relative;
+}
+.detail-header-image .btn-link {
+  padding: 0 !important;
+}
+.detail-header-image img.performer,
+.detail-header-image img {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.detail-header h2,
+.detail-header .performer-name,
+.detail-header .studio-name,
+.detail-header .tag-name {
+  font-family: var(--reel-font-title);
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 400;
+  color: var(--reel-t1);
+}
+.detail-header .alias-head {
+  font-size: 13px;
+  color: var(--reel-t2);
+}
+.detail-header .detail-item {
+  font-size: 13px;
+  line-height: 1.75;
+}
+.detail-header .detail-item-title {
+  color: var(--reel-t3);
+  font-weight: 500;
+  width: 130px;
+  display: inline-block;
+}
+.detail-header .detail-item-value {
+  color: var(--reel-t1);
+}
+.detail-header .details-edit {
+  gap: 8px;
+  margin-top: 10px;
+}
+.detail-header .name-icons .favorite-button:not(.not-favorite) {
+  color: var(--reel-acc) !important;
+}
+.detail-header .name-icons .link,
+.detail-header a {
+  color: var(--reel-acc);
+}
+
+/* StashDB / stash-box ID chips */
+.stash-id-pill,
+.stash-id-pill span,
+.stash-id-pill a {
+  border-radius: 999px !important;
+}
+.stash-id-pill span:first-child {
+  background-color: var(--reel-acc-soft) !important;
+  color: var(--reel-acc) !important;
+}
+.stash-id-pill span:last-child,
+.stash-id-pill a {
+  background-color: var(--reel-bg3) !important;
+  color: var(--reel-t1) !important;
+}
+
+/* Tabs under a detail header, centred */
+.detail-body .nav-tabs,
+.performer-tabs .nav-tabs,
+.studio-tabs .nav-tabs,
+.tag-tabs .nav-tabs {
+  justify-content: center;
+  gap: 22px;
+}
+
+/* Sticky header shown when scrolled */
+.sticky.detail-header {
+  background-color: rgba(30, 30, 30, 0.92) !important;
+  backdrop-filter: blur(10px);
+}
+.sticky.detail-header .sticky.detail-header-group a,
+.sticky.detail-header .sticky.detail-header-group span {
+  color: var(--reel-t1) !important;
+}
+
+/* ================= List (table) view ================= */
+.table-list table {
+  color: var(--reel-t1);
+}
+.table-list table thead th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--reel-t2) !important;
+  border-bottom: 1px solid var(--reel-line) !important;
+  border-top: 0 !important;
+}
+.table-list table tbody tr {
+  border-bottom: 1px solid var(--reel-line);
+}
+.table-list table tbody tr:hover {
+  background-color: var(--reel-bg1);
+}
+.table-list table td {
+  vertical-align: middle;
+  border: 0 !important;
+  font-size: 13px;
+}
+.table-list table td img {
+  border-radius: 8px;
+}
+.table-list .title-link,
+.table-list td.title-data a,
+.table-list td a.performer-name {
+  font-family: var(--reel-font-title);
+  font-size: 16px;
+  color: var(--reel-t1) !important;
+}
+.table-list td a {
+  color: var(--reel-t1);
+}
+
+/* ================= Wall view ================= */
+.wall-item,
+.wall-item-container {
+  border-radius: var(--reel-r-chip) !important;
+  overflow: hidden;
+}
+.wall-item-text,
+.wall-item .wall-item-text {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8)) !important;
+  font-family: var(--reel-font-title);
+  font-size: 18px;
+  color: var(--reel-t1) !important;
+  text-shadow: none !important;
+}
+
+/* ================= Tagger ================= */
+.tagger-container .search-item,
+.tagger-container .tagger-item,
+.search-item {
+  background-color: var(--reel-bg1) !important;
+  border: 0 !important;
+  border-radius: var(--reel-r-card) !important;
+  padding: 14px !important;
+  margin-bottom: 12px;
+}
+.tagger-container .search-item .scene-card-link img,
+.search-item img {
+  border-radius: 10px;
+}
+.tagger-container .input-group-prepend .input-group-text,
+.input-group-text {
+  background-color: var(--reel-bg3) !important;
+  border: 0 !important;
+  color: var(--reel-t2) !important;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tagger-container .input-group .form-control {
+  border-radius: 0 !important;
+}
+.tagger-container .input-group > :first-child,
+.tagger-container .input-group > :first-child .input-group-text {
+  border-radius: 999px 0 0 999px !important;
+}
+.tagger-container .input-group .input-group-append .btn {
+  border-radius: 0 999px 999px 0 !important;
+}
+
+/* ================= Stats ================= */
+#stats-page .stats-element,
+.stats .stats-element {
+  text-align: center;
+}
+#stats-page .stats-element .title,
+.stats .title {
+  font-family: var(--reel-font-title) !important;
+  font-size: 52px !important;
+  line-height: 1;
+  font-weight: 400 !important;
+  color: var(--reel-t1) !important;
+}
+#stats-page .stats-element .heading,
+.stats .heading {
+  margin-top: 12px;
+  font-size: 11px !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--reel-t3) !important;
+  font-weight: 500;
+}
+
+/* ================= Settings ================= */
+#settings-menu-container .nav-pills,
+.settings-menu-container .nav-pills {
+  gap: 2px;
+}
+#settings-container h1,
+#settings-container h2,
+#settings-container h3,
+.setting-section h1 {
+  font-family: var(--reel-font-title);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--reel-t1);
+}
+.setting-section .card,
+#settings-container .card,
+#settings-container .setting-group {
+  background-color: var(--reel-bg1) !important;
+  border-radius: var(--reel-r-card) !important;
+  border: 0 !important;
+}
+.setting-section .setting,
+#settings-container .setting {
+  border-color: var(--reel-line) !important;
+}
+.setting-section .setting h3,
+.setting-section .setting-group h3,
+#settings-container .setting h3 {
+  font-family: var(--reel-font-body);
+  font-size: 15px;
+  font-weight: 600;
+}
+.setting .sub-heading,
+.setting-section .sub-heading,
+#settings-container .sub-heading {
+  font-size: 12px;
+  color: var(--reel-t2) !important;
+}
+.job-table.card {
+  background-color: var(--reel-bg1) !important;
+  border-radius: var(--reel-r-card) !important;
+  color: var(--reel-t2);
+}
+#tasks-panel .tasks-panel-queue h1 {
+  font-family: var(--reel-font-title);
+}
+.logs .log-entry,
+.LogEntry,
+#log-entries {
+  font-size: 12px;
+}
+
+/* ================= Empty list ================= */
+.item-list-container .sidebar-pane-content:not(:has(.grid-card, .table-list, .scene-wall, .wall, .tagger-container, .card, [class*="wall"])) > .pagination-index-container::after {
+  content: "Nothing here yet";
+  display: block;
+  margin: 18vh auto 0;
+  text-align: center;
+  font-family: var(--reel-font-title);
+  font-size: 26px;
+  color: var(--reel-t2);
+}
+
+/* Big play button: Stash draws the icon at 100px, larger than the 72px circle,
+   so it overflowed off-centre. Size the glyph to the circle and nudge it right
+   so the triangle looks optically centred. */
+.video-js .vjs-big-play-button {
+  font-size: 36px !important;
+  border: 0 !important;
+}
+.video-js .vjs-big-play-button .vjs-icon-placeholder::before {
+  font-size: 36px !important;
+  line-height: 72px !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-indent: 3px;
+}
+
+/* Detail-page tab bars: Stash pads them below, which lifts the active
+   underline off the bar's line */
+.nav-tabs {
+  padding-bottom: 0 !important;
+}
+
+/* The slim header Stash pins when a detail page scrolls slides down only as
+   the full header's bottom edge passes under the top bar, instead of
+   appearing as soon as the page moves. It follows the scroll position, so
+   scrolling back up reverses it; browsers without scroll-driven animations
+   show it as Stash does. */
+@supports (animation-timeline: view()) {
+  .main {
+    timeline-scope: --detail-header;
+  }
+  .detail-header:not(.sticky) {
+    view-timeline: --detail-header block;
+  }
+  .detail-header.sticky {
+    animation: detail-header-sticky-in linear both;
+    animation-timeline: --detail-header;
+    animation-range: exit calc(100% - 130px) exit calc(100% - 50px);
+  }
+  @keyframes detail-header-sticky-in {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* Detail fields on phones: the label above its value, so long values like a
+   Stash ID get the full width; an ID that still doesn't fit ends in an
+   ellipsis (the link opens the full ID) */
+@media (max-width: 575.98px) {
+  .detail-header .detail-item {
+    display: block !important;
+  }
+  .detail-header .detail-item-title {
+    display: block;
+    width: auto !important;
+    margin-bottom: 1px;
+  }
+  .detail-header > .detail-container > .row {
+    align-self: stretch;
+    max-width: 100%;
+  }
+  .detail-header .performer-head,
+  .detail-header .detail-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.stash-id-pill {
+  display: inline-flex !important;
+  max-width: 100%;
+  min-width: 0;
+}
+.stash-id-pill span {
+  flex: none;
+}
+.stash-id-pill a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-item-value.stash-ids,
+.detail-item-value.stash-ids ul,
+.detail-item-value.stash-ids li {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.detail-item-value.stash-ids {
+  overflow: hidden;
+}
