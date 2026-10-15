@@ -5,9 +5,18 @@
   box-shadow: none;
   border: none;
 
-  margin: 8px;
+  margin: 6px; /* 12px between cards */
 
-  border-radius: 10px;
+  border-radius: 12px;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s;
+
+  &.grid-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  }
+  &.grid-card:has(.card-check:checked) {
+    box-shadow: 0 0 0 2px var(--primary-12);
+  }
 
   a .card-section-title {
     color: unset;
@@ -58,14 +67,35 @@
     }
   }
 
+  /* studio and tag logos sit in the same 16:9 box, so every card in a row
+     comes out the same height */
+  a.studio-card-header,
+  a.tag-card-header {
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border-radius: 12px;
+    background-color: var(--primary-2);
+
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+      max-height: none;
+      object-fit: contain;
+      padding: 10% 12%;
+    }
+  }
+
   .scene-card-preview {
     margin-bottom: 0;
   }
 
   .studio-overlay,
   .rating-banner,
-  .overlay-resolution,
-  .overlay-duration {
+  .scene-specs-overlay {
     height: auto;
 
     background-color: var(--black-a7);
@@ -85,7 +115,8 @@
 
   .studio-overlay {
     --image-size: 4rem;
-    right: 0;
+    left: 0;
+    right: auto;
     top: 0;
 
     height: unset;
@@ -127,6 +158,7 @@
   }
 
   .rating-banner {
+    display: none; /* the rating lives on the scene page */
     transform: none;
     left: 0;
     top: 0;
@@ -185,14 +217,30 @@
     }
   }
 
+  /* resolution and duration share one chip, bottom right */
   .scene-specs-overlay {
-    left: 0;
+    left: auto;
     right: 0;
     bottom: 0;
+    padding: 4px 9px;
 
     display: flex !important;
-    justify-content: space-between;
     align-items: center;
+    font-size: 11px;
+
+    span {
+      margin: 0 !important;
+      padding: 0 !important;
+      font-size: inherit !important;
+      font-weight: 600;
+      text-shadow: none;
+    }
+    .overlay-resolution + .overlay-duration::before {
+      content: "\00a0·\00a0";
+    }
+    .overlay-filesize {
+      display: none;
+    }
   }
 
   .preview-scrubber {
@@ -222,9 +270,11 @@
 
   .card-section {
     margin-bottom: 0;
-    padding: 1rem 0.75rem 0 0.75rem;
+    padding: 12px 12px 6px;
     .card-section-title {
-      font-size: var(--text-base);
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1.25;
       color: var(--primary-12);
     }
 
@@ -257,14 +307,25 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: start;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    gap: 22px;
+    margin: 4px 12px 10px;
 
+    /* plain icon + number, as in the designs: no button box, so the first
+       icon lines up with the title and nothing spills past the card */
     .btn {
-      padding-bottom: 3px;
-      padding-top: 3px;
+      padding: 3px 0;
+      background-color: transparent !important;
       color: var(--primary-11);
       font-size: var(--text-xs);
+
+      &:hover,
+      &:focus {
+        background-color: transparent !important;
+        color: var(--primary-12);
+      }
+      svg {
+        margin-left: 0;
+      }
     }
   }
 }

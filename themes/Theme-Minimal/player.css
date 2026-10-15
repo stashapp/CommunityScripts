@@ -1,5 +1,6 @@
-.scrubber-button:not(:hover) {
+.scrubber-button {
   background-color: unset !important;
+  color: var(--primary-11) !important;
 }
 
 .scene-tabs {
@@ -16,6 +17,13 @@
     min-width: unset !important;
   }
 
+  .scene-header,
+  .scene-header .TruncatedText {
+    font-size: 34px !important;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
   .scene-subheader {
     span {
       font-size: 0.8rem !important;
@@ -27,17 +35,18 @@
   .nav {
     margin-bottom: 24px;
     margin-top: 32px;
-    row-gap: 8px;
-    column-gap: 8px;
+    row-gap: 6px;
+    column-gap: 2px;
 
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+    display: flex;
+    flex-wrap: wrap;
 
     .nav-link {
       text-align: center;
       color: var(--primary-11) !important;
       background-color: unset;
-      padding: 12px 1rem;
+      padding: 7px 10px;
+      font-size: var(--text-sm);
       border: 0 !important;
       border-radius: 8px !important;
       line-height: 1;
@@ -50,7 +59,7 @@
       }
 
       &.active {
-        background-color: var(--primary-2) !important;
+        background-color: var(--primary-3) !important;
         color: var(--primary-12) !important;
         font-weight: 600;
       }
@@ -181,7 +190,8 @@
 }
 
 .scene-divider button {
-  color: var(--primary-10);
+  background-color: unset !important;
+  color: var(--primary-10) !important;
 }
 
 .scene-player-container {
@@ -189,7 +199,7 @@
 }
 
 .video-js {
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
 
   font-family: unset;
@@ -274,3 +284,28 @@
     transition: none;
   }
 }
+
+/* big play button: a soft circle, the icon centred in it */
+.video-js .vjs-big-play-button {
+  width: 72px !important;
+  height: 72px !important;
+  margin-left: -36px !important;
+  margin-top: -36px !important;
+  font-size: 36px !important;
+  line-height: 72px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(6px);
+}
+.video-js:hover .vjs-big-play-button {
+  background-color: rgba(255, 255, 255, 0.24) !important;
+}
+.video-js .vjs-big-play-button .vjs-icon-placeholder::before {
+  font-size: 36px !important;
+  line-height: 72px !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-indent: 3px;
+}
+

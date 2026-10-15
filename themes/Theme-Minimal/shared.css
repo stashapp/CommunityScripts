@@ -122,3 +122,76 @@
 .badge-pill {
   padding: 0.25rem 0.6rem;
 }
+
+/* ---------- review fixes ---------- */
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}
+
+/* card heart: the same size as the select checkbox, mirrored in the
+   opposite corner */
+.grid-card .favorite-button {
+  top: 11px !important;
+  right: 8px !important;
+  padding: 0 !important;
+  line-height: 1;
+}
+.grid-card .favorite-button svg {
+  width: 19px !important;
+  height: 19px !important;
+  font-size: 19px !important;
+  margin: 0 !important;
+}
+
+/* home carousels: slides pulled in so the arrows sit inside the page (stock
+   pushes the next arrow off a phone screen), arrows centred on the cards
+   rather than the cards plus the dots, every card in a row one height */
+.recommendation-row .slick-slider {
+  margin: 0 30px 30px;
+}
+.recommendation-row .slick-prev {
+  left: -28px;
+}
+.recommendation-row .slick-next {
+  right: -28px;
+}
+.recommendation-row .slick-dots {
+  position: absolute;
+  top: 100%;
+}
+.recommendation-row .slick-track {
+  display: flex !important;
+  margin-bottom: 0;
+}
+.recommendation-row .slick-arrow {
+  top: 0;
+  height: 100%;
+  transform: none;
+}
+.recommendation-row .slick-slide {
+  height: auto !important;
+}
+.recommendation-row .slick-slide > div {
+  height: 100%;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: 320px !important; /* studios too, not just scenes and performers */
+  height: calc(100% - 10px);
+}
+
+/* scene page: two performers side by side in the details panel */
+.scene-performers .performer-card {
+  width: calc(50% - 10px) !important;
+  margin: 5px !important;
+}
+
+/* Home carousels: whole cards only. The number of cards that fits at about
+   320px, sized to fill the row exactly, so none is cut off at the edge */
+.recommendation-row .slick-list {
+  container-type: inline-size;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: calc(100cqw / max(1, round(100cqw / 332px, 1)) - 12px) !important;
+  max-width: none !important;
+}
