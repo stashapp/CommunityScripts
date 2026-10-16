@@ -348,157 +348,540 @@ def form_filename(original_file_stem, scene_details):
 
     return replace_illegal_characters(new_filename)
 
-def rename_scene(scene_id):  
+def rename_scene(scene_id):
     global exitMsg
+
     POST_SCAN_DELAY = 3
-    fragment = 'id title performers {name} tags {id name ignore_auto_tag} studio {name} galleries {id} files {id path width height video_codec frame_rate} date'
+
+    fragment = (
+        'id title performers {name} '
+        'tags {id name ignore_auto_tag} '
+        'studio {name} '
+        'galleries {id} '
+        'files {id path width height video_codec frame_rate} '
+        'date'
+    )
+
     scene_details = stash.find_scene(scene_id, fragment)
     stash.Trace(f"(scene_details={scene_details})")
+
     if not scene_details:
         stash.Error(f"Scene with ID {scene_id} not found.")
         return None
+
+    if not scene_details.get("files"):
+        stash.Error(f"Scene with ID {scene_id} has no associated files.")
+        return None
+
     taskqueue = taskQueue(stash.job_queue())
-    original_file_path = scene_details['files'][0]['path']
+
+    original_file_path = scene_details["files"][0]["path"]
     original_parent_directory = Path(original_file_path).parent
+
     maxScanCountDefault = 5
     maxScanCountForUpdate = 10
-    if scene_details['title'] == None or scene_details['title'] == "":
-        if renameEvenIfTitleEmpty == False:
+
+    # --------------------------------------------------------------
+    # Check title
+    # --------------------------------------------------------------
+    if scene_details["title"] is None or scene_details["title"] == "":
+        if renameEvenIfTitleEmpty is False:
             stash.Log("Nothing to do because title is empty.")
             return None
+
         stash.Warn("Title is empty.")
         maxScanCountDefault = 1
         maxScanCountForUpdate = 1
-    if not os.path.isfile(original_file_path) and not taskqueue.clearDupTagsJobOnTaskQueue() and not taskqueue.deleteTaggedScenesJobOnTaskQueue() and not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault):
-        stash.Warn(f"[metadata_scan] Have to rescan scene ID {scene_id}, because Stash library path '{original_file_path}' does not exist. Scanning path: {original_parent_directory.resolve().as_posix()}")
-        stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
-        time.sleep(POST_SCAN_DELAY) # After a scan, need a few seconds delay before fetching data.
-        scene_details = stash.find_scene(scene_id)
-        original_file_path = scene_details['files'][0]['path']
+
+    # --------------------------------------------------------------
+    # If the original file is missing, attempt a Stash metadata scan
+    # --------------------------------------------------------------
+    if (
+        not os.path.isfile(original_file_path)
+        and not taskqueue.clearDupTagsJobOnTaskQueue()
+        and not taskqueue.deleteTaggedScenesJobOnTaskQueue()
+        and not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault)
+    ):
+        stash.Warn(
+            f"[metadata_scan] Have to rescan scene ID {scene_id}, "
+            f"because Stash library path '{original_file_path}' "
+            f"does not exist. Scanning path: "
+            f"{original_parent_directory.resolve().as_posix()}"
+        )
+
+        stash.metadata_scan(
+            paths=[original_parent_directory.resolve().as_posix()]
+        )
+
+        time.sleep(POST_SCAN_DELAY)
+
+        scene_details = stash.find_scene(scene_id, fragment)
+
+        if not scene_details or not scene_details.get("files"):
+            stash.Error(
+                f"Unable to retrieve scene ID {scene_id} after metadata scan."
+            )
+            return None
+
+        original_file_path = scene_details["files"][0]["path"]
+        original_parent_directory = Path(original_file_path).parent
+
     if not os.path.isfile(original_file_path):
-        stash.Error(f"Can not rename file because path {original_file_path} doesn't exist.")
+        stash.Error(
+            f"Can not rename file because path "
+            f"'{original_file_path}' doesn't exist."
+        )
         return None
+
     stash.Trace(f"(original_file_path={original_file_path})")
-    # Check if the scene's path matches any of the excluded paths
-    if exclude_paths and any(Path(original_file_path).match(exclude_path) for exclude_path in exclude_paths):
-        stash.Log(f"Scene with ID {scene_id} belongs to an excluded path. Skipping modifications.")
+
+    # --------------------------------------------------------------
+    # Check excluded paths
+    # --------------------------------------------------------------
+    if exclude_paths and any(
+        Path(original_file_path).match(exclude_path)
+        for exclude_path in exclude_paths
+    ):
+        stash.Log(
+            f"Scene with ID {scene_id} belongs to an excluded path. "
+            f"Skipping modifications."
+        )
         return None
 
-    original_file_stem  = Path(original_file_path).stem
-    original_file_name  = Path(original_file_path).name
-    new_filename        = form_filename(original_file_stem, scene_details)  
+    # --------------------------------------------------------------
+    # Build the destination filename
+    # --------------------------------------------------------------
+    original_file_stem = Path(original_file_path).stem
+    original_file_name = Path(original_file_path).name
+    original_extension = Path(original_file_path).suffix
+
+    new_filename = form_filename(
+        original_file_stem,
+        scene_details
+    )
+
+    if not new_filename:
+        stash.Error(
+            f"Can not rename scene ID {scene_id}: "
+            f"the generated filename is empty."
+        )
+        return None
+
     max_filename_length = int(config["max_filename_length"])
-    extension_length = len(Path(original_file_path).suffix)
+    extension_length = len(original_extension)
+
     if len(new_filename) + extension_length > max_filename_length:
-        hash_suffix = hashlib.md5(new_filename.encode()).hexdigest()
-        max_base_filename_length = max_filename_length - extension_length - len(hash_suffix) - 1
-        truncated_filename = new_filename[:max_base_filename_length]
-        new_filename = truncated_filename + '_' + hash_suffix
-    newFilenameWithExt  = new_filename + Path(original_file_path).suffix
-    new_file_path       = f"{original_parent_directory}{os.sep}{new_filename}{Path(original_file_name).suffix}"
-    org_file_root_stem  = f"{original_parent_directory}{os.sep}{original_file_stem}"
-    new_file_root_stem  = f"{original_parent_directory}{os.sep}{new_filename}"
-    stash.Trace(f"(original_file_name={original_file_name}) (newFilenameWithExt={newFilenameWithExt})(new_file_path={new_file_path}) (FileID={scene_details['files'][0]['id']})")
-    if original_file_name == newFilenameWithExt or original_file_name == new_filename:
-        stash.Log(f"Nothing to do, because new file name matches original file name: (newFilenameWithExt={newFilenameWithExt})")
+        hash_suffix = hashlib.md5(
+            new_filename.encode()
+        ).hexdigest()
+
+        max_base_filename_length = (
+            max_filename_length
+            - extension_length
+            - len(hash_suffix)
+            - 1
+        )
+
+        truncated_filename = new_filename[
+            :max_base_filename_length
+        ]
+
+        new_filename = (
+            truncated_filename
+            + "_"
+            + hash_suffix
+        )
+
+    newFilenameWithExt = new_filename + original_extension
+
+    new_file_path = str(
+        original_parent_directory
+        / newFilenameWithExt
+    )
+
+    org_file_root_stem = str(
+        original_parent_directory
+        / original_file_stem
+    )
+
+    new_file_root_stem = str(
+        original_parent_directory
+        / new_filename
+    )
+
+    stash.Trace(
+        f"(original_file_name={original_file_name}) "
+        f"(newFilenameWithExt={newFilenameWithExt}) "
+        f"(new_file_path={new_file_path}) "
+        f"(FileID={scene_details['files'][0]['id']})"
+    )
+
+    # --------------------------------------------------------------
+    # Nothing to do if the generated name is unchanged
+    # --------------------------------------------------------------
+    if (
+        original_file_name == newFilenameWithExt
+        or original_file_name == new_filename
+    ):
+        stash.Log(
+            "Nothing to do, because new file name matches "
+            f"original file name: "
+            f"(newFilenameWithExt={newFilenameWithExt})"
+        )
         return None
-    targetDidExist = True if os.path.isfile(new_file_path) else False
-    try:
-        if openedfile != None:
-            results = openedfile.closeFile(original_file_path)
-            if results != None:
-                stash.Warn(f"Had to close '{original_file_path}', because it was opened by following pids:{results['pids']}")
-        if move_files:
-            if not dry_run:
-                stash.Trace(f"Moving file '{original_file_path}' to '{new_file_path}'")
-                shutil.move(original_file_path, new_file_path)
-                if rename_associated_files_enable:
-                    stash.Trace(f"rename_associated_files_enable is enabled")
-                    for ext in associated_files_to_rename:
-                        associted_filename = org_file_root_stem + ext
-                        # stash.Trace(f"Checking if file exist: '{associted_filename}'")
-                        if os.path.isfile(associted_filename):
-                            new_associted_filename = new_file_root_stem + ext
-                            stash.Log(f"Renaming file '{associted_filename}' to '{new_associted_filename}'")
-                            shutil.move(associted_filename, new_associted_filename)
-            exitMsg = f"{dry_run_prefix}Moved file to '{new_file_path}' from '{original_file_path}'"
-        else:
-            stash.Trace(f"Rename('{original_file_path}', '{new_file_path}')")
-            if not dry_run:
-                stash.Trace(f"Renaming file '{original_file_path}' to '{new_file_path}'")
-                os.rename(original_file_path, new_file_path)
-                if rename_associated_files_enable:
-                    stash.Trace(f"rename_associated_files_enable is enabled...")
-                    for ext in associated_files_to_rename:
-                        associted_filename = org_file_root_stem + ext
-                        # stash.Trace(f"Checking if file exist: '{associted_filename}'")
-                        if os.path.isfile(associted_filename):
-                            new_associted_filename = new_file_root_stem + ext
-                            stash.Log(f"Renaming file '{associted_filename}' to '{new_associted_filename}'")
-                            os.rename(associted_filename, new_associted_filename)
-            exitMsg = f"{dry_run_prefix}Renamed file to '{new_file_path}' from '{original_file_path}'"
-    except OSError as e:
-        exitMsg = f"Failed to move/rename file: From {original_file_path} to {new_file_path}; targetDidExist={targetDidExist}. Error: {e}"
-        stash.Error(exitMsg)
-        if not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault):
-            stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
-            stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
-        if targetDidExist:
-            return None
-        if os.path.isfile(new_file_path):
-            if os.path.isfile(original_file_path):
-                os.remove(original_file_path)
-            pass
-        else:
-            # ToDo: Add delay rename here
+
+    # --------------------------------------------------------------
+    # Build the complete list of rename operations
+    #
+    # Every destination is checked before modifying any file.
+    # This prevents video and associated-file overwrites.
+    # --------------------------------------------------------------
+    rename_operations = [
+        {
+            "source": original_file_path,
+            "destination": new_file_path,
+            "type": "video",
+        }
+    ]
+
+    if rename_associated_files_enable:
+        stash.Trace(
+            "rename_associated_files_enable is enabled. "
+            "Checking associated files."
+        )
+
+        seen_sources = {
+            os.path.normcase(
+                os.path.abspath(original_file_path)
+            )
+        }
+
+        for ext in associated_files_to_rename:
+            associated_filename = org_file_root_stem + ext
+
+            if not os.path.isfile(associated_filename):
+                continue
+
+            normalized_source = os.path.normcase(
+                os.path.abspath(associated_filename)
+            )
+
+            # Avoid adding the same source twice if the configuration
+            # contains duplicate extensions.
+            if normalized_source in seen_sources:
+                stash.Warn(
+                    f"Skipping duplicate associated source: "
+                    f"'{associated_filename}'"
+                )
+                continue
+
+            seen_sources.add(normalized_source)
+
+            new_associated_filename = (
+                new_file_root_stem + ext
+            )
+
+            rename_operations.append(
+                {
+                    "source": associated_filename,
+                    "destination": new_associated_filename,
+                    "type": "associated",
+                }
+            )
+
+    # --------------------------------------------------------------
+    # Preflight validation
+    # --------------------------------------------------------------
+    destination_paths = set()
+
+    for operation in rename_operations:
+        source_path = operation["source"]
+        destination_path = operation["destination"]
+
+        normalized_source = os.path.normcase(
+            os.path.abspath(source_path)
+        )
+
+        normalized_destination = os.path.normcase(
+            os.path.abspath(destination_path)
+        )
+
+        if normalized_source == normalized_destination:
+            stash.Trace(
+                f"Skipping rename operation because source and "
+                f"destination are identical: '{source_path}'"
+            )
+            continue
+
+        if not os.path.isfile(source_path):
+            exitMsg = (
+                f"Rename aborted because source file does not exist: "
+                f"'{source_path}'"
+            )
+            stash.Error(exitMsg)
             return None
 
+        # lexists() detects regular files, directories, symlinks
+        # and broken symlinks.
+        if os.path.lexists(destination_path):
+            exitMsg = (
+                f"Rename aborted to prevent overwrite. "
+                f"Destination already exists: "
+                f"'{destination_path}'. "
+                f"Source was: '{source_path}'"
+            )
+            stash.Error(exitMsg)
+            return None
+
+        if normalized_destination in destination_paths:
+            exitMsg = (
+                f"Rename aborted because multiple source files "
+                f"would use the same destination: "
+                f"'{destination_path}'"
+            )
+            stash.Error(exitMsg)
+            return None
+
+        destination_paths.add(normalized_destination)
+
+    # Remove operations where source and destination are identical.
+    rename_operations = [
+        operation
+        for operation in rename_operations
+        if os.path.normcase(
+            os.path.abspath(operation["source"])
+        )
+        != os.path.normcase(
+            os.path.abspath(operation["destination"])
+        )
+    ]
+
+    if not rename_operations:
+        stash.Log(
+            "Nothing to do because all source and destination "
+            "paths are identical."
+        )
+        return None
+
+    # --------------------------------------------------------------
+    # Dry-run output
+    # --------------------------------------------------------------
     if dry_run:
-        stash.Log("Dry-Run, so skipping DB renaming")
-    elif stash.renameFileNameInDB(scene_details['files'][0]['id'], original_file_name, newFilenameWithExt):
-        stash.Trace("DB rename success")
-    elif not taskqueue.tooManyScanOnTaskQueue(maxScanCountForUpdate):
-        stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
-        stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
-        time.sleep(POST_SCAN_DELAY) # After a scan, need a few seconds delay before fetching data.
-        scene_details = stash.find_scene(scene_id)
-        if new_file_path != scene_details['files'][0]['path'] and not targetDidExist and not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault):
-            stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
-            stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
-            time.sleep(POST_SCAN_DELAY) # After a scan, need a few seconds delay before fetching data.
-            scene_details = stash.find_scene(scene_id)
-            if new_file_path != scene_details['files'][0]['path']:
-                if not os.path.isfile(new_file_path):
-                    stash.Error(f"Failed to rename file from {scene_details['files'][0]['path']} to {new_file_path}.")
-                elif os.path.isfile(scene_details['files'][0]['path']):
-                    stash.Warn(f"Failed to rename file from {scene_details['files'][0]['path']} to {new_file_path}. Old file still exist. Will attempt delay deletion.")
-                    for i in range(1, 5*60):
-                        time.sleep(60)
-                        if not os.path.isfile(new_file_path):
-                            stash.Error(f"Not deleting old file name {original_file_path} because new file name (new_file_path) does NOT exist.")
-                            break
-                        os.remove(original_file_path)
-                        if not os.path.isfile(original_file_path):
-                            stash.Log(f"Deleted {original_file_path} in delay deletion after {i} minutes.")
-                            stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
-                            stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
-                            break
-                else:
-                    org_stem = Path(scene_details['files'][0]['path']).stem
-                    new_stem = Path(new_file_path).stem
-                    file_id = scene_details['files'][0]['id']
-                    stash.Warn(f"Failed to update Stash library with new name. Will try direct SQL update. org_name={org_stem}; new_name={new_stem}; file_id={file_id}")
-                    # stash.set_file_basename(file_id, new_stem)
+        for operation in rename_operations:
+            stash.Log(
+                f"Dry run: would rename "
+                f"'{operation['source']}' to "
+                f"'{operation['destination']}'"
+            )
+
+        exitMsg = (
+            f"Would've renamed file to '{new_file_path}' "
+            f"from '{original_file_path}'"
+        )
+
+        stash.Log("Dry-Run, so skipping filesystem and DB renaming.")
+        stash.Log(exitMsg)
+
+        return new_filename
+
+    # --------------------------------------------------------------
+    # Execute rename operations
+    #
+    # completed_operations is used for best-effort rollback if one
+    # of the later operations fails.
+    # --------------------------------------------------------------
+    completed_operations = []
+
+    try:
+        if openedfile is not None:
+            results = openedfile.closeFile(original_file_path)
+
+            if results is not None:
+                stash.Warn(
+                    f"Had to close '{original_file_path}', "
+                    f"because it was opened by following pids: "
+                    f"{results['pids']}"
+                )
+
+        for operation in rename_operations:
+            source_path = operation["source"]
+            destination_path = operation["destination"]
+
+            # Recheck immediately before each rename to reduce the
+            # possibility of another process creating the destination
+            # between preflight and execution.
+            if os.path.lexists(destination_path):
+                raise FileExistsError(
+                    f"Destination appeared during rename operation: "
+                    f"'{destination_path}'"
+                )
+
+            if move_files:
+                stash.Log(
+                    f"Moving file '{source_path}' "
+                    f"to '{destination_path}'"
+                )
+
+                shutil.move(
+                    source_path,
+                    destination_path
+                )
+            else:
+                stash.Log(
+                    f"Renaming file '{source_path}' "
+                    f"to '{destination_path}'"
+                )
+
+                os.rename(
+                    source_path,
+                    destination_path
+                )
+
+            completed_operations.append(operation)
+
+        if move_files:
+            exitMsg = (
+                f"Moved file to '{new_file_path}' "
+                f"from '{original_file_path}'"
+            )
+        else:
+            exitMsg = (
+                f"Renamed file to '{new_file_path}' "
+                f"from '{original_file_path}'"
+            )
+
+    except OSError as e:
+        exitMsg = (
+            f"Failed to move/rename file from "
+            f"'{original_file_path}' to '{new_file_path}'. "
+            f"Error: {e}"
+        )
+
+        stash.Error(exitMsg)
+
+        # ----------------------------------------------------------
+        # Best-effort rollback
+        # ----------------------------------------------------------
+        if completed_operations:
+            stash.Warn(
+                "A rename operation failed after other files had "
+                "already been renamed. Attempting rollback."
+            )
+
+            for operation in reversed(completed_operations):
+                source_path = operation["source"]
+                destination_path = operation["destination"]
+
+                try:
+                    if (
+                        os.path.lexists(destination_path)
+                        and not os.path.lexists(source_path)
+                    ):
+                        stash.Warn(
+                            f"Rolling back '{destination_path}' "
+                            f"to '{source_path}'"
+                        )
+
+                        if move_files:
+                            shutil.move(
+                                destination_path,
+                                source_path
+                            )
+                        else:
+                            os.rename(
+                                destination_path,
+                                source_path
+                            )
+
+                    elif os.path.lexists(source_path):
+                        stash.Error(
+                            f"Rollback skipped because original path "
+                            f"already exists: '{source_path}'"
+                        )
+
+                    else:
+                        stash.Error(
+                            f"Rollback failed because renamed file "
+                            f"was not found: '{destination_path}'"
+                        )
+
+                except OSError as rollback_error:
+                    stash.Error(
+                        f"Rollback failed from "
+                        f"'{destination_path}' to "
+                        f"'{source_path}'. "
+                        f"Error: {rollback_error}"
+                    )
+
+        return None
+
+    # --------------------------------------------------------------
+    # Update Stash database only after every filesystem operation
+    # completed successfully
+    # --------------------------------------------------------------
+    if stash.renameFileNameInDB(
+        scene_details["files"][0]["id"],
+        original_file_name,
+        newFilenameWithExt
+    ):
+        stash.Trace("DB rename success.")
+
+    elif not taskqueue.tooManyScanOnTaskQueue(
+        maxScanCountForUpdate
+    ):
+        stash.Warn(
+            "Direct DB rename failed. Calling metadata scan for "
+            f"path '{original_parent_directory.resolve().as_posix()}'."
+        )
+
+        stash.metadata_scan(
+            paths=[
+                original_parent_directory.resolve().as_posix()
+            ]
+        )
+
+        time.sleep(POST_SCAN_DELAY)
+
+        updated_scene_details = stash.find_scene(
+            scene_id,
+            fragment
+        )
+
+        if (
+            updated_scene_details
+            and updated_scene_details.get("files")
+        ):
+            database_path = (
+                updated_scene_details["files"][0]["path"]
+            )
+
+            if os.path.normcase(
+                os.path.abspath(database_path)
+            ) != os.path.normcase(
+                os.path.abspath(new_file_path)
+            ):
+                stash.Warn(
+                    f"Filesystem rename succeeded, but Stash still "
+                    f"reports path '{database_path}' instead of "
+                    f"'{new_file_path}'."
+                )
+        else:
+            stash.Warn(
+                f"Unable to retrieve scene ID {scene_id} "
+                f"after metadata scan."
+            )
+
     else:
-        stash.Warn(f"Not performming [metadata_scan] because too many scan jobs are already on the Task Queue. Recommend running a full scan, and a clean job to make sure Stash DB is up to date.")
-        if not taskqueue.cleanJobOnTaskQueue():
-            stash.metadata_scan()
-            stash.metadata_clean()
-        if not taskqueue.cleanGeneratedJobOnTaskQueue():
-            stash.metadata_clean_generated()
+        stash.Warn(
+            "Not performing metadata scan because too many scan "
+            "jobs are already on the task queue. Recommend running "
+            "a scan and clean task to update the Stash database."
+        )
+
     stash.Log(exitMsg)
-    return new_filename 
-    
+
+    return new_filename
+
 def rename_files_task():
     scene_result = stash.get_all_scenes()
     all_scenes = scene_result['allScenes']
