@@ -1127,8 +1127,8 @@ class mergeMetadata: # A class to merge scene metadata from source scene to dest
 class taskQueue:
     taskqueue = None
     def __init__(self, taskqueue):
-        self.taskqueue = taskqueue
-    
+        self.taskqueue = taskqueue or []
+
     def tooManyScanOnTaskQueue(self, tooManyQty = 5):
         count = 0
         if self.taskqueue == None:
@@ -1154,7 +1154,7 @@ class taskQueue:
     
     def isRunningPluginTaskJobOnTaskQueue(self, taskName):
         for jobDetails in self.taskqueue:
-            if jobDetails['description'] == "Running plugin task: {taskName}":
+            if jobDetails['description'] == f"Running plugin task: {taskName}":
                 return True
         return False
     
