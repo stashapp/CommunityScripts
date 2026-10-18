@@ -177,7 +177,10 @@ def getGalleries(scene, title):
 def getTags(scene, title):
     title = title.lower()
     results = ""
+    tags_added = 0
     for tag in scene['tags']:
+        if max_tag_keys == -1 or (max_tag_keys is not None and tags_added >= int(max_tag_keys)):
+            break
         name = tag['name']
         stash.Trace(f"tag = {name}")
         if excludeIgnoreAutoTags == True and tag['ignore_auto_tag'] == True:
@@ -188,6 +191,7 @@ def getTags(scene, title):
                 stash.Trace(f"Skipping tag name '{name}' because already in title: '{title}'")
                 continue
         results += f"{name}, "
+        tags_added += 1
     return results.strip(", ")
 
 # Function to form the new filename based on scene details and user settings
