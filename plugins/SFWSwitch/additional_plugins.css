@@ -5,10 +5,9 @@
 /* === MORE BLUR === */
 
 /* Stash Battle */
-.pwr-scene-image-container,
-.pwr-scene-image-container,
-.pwr-hover-preview,
-.pwr-scene-image-container .pwr-scene-image,
+.sb-scene-image-container,
+.sb-hover-preview,
+.sb-scene-image-container .sb-scene-image,
 
 /* Ascension */
 .hon-performer-image,
@@ -37,7 +36,7 @@
 /* === LESS BLUR === */
 
 /* StashBattle */
-.pwr-scene-info,
+.sb-scene-info,
 
 /* Deck Viewer */
 .gallery-cover-title,
@@ -64,10 +63,10 @@
 .gallery-performers:hover,
 
 /* StashBattle */
-.pwr-scene-image-container:hover,
-.pwr-scene-image-container:hover .pwr-hover-preview,
-.pwr-scene-image-container:hover .pwr-scene-image,
-.pwr-scene-info:hover,
+.sb-scene-image-container:hover,
+.sb-scene-image-container:hover .sb-hover-preview,
+.sb-scene-image-container:hover .sb-scene-image,
+.sb-scene-info:hover,
 
 /* Ascension */
 .hon-performer-image:hover,
