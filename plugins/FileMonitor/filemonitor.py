@@ -14,7 +14,7 @@ import os, sys, time, pathlib, argparse, platform, traceback, logging
 from StashPluginHelper import StashPluginHelper
 from StashPluginHelper import taskQueue
 from threading import Lock, Condition
-from multiprocessing import shared_memory
+from multiprocessing import shared_memory, resource_tracker
 from filemonitor_config import config
 from filemonitor_task_examples import task_examples
 from filemonitor_self_unit_test import self_unit_test
@@ -907,6 +907,11 @@ def start_library_monitor_service():
         # merely checking for it, breaking that instance's own status checks and stop
         # command even though we're refusing to start a duplicate, not actually stopping it.
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
+        # Also unregister from *this* process's resource_tracker: just attaching
+        # (even read-only) registers the segment there, and when this short-lived
+        # process exits, its tracker treats an unregistered-but-tracked segment as
+        # "leaked" and unlinks it - destroying the real running instance's lock.
+        resource_tracker.unregister(shm_a._name, "shared_memory")
         shm_a.close()
         stash.Error("FileMonitor is already running. Need to stop FileMonitor before trying to start it again.")
         return
@@ -1005,6 +1010,11 @@ def getFileMonitorRunningStatus():
         # for subsequent status checks and stop_library_monitor), even though the running
         # process keeps its own already-open mapping and is otherwise unaffected.
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
+        # Also unregister from *this* process's resource_tracker: just attaching
+        # (even read-only) registers the segment there, and when this short-lived
+        # process exits, its tracker treats an unregistered-but-tracked segment as
+        # "leaked" and unlinks it - destroying the real running instance's lock.
+        resource_tracker.unregister(shm_a._name, "shared_memory")
         shm_a.close()
         FileMonitorStatus = "RUNNING"
         stash.Log("FileMonitor is running...")
