@@ -84,7 +84,12 @@ mutex = Lock()
 signal = Condition(mutex)
 shouldUpdate = False
 
-SHAREDMEMORY_NAME = "DavidMaisonaveAxter_FileMonitor" # Unique name for shared memory
+SHAREDMEMORY_NAME = "DavidMaisonave_FileMonitor" # Unique name for shared memory
+# Note: must stay <=30 chars - macOS's POSIX shm_open() rejects names (incl. leading "/")
+# longer than PSHMNAMLEN (31), raising OSError "File name too long" on SharedMemory(create=True).
+# "DavidMaisonaveAxter_FileMonitor" (31 chars) silently hit this on every macOS start attempt,
+# and was reported as the generic "must already be running" message below instead of the
+# real OSError, since the except clause doesn't log the caught exception.
 SHAREDMEMORY_SIZE = 4
 RECURSIVE = stash.pluginSettings["recursiveDisabled"] == False
 SCAN_MODIFIED = stash.pluginConfig["scanModified"]
@@ -602,8 +607,8 @@ def start_library_monitor():
     try:
         # Create shared memory buffer which can be used as singleton logic or to get a signal to quit task from external script
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=True, size=SHAREDMEMORY_SIZE)
-    except:
-        stash.Error(f"Could not open shared memory map ({SHAREDMEMORY_NAME}). Change File Monitor must be running. Can not run multiple instance of Change File Monitor. Stop FileMonitor before trying to start it again.")
+    except Exception as e:
+        stash.Error(f"Could not open shared memory map ({SHAREDMEMORY_NAME}). Change File Monitor must be running. Can not run multiple instance of Change File Monitor. Stop FileMonitor before trying to start it again. Error: {e}")
         return
     type(shm_a.buf)
     shm_buffer = shm_a.buf
