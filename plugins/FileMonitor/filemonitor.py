@@ -902,9 +902,12 @@ def stop_library_monitor():
 def start_library_monitor_service():
     # First check if FileMonitor is already running
     try:
+        # Just attach-and-close to confirm the segment exists; do NOT unlink it here.
+        # unlink() would delete the already-running instance's lock as a side effect of
+        # merely checking for it, breaking that instance's own status checks and stop
+        # command even though we're refusing to start a duplicate, not actually stopping it.
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
         shm_a.close()
-        shm_a.unlink()
         stash.Error("FileMonitor is already running. Need to stop FileMonitor before trying to start it again.")
         return
     except:
@@ -996,9 +999,13 @@ runTypeName=["NothingToDo", "stop_library_monitor", "StartFileMonitorAsAServiceT
 def getFileMonitorRunningStatus():
     FileMonitorStatus = "NOT running"
     try:
+        # Just attach-and-close to confirm the segment exists; do NOT unlink it here.
+        # unlink() deletes the named shared memory object immediately, so a mere status
+        # check would permanently break the name for the actually-running service (and
+        # for subsequent status checks and stop_library_monitor), even though the running
+        # process keeps its own already-open mapping and is otherwise unaffected.
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
         shm_a.close()
-        shm_a.unlink()
         FileMonitorStatus = "RUNNING"
         stash.Log("FileMonitor is running...")
     except:
