@@ -481,12 +481,9 @@ class StashPluginHelper(StashInterface):
                 if self.IS_LINUX:
                     args = ["nohup"] + args
                 self.Trace(f"Executing detached process using Popen({args})")
-                # start_new_session puts the child in its own session, so it survives the
-                # parent task process exiting (needed on macOS; harmless on Linux too).
-                pid = subprocess.Popen(args, start_new_session=True).pid
             else:
                 self.Trace(f"Executing process using normal Popen({args})")
-                pid = subprocess.Popen(args).pid
+            pid = subprocess.Popen(args).pid # On detach, may need the following for MAC OS subprocess.Popen(args, shell=True, start_new_session=True)
         self.Trace(f"pid={pid}")
         return pid
     
