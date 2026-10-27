@@ -1,5 +1,7 @@
 # Clean Scene Details for StashApp
 
+https://discourse.stashapp.cc/t/clean-scene-details-remove-text-strings-from-descriptions/19670
+
 A lightweight, cross-platform utility plugin for **StashApp** that surgically strips out specific case-insensitive text phrases, website watermarks, tracker tags, or promotional links from your scene description fields.
 
 It can be run manually as a bulk database-wide maintenance task, applied to a targeted selection of scenes right from the grid view, or left to run automatically in the background as a live hook whenever new scenes are added or scraped.
