@@ -1,0 +1,35 @@
+name: "Clean Scene Details"
+description: "Surgically removes case-insensitive text strings, watermarks, or promos from scene details."
+version: "1.0.0"
+
+# Uses Stash's native macro engine to resolve python environments dynamically across any OS
+exec:
+  - "{python}"
+  - "{pluginDir}/clean_details.py"
+
+tasks:
+  - name: "Clean All Scene Details"
+    description: "Scans all scenes in the database and strips out the target string based on settings."
+    execArgs:
+      - "--mode"
+      - "all"
+
+hooks:
+  - name: "Clean Scene Details On Update"
+    description: "Automatically strips the target string whenever a scene is updated or saved."
+    triggeredBy:
+      - scene.update.post
+    execArgs:
+      - "--mode"
+      - "selection"
+
+# Settings fields map cleanly to the UI panel without structural sequence errors
+settings:
+  target_string:
+    type: "STRING"
+    displayName: "Target String to Remove"
+    description: "The exact phrase or watermark you want stripped from descriptions."
+  dry_run:
+    type: "BOOLEAN"
+    displayName: "Enable Dry Run Mode"
+    description: "If checked, running the task will only log matching scenes without altering data."
