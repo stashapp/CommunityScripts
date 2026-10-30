@@ -21,13 +21,14 @@
         errorDialog: null,
         healthBanner: null,
         settingsOpen: false,
+        emptyResult: null,
     };
     function visageReducer(state, action) {
         switch (action.type) {
             case 'SET_SCENARIO':
                 return { ...state, scenario: action.scenario, scenarioId: action.id };
             case 'SET_MATCHES':
-                return { ...state, matches: action.matches, showMatchModal: true };
+                return { ...state, matches: action.matches, showMatchModal: true, emptyResult: null };
             case 'SET_FACES_DATA':
                 return { ...state, facesData: action.data, frameSelectorUrl: action.url, showFrameSelector: true };
             case 'SET_SELECTED_FACE':
@@ -41,23 +42,25 @@
                 return { ...state, loading: newLoading };
             }
             case 'SHOW_MATCH_MODAL':
-                return { ...state, showMatchModal: action.show };
+                return { ...state, showMatchModal: action.show, emptyResult: null };
             case 'SHOW_FRAME_SELECTOR':
                 return { ...state, showFrameSelector: action.show };
             case 'SHOW_SPRITE_MODAL':
-                return { ...state, showSpriteModal: action.show };
+                return { ...state, showSpriteModal: action.show, emptyResult: null };
             case 'CLEAR_MATCHES':
-                return { ...state, matches: [], showMatchModal: false };
+                return { ...state, matches: [], showMatchModal: false, emptyResult: null };
             case 'START_MATCH_SEARCH':
-                return { ...state, matches: [], showMatchModal: true };
+                return { ...state, matches: [], showMatchModal: true, emptyResult: null };
             case 'SET_SPRITE_RESULT':
-                return { ...state, spriteResult: action.result, showSpriteModal: true };
+                return { ...state, spriteResult: action.result, showSpriteModal: true, emptyResult: null };
             case 'CLEAR_SPRITE_RESULT':
-                return { ...state, spriteResult: null, showSpriteModal: false, scanProgress: 0, scanProgressDesc: '' };
+                return { ...state, spriteResult: null, showSpriteModal: false, scanProgress: 0, scanProgressDesc: '', emptyResult: null };
+            case 'SHOW_EMPTY_RESULT':
+                return { ...state, emptyResult: action.result };
             case 'SET_DETECTION_MODE':
                 return { ...state, detectionMode: action.mode };
             case 'SHOW_ERROR_DIALOG':
-                return { ...state, errorDialog: { message: action.message, variant: action.variant } };
+                return { ...state, errorDialog: { message: action.message, variant: action.variant, action: action.action } };
             case 'HIDE_ERROR_DIALOG':
                 return { ...state, errorDialog: null };
             case 'SHOW_HEALTH_BANNER':
@@ -131,14 +134,14 @@
         const reset = useCallback$8(() => {
             dispatch({ type: 'RESET' });
         }, []);
-        const showError = useCallback$8((message) => {
-            dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'error' });
+        const showError = useCallback$8((message, action) => {
+            dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'error', action });
         }, []);
         const showWarning = useCallback$8((message) => {
             dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'warning' });
         }, []);
-        const showSuccess = useCallback$8((message) => {
-            dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'success' });
+        const showSuccess = useCallback$8((message, action) => {
+            dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'success', action });
         }, []);
         const hideErrorDialog = useCallback$8(() => {
             dispatch({ type: 'HIDE_ERROR_DIALOG' });
@@ -154,6 +157,9 @@
         }, []);
         const closeSettings = useCallback$8(() => {
             dispatch({ type: 'HIDE_SETTINGS' });
+        }, []);
+        const showEmptyResult = useCallback$8((message, action) => {
+            dispatch({ type: 'SHOW_EMPTY_RESULT', result: { message, action } });
         }, []);
         const value = {
             state,
@@ -182,6 +188,7 @@
             hideHealthBanner,
             openSettings,
             closeSettings,
+            showEmptyResult,
         };
         return React$i.createElement(VisageContext.Provider, { value }, children);
     }
@@ -8031,6 +8038,244 @@
 
     });
 
+    // English source dictionary. Every user-facing string in the plugin lives here.
+    // Keys are namespaced by component. `{var}` tokens are interpolated via t().
+    // Adding a new string: add it here with an English value; every locale dict is
+    // Partial, so missing keys fall back to English automatically.
+    const en = {
+        // ---- BackendSettings.tsx ----
+        'backendSettings.title': 'Backend settings',
+        'backendSettings.closeAria': 'Close settings',
+        'backendSettings.backendAria': 'Backend settings',
+        'backendSettings.changeBackend': 'Change backend',
+        'backendSettings.backendLabel': 'Backend',
+        'backendSettings.local': 'Local',
+        'backendSettings.cloud': 'Cloud (Hugging Face)',
+        'backendSettings.cloudNote': 'Images are sent to the Hugging Face cloud service.',
+        'backendSettings.hintPrefix': 'Want your images to stay on your network?',
+        'backendSettings.hintLink': 'Run a private server via Patreon',
+        'backendSettings.urlLabel': 'URL',
+        'backendSettings.csp1': "The browser's security policy (CSP) only allows",
+        'backendSettings.csp2': 'by default. To reach a local backend on another address (e.g. your LAN IP), add it to the',
+        'backendSettings.csp3': 'list in the',
+        'backendSettings.csp4': 'file inside your Stash plugins folder, otherwise requests will be blocked. Note: updating Visage reinstalls',
+        'backendSettings.csp5': ', so this must be reapplied after every update.',
+        'backendSettings.testing': 'Testing connection…',
+        'backendSettings.testConnection': 'Test connection',
+        'backendSettings.testingShort': 'Testing…',
+        'backendSettings.cancel': 'Cancel',
+        'backendSettings.save': 'Save',
+        'backendSettings.feedback.reachable': 'Connection successful. Backend is ready.',
+        'backendSettings.feedback.degraded': 'Backend reachable but degraded (models or index not loaded).',
+        'backendSettings.feedback.unreachable': 'Backend unreachable. Check the URL and that the backend is running.',
+        'backendSettings.sync.title': 'Stash Sync',
+        'backendSettings.sync.lastSynced': 'Last synced: {time}',
+        'backendSettings.sync.neverSynced': 'Never synced',
+        'backendSettings.sync.performers': '{count} performers in index',
+        'backendSettings.sync.button': 'Sync',
+        'backendSettings.sync.syncing': 'Syncing…',
+        'backendSettings.sync.done': 'Done',
+        'backendSettings.sync.alreadyRunning': 'Sync already in progress',
+        'backendSettings.sync.error': 'Sync failed',
+        'backendSettings.sync.connectionLost': 'Connection lost',
+        // ---- FaceMatchModal.tsx ----
+        'faceMatch.close': 'Close',
+        'faceMatch.title.scenes': 'Who is in this frame?',
+        'faceMatch.title.images': 'Who is in this image?',
+        'faceMatch.title.performers': 'Match this performer',
+        'faceMatch.showMore': 'Show {count} more',
+        'faceMatch.showFewer': 'Show fewer',
+        'faceMatch.allExisting.scenes': 'Everyone found is already in this scene',
+        'faceMatch.allExisting.images': 'Everyone found is already on this image',
+        'faceMatch.allExisting.performers': 'This performer is already linked',
+        'faceMatch.confirm.scenes': 'Add to scene ({count})',
+        'faceMatch.confirm.images': 'Add to image ({count})',
+        'faceMatch.confirm.performers': 'Link ({count})',
+        'faceMatch.adding.scenes': 'Adding…',
+        'faceMatch.adding.images': 'Adding…',
+        'faceMatch.adding.performers': 'Linking…',
+        'faceMatch.toast.added.scenes': 'Added {name} to this scene.',
+        'faceMatch.toast.added.images': 'Added {name} to this image.',
+        'faceMatch.toast.addedMany.scenes': 'Added {count} performers to this scene.',
+        'faceMatch.toast.addedMany.images': 'Added {count} performers to this image.',
+        'faceMatch.stashboxMissing': 'No stash-box configured.',
+        'faceMatch.stashboxMissingBody': ' Add a stash-box provider in Settings → Metadata Providers to enable performer import.',
+        'faceMatch.stashboxWrongName': 'No "StashDB" provider found.',
+        'faceMatch.stashboxWrongNameBody': ' Performer import requires a provider named "StashDB". Rename your provider in Settings → Metadata Providers.',
+        'faceMatch.learnMore': 'Learn more.',
+        'faceMatch.scanning': 'Looking for faces…',
+        'faceMatch.faceAlt': 'Face {index}',
+        'faceMatch.detected': 'Detected',
+        'faceMatch.detectedFaceAlt': 'Detected face',
+        'faceMatch.vs': 'vs',
+        'faceMatch.supportPatreon': 'Support on Patreon',
+        'faceMatch.ofSelected': '{selected} of {total} faces selected',
+        'faceMatch.clickToSelect': 'Click a match to select it',
+        'faceMatch.kbSwitch': 'Switch faces',
+        'faceMatch.kbSelect': 'Select performers',
+        'faceMatch.kbToggle': 'Toggle select',
+        'faceMatch.kbAddInstant': 'Shift+click to add instantly',
+        'faceMatch.toast.addError': 'Failed to add performer: {error}',
+        'faceMatch.toast.noStashbox': 'No stash-box configured. Add a stash-box provider in Settings → Metadata Providers to enable performer import. See {url}',
+        'faceMatch.toast.noProvider': 'No provider named "StashDB" found. Rename your provider to "StashDB" in Settings → Metadata Providers to enable performer import.',
+        'faceMatch.toast.configureProvider': 'Configure a stash-box provider in Settings → Metadata Providers to enable performer import.',
+        'faceMatch.toast.linked': 'Linked {count} stash ID{s} to this performer.',
+        // ---- SpriteResultModal.tsx ----
+        'sprite.title': 'Who is in this scene?',
+        'sprite.close': 'Close',
+        'sprite.showMore': 'Show {count} less likely matches',
+        'sprite.showFewer': 'Hide less likely matches',
+        'sprite.confirm': 'Add to scene ({count})',
+        'sprite.scanning': 'Scanning scene…',
+        'sprite.cancel': 'Cancel',
+        'sprite.empty': 'No performers found in this scene.',
+        'sprite.detectedFaceAlt': 'Detected face',
+        'sprite.hitsCount': '{count} hit{s}',
+        'sprite.totalTime': '{time} total',
+        'sprite.supportPatreon': 'Support on Patreon',
+        'sprite.confirmedCount': '{confirmed} of {total} selected',
+        'sprite.confirmHint': 'Click a performer to select them',
+        'sprite.adding': 'Adding…',
+        // ---- PerformerCard.tsx ----
+        'gender.male': 'Male',
+        'gender.female': 'Female',
+        'gender.transMale': 'Transgender male',
+        'gender.transFemale': 'Transgender female',
+        'gender.nonBinary': 'Non-binary',
+        'gender.intersex': 'Intersex',
+        'card.excellent': 'Excellent match',
+        'card.good': 'Good match',
+        'card.uncertain': 'Uncertain match',
+        'card.select': 'Select {name}',
+        'card.deselect': 'Deselect {name}',
+        'card.openOn': 'Open on {source}',
+        'card.existing.scenes': 'In scene',
+        'card.existing.images': 'On image',
+        'card.existing.performers': 'Linked',
+        // ---- FaceSearchButton.tsx ----
+        'search.overlayHint': 'Drag around a face. Click or press Enter for the whole frame. Esc to cancel.',
+        'search.noFaces': 'No face found. Try a tighter box around the face.',
+        'search.captureMediaFail': 'Could not capture media. Please ensure the scene/image is fully loaded.',
+        'search.failed': 'Face search failed: {error}',
+        'search.fetchImageFail': 'Could not fetch image from Stash.',
+        'search.captureFail': 'Failed to capture image: {error}',
+        'search.selectFaceImage': 'Select a face within the image.',
+        'search.captureFrameFail': 'Could not capture the current frame.',
+        'search.captureFrameFail2': 'Failed to capture the current frame.',
+        'search.selectFaceVideo': 'Select a face within the video player area.',
+        'search.menuItemTitle': 'Find who is in this frame. Drag a box around a face, or click for the whole frame.',
+        'search.currentFrame': 'Visage: Identify frame',
+        'search.identifyFromImage': 'Visage: Identify',
+        'search.identifyMenuTitle': "Match this performer's image against your stash-boxes and link the stash ID",
+        'search.noPerformerImage': 'No performer image found on this page.',
+        'search.overlayHintImage': 'Drag around a face. Click or press Enter for the whole image. Esc to cancel.',
+        'search.noFacesPerformer': "No face found in this performer's image.",
+        'search.selectAgain': 'Select again',
+        'search.identifyImage': 'Visage: Identify image',
+        'search.imageMenuTitle': 'Find who is in this image. Drag a box around a face, or click for the whole image.',
+        // ---- SceneScanButton.tsx ----
+        'scene.noSprite': 'No sprite sheet or preview video found for this scene. Generate them in Scene settings, then try again.',
+        'scene.noFaces': 'No faces or performers found in this scene’s sprite sheet or preview video.',
+        'scene.failed': 'Scene scan failed: {error}',
+        'scene.menuItemTitle': 'Find everyone in this scene. Needs a generated sprite sheet or preview video.',
+        'scene.wholeScene': 'Visage: Identify scene',
+        // ---- BackendHealthBanner.tsx ----
+        'banner.changeBackend': 'Change backend',
+        'banner.dismiss': 'Dismiss',
+        // ---- ErrorDialog.tsx ----
+        'error.dismiss': 'Dismiss',
+        'error.retry': 'Try again',
+        'error.undo': 'Undo',
+        'error.undone': 'Change undone.',
+        'error.undoFailed': 'Could not undo: {error}',
+        // ---- backend errors (gradio.describeBackendError) ----
+        'backend.busy': 'The face recognition service is busy or starting up. Try again in a moment.',
+        'backend.serverError': 'The face recognition service had a problem with this request. Try again.',
+        'backend.unreachableCloud': 'Cannot reach the cloud face recognition service. Check your connection and try again.',
+        'backend.notBackend': 'The server at {url} is not a Visage backend. Check the address in Visage settings.',
+        'backend.unreachableLocal': 'Cannot reach your face recognition server at {url}. Start it and try again.',
+        // ---- FirstRunDialog.tsx ----
+        'firstRun.title': 'Set up your Visage backend',
+        'firstRun.subtitle': 'Visage sends face images to a backend for recognition. Choose where to run it.',
+        'firstRun.cloud': 'Use Hugging Face cloud',
+        'firstRun.cloudNote': 'Zero setup. Images are sent to the Hugging Face cloud service.',
+        'firstRun.local': 'Use my own server',
+        'firstRun.localNote': 'Run the private binary on your own machine or network.',
+        'firstRun.skip': 'Skip for now',
+        // ---- BackendBadge.tsx ----
+        'badge.local': 'Local',
+        'badge.cloud': 'Cloud (Hugging Face)',
+        'badge.title': 'Visage backend: {label}',
+        // ---- DonateFooter.tsx ----
+        'donate.enjoying': 'Enjoying Visage? Help keep it alive',
+        'donate.supportPatreon': 'Support on Patreon',
+        // ---- FaceFrameSelector.tsx ----
+        'frame.close': 'Close frame selector',
+        'frame.seekFail': 'Failed to seek video player.',
+        'frame.selectAt': 'Select face frame at {time}s',
+    };
+
+    // All locale dicts registered by the loader. `en` is always present.
+    const dicts = {
+        en,
+    };
+    function registerLocale(code, dict) {
+        dicts[code.toLowerCase()] = dict;
+    }
+    // The active locale, defaulting to English. Stash does NOT sync the <html lang>
+    // attribute to the UI locale (it stays "en"), so the real locale is read from
+    // the Stash configuration via GraphQL (see services/stash.getStashLanguage) and
+    // applied here through setActiveLocale.
+    let currentLocale = { code: 'en', language: 'en' };
+    // Returns the active locale. Defaults to English until setActiveLocale is called.
+    function getLocale() {
+        return currentLocale;
+    }
+    // Updates the active locale used by t(). Called once the real Stash language is
+    // resolved from the GraphQL configuration.
+    function setActiveLocale(locale) {
+        currentLocale = locale;
+    }
+    function normalizeLocale(lang) {
+        const trimmed = lang.trim().toLowerCase();
+        if (!trimmed)
+            return { code: 'en', language: 'en' };
+        // Stash uses full BCP-47 tags (e.g. "nl-NL"); also tolerate bare "nl".
+        const [language, region] = trimmed.split('-');
+        return { code: trimmed, language, region };
+    }
+    // Translate a key with optional {var} interpolation. Unknown keys fall back
+    // to English (or the raw key if even en lacks it) — never throws.
+    function t(key, vars) {
+        var _a, _b;
+        const locale = getLocale();
+        let value = (_b = (_a = lookup(locale.code, key)) !== null && _a !== void 0 ? _a : en[key]) !== null && _b !== void 0 ? _b : key;
+        if (vars) {
+            for (const [k, v] of Object.entries(vars)) {
+                value = value.split(`{${k}}`).join(String(v));
+            }
+        }
+        return value;
+    }
+    function lookup(code, key) {
+        var _a;
+        const dict = dicts[code];
+        if (dict === null || dict === void 0 ? void 0 : dict[key])
+            return dict[key];
+        const { language } = normalizeLocale(code);
+        if (language && language !== code) {
+            const langDict = dicts[language];
+            if (langDict === null || langDict === void 0 ? void 0 : langDict[key])
+                return langDict[key];
+        }
+        // If the active code is bare (e.g. "nl"), fall back to any dict whose
+        // registered region code shares that language prefix (e.g. "nl-NL").
+        const prefixDict = Object.keys(dicts).find((k) => { var _a; return k.startsWith(language + '-') && ((_a = dicts[k]) === null || _a === void 0 ? void 0 : _a[key]); });
+        if (prefixDict)
+            return (_a = dicts[prefixDict]) === null || _a === void 0 ? void 0 : _a[key];
+        return undefined;
+    }
+
     let _cancelled = false;
     function cancelDetection() { _cancelled = true; }
     function resetCancelled() { _cancelled = false; }
@@ -8143,17 +8388,6 @@
         const data = await res.json();
         return data.event_id;
     }
-    function dataUrlToBlob(dataUrl) {
-        const arr = dataUrl.split(',');
-        const mime = arr[0].match(/:(.*?);/)[1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new Blob([u8arr], { type: mime });
-    }
     const MAX_LONG_SIDE$1 = 400;
     const JPEG_QUALITY$1 = 0.85;
     function optimizeCanvas(source) {
@@ -8175,6 +8409,51 @@
         });
     }
     const API_PREFIX = '/gradio_api';
+    // Non-OK HTTP reply from the backend. Kept unwrapped by callGradioAPI so
+    // describeBackendError can turn the status into a plain message.
+    class BackendHttpError extends Error {
+        constructor(stage, status) {
+            super(`${stage} failed: ${status}`);
+            this.stage = stage;
+            this.status = status;
+        }
+    }
+    // The URL answered, but not with JSON (e.g. a web page at a wrong address).
+    class NotBackendError extends Error {
+        constructor(stage) {
+            super(`${stage} reply was not JSON`);
+            this.stage = stage;
+        }
+    }
+    async function readJson(res, stage) {
+        if (!res.ok)
+            throw new BackendHttpError(stage, res.status);
+        try {
+            return await res.json();
+        }
+        catch (_a) {
+            throw new NotBackendError(stage);
+        }
+    }
+    // User-facing text for a failed backend call. Never shows raw status codes.
+    // `unreachable` means the backend did not answer at all (show the health banner).
+    // Returns null when the error did not come from the backend.
+    function describeBackendError(error) {
+        if (error instanceof NotBackendError) {
+            return { message: t('backend.notBackend', { url: getApiEndpoint() }), unreachable: false };
+        }
+        if (error instanceof BackendHttpError) {
+            const busy = error.status === 503 || error.status === 429;
+            return { message: t(busy ? 'backend.busy' : 'backend.serverError'), unreachable: false };
+        }
+        const raw = error instanceof Error ? error.message : '';
+        if (raw.includes('Failed to fetch') || raw.includes('NetworkError')) {
+            const url = getApiEndpoint();
+            const message = isLocalEndpoint(url) ? t('backend.unreachableLocal', { url }) : t('backend.unreachableCloud');
+            return { message, unreachable: true };
+        }
+        return null;
+    }
     async function uploadFile(baseUrl, file, name) {
         const formData = new FormData();
         formData.append('files', file, name);
@@ -8183,9 +8462,7 @@
             body: formData,
             credentials: 'omit',
         });
-        if (!res.ok)
-            throw new Error(`Upload failed: ${res.status}`);
-        const paths = await res.json();
+        const paths = await readJson(res, 'Upload');
         return paths[0];
     }
     async function ssePredict(baseUrl, endpoint, data, onProgress) {
@@ -8196,9 +8473,7 @@
             body: JSON.stringify({ data }),
             credentials: 'omit',
         });
-        if (!res.ok)
-            throw new Error(`Predict failed: ${res.status}`);
-        const { event_id } = await res.json();
+        const { event_id } = await readJson(res, 'Predict');
         const events = await fetch(`${baseUrl}${API_PREFIX}/call/${endpoint}/${event_id}`, {
             credentials: 'omit',
         });
@@ -8253,8 +8528,10 @@
     }
     async function identifySpritePerformers(spriteImg, vttFile, onProgress) {
         const baseUrl = getApiEndpoint();
-        const spritePath = await uploadFile(baseUrl, spriteImg, 'sprite.jpg');
-        const vttPath = await uploadFile(baseUrl, vttFile, 'thumbs.vtt');
+        const [spritePath, vttPath] = await Promise.all([
+            uploadFile(baseUrl, spriteImg, 'sprite.jpg'),
+            uploadFile(baseUrl, vttFile, 'thumbs.vtt'),
+        ]);
         const apiFile = (path) => ({ path, meta: { _type: 'gradio.FileData' } });
         const raw = await ssePredict(baseUrl, 'identify_sprite_performers', [
             apiFile(spritePath),
@@ -8281,6 +8558,8 @@
             return { data: Array.isArray(raw) ? raw : [raw] };
         }
         catch (error) {
+            if (error instanceof BackendHttpError || error instanceof NotBackendError)
+                throw error;
             const msg = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : (typeof error === 'string' ? error : JSON.stringify(error));
             throw new Error(`Gradio API call failed: ${msg}`);
         }
@@ -8677,24 +8956,26 @@
         });
     }
     const STASHBOX_DOCS_URL = 'https://docs.stashapp.cc/metadata-sources/stash-box-instances/';
+    // Finds the stash-box for a match source ("stashdb", "fansdb", "javstash") by
+    // box name or endpoint URL. With a source and no matching box, returns -1:
+    // an ID from one stash-box must never be scraped or saved under another.
+    // Without a source, prefers StashDB, else the first box.
     function getStashBoxIndex(boxes, sourceName) {
-        if (sourceName) {
-            const idx = boxes.findIndex(b => { var _a; return (_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(sourceName.toLowerCase()); });
-            if (idx >= 0)
-                return idx;
-        }
-        const idx = boxes.findIndex(b => { var _a; return (_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes('stashdb'); });
+        const find = (key) => boxes.findIndex(b => { var _a, _b; return ((_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(key)) || ((_b = b.endpoint) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(key)); });
+        if (sourceName)
+            return find(sourceName.toLowerCase());
+        const idx = find('stashdb');
         return idx >= 0 ? idx : 0;
     }
     async function getStashboxEndpoint(sourceName) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e;
         const result = await getClient().query({
             query: GQL.ConfigurationDocument
         });
         const boxes = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes;
         if (!(boxes === null || boxes === void 0 ? void 0 : boxes.length))
             return null;
-        return boxes[getStashBoxIndex(boxes, sourceName)].endpoint;
+        return (_e = (_d = boxes[getStashBoxIndex(boxes, sourceName)]) === null || _d === void 0 ? void 0 : _d.endpoint) !== null && _e !== void 0 ? _e : null;
     }
     // The active Stash UI locale, read from the server-side configuration the same
     // way the Stash frontend does (App.tsx reads configuration.interface.language).
@@ -8731,6 +9012,10 @@
         });
         const boxes = ((_c = (_b = (_a = endpointResult.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes) || [];
         const boxIdx = getStashBoxIndex(boxes, sourceName);
+        if (boxIdx < 0) {
+            console.warn(`[Visage] No stash-box configured for source "${sourceName}"`);
+            return undefined;
+        }
         try {
             const result = await getClient().query({
                 query: GQL.ScrapeSinglePerformerDocument,
@@ -8802,8 +9087,15 @@
         });
         return (_a = result.data.findScene.paths[pathKey]) !== null && _a !== void 0 ? _a : null;
     }
+    // Sprite URL from scene paths, unprobed. Stash returns a path even when the
+    // sprite was never generated, so callers must check the fetch response.
+    async function getSpritePath(scene_id) {
+        return getScenePath(scene_id, 'sprite');
+    }
+    // Sprite URL only if the file exists. Downloads the full sprite (Stash rejects
+    // HEAD with 400), so prefer getSpritePath when the sprite is fetched anyway.
     async function getUrlSprite(scene_id) {
-        const url = await getScenePath(scene_id, 'sprite');
+        const url = await getSpritePath(scene_id);
         if (!url)
             return null;
         const response = await fetch(url);
@@ -8841,21 +9133,35 @@
         };
     }
     async function addPerformerToContent(scenario, contentId, performerId) {
-        const getIds = scenario === 'scenes' ? getPerformersForScene : getPerformersForImage;
-        const update = scenario === 'scenes' ? updateScene : updateImage;
-        const currentIds = await getIds(contentId);
+        const currentIds = await getContentPerformers(scenario, contentId);
         if (!currentIds.includes(performerId)) {
-            currentIds.push(performerId);
-            await update(contentId, currentIds);
+            await setContentPerformers(scenario, contentId, [...currentIds, performerId]);
         }
     }
-    async function getPerformerStashIds(performerId) {
-        var _a, _b, _c;
+    async function getContentPerformers(scenario, contentId) {
+        return scenario === 'scenes' ? getPerformersForScene(contentId) : getPerformersForImage(contentId);
+    }
+    async function setContentPerformers(scenario, contentId, performerIds) {
+        const update = scenario === 'scenes' ? updateScene : updateImage;
+        await update(contentId, performerIds);
+    }
+    async function findPerformer(performerId) {
+        var _a;
         const result = await getClient().query({
             query: GQL.FindPerformerDocument,
             variables: { id: performerId },
         });
-        return (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.findPerformer) === null || _b === void 0 ? void 0 : _b.stash_ids) !== null && _c !== void 0 ? _c : [];
+        return (_a = result.data) === null || _a === void 0 ? void 0 : _a.findPerformer;
+    }
+    async function getPerformerStashIds(performerId) {
+        var _a, _b;
+        return (_b = (_a = (await findPerformer(performerId))) === null || _a === void 0 ? void 0 : _a.stash_ids) !== null && _b !== void 0 ? _b : [];
+    }
+    // image_path carries Stash's cache-busting token, so it always points at the
+    // current image.
+    async function getPerformerImageUrl(performerId) {
+        var _a, _b;
+        return (_b = (_a = (await findPerformer(performerId))) === null || _a === void 0 ? void 0 : _a.image_path) !== null && _b !== void 0 ? _b : null;
     }
     /**
      * Append candidate stash IDs onto a performer's stash_ids list. Preserves
@@ -8873,7 +9179,7 @@
                 continue;
             const endpoint = await getStashboxEndpoint(source);
             if (!endpoint)
-                throw new Error('No stash-box endpoint configured');
+                throw new Error(`No stash-box configured for ${source !== null && source !== void 0 ? source : 'StashDB'}`);
             next.push({ endpoint, stash_id: id });
             seen.add(id);
         }
@@ -8896,16 +9202,44 @@
         const scenario_id = result[2];
         return [scenario, scenario_id];
     }
-    async function downloadAsDataUrl(url) {
-        const response = await fetch(url);
-        if (!response.ok)
-            throw new Error(`Failed to fetch ${url}: ${response.status}`);
-        const vblob = await response.blob();
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(vblob);
-        });
+    // The page type for wording and layout. Safe to call while rendering: falls
+    // back to 'scenes' when the URL has no scenario.
+    function getPageScenario() {
+        var _a;
+        const match = document.URL.match(/(scenes|images|performers)\/\d+/);
+        return (_a = match === null || match === void 0 ? void 0 : match[1]) !== null && _a !== void 0 ? _a : 'scenes';
+    }
+    function getCurrentVideo() {
+        const video = document.querySelector("#VideoJsPlayer_html5_api");
+        if (!video) {
+            throw new Error('Video player not found');
+        }
+        return video;
+    }
+    // Fetch an image as a Blob for upload. Null on any failure. Untyped responses
+    // get image/jpeg so the backend accepts the upload.
+    async function fetchImageAsBlob(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok)
+                return null;
+            const blob = await response.blob();
+            return blob.type ? blob : new Blob([blob], { type: 'image/jpeg' });
+        }
+        catch (_a) {
+            return null;
+        }
+    }
+    async function seekVideo(time) {
+        const video = getCurrentVideo();
+        try {
+            await video.play();
+            video.currentTime = time;
+            video.pause();
+        }
+        catch (e) {
+            console.warn('[Visage] Failed to seek video:', e);
+        }
     }
     function closeDropdown() {
         var _a;
@@ -8931,236 +9265,47 @@
         menu.insertBefore(div, divider);
         return div;
     }
+    // First Stash operations dropdown without a Visage root yet. Injects the root
+    // and returns it, or null while no such menu is open.
+    function findOpsMenuAnchor() {
+        for (const menu of document.querySelectorAll('.dropdown-menu')) {
+            if (!isOpsMenu(menu) || menu.querySelector('.visage-menu-root'))
+                continue;
+            const div = injectMenu(menu);
+            div.className = 'visage-menu-root';
+            return div;
+        }
+        return null;
+    }
+    // The performer page has no #operation-menu dropdown; its actions (Edit,
+    // Merge, Delete…) render inline in .details-edit. Inject next to them by CSS
+    // class, never by button text, so locale changes cannot break placement.
+    function findPerformerActionsAnchor() {
+        const row = document.querySelector('.details-edit');
+        if (!row)
+            return null;
+        const existing = row.querySelector('.visage-performer-actions');
+        if (existing)
+            return existing;
+        const div = document.createElement('div');
+        div.className = 'visage-performer-actions';
+        div.style.cssText = 'display:contents';
+        // After the last .btn-secondary in the row (Merge in stock Stash) so the
+        // button sits in the action cluster regardless of label language.
+        const secondary = row.querySelectorAll('button.btn-secondary');
+        const mergeBtn = secondary[secondary.length - 1];
+        const deleteBtn = row.querySelector('button.delete');
+        if (mergeBtn)
+            row.insertBefore(div, mergeBtn.nextSibling);
+        else if (deleteBtn)
+            row.insertBefore(div, deleteBtn);
+        else
+            row.appendChild(div);
+        return div;
+    }
 
     function getErrorMessage(error, fallback = 'Unknown error') {
         return error instanceof Error ? error.message : fallback;
-    }
-
-    // English source dictionary. Every user-facing string in the plugin lives here.
-    // Keys are namespaced by component. `{var}` tokens are interpolated via t().
-    // Adding a new string: add it here with an English value; every locale dict is
-    // Partial, so missing keys fall back to English automatically.
-    const en = {
-        // ---- BackendSettings.tsx ----
-        'backendSettings.title': 'Backend settings',
-        'backendSettings.closeAria': 'Close settings',
-        'backendSettings.backendAria': 'Backend settings',
-        'backendSettings.changeBackend': 'Change backend',
-        'backendSettings.backendLabel': 'Backend',
-        'backendSettings.local': 'Local',
-        'backendSettings.cloud': 'Cloud (Hugging Face)',
-        'backendSettings.cloudNote': 'Images are sent to the Hugging Face cloud service.',
-        'backendSettings.hintPrefix': 'Want your images to stay on your network?',
-        'backendSettings.hintLink': 'Run a private server via Patreon',
-        'backendSettings.urlLabel': 'URL',
-        'backendSettings.csp1': "The browser's security policy (CSP) only allows",
-        'backendSettings.csp2': 'by default. To reach a local backend on another address (e.g. your LAN IP), add it to the',
-        'backendSettings.csp3': 'list in the',
-        'backendSettings.csp4': 'file inside your Stash plugins folder, otherwise requests will be blocked. Note: updating Visage reinstalls',
-        'backendSettings.csp5': ', so this must be reapplied after every update.',
-        'backendSettings.testing': 'Testing connection…',
-        'backendSettings.testConnection': 'Test connection',
-        'backendSettings.testingShort': 'Testing…',
-        'backendSettings.cancel': 'Cancel',
-        'backendSettings.save': 'Save',
-        'backendSettings.feedback.reachable': 'Connection successful. Backend is ready.',
-        'backendSettings.feedback.degraded': 'Backend reachable but degraded (models or index not loaded).',
-        'backendSettings.feedback.unreachable': 'Backend unreachable. Check the URL and that the backend is running.',
-        'backendSettings.sync.title': 'Stash Sync',
-        'backendSettings.sync.lastSynced': 'Last synced: {time}',
-        'backendSettings.sync.neverSynced': 'Never synced',
-        'backendSettings.sync.performers': '{count} performers in index',
-        'backendSettings.sync.button': 'Sync',
-        'backendSettings.sync.syncing': 'Syncing…',
-        'backendSettings.sync.done': 'Done',
-        'backendSettings.sync.alreadyRunning': 'Sync already in progress',
-        'backendSettings.sync.error': 'Sync failed',
-        'backendSettings.sync.connectionLost': 'Connection lost',
-        // ---- FaceMatchModal.tsx ----
-        'faceMatch.title': 'CURRENT FRAME',
-        'faceMatch.close': 'Close',
-        'faceMatch.facesSelected': '{faces} faces found · {selected} selected',
-        'faceMatch.inScene': '· {count} in scene',
-        'faceMatch.stashboxMissing': 'No stash-box configured.',
-        'faceMatch.stashboxMissingBody': ' Add a stash-box provider in Settings → Metadata Providers to enable performer import.',
-        'faceMatch.stashboxWrongName': 'No "StashDB" provider found.',
-        'faceMatch.stashboxWrongNameBody': ' Performer import requires a provider named "StashDB". Rename your provider in Settings → Metadata Providers.',
-        'faceMatch.learnMore': 'Learn more.',
-        'faceMatch.scanning': 'Scanning • face recognition…',
-        'faceMatch.faceAlt': 'Face {index}',
-        'faceMatch.minConf': 'Min conf.',
-        'faceMatch.minConfTitle': 'Minimum confidence: {percent}%',
-        'faceMatch.detected': 'Detected',
-        'faceMatch.detectedFaceAlt': 'Detected face',
-        'faceMatch.vs': 'vs',
-        'faceMatch.supportPatreon': 'Support on Patreon',
-        'faceMatch.ofSelected': '{selected} of {total} selected',
-        'faceMatch.allInScene': '{total} faces found · all in scene',
-        'faceMatch.clickToSelect': '{total} faces found · click to select',
-        'faceMatch.kbSwitch': 'Switch faces',
-        'faceMatch.kbSelect': 'Select performers',
-        'faceMatch.kbToggle': 'Toggle select',
-        'faceMatch.kbAddInstant': 'Shift+click to add instantly',
-        'faceMatch.selectBest': 'Select Best Matches',
-        'faceMatch.adding': 'Adding...',
-        'faceMatch.done': 'Done ({count})',
-        'faceMatch.toast.added': 'Added performer to the {target}.',
-        'faceMatch.toast.addError': 'Failed to add performer: {error}',
-        'faceMatch.toast.noStashbox': 'No stash-box configured. Add a stash-box provider in Settings → Metadata Providers to enable performer import. See {url}',
-        'faceMatch.toast.noProvider': 'No provider named "StashDB" found. Rename your provider to "StashDB" in Settings → Metadata Providers to enable performer import.',
-        'faceMatch.toast.configureProvider': 'Configure a stash-box provider in Settings → Metadata Providers to enable performer import.',
-        'faceMatch.toast.addedMultiple': 'Added {count} performer{s} to the {target}.',
-        'faceMatch.toast.linked': 'Linked {count} stash ID{s} to this performer.',
-        // ---- SpriteResultModal.tsx ----
-        'sprite.title': 'SCENE PERFORMERS',
-        'sprite.close': 'Close',
-        'sprite.foundConfirmed': '{found} found · {confirmed} confirmed',
-        'sprite.confidence': 'confidence',
-        'sprite.name': 'name',
-        'sprite.hits': 'hits',
-        'sprite.minConf': 'Min conf.',
-        'sprite.minConfTitle': 'Minimum confidence: {percent}%',
-        'sprite.scanning': 'Visage Scanning…',
-        'sprite.cancel': 'Cancel',
-        'sprite.empty': 'No performers identified in this sprite.',
-        'sprite.detectedFaceAlt': 'Detected face',
-        'sprite.spriteLabel': 'SPRITE',
-        'sprite.stashLabel': 'STASH',
-        'sprite.vs': 'vs',
-        'sprite.inScene': 'In scene',
-        'sprite.hitsCount': '{count} hit{s}',
-        'sprite.totalTime': '{time} total',
-        'sprite.alreadyInScene': 'Already in scene',
-        'sprite.clickToConfirm': 'Click to confirm',
-        'sprite.confirmed': 'Confirmed',
-        'sprite.supportPatreon': 'Support on Patreon',
-        'sprite.confirmedCount': '{confirmed} of {total} confirmed',
-        'sprite.shownHint': '{shown} shown ({total} total) · click to confirm · ←→ navigate · Enter confirm',
-        'sprite.confirmHint': 'Click to confirm · ←→ navigate · Enter confirm',
-        'sprite.adding': 'Adding...',
-        'sprite.done': 'Done ({count})',
-        // ---- PerformerCard.tsx ----
-        'gender.male': 'Male',
-        'gender.female': 'Female',
-        'gender.transMale': 'Transgender male',
-        'gender.transFemale': 'Transgender female',
-        'gender.nonBinary': 'Non-binary',
-        'gender.intersex': 'Intersex',
-        'card.excellent': 'Excellent match',
-        'card.good': 'Good match',
-        'card.uncertain': 'Uncertain match',
-        'card.select': 'Select {name}',
-        'card.deselect': 'Deselect {name}',
-        'card.openOn': 'Open on {source}',
-        // ---- FaceSearchButton.tsx ----
-        'search.overlayHint': 'Drag to select a face — Enter to scan the whole frame — Esc to cancel',
-        'search.noFaces': 'No faces found in that selection. Try a tighter crop, or press Enter to scan the whole frame.',
-        'search.captureMediaFail': 'Could not capture media. Please ensure the scene/image is fully loaded.',
-        'search.healthBanner': 'Face recognition API is not reachable. Start the backend and try again.',
-        'search.failed': 'Face search failed: {error}',
-        'search.fetchImageFail': 'Could not fetch image from Stash.',
-        'search.captureFail': 'Failed to capture image: {error}',
-        'search.selectFaceImage': 'Select a face within the image.',
-        'search.captureFrameFail': 'Could not capture the current frame.',
-        'search.captureFrameFail2': 'Failed to capture the current frame.',
-        'search.selectFaceVideo': 'Select a face within the video player area.',
-        'search.menuItemTitle': 'Drag a box around a face, or press Enter to scan the whole frame, to search StashDB for matches',
-        'search.currentFrame': 'Visage: Current Frame',
-        'search.identifyFromImage': 'Visage: Identify from image',
-        'search.identifyMenuTitle': "Search this performer's image against StashDB and link a matched stash ID",
-        'search.noPerformerImage': 'No performer image found on this page.',
-        // ---- SceneScanButton.tsx ----
-        'scene.noSprite': 'No sprite sheet or preview video found for this scene. Generate them in Scene settings, then try again.',
-        'scene.noFaces': 'No faces or performers found in this scene’s sprite sheet or preview video.',
-        'scene.healthBanner': 'Face recognition API is not reachable. Start the backend and try again.',
-        'scene.failed': 'Scene scan failed: {error}',
-        'scene.menuItemTitle': 'Identify every performer in the scene (needs a generated sprite sheet or preview video)',
-        'scene.wholeScene': 'Visage: Whole Scene',
-        // ---- BackendHealthBanner.tsx ----
-        'banner.changeBackend': 'Change backend',
-        'banner.dismiss': 'Dismiss',
-        // ---- ErrorDialog.tsx ----
-        'error.dismiss': 'Dismiss',
-        // ---- FirstRunDialog.tsx ----
-        'firstRun.title': 'Set up your Visage backend',
-        'firstRun.subtitle': 'Visage sends face images to a backend for recognition. Choose where to run it.',
-        'firstRun.cloud': 'Use Hugging Face cloud',
-        'firstRun.cloudNote': 'Zero setup. Images are sent to the Hugging Face cloud service.',
-        'firstRun.local': 'Use my own server',
-        'firstRun.localNote': 'Run the private binary on your own machine or network.',
-        'firstRun.skip': 'Skip for now',
-        // ---- BackendBadge.tsx ----
-        'badge.local': 'Local',
-        'badge.cloud': 'Cloud (Hugging Face)',
-        'badge.title': 'Visage backend: {label}',
-        // ---- DonateFooter.tsx ----
-        'donate.enjoying': 'Enjoying Visage? Help keep it alive',
-        'donate.supportPatreon': 'Support on Patreon',
-        // ---- FaceFrameSelector.tsx ----
-        'frame.close': 'Close frame selector',
-        'frame.seekFail': 'Failed to seek video player.',
-        'frame.selectAt': 'Select face frame at {time}s',
-    };
-
-    // All locale dicts registered by the loader. `en` is always present.
-    const dicts = {
-        en,
-    };
-    function registerLocale(code, dict) {
-        dicts[code.toLowerCase()] = dict;
-    }
-    // The active locale, defaulting to English. Stash does NOT sync the <html lang>
-    // attribute to the UI locale (it stays "en"), so the real locale is read from
-    // the Stash configuration via GraphQL (see services/stash.getStashLanguage) and
-    // applied here through setActiveLocale.
-    let currentLocale = { code: 'en', language: 'en' };
-    // Returns the active locale. Defaults to English until setActiveLocale is called.
-    function getLocale() {
-        return currentLocale;
-    }
-    // Updates the active locale used by t(). Called once the real Stash language is
-    // resolved from the GraphQL configuration.
-    function setActiveLocale(locale) {
-        currentLocale = locale;
-    }
-    function normalizeLocale(lang) {
-        const trimmed = lang.trim().toLowerCase();
-        if (!trimmed)
-            return { code: 'en', language: 'en' };
-        // Stash uses full BCP-47 tags (e.g. "nl-NL"); also tolerate bare "nl".
-        const [language, region] = trimmed.split('-');
-        return { code: trimmed, language, region };
-    }
-    // Translate a key with optional {var} interpolation. Unknown keys fall back
-    // to English (or the raw key if even en lacks it) — never throws.
-    function t(key, vars) {
-        var _a, _b;
-        const locale = getLocale();
-        let value = (_b = (_a = lookup(locale.code, key)) !== null && _a !== void 0 ? _a : en[key]) !== null && _b !== void 0 ? _b : key;
-        if (vars) {
-            for (const [k, v] of Object.entries(vars)) {
-                value = value.split(`{${k}}`).join(String(v));
-            }
-        }
-        return value;
-    }
-    function lookup(code, key) {
-        var _a;
-        const dict = dicts[code];
-        if (dict === null || dict === void 0 ? void 0 : dict[key])
-            return dict[key];
-        const { language } = normalizeLocale(code);
-        if (language && language !== code) {
-            const langDict = dicts[language];
-            if (langDict === null || langDict === void 0 ? void 0 : langDict[key])
-                return langDict[key];
-        }
-        // If the active code is bare (e.g. "nl"), fall back to any dict whose
-        // registered region code shares that language prefix (e.g. "nl-NL").
-        const prefixDict = Object.keys(dicts).find((k) => { var _a; return k.startsWith(language + '-') && ((_a = dicts[k]) === null || _a === void 0 ? void 0 : _a[key]); });
-        if (prefixDict)
-            return (_a = dicts[prefixDict]) === null || _a === void 0 ? void 0 : _a[key];
-        return undefined;
     }
 
     // React via Stash PluginApi, matching the pattern used across the plugin.
@@ -9196,46 +9341,59 @@
     }
 
     const React$g = window.PluginApi.React;
-    const { useCallback: useCallback$7 } = React$g;
+    const { useCallback: useCallback$7, useRef: useRef$5 } = React$g;
     let overlayDiv = null;
     let selectionDiv = null;
     let keyHandler = null;
     let startX = 0, startY = 0;
     let isSelecting = false;
     let _capturing = false;
-    function makeOverlay(onComplete, onCancel, capture) {
+    // Full-screen selection overlay. Drag a box to search that region. A click
+    // without a drag, or Enter, searches the whole frame or image.
+    function makeOverlay({ onComplete, onNoImage, onEscape, capture, hint }) {
         removeOverlay();
         _capturing = false;
         const capRegion = (capture === null || capture === void 0 ? void 0 : capture.region) || captureRegion;
         const capWhole = (capture === null || capture === void 0 ? void 0 : capture.whole) || captureWholeFrame;
         overlayDiv = document.createElement('div');
-        overlayDiv.style.cssText = 'position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:rgba(0,0,0,0.12);';
+        overlayDiv.className = 'visage-select-overlay';
         const instructions = document.createElement('div');
-        instructions.textContent = t('search.overlayHint');
-        instructions.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#07070f;color:rgba(255,255,255,0.8);padding:10px 24px;border-radius:8px;font:13px/1.4 system-ui,sans-serif;border:1px solid rgba(255,255,255,0.07);box-shadow:0 4px 20px rgba(0,0,0,0.5);pointer-events:none;z-index:2147483648;';
+        instructions.className = 'visage-select-hint';
+        instructions.textContent = hint;
         overlayDiv.appendChild(instructions);
         selectionDiv = document.createElement('div');
-        selectionDiv.style.cssText = 'position:fixed;display:none;outline:2px solid #5695ff;outline-offset:-2px;background:rgba(86,149,255,0.08);pointer-events:none;z-index:2147483649;';
+        selectionDiv.className = 'visage-select-box';
         overlayDiv.appendChild(selectionDiv);
         document.body.appendChild(overlayDiv);
+        function drawBox(x, y, w, h) {
+            Object.assign(selectionDiv.style, { display: 'block', left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
+        }
+        function finish(capturing) {
+            overlayDiv.style.display = 'none';
+            capturing.then((blob) => {
+                removeOverlay();
+                if (blob)
+                    onComplete(blob);
+                else
+                    onNoImage();
+            }).catch(() => { removeOverlay(); onNoImage(); });
+        }
         function onMouseDown(e) {
             if (e.button !== 0)
                 return;
             isSelecting = true;
             startX = e.clientX;
             startY = e.clientY;
-            selectionDiv.style.cssText = `position:fixed;display:block;left:${startX}px;top:${startY}px;width:0;height:0;outline:2px solid #5695ff;outline-offset:-2px;background:rgba(86,149,255,0.08);pointer-events:none;z-index:2147483649;`;
+            drawBox(startX, startY, 0, 0);
             overlayDiv.addEventListener('mousemove', onMouseMove);
             overlayDiv.addEventListener('mouseup', onMouseUp);
         }
         function onMouseMove(e) {
             if (!isSelecting)
                 return;
-            const x = Math.min(startX, e.clientX), y = Math.min(startY, e.clientY);
-            const w = Math.abs(e.clientX - startX), h = Math.abs(e.clientY - startY);
-            selectionDiv.style.cssText = `position:fixed;display:block;left:${x}px;top:${y}px;width:${w}px;height:${h}px;outline:2px solid #5695ff;outline-offset:-2px;background:rgba(86,149,255,0.08);pointer-events:none;z-index:2147483649;`;
+            drawBox(Math.min(startX, e.clientX), Math.min(startY, e.clientY), Math.abs(e.clientX - startX), Math.abs(e.clientY - startY));
         }
-        function onMouseUp(e) {
+        function onMouseUp() {
             isSelecting = false;
             overlayDiv.removeEventListener('mousemove', onMouseMove);
             overlayDiv.removeEventListener('mouseup', onMouseUp);
@@ -9244,24 +9402,15 @@
             _capturing = true;
             const sr = selectionDiv.getBoundingClientRect();
             if (sr.width < 10 || sr.height < 10) {
-                removeOverlay();
-                onCancel();
-                _capturing = false;
+                finish(capWhole());
                 return;
             }
-            overlayDiv.style.display = 'none';
-            capRegion({ x: sr.left, y: sr.top, w: sr.width, h: sr.height }).then((blob) => {
-                removeOverlay();
-                if (blob)
-                    onComplete(blob);
-                else
-                    onCancel();
-            }).catch(() => { removeOverlay(); onCancel(); });
+            finish(capRegion({ x: sr.left, y: sr.top, w: sr.width, h: sr.height }));
         }
         function onKeyDown(e) {
             if (e.key === 'Escape') {
                 removeOverlay();
-                onCancel();
+                onEscape === null || onEscape === void 0 ? void 0 : onEscape();
                 return;
             }
             if (e.key === 'Enter') {
@@ -9269,14 +9418,7 @@
                 if (isSelecting || _capturing)
                     return;
                 _capturing = true;
-                overlayDiv.style.display = 'none';
-                capWhole().then((blob) => {
-                    removeOverlay();
-                    if (blob)
-                        onComplete(blob);
-                    else
-                        onCancel();
-                }).catch(() => { removeOverlay(); onCancel(); });
+                finish(capWhole());
             }
         }
         overlayDiv.addEventListener('mousedown', onMouseDown);
@@ -9297,21 +9439,7 @@
     const IS_MOBILE = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     async function fetchImageBlob(scenarioId) {
         const imageUrl = await getImageUrl(scenarioId);
-        if (!imageUrl)
-            return null;
-        try {
-            const response = await fetch(imageUrl);
-            if (!response.ok)
-                return null;
-            const blob = await response.blob();
-            if (!blob.type) {
-                return new Blob([blob], { type: 'image/jpeg' });
-            }
-            return blob;
-        }
-        catch (_a) {
-            return null;
-        }
+        return imageUrl ? fetchImageAsBlob(imageUrl) : null;
     }
     function getImageContentRect(el, naturalW, naturalH) {
         const r = el.getBoundingClientRect();
@@ -9379,56 +9507,62 @@
             return null;
         }
     }
-    async function dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal) {
+    // Send one face image to the backend and open the match modal with results.
+    // When no face is found the modal stays open with the reason. `reselect`, if
+    // given, adds a "Select again" button that reopens the selection overlay.
+    async function dispatchBlob(blob, visage, loadingKey, reselect) {
+        var _a;
+        const { showError, showHealthBanner, setLoading, setMatches, setScenario, startMatchSearch, showMatchModal, showEmptyResult } = visage;
         setLoading(loadingKey, true);
         const [scenario, scenarioId] = getScenarioAndID();
         setScenario(scenario, scenarioId);
         // Open the modal up front: the trigger lives in a dropdown that closes on
         // click, so the modal is the only place the scanning state stays visible.
         startMatchSearch();
-        let succeeded = false;
+        let keepOpen = true;
+        const showNoFaces = (message) => showEmptyResult(message !== null && message !== void 0 ? message : t(scenario === 'performers' ? 'search.noFacesPerformer' : 'search.noFaces'), reselect && { label: t('search.selectAgain'), run: reselect });
         try {
             const result = await callGradioAPI('multiple_image_search', [blob, MAX_RESULTS]);
             const matchData = result.data;
-            if (!matchData || typeof matchData !== 'object') {
-                showWarning(t('search.noFaces'));
-                return;
-            }
             const first = Array.isArray(matchData) ? matchData[0] : matchData;
-            if (first === null || first === void 0 ? void 0 : first.error) {
-                showWarning(first.error);
-                return;
-            }
-            if (!Array.isArray(matchData) || matchData.length === 0) {
-                showWarning(t('search.noFaces'));
-                return;
-            }
-            setMatches(matchData);
-            succeeded = true;
+            if (first === null || first === void 0 ? void 0 : first.error)
+                showNoFaces(first.error);
+            else if (!Array.isArray(matchData) || matchData.length === 0)
+                showNoFaces();
+            else
+                setMatches(matchData);
         }
         catch (error) {
+            keepOpen = false;
             const message = getErrorMessage(error);
+            const backend = describeBackendError(error);
+            // Retry reuses the same capture, so the user does not select the face again.
+            const retry = { label: t('error.retry'), run: () => { dispatchBlob(blob, visage, loadingKey, reselect); } };
             if (message.includes('Could not find element')) {
                 showError(t('search.captureMediaFail'));
             }
-            else if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-                showHealthBanner(t('search.healthBanner'));
+            else if (backend === null || backend === void 0 ? void 0 : backend.unreachable) {
+                showHealthBanner(backend.message);
             }
             else {
-                showError(t('search.failed', { error: message }));
+                showError((_a = backend === null || backend === void 0 ? void 0 : backend.message) !== null && _a !== void 0 ? _a : t('search.failed', { error: message }), retry);
             }
         }
         finally {
             setLoading(loadingKey, false);
-            if (!succeeded)
+            if (!keepOpen)
                 showMatchModal(false);
         }
     }
     function FaceSearchButton({ menuItem }) {
         useLocale();
-        const { state, setLoading, setMatches, setScenario, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal } = useVisage();
+        const visage = useVisage();
+        const { state, setLoading, setScenario, showWarning, showError } = visage;
         const loadingKey = 'face-search';
         const isLoading = state.loading[loadingKey] || false;
+        // "Select again" in the empty result reopens the overlay via the latest recognize.
+        const recognizeRef = useRef$5(() => { });
+        const reselect = () => recognizeRef.current();
         const recognize = useCallback$7(async () => {
             if (isLoading)
                 return;
@@ -9444,7 +9578,7 @@
                             setLoading(loadingKey, false);
                             return;
                         }
-                        await dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+                        await dispatchBlob(blob, visage, loadingKey);
                     }
                     catch (error) {
                         showError(t('search.captureFail', { error: getErrorMessage(error) }));
@@ -9452,18 +9586,19 @@
                     }
                     return;
                 }
-                makeOverlay((blob) => {
-                    dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
-                }, () => {
-                    showWarning(t('search.selectFaceImage'));
-                }, {
-                    region: async (bounds) => {
-                        const b = await fetchImageBlob(scenarioId);
-                        if (!b)
-                            return null;
-                        return cropBlob(b, bounds);
+                makeOverlay({
+                    hint: t('search.overlayHintImage'),
+                    onComplete: (blob) => { dispatchBlob(blob, visage, loadingKey, reselect); },
+                    onNoImage: () => showWarning(t('search.selectFaceImage')),
+                    capture: {
+                        region: async (bounds) => {
+                            const b = await fetchImageBlob(scenarioId);
+                            if (!b)
+                                return null;
+                            return cropBlob(b, bounds);
+                        },
+                        whole: () => fetchImageBlob(scenarioId),
                     },
-                    whole: () => fetchImageBlob(scenarioId),
                 });
                 return;
             }
@@ -9476,7 +9611,7 @@
                         setLoading(loadingKey, false);
                         return;
                     }
-                    await dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+                    await dispatchBlob(blob, visage, loadingKey);
                 }
                 catch (error) {
                     console.warn('[Visage] captureWholeFrame failed:', error);
@@ -9485,27 +9620,37 @@
                 }
                 return;
             }
-            makeOverlay((blob) => {
-                dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
-            }, () => {
-                showWarning(t('search.selectFaceVideo'));
+            // Freeze the frame while the user aims. Esc resumes playback.
+            const video = document.querySelector('#VideoJsPlayer_html5_api');
+            const wasPlaying = !!video && !video.paused;
+            if (wasPlaying)
+                video.pause();
+            makeOverlay({
+                hint: t('search.overlayHint'),
+                onComplete: (blob) => { dispatchBlob(blob, visage, loadingKey, reselect); },
+                onNoImage: () => showWarning(t('search.selectFaceVideo')),
+                onEscape: () => { if (wasPlaying)
+                    video.play().catch(() => { }); },
             });
-        }, [setLoading, setMatches, setScenario, isLoading, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal]);
+        }, [visage, isLoading]);
+        recognizeRef.current = recognize;
+        const onImage = getPageScenario() === 'images';
+        const label = t(onImage ? 'search.identifyImage' : 'search.currentFrame');
         if (menuItem) {
             return React$g.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
-                title: t('search.menuItemTitle'),
+                title: t(onImage ? 'search.imageMenuTitle' : 'search.menuItemTitle'),
                 onClick: (e) => { e.preventDefault(); closeDropdown(); recognize(); },
-            }, t('search.currentFrame'));
+            }, label);
         }
         return React$g.createElement('button', {
             id: 'visage-frame-search',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: recognize,
             disabled: isLoading,
-            title: t('search.currentFrame'),
+            title: label,
         }, React$g.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
@@ -9516,49 +9661,31 @@
 
     const React$f = window.PluginApi.React;
     const { useCallback: useCallback$6 } = React$f;
-    // The performer page's main image, resolved server-side first (image_path
-    // includes the cache-busting token), with a DOM fallback for Stash versions
-    // that do not expose it via FindPerformer.
+    // The performer page's main image, resolved server-side first, with a DOM
+    // fallback for Stash versions that do not expose it via FindPerformer.
     async function fetchPerformerBlob(performerId) {
-        var _a, _b, _c, _d;
+        var _a;
         let url = null;
         try {
-            const GQL = window.PluginApi.GQL;
-            const client = window.PluginApi.utils.StashService.getClient();
-            const res = await client.query({
-                query: GQL.FindPerformerDocument,
-                variables: { id: performerId },
-            });
-            url = (_c = (_b = (_a = res.data) === null || _a === void 0 ? void 0 : _a.findPerformer) === null || _b === void 0 ? void 0 : _b.image_path) !== null && _c !== void 0 ? _c : null;
+            url = await getPerformerImageUrl(performerId);
         }
-        catch ( /* fall through to DOM */_e) { /* fall through to DOM */ }
+        catch ( /* fall through to DOM */_b) { /* fall through to DOM */ }
         if (!url) {
             const img = document.querySelector('img[src*="/performer/"]');
-            url = (_d = img === null || img === void 0 ? void 0 : img.src) !== null && _d !== void 0 ? _d : null;
+            url = (_a = img === null || img === void 0 ? void 0 : img.src) !== null && _a !== void 0 ? _a : null;
         }
-        if (!url)
-            return null;
-        try {
-            const response = await fetch(url);
-            if (!response.ok)
-                return null;
-            const blob = await response.blob();
-            return blob.type ? blob : new Blob([blob], { type: 'image/jpeg' });
-        }
-        catch (_f) {
-            return null;
-        }
+        return url ? fetchImageAsBlob(url) : null;
     }
     function IdentifyPerformerButton() {
         useLocale();
-        const { state, setLoading, setMatches, setScenario, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal } = useVisage();
+        const visage = useVisage();
+        const { state, setLoading, showWarning, showError } = visage;
         const loadingKey = 'face-search';
         const isLoading = state.loading[loadingKey] || false;
         const identify = useCallback$6(async () => {
             if (isLoading)
                 return;
             const [, scenarioId] = getScenarioAndID();
-            setScenario('performers', scenarioId);
             setLoading(loadingKey, true);
             try {
                 const blob = await fetchPerformerBlob(scenarioId);
@@ -9566,7 +9693,7 @@
                     showWarning(t('search.noPerformerImage'));
                     return;
                 }
-                await dispatchBlob(blob, showWarning, showError, showHealthBanner, setLoading, setMatches, setScenario, loadingKey, startMatchSearch, showMatchModal);
+                await dispatchBlob(blob, visage, loadingKey);
             }
             catch (error) {
                 showError(t('search.captureFail', { error: getErrorMessage(error) }));
@@ -9574,7 +9701,7 @@
             finally {
                 setLoading(loadingKey, false);
             }
-        }, [isLoading, setLoading, setMatches, setScenario, showWarning, showError, showHealthBanner, startMatchSearch, showMatchModal]);
+        }, [visage, isLoading]);
         return React$f.createElement('button', {
             id: 'visage-performer-identify',
             className: `btn btn-secondary visage-performer-identify${isLoading ? ' visage-scanning' : ''}`,
@@ -9661,18 +9788,16 @@
     }
     async function trySprite(sceneId, onProgress) {
         var _a;
-        const spriteUrl = await getUrlSprite(sceneId);
+        const spriteUrl = await getSpritePath(sceneId);
         if (!spriteUrl)
             return null;
         const vttUrl = spriteUrl.replace(/_sprite\.jpg$/, '_thumbs.vtt');
-        const image = await downloadAsDataUrl(spriteUrl);
-        const vttResponse = await fetch(vttUrl);
-        if (!vttResponse.ok) {
-            console.warn('[Visage] sprite VTT fetch failed', vttUrl, vttResponse.status);
+        const [spriteResponse, vttResponse] = await Promise.all([fetch(spriteUrl), fetch(vttUrl)]);
+        if (!spriteResponse.ok || !vttResponse.ok) {
+            console.warn('[Visage] sprite/VTT fetch failed', spriteResponse.status, vttResponse.status);
             return null;
         }
-        const vttBlob = await vttResponse.blob();
-        const imageBlob = dataUrlToBlob(image);
+        const [imageBlob, vttBlob] = await Promise.all([spriteResponse.blob(), vttResponse.blob()]);
         const result = await identifySpritePerformers(imageBlob, vttBlob, onProgress);
         const data = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0];
         if (data === null || data === void 0 ? void 0 : data.error) {
@@ -9707,10 +9832,11 @@
     const { useCallback: useCallback$5 } = React$e;
     function SceneScanButton({ menuItem }) {
         useLocale();
-        const { state, setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showWarning, showError, showHealthBanner } = useVisage();
+        const { state, setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showHealthBanner } = useVisage();
         const loadingKey = 'face-detection';
         const isLoading = state.loading[loadingKey] || false;
         const scanScene = useCallback$5(async () => {
+            var _a;
             resetCancelled();
             try {
                 setLoading(loadingKey, true);
@@ -9736,31 +9862,27 @@
                     setSpriteResult(previewData);
                     return;
                 }
-                showSpriteModal(false);
+                // Nothing found: the modal stays open and says why.
                 const spriteUrl = await getUrlSprite(sceneId);
                 const previewUrl = await getUrlPreview(sceneId);
-                if (!spriteUrl && !previewUrl) {
-                    showWarning(t('scene.noSprite'));
-                }
-                else {
-                    showWarning(t('scene.noFaces'));
-                }
+                showEmptyResult(t(!spriteUrl && !previewUrl ? 'scene.noSprite' : 'scene.noFaces'));
             }
             catch (error) {
                 console.error('[Visage] scene scan error:', error);
                 showSpriteModal(false);
-                const message = getErrorMessage(error);
-                if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-                    showHealthBanner(t('scene.healthBanner'));
+                const backend = describeBackendError(error);
+                if (backend === null || backend === void 0 ? void 0 : backend.unreachable) {
+                    showHealthBanner(backend.message);
                 }
                 else {
-                    showError(t('scene.failed', { error: message }));
+                    const retry = { label: t('error.retry'), run: () => { scanScene(); } };
+                    showError((_a = backend === null || backend === void 0 ? void 0 : backend.message) !== null && _a !== void 0 ? _a : t('scene.failed', { error: getErrorMessage(error) }), retry);
                 }
             }
             finally {
                 setLoading(loadingKey, false);
             }
-        }, [setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showWarning, showError, showHealthBanner]);
+        }, [setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showHealthBanner]);
         if (menuItem) {
             return React$e.createElement('a', {
                 href: '#',
@@ -9786,14 +9908,34 @@
 
     const React$d = window.PluginApi.React;
     const { useState: useState$4, useEffect: useEffect$6, useCallback: useCallback$4 } = React$d;
+    // Grid navigation must not steal keys a focused control handles itself:
+    // Enter/Space must click a focused button, arrows must move a focused slider.
+    // Performer cards are role=button but keep arrow navigation.
+    const ARROW_CONTROLS = 'input, textarea, select, [contenteditable], [role="slider"]';
+    const ACTIVATE_CONTROLS = `${ARROW_CONTROLS}, button, a[href], [role="button"]`;
+    function isOwnedByControl(event) {
+        const target = event.target;
+        if (!(target instanceof Element))
+            return false;
+        const selector = event.key.startsWith('Arrow') ? ARROW_CONTROLS : ACTIVATE_CONTROLS;
+        return target.closest(selector) !== null;
+    }
     function useKeyboardNav({ faceCount, getPerformerCount, onAssign, enabled }) {
         const [selectedFaceIndex, setSelectedFaceIndex] = useState$4(0);
         const [selectedCardIndex, setSelectedCardIndex] = useState$4(0);
         const [hasNavigated, setHasNavigated] = useState$4(false);
         const handleKeydown = useCallback$4((event) => {
-            if (!enabled)
+            if (!enabled || event.defaultPrevented || isOwnedByControl(event))
                 return;
             const performerCount = getPerformerCount(selectedFaceIndex);
+            // Faces with no matches have no tab, so up/down skips them.
+            const nextFace = (step) => {
+                for (let i = selectedFaceIndex + step; i >= 0 && i < faceCount; i += step) {
+                    if (getPerformerCount(i) > 0)
+                        return i;
+                }
+                return -1;
+            };
             switch (event.key) {
                 case 'ArrowRight':
                     event.preventDefault();
@@ -9809,22 +9951,26 @@
                         setSelectedCardIndex(selectedCardIndex - 1);
                     }
                     break;
-                case 'ArrowDown':
+                case 'ArrowDown': {
                     event.preventDefault();
                     setHasNavigated(true);
-                    if (selectedFaceIndex < faceCount - 1) {
-                        setSelectedFaceIndex(selectedFaceIndex + 1);
+                    const next = nextFace(1);
+                    if (next >= 0) {
+                        setSelectedFaceIndex(next);
                         setSelectedCardIndex(0);
                     }
                     break;
-                case 'ArrowUp':
+                }
+                case 'ArrowUp': {
                     event.preventDefault();
                     setHasNavigated(true);
-                    if (selectedFaceIndex > 0) {
-                        setSelectedFaceIndex(selectedFaceIndex - 1);
+                    const next = nextFace(-1);
+                    if (next >= 0) {
+                        setSelectedFaceIndex(next);
                         setSelectedCardIndex(0);
                     }
                     break;
+                }
                 case 'Enter':
                 case ' ':
                     event.preventDefault();
@@ -9845,6 +9991,30 @@
             hasNavigated,
             setSelectedFaceIndex,
             setSelectedCardIndex,
+        };
+    }
+
+    // Call before adding performers to a scene or image. The returned "Undo"
+    // action restores the performer list as it was at snapshot time:
+    //   const undo = await snapshot(scenario, id);
+    //   ...add performers...
+    //   showSuccess(message, undo);
+    function useUndoSnapshot() {
+        const { showSuccess, showError } = useVisage();
+        return async function snapshot(scenario, contentId) {
+            const before = await getContentPerformers(scenario, contentId);
+            return {
+                label: t('error.undo'),
+                run: async () => {
+                    try {
+                        await setContentPerformers(scenario, contentId, before);
+                        showSuccess(t('error.undone'));
+                    }
+                    catch (error) {
+                        showError(t('error.undoFailed', { error: getErrorMessage(error) }));
+                    }
+                },
+            };
         };
     }
 
@@ -9936,7 +10106,71 @@
         }, [duration]);
     }
 
+    function getConfidenceClass(confidence) {
+        return confidence >= 90
+            ? 'visage-confidence-excellent'
+            : confidence >= 70
+                ? 'visage-confidence-good'
+                : 'visage-confidence-uncertain';
+    }
+
     const React$a = window.PluginApi.React;
+    const TIER_LABEL = {
+        'visage-confidence-excellent': 'card.excellent',
+        'visage-confidence-good': 'card.good',
+        'visage-confidence-uncertain': 'card.uncertain',
+    };
+    // "96%" with a quieter percent sign. Tabular digits keep widths steady.
+    function ConfidenceNumber({ value }) {
+        return React$a.createElement('span', { className: 'visage-conf-num' }, String(value), React$a.createElement('span', { className: 'visage-conf-unit' }, '%'));
+    }
+    // Activity-ring style arc: rounded caps on a track tinted in the tier color.
+    // The arc draws in on mount (see .visage-conf-arc in visage.css).
+    // `size` and `stroke` are in px. With `label`, the number sits inside the ring.
+    function ConfidenceRing({ confidence, size = 44, stroke = 3, label = true }) {
+        const value = Math.max(0, Math.min(100, Math.round(confidence)));
+        const tier = getConfidenceClass(value);
+        const r = (size - stroke) / 2;
+        const circumference = 2 * Math.PI * r;
+        const offset = circumference * (1 - value / 100);
+        const center = size / 2;
+        const tierLabel = `${t(TIER_LABEL[tier])}, ${value}%`;
+        return React$a.createElement('span', {
+            className: `visage-conf-ring ${tier}`,
+            style: { width: size, height: size },
+            role: label ? 'img' : undefined,
+            'aria-label': label ? tierLabel : undefined,
+            'aria-hidden': label ? undefined : true,
+            title: label ? tierLabel : undefined,
+        }, React$a.createElement('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, React$a.createElement('circle', {
+            className: 'visage-conf-track',
+            cx: center, cy: center, r,
+            fill: 'none', strokeWidth: stroke,
+        }), React$a.createElement('circle', {
+            className: 'visage-conf-arc',
+            cx: center, cy: center, r,
+            fill: 'none', strokeWidth: stroke,
+            strokeLinecap: 'round',
+            strokeDasharray: circumference,
+            strokeDashoffset: offset,
+            transform: `rotate(-90 ${center} ${center})`,
+            style: { '--visage-arc-length': `${circumference}px` },
+        })), label && React$a.createElement(ConfidenceNumber, { value }));
+    }
+    // Frosted capsule for photo overlays: a small ring plus the number.
+    function ConfidenceBadge({ confidence }) {
+        const value = Math.max(0, Math.min(100, Math.round(confidence)));
+        const tier = getConfidenceClass(value);
+        const tierLabel = `${t(TIER_LABEL[tier])}, ${value}%`;
+        return React$a.createElement('span', {
+            className: `visage-conf-badge ${tier}`,
+            role: 'img',
+            'aria-label': tierLabel,
+            title: tierLabel,
+        }, React$a.createElement(ConfidenceRing, { confidence: value, size: 16, stroke: 2.5, label: false }), React$a.createElement(ConfidenceNumber, { value }));
+    }
+
+    const React$9 = window.PluginApi.React;
     const SOURCE_BASE_URLS = {
         stashdb: 'https://stashdb.org',
         javstash: 'https://javstash.org',
@@ -9968,34 +10202,25 @@
         if (!cfg)
             return null;
         const label = t(cfg.label);
-        return React$a.createElement('span', {
+        return React$9.createElement('span', {
             className: `visage-gender-badge ${cfg.className}`,
             title: label,
             'aria-label': label,
         }, cfg.symbol);
     };
-    function PerformerCard({ performer, isLoading, isKeyboardSelected, isSelected, onToggle, onQuickAdd }) {
+    function PerformerCard({ performer, isLoading, isKeyboardSelected, isSelected, existingLabel, onToggle, onQuickAdd }) {
         useLocale();
         const imgRef = useSmoothLoad();
         const confidence = performer.confidence || 0;
-        const confidenceClass = confidence >= 90
-            ? 'visage-confidence-excellent'
-            : confidence >= 70
-                ? 'visage-confidence-good'
-                : 'visage-confidence-uncertain';
-        const confidenceLabel = confidence >= 90
-            ? t('card.excellent')
-            : confidence >= 70
-                ? t('card.good')
-                : t('card.uncertain');
         const cardClasses = [
             'visage-performer-card',
             isLoading ? 'visage-loading' : '',
             isKeyboardSelected ? 'visage-keyboard-selected' : '',
             isSelected ? 'visage-performer-selected' : '',
+            existingLabel ? 'visage-performer-existing' : '',
         ].filter(Boolean).join(' ');
         function handleClick(e) {
-            if (isLoading)
+            if (isLoading || existingLabel)
                 return;
             if ((e.shiftKey || e.ctrlKey || e.metaKey) && onQuickAdd) {
                 e.preventDefault();
@@ -10012,7 +10237,7 @@
                 handleClick(e);
             }
         }
-        return React$a.createElement('div', {
+        return React$9.createElement('div', {
             className: cardClasses,
             'data-performer-id': performer.id,
             onClick: handleClick,
@@ -10020,51 +10245,49 @@
             role: 'button',
             tabIndex: isKeyboardSelected ? 0 : -1,
             'aria-pressed': isSelected,
-            'aria-label': t(isSelected ? 'card.deselect' : 'card.select', { name: performer.name }),
+            'aria-disabled': existingLabel ? true : undefined,
+            'aria-label': existingLabel
+                ? `${performer.name}, ${existingLabel}`
+                : t(isSelected ? 'card.deselect' : 'card.select', { name: performer.name }),
         }, 
         // Portrait image area
-        React$a.createElement('div', { className: 'visage-card-portrait' }, React$a.createElement('img', {
+        React$9.createElement('div', { className: 'visage-card-portrait' }, React$9.createElement('img', {
             ref: imgRef,
             className: 'visage-portrait-img',
             alt: performer.name,
             src: imgSrc$1(performer.image),
         }), 
         // Gradient overlay
-        React$a.createElement('div', { className: 'visage-card-img-overlay' }), 
-        // Confidence strip at bottom edge
-        React$a.createElement('div', {
-            className: `visage-confidence-strip ${confidenceClass}`,
-            style: { width: `${confidence}%` },
-        }), 
+        React$9.createElement('div', { className: 'visage-card-img-overlay' }), 
         // Country flag
-        performer.country && React$a.createElement('span', {
+        performer.country && React$9.createElement('span', {
             className: `visage-country-flag fi fi-${performer.country.toLowerCase()}`,
         }), 
         // Source badge
-        performer.source && React$a.createElement('span', {
+        performer.source && React$9.createElement('span', {
             className: `visage-source-badge visage-source-${performer.source}`,
             title: performer.source,
         }, performer.source[0].toUpperCase()), 
         // Gender badge
         genderBadge(performer.gender), 
         // Selected check badge
-        isSelected && React$a.createElement('div', { className: 'visage-card-check-badge' }, React$a.createElement('svg', {
+        isSelected && React$9.createElement('div', { className: 'visage-card-check-badge' }, React$9.createElement('svg', {
             width: 16, height: 16, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 3,
-        }, React$a.createElement('polyline', { points: '20 6 9 17 4 12' }))), 
+        }, React$9.createElement('polyline', { points: '20 6 9 17 4 12' }))), 
         // Text overlay: name + confidence
-        React$a.createElement('div', { className: 'visage-card-meta' }, React$a.createElement('a', {
+        React$9.createElement('div', { className: 'visage-card-meta' }, React$9.createElement('a', {
             href: performerUrl(performer.id, performer.source),
             title: t('card.openOn', { source: (performer.source || 'stashdb').toLowerCase() }),
             target: '_blank',
             rel: 'noopener noreferrer',
             className: 'visage-performer-name',
             onClick: (e) => e.stopPropagation(),
-        }, performer.name), React$a.createElement('div', { className: 'visage-card-stats' }, React$a.createElement('div', { className: `visage-confidence-dot ${confidenceClass}` }), React$a.createElement('span', { className: 'visage-confidence-pct' }, `${confidence}%`), React$a.createElement('span', { className: 'visage-confidence-lbl' }, confidenceLabel)))));
+        }, performer.name), React$9.createElement('div', { className: 'visage-card-stats' }, React$9.createElement(ConfidenceBadge, { confidence }), existingLabel && React$9.createElement('span', { className: 'visage-card-existing-tag' }, existingLabel)))));
     }
 
-    const React$9 = window.PluginApi.React;
-    const { useEffect: useEffect$4, useState: useState$3 } = React$9;
+    const React$8 = window.PluginApi.React;
+    const { useEffect: useEffect$4, useRef: useRef$4, useState: useState$3 } = React$8;
     const CLOUD_URL = VISAGE_API_URL;
     const LOCAL_DEFAULT = 'http://localhost:7860';
     function hostOf(url) {
@@ -10086,20 +10309,20 @@
     };
     function SettingsCloseButton({ onClick }) {
         useLocale();
-        return React$9.createElement('button', {
+        return React$8.createElement('button', {
             className: 'visage-backend-settings-close',
             onClick,
             'aria-label': t('backendSettings.closeAria'),
-        }, React$9.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$9.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$9.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })));
+        }, React$8.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$8.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$8.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })));
     }
     function SettingsButton({ onClick }) {
         useLocale();
-        return React$9.createElement('button', {
+        return React$8.createElement('button', {
             className: 'visage-modal-settings',
             onClick,
             'aria-label': t('backendSettings.backendAria'),
             title: t('backendSettings.changeBackend'),
-        }, React$9.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$9.createElement('path', { d: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' }), React$9.createElement('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' })));
+        }, React$8.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$8.createElement('path', { d: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' }), React$8.createElement('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' })));
     }
     function BackendSettings({ onClose, initialMode }) {
         useLocale();
@@ -10122,6 +10345,9 @@
         const [testStatus, setTestStatus] = useState$3(null);
         const [stashStatus, setStashStatus] = useState$3(null);
         const [syncStatus, setSyncStatus] = useState$3('idle');
+        // Open sync progress stream. Closed on unmount so it does not outlive the dialog.
+        const syncStreamRef = useRef$4(null);
+        useEffect$4(() => () => { var _a; return (_a = syncStreamRef.current) === null || _a === void 0 ? void 0 : _a.close(); }, []);
         const [syncError, setSyncError] = useState$3('');
         useEffect$4(() => {
             function onKey(e) {
@@ -10210,6 +10436,7 @@
                 const eventId = await triggerStashSync(url.trim());
                 const sseUrl = `${url.trim()}/api/stash/sync/${eventId}`;
                 const evtSource = new EventSource(sseUrl);
+                syncStreamRef.current = evtSource;
                 evtSource.addEventListener('complete', () => {
                     evtSource.close();
                     setSyncStatus('done');
@@ -10251,28 +10478,28 @@
             ? t('backendSettings.testing')
             : (testStatus ? t(TEST_FEEDBACK[testStatus]) : '');
         const showNonLocalhostWarn = mode === 'local' && url.trim() !== '' && !isLocalHost(url.trim());
-        return React$9.createElement('div', {
+        return React$8.createElement('div', {
             className: 'visage-backend-settings-backdrop',
             onClick: (e) => { if (e.target === e.currentTarget)
                 onClose(); },
-        }, React$9.createElement('div', {
+        }, React$8.createElement('div', {
             className: 'visage-backend-settings',
             role: 'dialog',
             'aria-modal': 'true',
             'aria-label': t('backendSettings.backendAria'),
-        }, React$9.createElement('div', { className: 'visage-backend-settings-header' }, React$9.createElement('h2', { className: 'visage-backend-settings-title' }, t('backendSettings.title')), React$9.createElement(SettingsCloseButton, { onClick: onClose })), React$9.createElement('div', { className: 'visage-backend-settings-body' }, React$9.createElement('div', { className: 'visage-backend-settings-field' }, React$9.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.backendLabel')), React$9.createElement('div', { className: 'visage-backend-settings-seg' }, React$9.createElement('button', {
+        }, React$8.createElement('div', { className: 'visage-backend-settings-header' }, React$8.createElement('h2', { className: 'visage-backend-settings-title' }, t('backendSettings.title')), React$8.createElement(SettingsCloseButton, { onClick: onClose })), React$8.createElement('div', { className: 'visage-backend-settings-body' }, React$8.createElement('div', { className: 'visage-backend-settings-field' }, React$8.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.backendLabel')), React$8.createElement('div', { className: 'visage-backend-settings-seg' }, React$8.createElement('button', {
             className: `visage-backend-seg-opt${mode === 'local' ? ' visage-backend-seg-active' : ''}`,
             onClick: () => selectMode('local'),
-        }, t('backendSettings.local')), React$9.createElement('button', {
+        }, t('backendSettings.local')), React$8.createElement('button', {
             className: `visage-backend-seg-opt${mode === 'cloud' ? ' visage-backend-seg-active' : ''}`,
             onClick: () => selectMode('cloud'),
-        }, t('backendSettings.cloud')))), mode === 'cloud' && React$9.createElement('div', { className: 'visage-backend-settings-note' }, t('backendSettings.cloudNote')), mode === 'cloud' && React$9.createElement('p', { className: 'visage-backend-settings-hint' }, t('backendSettings.hintPrefix'), React$9.createElement('a', {
+        }, t('backendSettings.cloud')))), mode === 'cloud' && React$8.createElement('div', { className: 'visage-backend-settings-note' }, t('backendSettings.cloudNote')), mode === 'cloud' && React$8.createElement('p', { className: 'visage-backend-settings-hint' }, t('backendSettings.hintPrefix'), React$8.createElement('a', {
             className: 'visage-backend-settings-hint-link',
             href: 'https://www.patreon.com/cw/cc12340',
             target: '_blank',
             rel: 'noopener noreferrer',
-        }, t('backendSettings.hintLink')), '.'), React$9.createElement('div', { className: 'visage-backend-settings-field' }, React$9.createElement('label', { className: 'visage-backend-settings-label', htmlFor: 'visage-backend-url' }, t('backendSettings.urlLabel')), mode === 'local'
-            ? React$9.createElement('input', {
+        }, t('backendSettings.hintLink')), '.'), React$8.createElement('div', { className: 'visage-backend-settings-field' }, React$8.createElement('label', { className: 'visage-backend-settings-label', htmlFor: 'visage-backend-url' }, t('backendSettings.urlLabel')), mode === 'local'
+            ? React$8.createElement('input', {
                 id: 'visage-backend-url',
                 className: 'visage-backend-settings-input',
                 type: 'text',
@@ -10280,12 +10507,12 @@
                 onChange: (e) => { setUrl(e.target.value); setTestStatus(null); },
                 placeholder: LOCAL_DEFAULT,
             })
-            : React$9.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), showNonLocalhostWarn && React$9.createElement('div', { className: 'visage-backend-settings-warn' }, t('backendSettings.csp1'), React$9.createElement('code', null, 'http://localhost:7860'), t('backendSettings.csp2'), React$9.createElement('code', null, 'connect-src'), t('backendSettings.csp3'), React$9.createElement('code', null, 'visage.yml'), t('backendSettings.csp4'), React$9.createElement('code', null, 'visage.yml'), t('backendSettings.csp5')), React$9.createElement('div', {
+            : React$8.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), showNonLocalhostWarn && React$8.createElement('div', { className: 'visage-backend-settings-warn' }, t('backendSettings.csp1'), React$8.createElement('code', null, 'http://localhost:7860'), t('backendSettings.csp2'), React$8.createElement('code', null, 'connect-src'), t('backendSettings.csp3'), React$8.createElement('code', null, 'visage.yml'), t('backendSettings.csp4'), React$8.createElement('code', null, 'visage.yml'), t('backendSettings.csp5')), React$8.createElement('div', {
             className: `visage-backend-settings-status${testStatus ? ` visage-backend-${testStatus}` : ''}`,
             role: 'status',
-        }, statusText), (stashStatus === null || stashStatus === void 0 ? void 0 : stashStatus.configured) && React$9.createElement('div', { className: 'visage-backend-settings-sync' }, React$9.createElement('div', { className: 'visage-backend-settings-field' }, React$9.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.sync.title')), React$9.createElement('div', { className: 'visage-sync-info' }, React$9.createElement('div', { className: 'visage-sync-last' }, stashStatus.lastSyncAt
+        }, statusText), (stashStatus === null || stashStatus === void 0 ? void 0 : stashStatus.configured) && React$8.createElement('div', { className: 'visage-backend-settings-sync' }, React$8.createElement('div', { className: 'visage-backend-settings-field' }, React$8.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.sync.title')), React$8.createElement('div', { className: 'visage-sync-info' }, React$8.createElement('div', { className: 'visage-sync-last' }, stashStatus.lastSyncAt
             ? t('backendSettings.sync.lastSynced', { time: new Date(stashStatus.lastSyncAt).toLocaleString() })
-            : t('backendSettings.sync.neverSynced')), React$9.createElement('div', { className: 'visage-sync-count' }, t('backendSettings.sync.performers', { count: String(stashStatus.performerCount) }))), React$9.createElement('div', { className: 'visage-sync-actions' }, React$9.createElement('button', {
+            : t('backendSettings.sync.neverSynced')), React$8.createElement('div', { className: 'visage-sync-count' }, t('backendSettings.sync.performers', { count: String(stashStatus.performerCount) }))), React$8.createElement('div', { className: 'visage-sync-actions' }, React$8.createElement('button', {
             className: `visage-btn visage-btn-secondary${syncStatus === 'syncing' ? ' visage-syncing' : ''}`,
             onClick: handleSync,
             disabled: syncStatus === 'syncing',
@@ -10293,20 +10520,20 @@
             ? t('backendSettings.sync.syncing')
             : syncStatus === 'done'
                 ? t('backendSettings.sync.done')
-                : t('backendSettings.sync.button')), syncStatus === 'already_running' && React$9.createElement('span', { className: 'visage-sync-note' }, t('backendSettings.sync.alreadyRunning')), syncStatus === 'error' && React$9.createElement('span', { className: 'visage-sync-error' }, syncError))))), React$9.createElement('div', { className: 'visage-backend-settings-actions' }, React$9.createElement('button', {
+                : t('backendSettings.sync.button')), syncStatus === 'already_running' && React$8.createElement('span', { className: 'visage-sync-note' }, t('backendSettings.sync.alreadyRunning')), syncStatus === 'error' && React$8.createElement('span', { className: 'visage-sync-error' }, syncError))))), React$8.createElement('div', { className: 'visage-backend-settings-actions' }, React$8.createElement('button', {
             className: 'visage-btn visage-btn-secondary',
             onClick: handleTest,
             disabled: testStatus === 'testing',
-        }, testStatus === 'testing' ? t('backendSettings.testingShort') : t('backendSettings.testConnection')), React$9.createElement('button', {
+        }, testStatus === 'testing' ? t('backendSettings.testingShort') : t('backendSettings.testConnection')), React$8.createElement('button', {
             className: 'visage-btn visage-btn-secondary',
             onClick: onClose,
-        }, t('backendSettings.cancel')), React$9.createElement('button', {
+        }, t('backendSettings.cancel')), React$8.createElement('button', {
             className: 'visage-btn visage-btn-primary',
             onClick: handleSave,
         }, t('backendSettings.save')))));
     }
 
-    const React$8 = window.PluginApi.React;
+    const React$7 = window.PluginApi.React;
     /**
      * Passive indicator of the resolved active backend, shown in the result modal
      * header next to the settings gear. Never guesses Local: on any error it falls
@@ -10325,15 +10552,15 @@
         const label = isLocal ? t('badge.local') : t('badge.cloud');
         const variant = isLocal ? 'local' : 'cloud';
         const title = t('badge.title', { label });
-        return React$8.createElement('span', {
+        return React$7.createElement('span', {
             className: `visage-backend-badge visage-backend-${variant}`,
             'aria-label': title,
             title,
         }, label);
     }
 
-    const React$7 = window.PluginApi.React;
-    const { useCallback: useCallback$2, useEffect: useEffect$3, useRef: useRef$3, useState: useState$2 } = React$7;
+    const React$6 = window.PluginApi.React;
+    const { useCallback: useCallback$2, useEffect: useEffect$3, useRef: useRef$3, useState: useState$2 } = React$6;
     const imgSrc = (value, fallback = '') => {
         if (!value)
             return fallback;
@@ -10341,6 +10568,19 @@
             return value;
         return `data:image/jpeg;base64,${value}`;
     };
+    // Best match of 90% or more for each face, skipping performers already in the
+    // scene. Pre-selected so the common case is one click on the confirm button.
+    function preselect(matches, existing) {
+        const picks = new Map();
+        matches.forEach((face, i) => {
+            const best = face.performers
+                .filter(p => p.confidence >= 90 && !existing.has(p.id))
+                .sort((a, b) => b.confidence - a.confidence)[0];
+            if (best)
+                picks.set(i, { id: best.id, source: best.source });
+        });
+        return picks;
+    }
     // onConfirm overrides the default scene/image add flow (used on performer
     // pages to link stash_ids instead of adding performers to content).
     function FaceMatchModal({ onConfirm } = {}) {
@@ -10348,26 +10588,27 @@
         useLocale();
         const { state, setLoading, showMatchModal, showError, showSuccess, showWarning, openSettings } = useVisage();
         const { matches: rawMatches, loading: loadingState } = state;
+        const snapshotForUndo = useUndoSnapshot();
         const matches = Array.isArray(rawMatches) ? rawMatches : [];
-        const [activeFaceIndex, setActiveFaceIndex] = React$7.useState(0);
-        const [selectedPerformer, setSelectedPerformer] = useState$2(new Map());
+        const [selectedPerformer, setSelectedPerformer] = useState$2(() => preselect(matches, new Set()));
         const [adding, setAdding] = useState$2(false);
         const [visible, setVisible] = useState$2(false);
         const [sceneStashIds, setSceneStashIds] = useState$2(new Set());
         const [stashboxStatus, setStashboxStatus] = useState$2(null);
-        // null means "auto": derive the threshold from the matches whenever they arrive.
-        // Kept derived (not seeded into state on mount) because the modal opens before
-        // the search returns, when `matches` is still empty. Not persisted: every search
-        // recalibrates, and the slider only overrides the current result set.
-        const [confidenceOverride, setConfidenceOverride] = useState$2(null);
-        const [thresholdFor, setThresholdFor] = useState$2(rawMatches);
-        if (thresholdFor !== rawMatches) {
-            setThresholdFor(rawMatches);
-            setConfidenceOverride(null);
+        // "Show more" lifts the auto threshold for the current result set only.
+        const [showAll, setShowAll] = useState$2(false);
+        // Each new result set resets "Show more" and pre-selects confident matches.
+        // Derived during render (not in an effect) because the modal opens before
+        // the search returns, when `matches` is still empty.
+        const [resultsFor, setResultsFor] = useState$2(rawMatches);
+        if (resultsFor !== rawMatches) {
+            setResultsFor(rawMatches);
+            setShowAll(false);
+            setSelectedPerformer(preselect(matches, sceneStashIds));
         }
         // Threshold low enough that every face keeps at least three performers:
         // take each face's 3rd-best score and use the smallest of those.
-        const autoConfidence = React$7.useMemo(() => {
+        const autoConfidence = React$6.useMemo(() => {
             let threshold = Infinity;
             for (const face of matches) {
                 const scores = face.performers
@@ -10380,7 +10621,7 @@
             }
             return Number.isFinite(threshold) ? threshold : 0;
         }, [matches]);
-        const minConfidence = confidenceOverride !== null && confidenceOverride !== void 0 ? confidenceOverride : autoConfidence;
+        const minConfidence = showAll ? 0 : autoConfidence;
         const close = useCallback$2(() => {
             setVisible(false);
             setTimeout(() => showMatchModal(false), 300);
@@ -10437,6 +10678,14 @@
             })();
             return () => { abortRef.current = true; };
         }, []);
+        // Existing ids load after the results can arrive. Drop any pre-selection
+        // that turns out to be in the scene already.
+        useEffect$3(() => {
+            setSelectedPerformer(prev => {
+                const next = new Map([...prev].filter(([, e]) => !sceneStashIds.has(e.id)));
+                return next.size === prev.size ? prev : next;
+            });
+        }, [sceneStashIds]);
         const getPerformerCount = useCallback$2((faceIndex) => {
             var _a;
             const face = matches[faceIndex];
@@ -10454,7 +10703,7 @@
         const handleQuickAddCard = useCallback$2(async (stashId, source) => {
             if (adding || sceneStashIds.has(stashId))
                 return;
-            const [scenario] = getScenarioAndID();
+            const [scenario, scenarioId] = getScenarioAndID();
             setAdding(true);
             try {
                 if (onConfirm) {
@@ -10463,9 +10712,10 @@
                     close();
                     return;
                 }
+                const undo = await snapshotForUndo(scenario, scenarioId);
                 const ok = await addSinglePerformer(stashId, source);
                 if (ok) {
-                    showSuccess(t('faceMatch.toast.added', { target: scenario === 'scenes' ? 'scene' : 'image' }));
+                    showSuccess(addedMessage(scenario, [stashId]), undo);
                     close();
                 }
             }
@@ -10477,15 +10727,14 @@
                 setAdding(false);
             }
         }, [adding, sceneStashIds, onConfirm]);
-        const { selectedFaceIndex, selectedCardIndex, hasNavigated } = useKeyboardNav({
+        // The keyboard nav face is the single source of truth for the open face tab,
+        // so a tab click and Enter always act on the same face.
+        const { selectedFaceIndex: activeFaceIndex, selectedCardIndex, hasNavigated, setSelectedFaceIndex, setSelectedCardIndex, } = useKeyboardNav({
             faceCount: matches.length,
             getPerformerCount,
             onAssign: handleSelectFromKeyboard,
             enabled: state.showMatchModal,
         });
-        useEffect$3(() => {
-            setActiveFaceIndex(selectedFaceIndex);
-        }, [selectedFaceIndex]);
         function selectPerformer(faceIndex, stashId) {
             if (sceneStashIds.has(stashId))
                 return;
@@ -10503,6 +10752,17 @@
                 }
                 return next;
             });
+        }
+        // "Added Jane Doe to this scene." for one, a count for several.
+        function addedMessage(scenario, ids) {
+            var _a, _b;
+            const where = scenario === 'images' ? 'images' : 'scenes';
+            const count = ids.length;
+            if (count === 1) {
+                const name = (_b = (_a = matches.flatMap(f => f.performers).find(p => ids.includes(p.id))) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : '';
+                return t(`faceMatch.toast.added.${where}`, { name });
+            }
+            return t(`faceMatch.toast.addedMany.${where}`, { count });
         }
         async function addSinglePerformer(stashId, source) {
             const [scenario, scenarioId] = getScenarioAndID();
@@ -10538,7 +10798,7 @@
                 close();
                 return;
             }
-            const [scenario] = getScenarioAndID();
+            const [scenario, scenarioId] = getScenarioAndID();
             setAdding(true);
             let addedCount = 0;
             try {
@@ -10548,11 +10808,13 @@
                     close();
                     return;
                 }
+                const undo = await snapshotForUndo(scenario, scenarioId);
+                const addedIds = [];
                 for (const { id: stashId, source: sourceName } of entries) {
-                    const ok = await addSinglePerformer(stashId, sourceName);
-                    if (ok)
-                        addedCount++;
+                    if (await addSinglePerformer(stashId, sourceName))
+                        addedIds.push(stashId);
                 }
+                addedCount = addedIds.length;
                 if (addedCount === 0) {
                     const msg = stashboxStatus === 'empty'
                         ? t('faceMatch.toast.noStashbox', { url: STASHBOX_DOCS_URL })
@@ -10562,7 +10824,7 @@
                     showWarning(msg);
                     return;
                 }
-                showSuccess(t('faceMatch.toast.addedMultiple', { count: addedCount, s: addedCount !== 1 ? 's' : '', target: scenario === 'scenes' ? 'scene' : 'image' }));
+                showSuccess(addedMessage(scenario, addedIds), undo);
                 close();
             }
             catch (error) {
@@ -10573,22 +10835,16 @@
                 setAdding(false);
             }
         }
-        function hasHighConfidenceMatches() {
-            return matches.some((face) => face.performers.some(p => { var _a; return p.confidence >= 90 && !sceneStashIds.has(p.id) && ((_a = selectedPerformer.get(activeFaceIndex)) === null || _a === void 0 ? void 0 : _a.id) !== p.id; }));
-        }
-        async function assignConfidentMatches() {
-            for (let i = 0; i < matches.length; i++) {
-                const face = matches[i];
-                const bestMatch = face.performers
-                    .filter(p => { var _a; return p.confidence >= 90 && !sceneStashIds.has(p.id) && ((_a = selectedPerformer.get(i)) === null || _a === void 0 ? void 0 : _a.id) !== p.id; })
-                    .sort((a, b) => b.confidence - a.confidence)[0];
-                if (bestMatch) {
-                    selectPerformer(i, bestMatch.id);
-                }
-            }
-        }
+        const scenario = getPageScenario();
         const isSearching = loadingState['face-search'] && matches.length === 0;
+        const emptyResult = !isSearching && matches.length === 0 ? state.emptyResult : null;
+        const visibleFaceCount = matches.filter((_, i) => getPerformerCount(i) > 0).length;
+        const allExisting = matches.length > 0 && selectedPerformer.size === 0
+            && matches.every(face => face.performers.some(p => sceneStashIds.has(p.id)));
         const activeFace = matches[activeFaceIndex];
+        const hiddenCount = activeFace
+            ? activeFace.performers.length - getPerformerCount(activeFaceIndex)
+            : 0;
         const selectedId = (_a = selectedPerformer.get(activeFaceIndex)) === null || _a === void 0 ? void 0 : _a.id;
         const inSceneIdx = (_c = (_b = activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers) === null || _b === void 0 ? void 0 : _b.findIndex((p) => sceneStashIds.has(p.id))) !== null && _c !== void 0 ? _c : -1;
         const previewIdx = hasNavigated
@@ -10596,96 +10852,93 @@
             : selectedId
                 ? (_e = (_d = activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers) === null || _d === void 0 ? void 0 : _d.findIndex((p) => p.id === selectedId)) !== null && _e !== void 0 ? _e : 0
                 : inSceneIdx >= 0 ? inSceneIdx : 0;
-        return React$7.createElement('div', {
+        return React$6.createElement('div', {
             className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 close(); },
-        }, React$7.createElement('div', {
+        }, React$6.createElement('div', {
             ref: modalRef,
             className: `visage-modal ${visible ? 'visage-visible' : ''}`,
             role: 'dialog',
             'aria-modal': 'true',
             tabIndex: -1,
-        }, React$7.createElement('div', { className: 'visage-modal-header' }, React$7.createElement('div', { className: 'visage-modal-title' }, React$7.createElement('h2', null, t('faceMatch.title')), !isSearching && React$7.createElement('span', { className: 'visage-match-count' }, t('faceMatch.facesSelected', { faces: matches.length, selected: selectedPerformer.size }) + (sceneStashIds.size > 0 ? ' ' + t('faceMatch.inScene', { count: sceneStashIds.size }) : ''))), React$7.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$7.createElement(BackendBadge, null), React$7.createElement(SettingsButton, { onClick: openSettings }), React$7.createElement('button', {
+        }, React$6.createElement('div', { className: 'visage-modal-header' }, React$6.createElement('div', { className: 'visage-modal-title' }, React$6.createElement('h2', null, t(`faceMatch.title.${scenario}`))), React$6.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$6.createElement(BackendBadge, null), React$6.createElement(SettingsButton, { onClick: openSettings }), React$6.createElement('button', {
             className: 'visage-modal-close',
             onClick: close,
             'aria-label': t('faceMatch.close'),
-        }, React$7.createElement('svg', {
+        }, React$6.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-        }, React$7.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$7.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$7.createElement('div', { className: 'visage-stashbox-banner' }, React$7.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$7.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$7.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$7.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$7.createElement('span', { className: 'visage-stashbox-banner-text' }, React$7.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
+        }, React$6.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$6.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$6.createElement('div', { className: 'visage-stashbox-banner' }, React$6.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$6.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$6.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$6.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$6.createElement('span', { className: 'visage-stashbox-banner-text' }, React$6.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
             ? t('faceMatch.stashboxMissingBody')
-            : t('faceMatch.stashboxWrongNameBody'), React$7.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, t('faceMatch.learnMore')))), isSearching
-            ? React$7.createElement('div', { className: 'visage-modal-loading' }, React$7.createElement('div', { className: 'visage-face-scan' }, React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('span', { className: 'visage-face-scan-corner' }), React$7.createElement('svg', {
-                viewBox: '0 0 100 120',
-                fill: 'none',
-                stroke: 'currentColor',
-                strokeWidth: 1.5,
-                strokeLinecap: 'round',
-            }, React$7.createElement('path', { d: 'M50 7 C29 7 15 22 16 45 C16.5 57 20 65 24 71' }), React$7.createElement('path', { d: 'M50 7 C71 7 85 22 84 45 C83.5 57 80 65 76 71' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C37 15 27 26 27 42' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C63 15 73 26 73 42' }), React$7.createElement('path', { d: 'M27 42 C27 61 34 77 43 85 C46 88 54 88 57 85 C66 77 73 61 73 42' }), React$7.createElement('path', { d: 'M33 52 C36.5 55 42.5 55 46 52' }), React$7.createElement('path', { d: 'M54 52 C57.5 55 63.5 55 67 52' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M35 54.6 L33.8 57 M39.5 55.6 L39 58.2 M44 54.6 L45 57' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M56 54.6 L55 57 M60.5 55.6 L61 58.2 M65 54.6 L66.2 57' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M32 46 C36 43.6 43 43.6 47 46' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M53 46 C57 43.6 64 43.6 68 46' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M50 54 C50 60 49.4 63 48.8 65.2 C49.6 66.4 50.4 66.4 51.2 65.2' }), React$7.createElement('path', { d: 'M42 75 C45 72.5 48 73.8 50 74.8 C52 73.8 55 72.5 58 75 C55 79.5 45 79.5 42 75 Z' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M44.5 80.5 C47 82.5 53 82.5 55.5 80.5' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M42 87.5 C42 94 40.5 99 38 104' }), React$7.createElement('path', { strokeWidth: 1.2, d: 'M58 87.5 C58 94 59.5 99 62 104' }), ...([
-                [25, 52], [75, 52], [35, 68], [65, 68], [60.5, 82],
-            ].map(([cx, cy], i) => React$7.createElement('circle', {
-                key: i, className: 'visage-face-scan-dot', cx, cy, r: i === 4 ? 1.5 : 1.8, stroke: 'none',
-            })))), React$7.createElement('div', { className: 'visage-face-scan-beam' })), React$7.createElement('span', { className: 'visage-loading-label' }, t('faceMatch.scanning')))
-            : React$7.createElement(React$7.Fragment, null, React$7.createElement('div', { className: 'visage-face-tabs' }, matches.map((face, idx) => {
-                if (getPerformerCount(idx) === 0)
-                    return null;
-                return React$7.createElement('button', {
-                    key: idx,
-                    className: `visage-face-tab ${idx === activeFaceIndex ? 'visage-face-tab-active' : ''}`,
-                    onClick: () => setActiveFaceIndex(idx),
-                }, React$7.createElement('img', {
-                    src: `data:image/jpg;base64,${face.image}`,
-                    alt: t('faceMatch.faceAlt', { index: idx + 1 }),
-                    className: 'visage-face-tab-image',
-                }));
-            })), React$7.createElement('div', { className: 'visage-sprite-toolbar', style: { padding: '0.5rem 1.5rem' } }, React$7.createElement('div', { className: 'visage-sprite-threshold' }, React$7.createElement('span', { className: 'visage-threshold-text' }, t('faceMatch.minConf')), React$7.createElement('input', {
-                type: 'range', min: 0, max: 100, step: 5,
-                value: minConfidence,
-                onChange: (e) => {
-                    const value = Number(e.target.value);
-                    setConfidenceOverride(value);
-                },
-                title: t('faceMatch.minConfTitle', { percent: minConfidence }),
-            }), React$7.createElement('span', { className: 'visage-sprite-threshold-label' }, `${minConfidence}%`))), React$7.createElement('div', { className: 'visage-modal-body' }, React$7.createElement('div', { className: 'visage-left-panel' }, activeFace && React$7.createElement(React$7.Fragment, null, React$7.createElement('div', null, React$7.createElement('span', { className: 'visage-section-label' }, t('faceMatch.detected')), React$7.createElement('div', { className: 'visage-detect-frame' }, React$7.createElement('img', {
-                src: `data:image/jpg;base64,${activeFace.image}`,
-                alt: t('faceMatch.detectedFaceAlt'),
-                className: 'visage-detect-image',
-            }))), activeFace.performers[previewIdx] && React$7.createElement(React$7.Fragment, null, React$7.createElement('div', { className: 'visage-vs-divider' }, t('faceMatch.vs')), React$7.createElement('div', null, React$7.createElement('span', { className: 'visage-section-label-name' }, activeFace.performers[previewIdx].name), React$7.createElement('div', { className: 'visage-match-frame' }, React$7.createElement('img', {
-                src: imgSrc(activeFace.performers[previewIdx].image),
-                alt: activeFace.performers[previewIdx].name,
-                className: 'visage-match-image',
-            })))))), React$7.createElement('div', { className: 'visage-right-panel' }, React$7.createElement('div', { className: 'visage-performer-grid' }, activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers.filter((p) => (p.confidence || 0) >= minConfidence).map((performer, cardIdx) => {
-                var _a;
-                return React$7.createElement(PerformerCard, {
-                    key: performer.id,
-                    performer,
-                    isLoading: loadingState[`add-performer-${performer.id}`] || false,
-                    isKeyboardSelected: hasNavigated && selectedFaceIndex === activeFaceIndex && selectedCardIndex === cardIdx,
-                    isSelected: sceneStashIds.has(performer.id) || ((_a = selectedPerformer.get(activeFaceIndex)) === null || _a === void 0 ? void 0 : _a.id) === performer.id,
-                    onToggle: (stashId) => selectPerformer(activeFaceIndex, stashId),
-                    onQuickAdd: handleQuickAddCard,
-                });
-            })))), React$7.createElement('div', { className: 'visage-modal-footer' }, React$7.createElement('div', { className: 'visage-footer-main' }, React$7.createElement('a', {
-                className: 'visage-ext-patreon-btn',
-                href: 'https://www.patreon.com/cw/cc12340',
-                target: '_blank',
-                rel: 'noopener noreferrer',
-            }, React$7.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$7.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$7.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), t('faceMatch.supportPatreon')), React$7.createElement('div', { className: 'visage-progress-info' }, React$7.createElement('span', { className: 'visage-matches-assigned' }, selectedPerformer.size > 0
-                ? t('faceMatch.ofSelected', { selected: selectedPerformer.size, total: matches.length })
-                : sceneStashIds.size > 0
-                    ? t('faceMatch.allInScene', { total: matches.length })
-                    : t('faceMatch.clickToSelect', { total: matches.length })), React$7.createElement('div', { className: 'visage-keyboard-hints' }, React$7.createElement('kbd', null, '\u2191\u2193'), ' ' + t('faceMatch.kbSwitch') + ' \u2022 ', React$7.createElement('kbd', null, '\u2190\u2192'), ' ' + t('faceMatch.kbSelect') + ' \u2022 ', React$7.createElement('kbd', null, 'Enter'), ' ' + t('faceMatch.kbToggle') + ' \u2022 ', t('faceMatch.kbAddInstant'))), React$7.createElement('div', { className: 'visage-button-group' }, hasHighConfidenceMatches() && React$7.createElement('button', {
-                className: 'visage-btn visage-btn-secondary',
-                onClick: assignConfidentMatches,
-            }, React$7.createElement('svg', {
-                width: 16, height: 16, viewBox: '0 0 24 24',
-                fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-            }, React$7.createElement('path', { d: 'M9 11l3 3 8-8' })), t('faceMatch.selectBest')), React$7.createElement('button', {
+            : t('faceMatch.stashboxWrongNameBody'), React$6.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, t('faceMatch.learnMore')))), emptyResult
+            ? React$6.createElement('div', { className: 'visage-empty-result' }, React$6.createElement('p', null, emptyResult.message), React$6.createElement('div', { className: 'visage-button-group' }, React$6.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: close }, t('faceMatch.close')), emptyResult.action && React$6.createElement('button', {
                 className: 'visage-btn visage-btn-primary',
-                onClick: addConfirmed,
-                disabled: selectedPerformer.size === 0 || adding,
-            }, adding ? t('faceMatch.adding') : t('faceMatch.done', { count: selectedPerformer.size }))))))));
+                onClick: () => { showMatchModal(false); emptyResult.action.run(); },
+            }, emptyResult.action.label)))
+            : isSearching
+                ? React$6.createElement('div', { className: 'visage-modal-loading' }, React$6.createElement('div', { className: 'visage-face-scan' }, React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('svg', {
+                    viewBox: '0 0 100 120',
+                    fill: 'none',
+                    stroke: 'currentColor',
+                    strokeWidth: 1.5,
+                    strokeLinecap: 'round',
+                }, React$6.createElement('path', { d: 'M50 7 C29 7 15 22 16 45 C16.5 57 20 65 24 71' }), React$6.createElement('path', { d: 'M50 7 C71 7 85 22 84 45 C83.5 57 80 65 76 71' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C37 15 27 26 27 42' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C63 15 73 26 73 42' }), React$6.createElement('path', { d: 'M27 42 C27 61 34 77 43 85 C46 88 54 88 57 85 C66 77 73 61 73 42' }), React$6.createElement('path', { d: 'M33 52 C36.5 55 42.5 55 46 52' }), React$6.createElement('path', { d: 'M54 52 C57.5 55 63.5 55 67 52' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M35 54.6 L33.8 57 M39.5 55.6 L39 58.2 M44 54.6 L45 57' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M56 54.6 L55 57 M60.5 55.6 L61 58.2 M65 54.6 L66.2 57' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M32 46 C36 43.6 43 43.6 47 46' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M53 46 C57 43.6 64 43.6 68 46' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M50 54 C50 60 49.4 63 48.8 65.2 C49.6 66.4 50.4 66.4 51.2 65.2' }), React$6.createElement('path', { d: 'M42 75 C45 72.5 48 73.8 50 74.8 C52 73.8 55 72.5 58 75 C55 79.5 45 79.5 42 75 Z' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M44.5 80.5 C47 82.5 53 82.5 55.5 80.5' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M42 87.5 C42 94 40.5 99 38 104' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M58 87.5 C58 94 59.5 99 62 104' }), ...([
+                    [25, 52], [75, 52], [35, 68], [65, 68], [60.5, 82],
+                ].map(([cx, cy], i) => React$6.createElement('circle', {
+                    key: i, className: 'visage-face-scan-dot', cx, cy, r: i === 4 ? 1.5 : 1.8, stroke: 'none',
+                })))), React$6.createElement('div', { className: 'visage-face-scan-beam' })), React$6.createElement('span', { className: 'visage-loading-label' }, t('faceMatch.scanning')))
+                : React$6.createElement(React$6.Fragment, null, visibleFaceCount > 1 && React$6.createElement('div', { className: 'visage-face-tabs' }, matches.map((face, idx) => {
+                    if (getPerformerCount(idx) === 0)
+                        return null;
+                    return React$6.createElement('button', {
+                        key: idx,
+                        className: `visage-face-tab ${idx === activeFaceIndex ? 'visage-face-tab-active' : ''}`,
+                        onClick: () => { setSelectedFaceIndex(idx); setSelectedCardIndex(0); },
+                    }, React$6.createElement('img', {
+                        src: `data:image/jpg;base64,${face.image}`,
+                        alt: t('faceMatch.faceAlt', { index: idx + 1 }),
+                        className: 'visage-face-tab-image',
+                    }));
+                })), React$6.createElement('div', { className: 'visage-modal-body' }, React$6.createElement('div', { className: 'visage-left-panel' }, activeFace && React$6.createElement(React$6.Fragment, null, React$6.createElement('div', null, React$6.createElement('span', { className: 'visage-section-label' }, t('faceMatch.detected')), React$6.createElement('div', { className: 'visage-detect-frame' }, React$6.createElement('img', {
+                    src: `data:image/jpg;base64,${activeFace.image}`,
+                    alt: t('faceMatch.detectedFaceAlt'),
+                    className: 'visage-detect-image',
+                }))), activeFace.performers[previewIdx] && React$6.createElement(React$6.Fragment, null, React$6.createElement('div', { className: 'visage-vs-divider' }, t('faceMatch.vs')), React$6.createElement('div', null, React$6.createElement('span', { className: 'visage-section-label-name' }, activeFace.performers[previewIdx].name), React$6.createElement('div', { className: 'visage-match-frame' }, React$6.createElement('img', {
+                    src: imgSrc(activeFace.performers[previewIdx].image),
+                    alt: activeFace.performers[previewIdx].name,
+                    className: 'visage-match-image',
+                })))))), React$6.createElement('div', { className: 'visage-right-panel' }, React$6.createElement('div', { className: 'visage-performer-grid' }, activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers.filter((p) => (p.confidence || 0) >= minConfidence).map((performer, cardIdx) => {
+                    var _a;
+                    return React$6.createElement(PerformerCard, {
+                        key: performer.id,
+                        performer,
+                        isLoading: loadingState[`add-performer-${performer.id}`] || false,
+                        isKeyboardSelected: hasNavigated && selectedCardIndex === cardIdx,
+                        isSelected: ((_a = selectedPerformer.get(activeFaceIndex)) === null || _a === void 0 ? void 0 : _a.id) === performer.id,
+                        existingLabel: sceneStashIds.has(performer.id) ? t(`card.existing.${scenario}`) : undefined,
+                        onToggle: (stashId) => selectPerformer(activeFaceIndex, stashId),
+                        onQuickAdd: handleQuickAddCard,
+                    });
+                })), (hiddenCount > 0 || showAll) && React$6.createElement('button', {
+                    className: 'visage-show-more',
+                    onClick: () => setShowAll(v => !v),
+                }, showAll ? t('faceMatch.showFewer') : t('faceMatch.showMore', { count: hiddenCount })))), React$6.createElement('div', { className: 'visage-modal-footer' }, React$6.createElement('div', { className: 'visage-footer-main' }, React$6.createElement('a', {
+                    className: 'visage-ext-patreon-btn',
+                    href: 'https://www.patreon.com/cw/cc12340',
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                }, React$6.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$6.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$6.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), t('faceMatch.supportPatreon')), React$6.createElement('div', { className: 'visage-progress-info' }, React$6.createElement('span', { className: 'visage-matches-assigned' }, selectedPerformer.size > 0
+                    ? t('faceMatch.ofSelected', { selected: selectedPerformer.size, total: matches.length })
+                    : allExisting
+                        ? t(`faceMatch.allExisting.${scenario}`)
+                        : t('faceMatch.clickToSelect')), 
+                // Shown once the user starts using the keyboard, to keep the footer calm.
+                hasNavigated && React$6.createElement('div', { className: 'visage-keyboard-hints' }, React$6.createElement('kbd', null, '\u2191\u2193'), ' ' + t('faceMatch.kbSwitch') + ' \u2022 ', React$6.createElement('kbd', null, '\u2190\u2192'), ' ' + t('faceMatch.kbSelect') + ' \u2022 ', React$6.createElement('kbd', null, 'Enter'), ' ' + t('faceMatch.kbToggle') + ' \u2022 ', t('faceMatch.kbAddInstant'))), React$6.createElement('div', { className: 'visage-button-group' }, React$6.createElement('button', {
+                    className: 'visage-btn visage-btn-primary',
+                    onClick: addConfirmed,
+                    disabled: selectedPerformer.size === 0 || adding,
+                }, adding ? t(`faceMatch.adding.${scenario}`) : t(`faceMatch.confirm.${scenario}`, { count: selectedPerformer.size }))))))));
     }
 
     function formatTime(seconds) {
@@ -10694,35 +10947,6 @@
         const m = Math.floor(seconds / 60);
         const s = Math.floor(seconds % 60);
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-
-    function getConfidenceClass(confidence) {
-        return confidence >= 90
-            ? 'visage-confidence-excellent'
-            : confidence >= 70
-                ? 'visage-confidence-good'
-                : 'visage-confidence-uncertain';
-    }
-
-    const React$6 = window.PluginApi.React;
-    function ConfidenceRing({ confidence, confClass }) {
-        const size = 46;
-        const stroke = 4;
-        const r = (size - stroke) / 2;
-        const circumference = 2 * Math.PI * r;
-        const offset = circumference * (1 - confidence / 100);
-        return React$6.createElement('div', { className: 'visage-sprite-ring' }, React$6.createElement('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, React$6.createElement('circle', {
-            cx: size / 2, cy: size / 2, r,
-            fill: 'none', stroke: 'rgba(255,255,255,0.08)', strokeWidth: stroke,
-        }), React$6.createElement('circle', {
-            className: `visage-sprite-ring-fill ${confClass}`,
-            cx: size / 2, cy: size / 2, r,
-            fill: 'none', strokeWidth: stroke,
-            strokeDasharray: circumference,
-            strokeDashoffset: offset,
-            strokeLinecap: 'round',
-            transform: `rotate(-90 ${size / 2} ${size / 2})`,
-        })), React$6.createElement('span', { className: 'visage-sprite-ring-label' }, `${confidence}%`));
     }
 
     const React$5 = window.PluginApi.React;
@@ -10861,19 +11085,27 @@
         NON_BINARY: 'gender.nonBinary',
         INTERSEX: 'gender.intersex',
     };
+    const LIKELY_MIN = 70;
+    const PRESELECT_MIN = 90;
+    // Confident matches not yet in the scene, selected for the user up front.
+    function preselectIds(result, existing) {
+        var _a;
+        return new Set(Object.values((_a = result === null || result === void 0 ? void 0 : result.performers) !== null && _a !== void 0 ? _a : {})
+            .filter(p => p.confidence >= PRESELECT_MIN && !existing.has(p.id))
+            .map(p => p.id));
+    }
     function SpriteResultModal() {
+        var _a;
         useLocale();
         const { state, showSpriteModal, clearSpriteResult, setLoading, showError, showSuccess, showWarning, openSettings } = useVisage();
+        const emptyMessage = (_a = state.emptyResult) === null || _a === void 0 ? void 0 : _a.message;
         const { spriteResult, loading: loadingState, scanProgress, scanProgressDesc } = state;
+        const snapshotForUndo = useUndoSnapshot();
         const [visible, setVisible] = useState(false);
-        const [confirmedIds, setConfirmedIds] = useState(new Set());
+        const [confirmedIds, setConfirmedIds] = useState(() => preselectIds(spriteResult, new Set()));
         const [adding, setAdding] = useState(false);
-        const [sortBy, setSortBy] = useState('confidence');
-        const [minConfidence, setMinConfidence] = useState(() => {
-            const raw = localStorage.getItem('visage:minConfidence:sprite');
-            const parsed = raw === null ? NaN : Number(raw);
-            return Number.isFinite(parsed) ? parsed : 20;
-        });
+        // Matches under LIKELY_MIN stay folded until the user asks for them.
+        const [showUnlikely, setShowUnlikely] = useState(false);
         const [focusedIndex, setFocusedIndex] = useState(0);
         const isProcessing = loadingState['face-detection'] && spriteResult === null;
         const abortRef = useRef$1(false);
@@ -10882,24 +11114,31 @@
             requestAnimationFrame(() => setVisible(true));
             return () => { abortRef.current = true; };
         }, []);
-        const visiblePerformers = useMemo(() => {
+        // New matches first, by confidence. Performers already in the scene go last.
+        const sortedPerformers = useMemo(() => {
             var _a;
-            let list = Object.values((_a = spriteResult === null || spriteResult === void 0 ? void 0 : spriteResult.performers) !== null && _a !== void 0 ? _a : {});
-            if (minConfidence > 0) {
-                list = list.filter(p => p.confidence >= minConfidence);
-            }
-            const sorted = [...list];
-            switch (sortBy) {
-                case 'name':
-                    sorted.sort((a, b) => a.name.localeCompare(b.name));
-                    break;
-                case 'hits':
-                    sorted.sort((a, b) => b.hit_count - a.hit_count);
-                    break;
-                default: sorted.sort((a, b) => b.confidence - a.confidence);
-            }
-            return sorted;
-        }, [spriteResult, minConfidence, sortBy]);
+            const list = Object.values((_a = spriteResult === null || spriteResult === void 0 ? void 0 : spriteResult.performers) !== null && _a !== void 0 ? _a : {});
+            const rank = (p) => (sceneStashIds.has(p.id) ? 1 : 0);
+            return list.sort((a, b) => rank(a) - rank(b) || b.confidence - a.confidence);
+        }, [spriteResult, sceneStashIds]);
+        const unlikelyCount = sortedPerformers.filter(p => p.confidence < LIKELY_MIN).length;
+        const visiblePerformers = useMemo(() => (showUnlikely
+            ? sortedPerformers
+            : sortedPerformers.filter(p => p.confidence >= LIKELY_MIN)), [sortedPerformers, showUnlikely]);
+        // Pre-select confident new matches once per result, so Add is one click.
+        // Ids that load later as already in the scene are dropped.
+        const [resultFor, setResultFor] = useState(spriteResult);
+        if (resultFor !== spriteResult) {
+            setResultFor(spriteResult);
+            setShowUnlikely(false);
+            setConfirmedIds(preselectIds(spriteResult, sceneStashIds));
+        }
+        useEffect$1(() => {
+            setConfirmedIds(prev => {
+                const next = new Set([...prev].filter(id => !sceneStashIds.has(id)));
+                return next.size === prev.size ? prev : next;
+            });
+        }, [sceneStashIds]);
         useEffect$1(() => {
             if (!visible)
                 return;
@@ -10907,7 +11146,10 @@
             if (!count)
                 return;
             function onKey(e) {
-                var _a;
+                // Cards are role=button, so only defer to other focused controls.
+                const onCard = e.target instanceof Element && e.target.closest('.visage-sprite-card');
+                if (!onCard && isOwnedByControl(e))
+                    return;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                     e.preventDefault();
                     setFocusedIndex(i => (i + 1) % count);
@@ -10917,8 +11159,6 @@
                     setFocusedIndex(i => (i - 1 + count) % count);
                 }
                 else if (e.key === ' ' || e.key === 'Enter') {
-                    if (((_a = e.target) === null || _a === void 0 ? void 0 : _a.tagName) === 'INPUT')
-                        return;
                     e.preventDefault();
                     const p = visiblePerformers[focusedIndex];
                     if (p)
@@ -10929,6 +11169,9 @@
             return () => document.removeEventListener('keydown', onKey);
         }, [visible, visiblePerformers, focusedIndex]);
         function toggleConfirm(stashId) {
+            // Already in the scene: shown as confirmed, nothing to add.
+            if (sceneStashIds.has(stashId))
+                return;
             setConfirmedIds(prev => {
                 const next = new Set(prev);
                 if (next.has(stashId))
@@ -10939,6 +11182,7 @@
             });
         }
         async function spriteQuickAdd(stashId) {
+            var _a, _b;
             if (adding || sceneStashIds.has(stashId))
                 return;
             setAdding(true);
@@ -10967,8 +11211,9 @@
                         }
                     }
                 }
+                const undo = await snapshotForUndo(scenario, scenarioId);
                 await addPerformerToContent(scenario, scenarioId, pid);
-                showSuccess(t('faceMatch.toast.added', { target: scenario === 'scenes' ? 'scene' : 'image' }));
+                showSuccess(t('faceMatch.toast.added.scenes', { name: (_b = (_a = performers.find(p => p.id === stashId)) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : '' }), undo);
                 close();
             }
             catch (e) {
@@ -10984,6 +11229,7 @@
             return (_a = performers.find(p => p.id === stashId)) === null || _a === void 0 ? void 0 : _a.source;
         }
         async function addConfirmed() {
+            var _a, _b;
             if (confirmedIds.size === 0)
                 return;
             setAdding(true);
@@ -10994,7 +11240,9 @@
                 return;
             }
             let addedCount = 0;
+            let lastAddedId = '';
             try {
+                const undo = await snapshotForUndo(scenario, scenarioId);
                 for (const stashId of ids) {
                     const key = `sprite-add-${stashId}`;
                     setLoading(key, true);
@@ -11023,6 +11271,7 @@
                         }
                         await addPerformerToContent(scenario, scenarioId, pid);
                         addedCount++;
+                        lastAddedId = stashId;
                     }
                     finally {
                         setLoading(key, false);
@@ -11037,7 +11286,9 @@
                     showWarning(msg);
                     return;
                 }
-                showSuccess(t('faceMatch.toast.addedMultiple', { count: addedCount, s: addedCount !== 1 ? 's' : '', target: scenario === 'scenes' ? 'scene' : 'image' }));
+                showSuccess(addedCount === 1
+                    ? t('faceMatch.toast.added.scenes', { name: (_b = (_a = performers.find(p => p.id === lastAddedId)) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : '' })
+                    : t('faceMatch.toast.addedMany.scenes', { count: addedCount }), undo);
                 close();
             }
             catch (e) {
@@ -11049,15 +11300,11 @@
             }
         }
         function jumpToTime(seconds) {
-            const [scenario, id] = getScenarioAndID();
+            const [scenario] = getScenarioAndID();
             if (scenario !== 'scenes')
                 return;
-            setVisible(false);
-            setTimeout(() => {
-                clearSpriteResult();
-                showSpriteModal(false);
-                window.location.href = `${window.location.pathname}?t=${Math.floor(seconds)}`;
-            }, 300);
+            seekVideo(seconds);
+            close();
         }
         function close() {
             setVisible(false);
@@ -11090,30 +11337,14 @@
             className: `visage-modal visage-sprite-modal ${visible ? 'visage-visible' : ''}`,
             role: 'dialog',
             'aria-modal': 'true',
-        }, React$4.createElement('div', { className: 'visage-modal-header' }, React$4.createElement('div', { className: 'visage-modal-title' }, React$4.createElement('h2', null, t('sprite.title')), !isProcessing && React$4.createElement('span', { className: 'visage-match-count' }, t('sprite.foundConfirmed', { found: performers.length, confirmed: confirmedIds.size }))), React$4.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$4.createElement(BackendBadge, null), React$4.createElement(SettingsButton, { onClick: openSettings }), React$4.createElement('button', {
+        }, React$4.createElement('div', { className: 'visage-modal-header' }, React$4.createElement('div', { className: 'visage-modal-title' }, React$4.createElement('h2', null, t('sprite.title'))), React$4.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$4.createElement(BackendBadge, null), React$4.createElement(SettingsButton, { onClick: openSettings }), React$4.createElement('button', {
             className: 'visage-modal-close',
             onClick: close,
             'aria-label': t('sprite.close'),
         }, React$4.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-        }, React$4.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$4.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })))), !isProcessing && React$4.createElement('div', { className: 'visage-sprite-toolbar' }, React$4.createElement('div', { className: 'visage-sprite-sort' }, ['confidence', 'name', 'hits'].map(s => {
-            const label = s === 'confidence' ? t('sprite.confidence') : s === 'name' ? t('sprite.name') : t('sprite.hits');
-            return React$4.createElement('button', {
-                key: s,
-                className: `visage-sprite-sort-btn${sortBy === s ? ' visage-active' : ''}`,
-                onClick: () => { setSortBy(s); setFocusedIndex(0); },
-            }, label);
-        })), React$4.createElement('div', { className: 'visage-sprite-threshold' }, React$4.createElement('span', { className: 'visage-threshold-text' }, t('sprite.minConf')), React$4.createElement('input', {
-            type: 'range', min: 0, max: 100, step: 5,
-            value: minConfidence,
-            onChange: (e) => {
-                const value = Number(e.target.value);
-                setMinConfidence(value);
-                localStorage.setItem('visage:minConfidence:sprite', String(value));
-            },
-            title: t('sprite.minConfTitle', { percent: minConfidence }),
-        }), React$4.createElement('span', { className: 'visage-sprite-threshold-label' }, `${minConfidence}%`)))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$4.createElement('div', { className: 'visage-stashbox-banner' }, React$4.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$4.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$4.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$4.createElement('span', { className: 'visage-stashbox-banner-text' }, React$4.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
+        }, React$4.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$4.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$4.createElement('div', { className: 'visage-stashbox-banner' }, React$4.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$4.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$4.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$4.createElement('span', { className: 'visage-stashbox-banner-text' }, React$4.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
             ? t('faceMatch.stashboxMissingBody')
             : t('faceMatch.stashboxWrongNameBody'), React$4.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, t('faceMatch.learnMore')))), isProcessing
             ? React$4.createElement('div', { className: 'visage-modal-loading' }, React$4.createElement('div', { className: 'visage-conveyor' }, React$4.createElement('div', { className: 'visage-conveyor-track' }, Array.from({ length: 14 }, (_, i) => React$4.createElement('div', { key: i, className: 'visage-conveyor-frame' }))), React$4.createElement('div', { className: 'visage-conveyor-beam' }), React$4.createElement('div', { className: 'visage-conveyor-rail' })), (scanProgress > 0 || scanProgressDesc) && React$4.createElement('div', { className: 'visage-scan-progress' }, React$4.createElement('div', { className: 'visage-scan-progress-bar' }, React$4.createElement('div', {
@@ -11129,10 +11360,10 @@
                 style: { marginTop: 12 },
             }, t('sprite.cancel')))
             : React$4.createElement(React$4.Fragment, null, React$4.createElement('div', { className: 'visage-sprite-body' }, performers.length === 0
-                ? React$4.createElement('div', { className: 'visage-sprite-empty' }, React$4.createElement('p', null, t('sprite.empty')))
-                : React$4.createElement('div', { className: 'visage-sprite-grid' }, visiblePerformers.map((p, idx) => {
+                ? React$4.createElement('div', { className: 'visage-empty-result' }, React$4.createElement('p', null, emptyMessage !== null && emptyMessage !== void 0 ? emptyMessage : t('sprite.empty')), React$4.createElement('div', { className: 'visage-button-group' }, React$4.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: close }, t('sprite.close'))))
+                : React$4.createElement(React$4.Fragment, null, React$4.createElement('div', { className: 'visage-sprite-grid' }, visiblePerformers.map((p, idx) => {
                     const alreadyInScene = sceneStashIds.has(p.id);
-                    const isConfirmed = confirmedIds.has(p.id) || alreadyInScene;
+                    const isConfirmed = confirmedIds.has(p.id);
                     const isFocused = idx === focusedIndex;
                     const cached = performerCache[p.id];
                     const stashImg = cached === null || cached === void 0 ? void 0 : cached.image;
@@ -11142,6 +11373,7 @@
                     const segments = getSegments(sortedRanges);
                     const cardClass = [
                         'visage-sprite-card',
+                        alreadyInScene ? 'visage-sprite-existing' : '',
                         isConfirmed ? 'visage-sprite-confirmed' : '',
                         isFocused ? 'visage-sprite-focused' : '',
                         adding ? 'visage-sprite-disabled' : '',
@@ -11163,23 +11395,24 @@
                         role: 'button',
                         tabIndex: 0,
                         'aria-pressed': isConfirmed,
+                        'aria-disabled': alreadyInScene || undefined,
                     }, React$4.createElement('div', { className: 'visage-sprite-compare' }, React$4.createElement('div', { className: 'visage-sprite-face' }, React$4.createElement('img', {
                         src: `data:image/jpeg;base64,${p.thumbnail}`,
                         alt: t('sprite.detectedFaceAlt'),
                         className: 'visage-sprite-face-img',
-                    }), React$4.createElement('span', { className: 'visage-sprite-label' }, t('sprite.spriteLabel'))), React$4.createElement('div', { className: 'visage-sprite-vs' }, React$4.createElement('span', null, t('sprite.vs'))), React$4.createElement('div', { className: 'visage-sprite-performer-img' }, React$4.createElement('div', { className: 'visage-sprite-img-placeholder' }, React$4.createElement('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }), React$4.createElement('circle', { cx: 12, cy: 7, r: 4 }))), isLoadingImg && React$4.createElement('div', { className: 'visage-sprite-img-loading' }), stashImg && React$4.createElement('img', {
+                    })), React$4.createElement('div', { className: 'visage-sprite-performer-img' }, React$4.createElement('div', { className: 'visage-sprite-img-placeholder' }, React$4.createElement('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }), React$4.createElement('circle', { cx: 12, cy: 7, r: 4 }))), isLoadingImg && React$4.createElement('div', { className: 'visage-sprite-img-loading' }), stashImg && React$4.createElement('img', {
                         src: stashImg,
                         alt: p.name,
                         className: 'visage-sprite-performer-img-src',
                         onError: (e) => { e.target.remove(); },
-                    }), React$4.createElement('span', { className: 'visage-sprite-label' }, t('sprite.stashLabel')), (cached === null || cached === void 0 ? void 0 : cached.gender) && React$4.createElement('span', {
+                    }), (cached === null || cached === void 0 ? void 0 : cached.gender) && React$4.createElement('span', {
                         className: 'visage-sprite-gender-badge visage-gender-badge visage-gender-' + cached.gender.toLowerCase().replace(/_/g, '-'),
                         title: GENDER_NAME_KEY[cached.gender]
                             ? t(GENDER_NAME_KEY[cached.gender])
                             : cached.gender.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
                     }, GENDER_SYMBOLS[cached.gender] || '?'), (cached === null || cached === void 0 ? void 0 : cached.country) && React$4.createElement('span', {
                         className: 'visage-sprite-country-flag fi fi-' + cached.country.toLowerCase(),
-                    })), alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-in-scene' }, t('sprite.inScene')), isConfirmed && !alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-check-badge' }, React$4.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$4.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$4.createElement('div', { className: 'visage-sprite-info' }, React$4.createElement('div', { className: 'visage-sprite-summary' }, ConfidenceRing({ confidence: p.confidence, confClass }), React$4.createElement('div', { className: 'visage-sprite-summary-text' }, React$4.createElement('a', {
+                    })), alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-in-scene' }, t('card.existing.scenes')), isConfirmed && React$4.createElement('div', { className: 'visage-sprite-check-badge' }, React$4.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$4.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$4.createElement('div', { className: 'visage-sprite-info' }, React$4.createElement('div', { className: 'visage-sprite-summary' }, React$4.createElement(ConfidenceRing, { confidence: p.confidence }), React$4.createElement('div', { className: 'visage-sprite-summary-text' }, React$4.createElement('a', {
                         href: p.performer_url,
                         target: '_blank',
                         rel: 'noopener noreferrer',
@@ -11202,21 +11435,22 @@
                             onClick: (e) => { e.stopPropagation(); jumpToTime(start); },
                             title: `${formatTime(start)}\u2013${formatTime(end)}`,
                         });
-                    })), React$4.createElement('div', { className: 'visage-sprite-timeline-labels' }, React$4.createElement('span', null, '00:00'), React$4.createElement('span', null, formatTime(maxEndTime)))), alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-hint visage-sprite-hint-done' }, React$4.createElement('span', null, t('sprite.alreadyInScene'))), !isConfirmed && !alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-hint' }, React$4.createElement('span', null, t('sprite.clickToConfirm'))), isConfirmed && !alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-hint visage-sprite-hint-done' }, React$4.createElement('span', null, t('sprite.confirmed')))));
-                }))), React$4.createElement('div', { className: 'visage-modal-footer' }, React$4.createElement('div', { className: 'visage-footer-main' }, React$4.createElement('a', {
+                    })))));
+                })), unlikelyCount > 0 && React$4.createElement('button', {
+                    className: 'visage-show-more',
+                    onClick: () => { setShowUnlikely(v => !v); setFocusedIndex(0); },
+                }, showUnlikely ? t('sprite.showFewer') : t('sprite.showMore', { count: unlikelyCount })))), React$4.createElement('div', { className: 'visage-modal-footer' }, React$4.createElement('div', { className: 'visage-footer-main' }, React$4.createElement('a', {
                 className: 'visage-ext-patreon-btn',
                 href: 'https://www.patreon.com/cw/cc12340',
                 target: '_blank',
                 rel: 'noopener noreferrer',
             }, React$4.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$4.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$4.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), t('sprite.supportPatreon')), React$4.createElement('div', { className: 'visage-progress-info' }, confirmedIds.size > 0
                 ? React$4.createElement('span', { className: 'visage-matches-assigned' }, t('sprite.confirmedCount', { confirmed: confirmedIds.size, total: performers.length }))
-                : React$4.createElement('span', { className: 'visage-matches-assigned' }, visiblePerformers.length < performers.length
-                    ? t('sprite.shownHint', { shown: visiblePerformers.length, total: performers.length })
-                    : t('sprite.confirmHint'))), React$4.createElement('div', { className: 'visage-button-group' }, React$4.createElement('button', {
+                : React$4.createElement('span', { className: 'visage-matches-assigned' }, t('sprite.confirmHint'))), React$4.createElement('div', { className: 'visage-button-group' }, React$4.createElement('button', {
                 className: 'visage-btn visage-btn-primary',
                 onClick: addConfirmed,
                 disabled: confirmedIds.size === 0 || adding,
-            }, adding ? t('sprite.adding') : t('sprite.done', { count: confirmedIds.size }))))))));
+            }, adding ? t('sprite.adding') : t('sprite.confirm', { count: confirmedIds.size }))))))));
     }
 
     const React$3 = window.PluginApi.React;
@@ -11226,29 +11460,45 @@
         warning: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2V8h2v6z',
         success: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z',
     };
+    const AUTO_DISMISS_MS = 10000;
+    // Shows the message from showError/showWarning/showSuccess.
+    // - error: stays until dismissed, so the user can read it and press "Try again".
+    // - warning: auto-dismisses after 10s.
+    // - success: a toast. It does not take focus or keys, so work continues
+    //   while it shows. It auto-dismisses after 10s and can carry an "Undo" action.
     function ErrorDialog() {
+        var _a;
         useLocale();
         const { state, hideErrorDialog } = useVisage();
         const dialogRef = useRef(null);
+        const actionRef = useRef(null);
         const timerRef = useRef(null);
+        const variant = (_a = state.errorDialog) === null || _a === void 0 ? void 0 : _a.variant;
+        const isToast = variant === 'success';
+        const autoDismiss = variant === 'warning' || variant === 'success';
         useEffect(() => {
-            var _a;
+            var _a, _b;
             if (!state.errorDialog)
                 return;
             if (timerRef.current)
                 clearTimeout(timerRef.current);
-            timerRef.current = setTimeout(hideErrorDialog, 10000);
-            (_a = dialogRef.current) === null || _a === void 0 ? void 0 : _a.focus();
+            if (autoDismiss)
+                timerRef.current = setTimeout(hideErrorDialog, AUTO_DISMISS_MS);
+            if (!isToast)
+                (_b = ((_a = actionRef.current) !== null && _a !== void 0 ? _a : dialogRef.current)) === null || _b === void 0 ? void 0 : _b.focus();
             return () => {
                 if (timerRef.current)
                     clearTimeout(timerRef.current);
             };
         }, [state.errorDialog]);
         useEffect(() => {
-            if (!state.errorDialog)
+            if (!state.errorDialog || isToast)
                 return;
             function onKey(e) {
-                if (e.key === 'Escape' || e.key === 'Enter') {
+                var _a;
+                // Enter on a focused dialog button must click it, not dismiss.
+                const onButton = e.target instanceof HTMLButtonElement && ((_a = dialogRef.current) === null || _a === void 0 ? void 0 : _a.contains(e.target));
+                if (e.key === 'Escape' || (e.key === 'Enter' && !onButton)) {
                     e.preventDefault();
                     e.stopPropagation();
                     hideErrorDialog();
@@ -11256,25 +11506,29 @@
             }
             document.addEventListener('keydown', onKey, true);
             return () => document.removeEventListener('keydown', onKey, true);
-        }, [state.errorDialog, hideErrorDialog]);
+        }, [state.errorDialog, isToast, hideErrorDialog]);
         if (!state.errorDialog)
             return null;
-        const { message, variant } = state.errorDialog;
+        const { message, action } = state.errorDialog;
         return React$3.createElement('div', {
-            className: `visage-error-backdrop`,
+            className: `visage-error-backdrop${isToast ? ' visage-error-backdrop-toast' : ''}`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 hideErrorDialog(); },
         }, React$3.createElement('div', {
             ref: dialogRef,
             className: `visage-error-dialog visage-error-${variant}`,
-            role: 'alertdialog',
-            'aria-modal': 'true',
-            tabIndex: -1,
-        }, React$3.createElement('div', { className: 'visage-error-icon' }, React$3.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'currentColor' }, React$3.createElement('path', { d: ICONS[variant] }))), React$3.createElement('div', { className: 'visage-error-message' }, message), React$3.createElement('button', {
+            ...(isToast
+                ? { role: 'status', 'aria-live': 'polite' }
+                : { role: 'alertdialog', 'aria-modal': 'true', tabIndex: -1 }),
+        }, React$3.createElement('div', { className: 'visage-error-icon' }, React$3.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'currentColor' }, React$3.createElement('path', { d: ICONS[variant] }))), React$3.createElement('div', { className: 'visage-error-message' }, message), action && React$3.createElement('button', {
+            ref: actionRef,
+            className: 'visage-error-action',
+            onClick: () => { hideErrorDialog(); action.run(); },
+        }, action.label), React$3.createElement('button', {
             className: 'visage-error-close',
             onClick: hideErrorDialog,
             'aria-label': t('error.dismiss'),
-        }, React$3.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$3.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$3.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))), React$3.createElement('div', { className: 'visage-error-timer' })));
+        }, React$3.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$3.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$3.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))), autoDismiss && React$3.createElement('div', { className: 'visage-error-timer' })));
     }
 
     const { React: React$2 } = PluginApi;
@@ -11343,20 +11597,38 @@
         }, t('firstRun.skip'))));
     }
 
-    function detectTheme() {
-        const styles = getComputedStyle(document.documentElement);
-        const accent = styles.getPropertyValue('--accent').trim() || '#5991f6';
-        return {
-            '--visage-accent': accent,
-            '--visage-accent-rgb': hexToRgb(accent),
-            '--visage-border': '#3a3a4a',
-        };
+    // Matches Visage to the active Stash theme. Stash has no theme API, so this
+    // reads the page: a light body background turns on `.visage-theme-light`
+    // (see visage.css), and a theme that sets `--accent` recolors Visage's accent.
+    // Call again whenever theme CSS may have changed.
+    function applyStashTheme(root = document.documentElement) {
+        root.classList.toggle('visage-theme-light', isLightColor(getComputedStyle(document.body).backgroundColor));
+        const accent = getComputedStyle(root).getPropertyValue('--accent').trim();
+        if (accent) {
+            root.style.setProperty('--v-accent', accent);
+            root.style.setProperty('--v-border-active', accent);
+            root.style.setProperty('--v-accent-hover', `color-mix(in srgb, ${accent} 85%, black)`);
+            root.style.setProperty('--v-accent-glow', `color-mix(in srgb, ${accent} 18%, transparent)`);
+        }
+        else {
+            for (const name of ['--v-accent', '--v-border-active', '--v-accent-hover', '--v-accent-glow']) {
+                root.style.removeProperty(name);
+            }
+        }
     }
-    function hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result
-            ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-            : '89, 145, 246';
+    // True for an opaque rgb()/rgba() color with relative luminance above 0.5.
+    // Transparent or unparsable colors count as dark, the Stash default.
+    function isLightColor(color) {
+        const m = color.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/);
+        if (!m)
+            return false;
+        if (m[4] !== undefined && Number(m[4]) === 0)
+            return false;
+        const [r, g, b] = [m[1], m[2], m[3]].map(v => {
+            const c = Number(v) / 255;
+            return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.5;
     }
 
     // Dutch. Missing keys fall back to English automatically.
@@ -11398,10 +11670,7 @@
         'backendSettings.sync.error': `Synchronisatie mislukt`,
         'backendSettings.sync.connectionLost': `Verbinding verbroken`,
         // ---- FaceMatchModal.tsx ----
-        'faceMatch.title': `HUIDIG FRAME`,
         'faceMatch.close': `Sluiten`,
-        'faceMatch.facesSelected': `{faces} gezichten gevonden · {selected} geselecteerd`,
-        'faceMatch.inScene': `· {count} in de scène`,
         'faceMatch.stashboxMissing': `Geen stash-box geconfigureerd.`,
         'faceMatch.stashboxMissingBody': ` Voeg een stash-boxprovider toe in Instellingen → Metadata-providers om het importeren van performers in te schakelen.`,
         'faceMatch.stashboxWrongName': `Geen provider genaamd "StashDB" gevonden.`,
@@ -11409,57 +11678,34 @@
         'faceMatch.learnMore': `Meer informatie.`,
         'faceMatch.scanning': `Scannen • gezichtsherkenning…`,
         'faceMatch.faceAlt': `Gezicht {index}`,
-        'faceMatch.minConf': `Min. betr.`,
-        'faceMatch.minConfTitle': `Minimale zekerheid: {percent}%`,
         'faceMatch.detected': `Gedetecteerd`,
         'faceMatch.detectedFaceAlt': `Gedetecteerd gezicht`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Steun op Patreon`,
         'faceMatch.ofSelected': `{selected} van {total} geselecteerd`,
-        'faceMatch.allInScene': `{total} gezichten gevonden · allemaal in de scène`,
-        'faceMatch.clickToSelect': `{total} gezichten gevonden · klik om te selecteren`,
+        'faceMatch.clickToSelect': `Klik op een match om die te selecteren`,
         'faceMatch.kbSwitch': `Wissel gezichten`,
         'faceMatch.kbSelect': `Selecteer performers`,
         'faceMatch.kbToggle': `Selectie wisselen`,
         'faceMatch.kbAddInstant': `Shift+klik om direct toe te voegen`,
-        'faceMatch.selectBest': `Beste overeenkomsten selecteren`,
-        'faceMatch.adding': `Toevoegen...`,
-        'faceMatch.done': `Klaar ({count})`,
-        'faceMatch.toast.added': `Performer toegevoegd aan de {target}.`,
         'faceMatch.toast.addError': `Kon performer niet toevoegen: {error}`,
         'faceMatch.toast.noStashbox': `Geen stash-box geconfigureerd. Voeg een stash-boxprovider toe in Instellingen → Metadata-providers om het importeren van performers in te schakelen. Zie {url}`,
         'faceMatch.toast.noProvider': `Geen provider genaamd "StashDB" gevonden. Hernoem je provider naar "StashDB" in Instellingen → Metadata-providers om het importeren van performers in te schakelen.`,
         'faceMatch.toast.configureProvider': `Configureer een stash-boxprovider in Instellingen → Metadata-providers om het importeren van performers in te schakelen.`,
-        'faceMatch.toast.addedMultiple': `{count} performer{s} toegevoegd aan de {target}.`,
         'faceMatch.toast.linked': `{count} stash-ID{s} gekoppeld aan deze performer.`,
         // ---- SpriteResultModal.tsx ----
-        'sprite.title': `SCÈNE-PERFORMERS`,
+        'sprite.title': `Wie staat er in deze scène?`,
         'sprite.close': `Sluiten`,
-        'sprite.foundConfirmed': `{found} gevonden · {confirmed} bevestigd`,
-        'sprite.confidence': `zekerheid`,
-        'sprite.name': `naam`,
-        'sprite.hits': `treffers`,
-        'sprite.minConf': `Min. betr.`,
-        'sprite.minConfTitle': `Minimale zekerheid: {percent}%`,
         'sprite.scanning': `Visage scannen…`,
         'sprite.cancel': `Annuleren`,
         'sprite.empty': `Geen performers geïdentificeerd in deze sprite.`,
         'sprite.detectedFaceAlt': `Gedetecteerd gezicht`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `In de scène`,
         'sprite.hitsCount': `{count} treffer{s}`,
         'sprite.totalTime': `{time} totaal`,
-        'sprite.alreadyInScene': `Al in de scène`,
-        'sprite.clickToConfirm': `Klik om te bevestigen`,
-        'sprite.confirmed': `Bevestigd`,
         'sprite.supportPatreon': `Steun op Patreon`,
         'sprite.confirmedCount': `{confirmed} van {total} bevestigd`,
-        'sprite.shownHint': `{shown} getoond ({total} totaal) · klik om te bevestigen · ←→ navigeren · Enter bevestigen`,
         'sprite.confirmHint': `Klik om te bevestigen · ←→ navigeren · Enter bevestigen`,
         'sprite.adding': `Toevoegen...`,
-        'sprite.done': `Klaar ({count})`,
         // ---- PerformerCard.tsx ----
         'gender.male': `Mannelijk`,
         'gender.female': `Vrouwelijk`,
@@ -11474,10 +11720,9 @@
         'card.deselect': `{name} deselecteren`,
         'card.openOn': `Openen op {source}`,
         // ---- FaceSearchButton.tsx ----
-        'search.overlayHint': `Sleep om een gezicht te selecteren — Enter om het hele frame te scannen — Esc om te annuleren`,
+        'search.overlayHint': `Sleep rond een gezicht. Klik of druk op Enter voor het hele frame. Esc om te annuleren.`,
         'search.noFaces': `Geen gezichten gevonden in die selectie. Probeer een kleinere uitsnede of druk op Enter om het hele frame te scannen.`,
         'search.captureMediaFail': `Kan media niet vastleggen. Zorg ervoor dat de scène/afbeelding volledig is geladen.`,
-        'search.healthBanner': `De gezichtsherkennings-API is niet bereikbaar. Start de backend en probeer het opnieuw.`,
         'search.failed': `Gezichtszoekopdracht mislukt: {error}`,
         'search.fetchImageFail': `Kan afbeelding niet van Stash ophalen.`,
         'search.captureFail': `Kan afbeelding niet vastleggen: {error}`,
@@ -11485,23 +11730,31 @@
         'search.captureFrameFail': `Kan het huidige frame niet vastleggen.`,
         'search.captureFrameFail2': `Kan het huidige frame niet vastleggen.`,
         'search.selectFaceVideo': `Selecteer een gezicht binnen het videoplayergebied.`,
-        'search.menuItemTitle': `Sleep een kader rond een gezicht, of druk op Enter om het hele frame te scannen, om in StashDB naar overeenkomsten te zoeken`,
-        'search.currentFrame': `Visage: Huidig frame`,
-        'search.identifyFromImage': `Visage: Identificeer vanaf afbeelding`,
-        'search.identifyMenuTitle': `Doorzoek de afbeelding van deze performer op StashDB en koppel een passende stash-ID`,
+        'search.menuItemTitle': `Ontdek wie er in dit frame staat. Sleep een kader rond een gezicht, of klik voor het hele frame.`,
+        'search.currentFrame': `Visage: frame herkennen`,
+        'search.identifyFromImage': `Visage: herkennen`,
+        'search.identifyMenuTitle': `Vergelijk de afbeelding van deze performer met je stash-boxen en koppel de stash-ID`,
         'search.noPerformerImage': `Geen performer-afbeelding gevonden op deze pagina.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Geen sprite sheet of voorbeeldvideo gevonden voor deze scène. Genereer ze in de scène-instellingen en probeer het opnieuw.`,
         'scene.noFaces': `Geen gezichten of performers gevonden in het sprite sheet of de voorbeeldvideo van deze scène.`,
-        'scene.healthBanner': `De gezichtsherkennings-API is niet bereikbaar. Start de backend en probeer het opnieuw.`,
         'scene.failed': `Scènescan mislukt: {error}`,
-        'scene.menuItemTitle': `Identificeer elke performer in de scène (vereist een gegenereerd sprite sheet of voorbeeldvideo)`,
-        'scene.wholeScene': `Visage: Hele scène`,
+        'scene.menuItemTitle': `Vind iedereen in deze scène. Vereist een gegenereerde sprite sheet of preview-video.`,
+        'scene.wholeScene': `Visage: scène herkennen`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Backend wijzigen`,
         'banner.dismiss': `Negeren`,
         // ---- ErrorDialog.tsx ----
         'error.dismiss': `Negeren`,
+        'error.retry': `Opnieuw proberen`,
+        'error.undo': `Ongedaan maken`,
+        'error.undone': `Wijziging ongedaan gemaakt.`,
+        'error.undoFailed': `Ongedaan maken mislukt: {error}`,
+        'backend.busy': `De gezichtsherkenningsdienst is bezet of start op. Probeer het zo opnieuw.`,
+        'backend.serverError': `De gezichtsherkenningsdienst had een probleem met dit verzoek. Probeer het opnieuw.`,
+        'backend.unreachableCloud': `De gezichtsherkenningsdienst in de cloud is niet bereikbaar. Controleer je verbinding en probeer het opnieuw.`,
+        'backend.notBackend': `De server op {url} is geen Visage-backend. Controleer het adres in de Visage-instellingen.`,
+        'backend.unreachableLocal': `Je gezichtsherkenningsserver op {url} is niet bereikbaar. Start hem en probeer het opnieuw.`,
         // ---- FirstRunDialog.tsx ----
         'firstRun.title': `Stel je Visage-backend in`,
         'firstRun.subtitle': `Visage stuurt gezichtsafbeeldingen naar een backend voor herkenning. Kies waar je het wilt draaien.`,
@@ -11521,6 +11774,35 @@
         'frame.close': `Frameselector sluiten`,
         'frame.seekFail': `Kan niet zoeken in de videospeler.`,
         'frame.selectAt': `Gezichtsframe selecteren op {time}s`,
+        'card.existing.scenes': `In scène`,
+        'card.existing.images': `Op afbeelding`,
+        'card.existing.performers': `Gekoppeld`,
+        'faceMatch.title.scenes': `Wie staat er in dit frame?`,
+        'faceMatch.title.images': `Wie staat er op deze afbeelding?`,
+        'faceMatch.title.performers': `Deze performer koppelen`,
+        'faceMatch.showMore': `Toon {count} meer`,
+        'faceMatch.showFewer': `Toon minder`,
+        'faceMatch.allExisting.scenes': `Iedereen die gevonden is staat al in deze scène`,
+        'faceMatch.allExisting.images': `Iedereen die gevonden is staat al op deze afbeelding`,
+        'faceMatch.allExisting.performers': `Deze performer is al gekoppeld`,
+        'faceMatch.confirm.scenes': `Toevoegen aan scène ({count})`,
+        'faceMatch.confirm.images': `Toevoegen aan afbeelding ({count})`,
+        'faceMatch.confirm.performers': `Koppelen ({count})`,
+        'faceMatch.adding.scenes': `Toevoegen…`,
+        'faceMatch.adding.performers': `Koppelen…`,
+        'faceMatch.toast.added.scenes': `{name} toegevoegd aan deze scène.`,
+        'faceMatch.toast.added.images': `{name} toegevoegd aan deze afbeelding.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performers toegevoegd aan deze scène.`,
+        'faceMatch.toast.addedMany.images': `{count} performers toegevoegd aan deze afbeelding.`,
+        'sprite.showMore': `Toon {count} minder waarschijnlijke matches`,
+        'sprite.showFewer': `Verberg minder waarschijnlijke matches`,
+        'search.overlayHintImage': `Sleep rond een gezicht. Klik of druk op Enter voor de hele afbeelding. Esc om te annuleren.`,
+        'search.noFacesPerformer': `Geen gezicht gevonden in de afbeelding van deze performer.`,
+        'search.selectAgain': `Opnieuw selecteren`,
+        'search.identifyImage': `Visage: afbeelding herkennen`,
+        'search.imageMenuTitle': `Ontdek wie er op deze afbeelding staat. Sleep een kader rond een gezicht, of klik voor de hele afbeelding.`,
+        'faceMatch.adding.images': `Toevoegen…`,
+        'sprite.confirm': `Toevoegen aan scène ({count})`,
     };
 
     const he = {
@@ -11559,10 +11841,7 @@
         'backendSettings.sync.alreadyRunning': `הסנכרון כבר מתבצע`,
         'backendSettings.sync.error': `הסנכרון נכשל`,
         'backendSettings.sync.connectionLost': `החיבור אבד`,
-        'faceMatch.title': `הפריים הנוכחי`,
         'faceMatch.close': `סגירה`,
-        'faceMatch.facesSelected': `נמצאו {faces} פנים · נבחרו {selected}`,
-        'faceMatch.inScene': `· {count} בסצנה`,
         'faceMatch.stashboxMissing': `לא הוגדר stash-box.`,
         'faceMatch.stashboxMissingBody': ` הוסף ספק stash-box בהגדרות ← ספקי מטא-נתונים כדי להפעיל ייבוא מבצעים.`,
         'faceMatch.stashboxWrongName': `לא נמצא ספק "StashDB".`,
@@ -11570,56 +11849,33 @@
         'faceMatch.learnMore': `מידע נוסף.`,
         'faceMatch.scanning': `סורק • זיהוי פנים…`,
         'faceMatch.faceAlt': `פנים {index}`,
-        'faceMatch.minConf': `מינ. ביטחון`,
-        'faceMatch.minConfTitle': `ביטחון מינימלי: {percent}%`,
         'faceMatch.detected': `זוהה`,
         'faceMatch.detectedFaceAlt': `פנים שזוהו`,
         'faceMatch.vs': `מול`,
         'faceMatch.supportPatreon': `תמיכה ב-Patreon`,
         'faceMatch.ofSelected': `נבחרו {selected} מתוך {total}`,
-        'faceMatch.allInScene': `נמצאו {total} פנים · כולם בסצנה`,
-        'faceMatch.clickToSelect': `נמצאו {total} פנים · לחץ לבחירה`,
+        'faceMatch.clickToSelect': `לחץ על התאמה כדי לבחור אותה`,
         'faceMatch.kbSwitch': `מעבר בין פנים`,
         'faceMatch.kbSelect': `בחירת מבצעים`,
         'faceMatch.kbToggle': `החלפת בחירה`,
         'faceMatch.kbAddInstant': `Shift+לחיצה להוספה מיידית`,
-        'faceMatch.selectBest': `בחירת ההתאמות הטובות ביותר`,
-        'faceMatch.adding': `מוסיף...`,
-        'faceMatch.done': `בוצע ({count})`,
-        'faceMatch.toast.added': `המבצע נוסף אל {target}.`,
         'faceMatch.toast.addError': `הוספת המבצע נכשלה: {error}`,
         'faceMatch.toast.noStashbox': `לא הוגדר stash-box. הוסף ספק stash-box בהגדרות ← ספקי מטא-נתונים כדי להפעיל ייבוא מבצעים. ראה {url}`,
         'faceMatch.toast.noProvider': `לא נמצא ספק בשם "StashDB". שנה את שם הספק שלך ל-"StashDB" בהגדרות ← ספקי מטא-נתונים כדי להפעיל ייבוא מבצעים.`,
         'faceMatch.toast.configureProvider': `הגדר ספק stash-box בהגדרות ← ספקי מטא-נתונים כדי להפעיל ייבוא מבצעים.`,
-        'faceMatch.toast.addedMultiple': `נוספו {count} מבצעים{s} אל {target}.`,
         'faceMatch.toast.linked': `{count} stash ID{s} קושרו למבצע הזה.`,
-        'sprite.title': `מבצעי הסצנה`,
+        'sprite.title': `מי בסצנה הזו?`,
         'sprite.close': `סגירה`,
-        'sprite.foundConfirmed': `נמצאו {found} · אושרו {confirmed}`,
-        'sprite.confidence': `ביטחון`,
-        'sprite.name': `שם`,
-        'sprite.hits': `פגיעות`,
-        'sprite.minConf': `מינ. ביטחון`,
-        'sprite.minConfTitle': `ביטחון מינימלי: {percent}%`,
         'sprite.scanning': `Visage סורק…`,
         'sprite.cancel': `ביטול`,
         'sprite.empty': `לא זוהו מבצעים בספייריט זה.`,
         'sprite.detectedFaceAlt': `פנים שזוהו`,
-        'sprite.spriteLabel': `ספייריט`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `מול`,
-        'sprite.inScene': `בסצנה`,
         'sprite.hitsCount': `{count} פגיעות{s}`,
         'sprite.totalTime': `{time} בסך הכול`,
-        'sprite.alreadyInScene': `כבר בסצנה`,
-        'sprite.clickToConfirm': `לחץ לאישור`,
-        'sprite.confirmed': `אושר`,
         'sprite.supportPatreon': `תמיכה ב-Patreon`,
         'sprite.confirmedCount': `אושרו {confirmed} מתוך {total}`,
-        'sprite.shownHint': `מוצגים {shown} (מתוך {total} בסך הכול) · לחץ לאישור · ←→ ניווט · Enter לאישור`,
         'sprite.confirmHint': `לחץ לאישור · ←→ ניווט · Enter לאישור`,
         'sprite.adding': `מוסיף...`,
-        'sprite.done': `בוצע ({count})`,
         'gender.male': `זכר`,
         'gender.female': `נקבה`,
         'gender.transMale': `גבר טרנסג׳נדר`,
@@ -11632,10 +11888,9 @@
         'card.select': `בחירת {name}`,
         'card.deselect': `ביטול בחירת {name}`,
         'card.openOn': `פתיחה ב-{source}`,
-        'search.overlayHint': `גרור כדי לבחור פנים — Enter לסריקת הפריים כולו — Esc לביטול`,
+        'search.overlayHint': `גרור סביב פנים. לחץ או הקש Enter לפריים כולו. Esc לביטול.`,
         'search.noFaces': `לא נמצאו פנים בבחירה זו. נסה חיתוך הדוק יותר, או לחץ Enter כדי לסרוק את כל הפריים.`,
         'search.captureMediaFail': `לא ניתן היה ללכוד מדיה. ודא שהסצנה/התמונה נטענה במלואה.`,
-        'search.healthBanner': `ממשק זיהוי הפנים אינו נגיש. הפעל את צד-השרת ונסה שוב.`,
         'search.failed': `חיפוש הפנים נכשל: {error}`,
         'search.fetchImageFail': `לא ניתן היה לאחזר תמונה מ-Stash.`,
         'search.captureFail': `לכידת התמונה נכשלה: {error}`,
@@ -11643,20 +11898,28 @@
         'search.captureFrameFail': `לא ניתן היה ללכוד את הפריים הנוכחי.`,
         'search.captureFrameFail2': `לכידת הפריים הנוכחי נכשלה.`,
         'search.selectFaceVideo': `בחר פנים בתוך אזור נגן הווידאו.`,
-        'search.menuItemTitle': `גרור תיבה סביב פנים, או לחץ Enter לסריקת הפריים כולו, כדי לחפש התאמות ב-StashDB`,
-        'search.currentFrame': `Visage: פריים נוכחי`,
-        'search.identifyFromImage': `Visage: זיהוי מתמונה`,
-        'search.identifyMenuTitle': `חיפוש התמונה של המבצע הזה ב-StashDB וקישור stash ID מתאים`,
+        'search.menuItemTitle': `גלה מי בפריים הזה. גרור מסגרת סביב פנים, או לחץ לפריים כולו.`,
+        'search.currentFrame': `Visage: זיהוי פריים`,
+        'search.identifyFromImage': `Visage: זיהוי`,
+        'search.identifyMenuTitle': `השווה את תמונת המבצע הזה ל-stash-box שלך וקשר את ה-stash ID`,
         'search.noPerformerImage': `לא נמצאה תמונת מבצע בדף הזה.`,
         'scene.noSprite': `אין גיליון ספייריט או וידאו תצוגה מקדימה לסצנה זו. צור אותם בהגדרות הסצנה, ואז נסה שוב.`,
         'scene.noFaces': `לא נמצאו פנים או מבצעים בגיליון הספייריט או בווידאו התצוגה המקדימה של סצנה זו.`,
-        'scene.healthBanner': `ממשק זיהוי הפנים אינו נגיש. הפעל את צד-השרת ונסה שוב.`,
         'scene.failed': `סריקת הסצנה נכשלה: {error}`,
-        'scene.menuItemTitle': `זהה כל מבצע בסצנה (דורש גיליון ספייריט או וידאו תצוגה מקדימה שנוצר)`,
-        'scene.wholeScene': `Visage: כל הסצנה`,
+        'scene.menuItemTitle': `מצא את כולם בסצנה הזו. נדרש sprite sheet או סרטון תצוגה מקדימה שנוצר.`,
+        'scene.wholeScene': `Visage: זיהוי סצנה`,
         'banner.changeBackend': `החלפת צד-שרת`,
         'banner.dismiss': `סגירה`,
         'error.dismiss': `סגירה`,
+        'error.retry': `נסה שוב`,
+        'error.undo': `בטל`,
+        'error.undone': `השינוי בוטל.`,
+        'error.undoFailed': `לא ניתן לבטל: {error}`,
+        'backend.busy': `שירות זיהוי הפנים עמוס או בהפעלה. נסה שוב בעוד רגע.`,
+        'backend.serverError': `שירות זיהוי הפנים נתקל בבעיה בבקשה זו. נסה שוב.`,
+        'backend.unreachableCloud': `לא ניתן להגיע לשירות זיהוי הפנים בענן. בדוק את החיבור ונסה שוב.`,
+        'backend.notBackend': `השרת בכתובת {url} אינו צד-שרת של Visage. בדוק את הכתובת בהגדרות Visage.`,
+        'backend.unreachableLocal': `לא ניתן להגיע לשרת זיהוי הפנים שלך בכתובת {url}. הפעל אותו ונסה שוב.`,
         'firstRun.title': `הגדרת צד-השרת של Visage`,
         'firstRun.subtitle': `Visage שולח תמונות פנים לצד-השרת לצורך זיהוי. בחר היכן להריץ אותו.`,
         'firstRun.cloud': `שימוש בענן של Hugging Face`,
@@ -11672,6 +11935,35 @@
         'frame.close': `סגירת בורר הפריים`,
         'frame.seekFail': `ניווט בנגן הווידאו נכשל.`,
         'frame.selectAt': `בחירת פריים פנים ב-{time} שניות`,
+        'card.existing.scenes': `בסצנה`,
+        'card.existing.images': `בתמונה`,
+        'card.existing.performers': `מקושר`,
+        'faceMatch.title.scenes': `מי בפריים הזה?`,
+        'faceMatch.title.images': `מי בתמונה הזו?`,
+        'faceMatch.title.performers': `התאמת המבצע הזה`,
+        'faceMatch.showMore': `הצג עוד {count}`,
+        'faceMatch.showFewer': `הצג פחות`,
+        'faceMatch.allExisting.scenes': `כל מי שנמצא כבר בסצנה הזו`,
+        'faceMatch.allExisting.images': `כל מי שנמצא כבר בתמונה הזו`,
+        'faceMatch.allExisting.performers': `המבצע הזה כבר מקושר`,
+        'faceMatch.confirm.scenes': `הוסף לסצנה ({count})`,
+        'faceMatch.confirm.images': `הוסף לתמונה ({count})`,
+        'faceMatch.confirm.performers': `קשר ({count})`,
+        'faceMatch.adding.scenes': `מוסיף…`,
+        'faceMatch.adding.performers': `מקשר…`,
+        'faceMatch.toast.added.scenes': `{name} נוסף/ה לסצנה הזו.`,
+        'faceMatch.toast.added.images': `{name} נוסף/ה לתמונה הזו.`,
+        'faceMatch.toast.addedMany.scenes': `{count} מבצעים נוספו לסצנה הזו.`,
+        'faceMatch.toast.addedMany.images': `{count} מבצעים נוספו לתמונה הזו.`,
+        'sprite.showMore': `הצג {count} התאמות פחות סבירות`,
+        'sprite.showFewer': `הסתר התאמות פחות סבירות`,
+        'search.overlayHintImage': `גרור סביב פנים. לחץ או הקש Enter לתמונה כולה. Esc לביטול.`,
+        'search.noFacesPerformer': `לא נמצאו פנים בתמונה של המבצע הזה.`,
+        'search.selectAgain': `בחר שוב`,
+        'search.identifyImage': `Visage: זיהוי תמונה`,
+        'search.imageMenuTitle': `גלה מי בתמונה הזו. גרור מסגרת סביב פנים, או לחץ לתמונה כולה.`,
+        'faceMatch.adding.images': `מוסיף…`,
+        'sprite.confirm': `הוסף לסצנה ({count})`,
     };
 
     const lt = {
@@ -11710,10 +12002,7 @@
         'backendSettings.sync.alreadyRunning': `Sinchronizacija jau vykdoma`,
         'backendSettings.sync.error': `Sinchronizacija nepavyko`,
         'backendSettings.sync.connectionLost': `Prarastas ryšys`,
-        'faceMatch.title': `DABARTINIS KADRAS`,
         'faceMatch.close': `Uždaryti`,
-        'faceMatch.facesSelected': `Rasta veidų: {faces} · pasirinkta: {selected}`,
-        'faceMatch.inScene': `· {count} scenoje`,
         'faceMatch.stashboxMissing': `Stash-box nesukonfigūruotas.`,
         'faceMatch.stashboxMissingBody': ` Pridėkite stash-box teikėją programoje Settings → Metadata Providers, kad įgalintumėte atlikėjų importavimą.`,
         'faceMatch.stashboxWrongName': `Teikėjas „StashDB“ nerastas.`,
@@ -11721,56 +12010,33 @@
         'faceMatch.learnMore': `Sužinoti daugiau.`,
         'faceMatch.scanning': `Skenuojama • veidų atpažinimas…`,
         'faceMatch.faceAlt': `Veidas {index}`,
-        'faceMatch.minConf': `Min. patik.`,
-        'faceMatch.minConfTitle': `Minimalus patikimumas: {percent}%`,
         'faceMatch.detected': `Aptikta`,
         'faceMatch.detectedFaceAlt': `Aptiktas veidas`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Paremkite per Patreon`,
         'faceMatch.ofSelected': `Pasirinkta {selected} iš {total}`,
-        'faceMatch.allInScene': `Rasta veidų: {total} · visi scenoje`,
-        'faceMatch.clickToSelect': `Rasta veidų: {total} · spustelėkite, kad pasirinktumėte`,
+        'faceMatch.clickToSelect': `Spustelėkite atitikmenį, kad jį pasirinktumėte`,
         'faceMatch.kbSwitch': `Veidų perjungimas`,
         'faceMatch.kbSelect': `Atlikėjų pasirinkimas`,
         'faceMatch.kbToggle': `Perjungti pasirinkimą`,
         'faceMatch.kbAddInstant': `Shift+spustelėjimas, kad pridėtumėte iš karto`,
-        'faceMatch.selectBest': `Pasirinkti geriausius atitikmenis`,
-        'faceMatch.adding': `Pridedama...`,
-        'faceMatch.done': `Atlikta ({count})`,
-        'faceMatch.toast.added': `Atlikėjas pridėtas į {target}.`,
         'faceMatch.toast.addError': `Nepavyko pridėti atlikėjo: {error}`,
         'faceMatch.toast.noStashbox': `Stash-box nesukonfigūruotas. Pridėkite stash-box teikėją programoje Settings → Metadata Providers, kad įgalintumėte atlikėjų importavimą. Žr. {url}`,
         'faceMatch.toast.noProvider': `Teikėjas „StashDB“ nerastas. Pervadinkite teikėją į „StashDB“ programoje Settings → Metadata Providers, kad įgalintumėte atlikėjų importavimą.`,
         'faceMatch.toast.configureProvider': `Sukonfigūruokite stash-box teikėją programoje Settings → Metadata Providers, kad įgalintumėte atlikėjų importavimą.`,
-        'faceMatch.toast.addedMultiple': `Pridėta atlikėjų: {count} į {target}.`,
         'faceMatch.toast.linked': `Susieti {count} stash ID{s} su šiuo atlikėju.`,
-        'sprite.title': `SCENOS ATLIKĖJAI`,
+        'sprite.title': `Kas yra šioje scenoje?`,
         'sprite.close': `Uždaryti`,
-        'sprite.foundConfirmed': `Rasta: {found} · patvirtinta: {confirmed}`,
-        'sprite.confidence': `patikimumas`,
-        'sprite.name': `vardas`,
-        'sprite.hits': `pataikymai`,
-        'sprite.minConf': `Min. patik.`,
-        'sprite.minConfTitle': `Minimalus patikimumas: {percent}%`,
         'sprite.scanning': `Visage skenavimas…`,
         'sprite.cancel': `Atšaukti`,
         'sprite.empty': `Šiame sprite neidentifikuota atlikėjų.`,
         'sprite.detectedFaceAlt': `Aptiktas veidas`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Scenoje`,
         'sprite.hitsCount': `Pataikymų: {count}`,
         'sprite.totalTime': `Iš viso {time}`,
-        'sprite.alreadyInScene': `Jau scenoje`,
-        'sprite.clickToConfirm': `Spustelėkite, kad patvirtintumėte`,
-        'sprite.confirmed': `Patvirtinta`,
         'sprite.supportPatreon': `Paremkite per Patreon`,
         'sprite.confirmedCount': `Patvirtinta {confirmed} iš {total}`,
-        'sprite.shownHint': `Rodyta: {shown} (iš viso {total}) · spustelėkite, kad patvirtintumėte · ←→ navigacija · Enter patvirtinimas`,
         'sprite.confirmHint': `Spustelėkite, kad patvirtintumėte · ←→ navigacija · Enter patvirtinimas`,
         'sprite.adding': `Pridedama...`,
-        'sprite.done': `Atlikta ({count})`,
         'gender.male': `Vyras`,
         'gender.female': `Moteris`,
         'gender.transMale': `Translytis vyras`,
@@ -11783,10 +12049,9 @@
         'card.select': `Pasirinkti {name}`,
         'card.deselect': `Panaikinti {name} pasirinkimą`,
         'card.openOn': `Atidaryti svetainėje {source}`,
-        'search.overlayHint': `Vilkite, kad pasirinktumėte veidą — Enter, kad nuskaitytumėte visą kadrą — Esc, kad atšauktumėte`,
+        'search.overlayHint': `Apveskite veidą. Spustelėkite arba paspauskite Enter visam kadrui. Esc atšaukia.`,
         'search.noFaces': `Pasirinktoje srityje veidų nerasta. Bandykite tankesnį kadrą arba paspauskite Enter, kad nuskaitytumėte visą kadrą.`,
         'search.captureMediaFail': `Nepavyko užfiksuoti medijos. Įsitikinkite, kad scena/vaizdas visiškai įkeltas.`,
-        'search.healthBanner': `Veidų atpažinimo API nepasiekiama. Paleiskite pamatinę sistemą ir bandykite dar kartą.`,
         'search.failed': `Veido paieška nepavyko: {error}`,
         'search.fetchImageFail': `Nepavyko gauti vaizdo iš Stash.`,
         'search.captureFail': `Nepavyko užfiksuoti vaizdo: {error}`,
@@ -11794,20 +12059,28 @@
         'search.captureFrameFail': `Nepavyko užfiksuoti dabartinio kadro.`,
         'search.captureFrameFail2': `Klaida fiksuojant dabartinį kadrą.`,
         'search.selectFaceVideo': `Pasirinkite veidą vaizdo grotuvo srityje.`,
-        'search.menuItemTitle': `Vilkite langelį aplink veidą arba paspauskite Enter, kad nuskaitytumėte visą kadrą, ir ieškokite atitikmenų StashDB`,
-        'search.currentFrame': `Visage: dabartinis kadras`,
-        'search.identifyFromImage': `Visage: Atpažinti iš paveikslėlio`,
-        'search.identifyMenuTitle': `Ieškoti šio atlikėjo paveikslėlio StashDB ir susieti tinkantį stash ID`,
+        'search.menuItemTitle': `Sužinokite, kas yra šiame kadre. Apveskite veidą rėmeliu arba spustelėkite visam kadrui.`,
+        'search.currentFrame': `Visage: atpažinti kadrą`,
+        'search.identifyFromImage': `Visage: atpažinti`,
+        'search.identifyMenuTitle': `Palyginti šio atlikėjo paveikslėlį su jūsų stash-box ir susieti stash ID`,
         'search.noPerformerImage': `Šiame puslapyje atlikėjo paveikslėlio nerasta.`,
         'scene.noSprite': `Šiai scenai nerastas nei sprite lapas, nei peržiūros vaizdo įrašas. Sugeneruokite juos scenos nustatymuose ir bandykite dar kartą.`,
         'scene.noFaces': `Šios scenos sprite lape arba peržiūros vaizdo įraše nerasta veidų ar atlikėjų.`,
-        'scene.healthBanner': `Veidų atpažinimo API nepasiekiama. Paleiskite pamatinę sistemą ir bandykite dar kartą.`,
         'scene.failed': `Scenos nuskaitymas nepavyko: {error}`,
-        'scene.menuItemTitle': `Identifikuokite kiekvieną atlikėją scenoje (reikia sugeneruoto sprite lapo arba peržiūros vaizdo įrašo)`,
-        'scene.wholeScene': `Visage: visa scena`,
+        'scene.menuItemTitle': `Raskite visus šioje scenoje. Reikia sugeneruoto sprite sheet arba peržiūros vaizdo įrašo.`,
+        'scene.wholeScene': `Visage: atpažinti sceną`,
         'banner.changeBackend': `Keisti pamatinę sistemą`,
         'banner.dismiss': `Atmesti`,
         'error.dismiss': `Atmesti`,
+        'error.retry': `Bandyti dar kartą`,
+        'error.undo': `Anuliuoti`,
+        'error.undone': `Pakeitimas anuliuotas.`,
+        'error.undoFailed': `Nepavyko anuliuoti: {error}`,
+        'backend.busy': `Veidų atpažinimo paslauga užimta arba paleidžiama. Bandykite dar kartą po akimirkos.`,
+        'backend.serverError': `Veidų atpažinimo paslaugai kilo problema su šia užklausa. Bandykite dar kartą.`,
+        'backend.unreachableCloud': `Nepavyksta pasiekti debesijos veidų atpažinimo paslaugos. Patikrinkite ryšį ir bandykite dar kartą.`,
+        'backend.notBackend': `Serveris adresu {url} nėra Visage pamatinė sistema. Patikrinkite adresą Visage nustatymuose.`,
+        'backend.unreachableLocal': `Nepavyksta pasiekti jūsų veidų atpažinimo serverio adresu {url}. Paleiskite jį ir bandykite dar kartą.`,
         'firstRun.title': `Nustatykite savo Visage pamatinę sistemą`,
         'firstRun.subtitle': `Visage siunčia veidų vaizdus į pamatinę sistemą atpažinimui. Pasirinkite, kur ją paleisti.`,
         'firstRun.cloud': `Naudoti Hugging Face debesį`,
@@ -11823,6 +12096,35 @@
         'frame.close': `Uždaryti kadro pasirinkiklį`,
         'frame.seekFail': `Nepavyko persukti vaizdo grotuvo.`,
         'frame.selectAt': `Pasirinkti veido kadrą {time} s`,
+        'card.existing.scenes': `Scenoje`,
+        'card.existing.images': `Paveikslėlyje`,
+        'card.existing.performers': `Susieta`,
+        'faceMatch.title.scenes': `Kas yra šiame kadre?`,
+        'faceMatch.title.images': `Kas yra šiame paveikslėlyje?`,
+        'faceMatch.title.performers': `Susieti šį atlikėją`,
+        'faceMatch.showMore': `Rodyti dar {count}`,
+        'faceMatch.showFewer': `Rodyti mažiau`,
+        'faceMatch.allExisting.scenes': `Visi rasti jau yra šioje scenoje`,
+        'faceMatch.allExisting.images': `Visi rasti jau yra šiame paveikslėlyje`,
+        'faceMatch.allExisting.performers': `Šis atlikėjas jau susietas`,
+        'faceMatch.confirm.scenes': `Pridėti prie scenos ({count})`,
+        'faceMatch.confirm.images': `Pridėti prie paveikslėlio ({count})`,
+        'faceMatch.confirm.performers': `Susieti ({count})`,
+        'faceMatch.adding.scenes': `Pridedama…`,
+        'faceMatch.adding.performers': `Susiejama…`,
+        'faceMatch.toast.added.scenes': `{name} pridėtas(-a) prie šios scenos.`,
+        'faceMatch.toast.added.images': `{name} pridėtas(-a) prie šio paveikslėlio.`,
+        'faceMatch.toast.addedMany.scenes': `Prie scenos pridėta atlikėjų: {count}.`,
+        'faceMatch.toast.addedMany.images': `Prie paveikslėlio pridėta atlikėjų: {count}.`,
+        'sprite.showMore': `Rodyti mažiau tikėtinus atitikmenis ({count})`,
+        'sprite.showFewer': `Slėpti mažiau tikėtinus atitikmenis`,
+        'search.overlayHintImage': `Apveskite veidą. Spustelėkite arba paspauskite Enter visam paveikslėliui. Esc atšaukia.`,
+        'search.noFacesPerformer': `Šio atlikėjo paveikslėlyje veido nerasta.`,
+        'search.selectAgain': `Pasirinkti iš naujo`,
+        'search.identifyImage': `Visage: atpažinti paveikslėlį`,
+        'search.imageMenuTitle': `Sužinokite, kas yra šiame paveikslėlyje. Apveskite veidą rėmeliu arba spustelėkite visam paveikslėliui.`,
+        'faceMatch.adding.images': `Pridedama…`,
+        'sprite.confirm': `Pridėti prie scenos ({count})`,
     };
 
     // Spanish. Missing keys fall back to English automatically.
@@ -11864,10 +12166,7 @@
         'backendSettings.sync.error': `Error de sincronización`,
         'backendSettings.sync.connectionLost': `Conexión perdida`,
         // ---- FaceMatchModal.tsx ----
-        'faceMatch.title': `FOTO ACTUAL`,
         'faceMatch.close': `Cerrar`,
-        'faceMatch.facesSelected': `{faces} caras encontradas · {selected} seleccionadas`,
-        'faceMatch.inScene': `· {count} en la escena`,
         'faceMatch.stashboxMissing': `No hay stash-box configurado.`,
         'faceMatch.stashboxMissingBody': ` Añade un proveedor stash-box en Configuración → Proveedores de metadatos para activar la importación de intérpretes.`,
         'faceMatch.stashboxWrongName': `No se encontró ningún proveedor llamado "StashDB".`,
@@ -11875,57 +12174,34 @@
         'faceMatch.learnMore': `Más información.`,
         'faceMatch.scanning': `Escaneando • reconocimiento facial…`,
         'faceMatch.faceAlt': `Cara {index}`,
-        'faceMatch.minConf': `Conf. mín.`,
-        'faceMatch.minConfTitle': `Confianza mínima: {percent}%`,
         'faceMatch.detected': `Detectada`,
         'faceMatch.detectedFaceAlt': `Cara detectada`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Apoyar en Patreon`,
         'faceMatch.ofSelected': `{selected} de {total} seleccionadas`,
-        'faceMatch.allInScene': `{total} caras encontradas · todas en la escena`,
-        'faceMatch.clickToSelect': `{total} caras encontradas · haz clic para seleccionar`,
+        'faceMatch.clickToSelect': `Haz clic en una coincidencia para seleccionarla`,
         'faceMatch.kbSwitch': `Cambiar caras`,
         'faceMatch.kbSelect': `Seleccionar intérpretes`,
         'faceMatch.kbToggle': `Alternar selección`,
         'faceMatch.kbAddInstant': `Mayús+clic para añadir al instante`,
-        'faceMatch.selectBest': `Seleccionar mejores coincidencias`,
-        'faceMatch.adding': `Añadiendo...`,
-        'faceMatch.done': `Hecho ({count})`,
-        'faceMatch.toast.added': `Intérprete añadido a {target}.`,
         'faceMatch.toast.addError': `Error al añadir el intérprete: {error}`,
         'faceMatch.toast.noStashbox': `No hay stash-box configurado. Añade un proveedor stash-box en Configuración → Proveedores de metadatos para activar la importación de intérpretes. Ver {url}`,
         'faceMatch.toast.noProvider': `No se encontró ningún proveedor llamado "StashDB". Renombra tu proveedor a "StashDB" en Configuración → Proveedores de metadatos para activar la importación de intérpretes.`,
         'faceMatch.toast.configureProvider': `Configura un proveedor stash-box en Configuración → Proveedores de metadatos para activar la importación de intérpretes.`,
-        'faceMatch.toast.addedMultiple': `{count} intérprete{s} añadido{s} a {target}.`,
         'faceMatch.toast.linked': `Se vinculó {count} stash ID{s} a este intérprete.`,
         // ---- SpriteResultModal.tsx ----
-        'sprite.title': `INTÉRPRETES DE LA ESCENA`,
+        'sprite.title': `¿Quién está en esta escena?`,
         'sprite.close': `Cerrar`,
-        'sprite.foundConfirmed': `{found} encontrados · {confirmed} confirmados`,
-        'sprite.confidence': `confianza`,
-        'sprite.name': `nombre`,
-        'sprite.hits': `aciertos`,
-        'sprite.minConf': `Conf. mín.`,
-        'sprite.minConfTitle': `Confianza mínima: {percent}%`,
         'sprite.scanning': `Visage escaneando…`,
         'sprite.cancel': `Cancelar`,
         'sprite.empty': `No se identificaron intérpretes en este sprite.`,
         'sprite.detectedFaceAlt': `Cara detectada`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `En la escena`,
         'sprite.hitsCount': `{count} acierto{s}`,
         'sprite.totalTime': `{time} en total`,
-        'sprite.alreadyInScene': `Ya en la escena`,
-        'sprite.clickToConfirm': `Haz clic para confirmar`,
-        'sprite.confirmed': `Confirmado`,
         'sprite.supportPatreon': `Apoyar en Patreon`,
         'sprite.confirmedCount': `{confirmed} de {total} confirmados`,
-        'sprite.shownHint': `{shown} mostrados ({total} en total) · haz clic para confirmar · ←→ navegar · Enter confirmar`,
         'sprite.confirmHint': `Haz clic para confirmar · ←→ navegar · Enter confirmar`,
         'sprite.adding': `Añadiendo...`,
-        'sprite.done': `Hecho ({count})`,
         // ---- PerformerCard.tsx ----
         'gender.male': `Masculino`,
         'gender.female': `Femenino`,
@@ -11940,10 +12216,9 @@
         'card.deselect': `Deseleccionar a {name}`,
         'card.openOn': `Abrir en {source}`,
         // ---- FaceSearchButton.tsx ----
-        'search.overlayHint': `Arrastra para seleccionar una cara — Enter para escanear toda la foto — Esc para cancelar`,
+        'search.overlayHint': `Dibuja un recuadro alrededor de una cara. Haz clic o pulsa Intro para todo el fotograma. Esc para cancelar.`,
         'search.noFaces': `No se encontraron caras en esa selección. Prueba con un recorte más ajustado o pulsa Enter para escanear toda la foto.`,
         'search.captureMediaFail': `No se pudo capturar el medio. Asegúrate de que la escena/imagen esté completamente cargada.`,
-        'search.healthBanner': `La API de reconocimiento facial no está accesible. Inicia el backend e inténtalo de nuevo.`,
         'search.failed': `La búsqueda de caras falló: {error}`,
         'search.fetchImageFail': `No se pudo obtener la imagen desde Stash.`,
         'search.captureFail': `Error al capturar la imagen: {error}`,
@@ -11951,23 +12226,31 @@
         'search.captureFrameFail': `No se pudo capturar el fotograma actual.`,
         'search.captureFrameFail2': `Error al capturar el fotograma actual.`,
         'search.selectFaceVideo': `Selecciona una cara dentro del área del reproductor de vídeo.`,
-        'search.menuItemTitle': `Arrastra un recuadro alrededor de una cara o pulsa Enter para escanear toda la foto, para buscar coincidencias en StashDB`,
-        'search.currentFrame': `Visage: Fotograma actual`,
-        'search.identifyFromImage': `Visage: Identificar desde la imagen`,
-        'search.identifyMenuTitle': `Buscar la imagen de este intérprete en StashDB y vincular un stash ID coincidente`,
+        'search.menuItemTitle': `Descubre quién está en este fotograma. Dibuja un recuadro alrededor de una cara, o haz clic para todo el fotograma.`,
+        'search.currentFrame': `Visage: identificar fotograma`,
+        'search.identifyFromImage': `Visage: identificar`,
+        'search.identifyMenuTitle': `Compara la imagen de este performer con tus stash-boxes y vincula el stash ID`,
         'search.noPerformerImage': `No se encontró imagen del intérprete en esta página.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `No se encontró ninguna hoja de sprites ni vídeo de vista previa para esta escena. Genéralos en la configuración de la escena y vuelve a intentarlo.`,
         'scene.noFaces': `No se encontraron caras ni intérpretes en la hoja de sprites o el vídeo de vista previa de esta escena.`,
-        'scene.healthBanner': `La API de reconocimiento facial no está accesible. Inicia el backend e inténtalo de nuevo.`,
         'scene.failed': `El escaneo de la escena falló: {error}`,
-        'scene.menuItemTitle': `Identificar a cada intérprete de la escena (requiere una hoja de sprites o un vídeo de vista previa generados)`,
-        'scene.wholeScene': `Visage: Escena completa`,
+        'scene.menuItemTitle': `Encuentra a todos en esta escena. Necesita un sprite sheet o un vídeo de vista previa generado.`,
+        'scene.wholeScene': `Visage: identificar escena`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Cambiar backend`,
         'banner.dismiss': `Descartar`,
         // ---- ErrorDialog.tsx ----
         'error.dismiss': `Descartar`,
+        'error.retry': `Reintentar`,
+        'error.undo': `Deshacer`,
+        'error.undone': `Cambio deshecho.`,
+        'error.undoFailed': `No se pudo deshacer: {error}`,
+        'backend.busy': `El servicio de reconocimiento facial está ocupado o iniciándose. Inténtalo de nuevo en un momento.`,
+        'backend.serverError': `El servicio de reconocimiento facial tuvo un problema con esta solicitud. Inténtalo de nuevo.`,
+        'backend.unreachableCloud': `No se puede acceder al servicio de reconocimiento facial en la nube. Comprueba tu conexión e inténtalo de nuevo.`,
+        'backend.notBackend': `El servidor en {url} no es un backend de Visage. Comprueba la dirección en los ajustes de Visage.`,
+        'backend.unreachableLocal': `No se puede acceder a tu servidor de reconocimiento facial en {url}. Inícialo e inténtalo de nuevo.`,
         // ---- FirstRunDialog.tsx ----
         'firstRun.title': `Configura tu backend de Visage`,
         'firstRun.subtitle': `Visage envía imágenes de caras a un backend para su reconocimiento. Elige dónde ejecutarlo.`,
@@ -11987,6 +12270,35 @@
         'frame.close': `Cerrar selector de fotograma`,
         'frame.seekFail': `Error al buscar en el reproductor de vídeo.`,
         'frame.selectAt': `Seleccionar cara en {time}s`,
+        'card.existing.scenes': `En la escena`,
+        'card.existing.images': `En la imagen`,
+        'card.existing.performers': `Vinculado`,
+        'faceMatch.title.scenes': `¿Quién está en este fotograma?`,
+        'faceMatch.title.images': `¿Quién está en esta imagen?`,
+        'faceMatch.title.performers': `Identificar a este performer`,
+        'faceMatch.showMore': `Mostrar {count} más`,
+        'faceMatch.showFewer': `Mostrar menos`,
+        'faceMatch.allExisting.scenes': `Todos los encontrados ya están en esta escena`,
+        'faceMatch.allExisting.images': `Todos los encontrados ya están en esta imagen`,
+        'faceMatch.allExisting.performers': `Este performer ya está vinculado`,
+        'faceMatch.confirm.scenes': `Añadir a la escena ({count})`,
+        'faceMatch.confirm.images': `Añadir a la imagen ({count})`,
+        'faceMatch.confirm.performers': `Vincular ({count})`,
+        'faceMatch.adding.scenes': `Añadiendo…`,
+        'faceMatch.adding.performers': `Vinculando…`,
+        'faceMatch.toast.added.scenes': `{name} añadido a esta escena.`,
+        'faceMatch.toast.added.images': `{name} añadido a esta imagen.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performers añadidos a esta escena.`,
+        'faceMatch.toast.addedMany.images': `{count} performers añadidos a esta imagen.`,
+        'sprite.showMore': `Mostrar {count} coincidencias menos probables`,
+        'sprite.showFewer': `Ocultar coincidencias menos probables`,
+        'search.overlayHintImage': `Dibuja un recuadro alrededor de una cara. Haz clic o pulsa Intro para toda la imagen. Esc para cancelar.`,
+        'search.noFacesPerformer': `No se encontró ninguna cara en la imagen de este performer.`,
+        'search.selectAgain': `Seleccionar de nuevo`,
+        'search.identifyImage': `Visage: identificar imagen`,
+        'search.imageMenuTitle': `Descubre quién está en esta imagen. Dibuja un recuadro alrededor de una cara, o haz clic para toda la imagen.`,
+        'faceMatch.adding.images': `Añadiendo…`,
+        'sprite.confirm': `Añadir a la escena ({count})`,
     };
 
     const ar = {
@@ -12025,10 +12337,7 @@
         'backendSettings.sync.alreadyRunning': `المزامنة جارية بالفعل`,
         'backendSettings.sync.error': `فشلت المزامنة`,
         'backendSettings.sync.connectionLost': `فُقد الاتصال`,
-        'faceMatch.title': `الإطار الحالي`,
         'faceMatch.close': `إغلاق`,
-        'faceMatch.facesSelected': `تم العثور على {faces} وجهًا · تم اختيار {selected}`,
-        'faceMatch.inScene': `· {count} في المشهد`,
         'faceMatch.stashboxMissing': `لا يوجد stash-box مُهيأ.`,
         'faceMatch.stashboxMissingBody': ` أضف موفّر stash-box في الإعدادات ← موفّرو البيانات الوصفية لتفعيل استيراد المؤدين.`,
         'faceMatch.stashboxWrongName': `لم يتم العثور على موفّر "StashDB".`,
@@ -12036,56 +12345,33 @@
         'faceMatch.learnMore': `اعرف المزيد.`,
         'faceMatch.scanning': `جارٍ المسح • التعرف على الوجوه…`,
         'faceMatch.faceAlt': `الوجه {index}`,
-        'faceMatch.minConf': `أدنى ثقة`,
-        'faceMatch.minConfTitle': `أدنى ثقة: {percent}%`,
         'faceMatch.detected': `تم اكتشافه`,
         'faceMatch.detectedFaceAlt': `الوجه المكتشف`,
         'faceMatch.vs': `ضد`,
         'faceMatch.supportPatreon': `ادعمنا على Patreon`,
         'faceMatch.ofSelected': `تم اختيار {selected} من أصل {total}`,
-        'faceMatch.allInScene': `تم العثور على {total} وجهًا · جميعها في المشهد`,
-        'faceMatch.clickToSelect': `تم العثور على {total} وجهًا · انقر للاختيار`,
+        'faceMatch.clickToSelect': `انقر على تطابق لتحديده`,
         'faceMatch.kbSwitch': `تبديل الوجوه`,
         'faceMatch.kbSelect': `اختيار المؤدين`,
         'faceMatch.kbToggle': `تبديل التحديد`,
         'faceMatch.kbAddInstant': `Shift+نقرة للإضافة فورًا`,
-        'faceMatch.selectBest': `اختيار أفضل التطابقات`,
-        'faceMatch.adding': `جارٍ الإضافة...`,
-        'faceMatch.done': `تم ({count})`,
-        'faceMatch.toast.added': `تمت إضافة المؤدي إلى {target}.`,
         'faceMatch.toast.addError': `فشل إضافة المؤدي: {error}`,
         'faceMatch.toast.noStashbox': `لا يوجد stash-box مُهيأ. أضف موفّر stash-box في الإعدادات ← موفّرو البيانات الوصفية لتفعيل استيراد المؤدين. انظر {url}`,
         'faceMatch.toast.noProvider': `لم يتم العثور على موفّر باسم "StashDB". أعد تسمية الموفّر لديك إلى "StashDB" في الإعدادات ← موفّرو البيانات الوصفية لتفعيل استيراد المؤدين.`,
         'faceMatch.toast.configureProvider': `هيّئ موفّر stash-box في الإعدادات ← موفّرو البيانات الوصفية لتفعيل استيراد المؤدين.`,
-        'faceMatch.toast.addedMultiple': `تمت إضافة {count} من المؤدين{s} إلى {target}.`,
         'faceMatch.toast.linked': `تم ربط {count} stash ID{s} بهذا المؤدي.`,
-        'sprite.title': `مؤدو المشهد`,
+        'sprite.title': `من في هذا المشهد؟`,
         'sprite.close': `إغلاق`,
-        'sprite.foundConfirmed': `تم العثور على {found} · تم تأكيد {confirmed}`,
-        'sprite.confidence': `الثقة`,
-        'sprite.name': `الاسم`,
-        'sprite.hits': `الإصابات`,
-        'sprite.minConf': `أدنى ثقة`,
-        'sprite.minConfTitle': `أدنى ثقة: {percent}%`,
         'sprite.scanning': `Visage يمسح…`,
         'sprite.cancel': `إلغاء`,
         'sprite.empty': `لم يتم تحديد أي مؤدٍ في هذه اللقطة (sprite).`,
         'sprite.detectedFaceAlt': `الوجه المكتشف`,
-        'sprite.spriteLabel': `اللقطة`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `ضد`,
-        'sprite.inScene': `في المشهد`,
         'sprite.hitsCount': `{count} إصابة{s}`,
         'sprite.totalTime': `{time} إجمالي`,
-        'sprite.alreadyInScene': `موجود بالفعل في المشهد`,
-        'sprite.clickToConfirm': `انقر للتأكيد`,
-        'sprite.confirmed': `مؤكد`,
         'sprite.supportPatreon': `ادعمنا على Patreon`,
         'sprite.confirmedCount': `تم تأكيد {confirmed} من أصل {total}`,
-        'sprite.shownHint': `يُعرض {shown} (إجمالي {total}) · انقر للتأكيد · ←→ تنقّل · Enter للتأكيد`,
         'sprite.confirmHint': `انقر للتأكيد · ←→ تنقّل · Enter للتأكيد`,
         'sprite.adding': `جارٍ الإضافة...`,
-        'sprite.done': `تم ({count})`,
         'gender.male': `ذكر`,
         'gender.female': `أنثى`,
         'gender.transMale': `رجل متحول جنسيًا`,
@@ -12098,10 +12384,9 @@
         'card.select': `اختيار {name}`,
         'card.deselect': `إلغاء اختيار {name}`,
         'card.openOn': `فتح على {source}`,
-        'search.overlayHint': `اسحب لتحديد وجه — Enter لمسح الإطار بأكمله — Esc للإلغاء`,
+        'search.overlayHint': `اسحب حول وجه. انقر أو اضغط Enter للإطار كاملًا. Esc للإلغاء.`,
         'search.noFaces': `لم يتم العثور على وجوه في هذا التحديد. جرّب اقتصاصًا أدق، أو اضغط Enter لمسح الإطار بأكمله.`,
         'search.captureMediaFail': `تعذّر التقاط الوسائط. يرجى التأكد من تحميل المشهد/الصورة بالكامل.`,
-        'search.healthBanner': `واجهة برمجة تطبيقات التعرف على الوجوه غير قابلة للوصول. ابدأ الواجهة الخلفية وحاول مرة أخرى.`,
         'search.failed': `فشل البحث عن الوجوه: {error}`,
         'search.fetchImageFail': `تعذّر جلب الصورة من Stash.`,
         'search.captureFail': `فشل التقاط الصورة: {error}`,
@@ -12109,20 +12394,28 @@
         'search.captureFrameFail': `تعذّر التقاط الإطار الحالي.`,
         'search.captureFrameFail2': `فشل التقاط الإطار الحالي.`,
         'search.selectFaceVideo': `اختر وجهًا داخل منطقة مشغّل الفيديو.`,
-        'search.menuItemTitle': `اسحب صندوقًا حول وجه، أو اضغط Enter لمسح الإطار بأكمله، للبحث عن تطابقات في StashDB`,
-        'search.currentFrame': `Visage: الإطار الحالي`,
-        'search.identifyFromImage': `Visage: التعرف من الصورة`,
-        'search.identifyMenuTitle': `البحث عن صورة هذا المؤدي في StashDB وربط stash ID مطابق`,
+        'search.menuItemTitle': `اعرف من في هذا الإطار. اسحب مربعًا حول وجه، أو انقر للإطار كاملًا.`,
+        'search.currentFrame': `Visage: التعرف على الإطار`,
+        'search.identifyFromImage': `Visage: التعرف`,
+        'search.identifyMenuTitle': `قارن صورة هذا المؤدي مع stash-box الخاصة بك واربط stash ID`,
         'search.noPerformerImage': `لم يتم العثور على صورة مؤدي في هذه الصفحة.`,
         'scene.noSprite': `لا توجد لوحة لقطات (sprite sheet) أو فيديو معاينة لهذا المشهد. أنشئها في إعدادات المشهد، ثم حاول مرة أخرى.`,
         'scene.noFaces': `لم يتم العثور على وجوه أو مؤدين في لوحة اللقطات أو فيديو المعاينة لهذا المشهد.`,
-        'scene.healthBanner': `واجهة برمجة تطبيقات التعرف على الوجوه غير قابلة للوصول. ابدأ الواجهة الخلفية وحاول مرة أخرى.`,
         'scene.failed': `فشل مسح المشهد: {error}`,
-        'scene.menuItemTitle': `حدد كل مؤدٍ في المشهد (يتطلب لوحة لقطات أو فيديو معاينة مُنشأ)`,
-        'scene.wholeScene': `Visage: المشهد بأكمله`,
+        'scene.menuItemTitle': `اعثر على الجميع في هذا المشهد. يتطلب sprite sheet أو فيديو معاينة تم إنشاؤه.`,
+        'scene.wholeScene': `Visage: التعرف على المشهد`,
         'banner.changeBackend': `تغيير الواجهة الخلفية`,
         'banner.dismiss': `إغلاق`,
         'error.dismiss': `إغلاق`,
+        'error.retry': `حاول مرة أخرى`,
+        'error.undo': `تراجع`,
+        'error.undone': `تم التراجع عن التغيير.`,
+        'error.undoFailed': `تعذر التراجع: {error}`,
+        'backend.busy': `خدمة التعرف على الوجوه مشغولة أو قيد التشغيل. حاول مرة أخرى بعد قليل.`,
+        'backend.serverError': `واجهت خدمة التعرف على الوجوه مشكلة في هذا الطلب. حاول مرة أخرى.`,
+        'backend.unreachableCloud': `تعذر الوصول إلى خدمة التعرف على الوجوه السحابية. تحقق من اتصالك وحاول مرة أخرى.`,
+        'backend.notBackend': `الخادم على {url} ليس واجهة خلفية لـ Visage. تحقق من العنوان في إعدادات Visage.`,
+        'backend.unreachableLocal': `تعذر الوصول إلى خادم التعرف على الوجوه على {url}. شغّله وحاول مرة أخرى.`,
         'firstRun.title': `إعداد الواجهة الخلفية لـ Visage`,
         'firstRun.subtitle': `يرسل Visage صور الوجوه إلى الواجهة الخلفية للتعرف عليها. اختر مكان تشغيلها.`,
         'firstRun.cloud': `استخدام سحابة Hugging Face`,
@@ -12138,6 +12431,35 @@
         'frame.close': `إغلاق محدد الإطار`,
         'frame.seekFail': `فشل الانتقال في مشغّل الفيديو.`,
         'frame.selectAt': `اختر إطار الوجه عند {time} ثانية`,
+        'card.existing.scenes': `في المشهد`,
+        'card.existing.images': `في الصورة`,
+        'card.existing.performers': `مرتبط`,
+        'faceMatch.title.scenes': `من في هذا الإطار؟`,
+        'faceMatch.title.images': `من في هذه الصورة؟`,
+        'faceMatch.title.performers': `مطابقة هذا المؤدي`,
+        'faceMatch.showMore': `عرض {count} أخرى`,
+        'faceMatch.showFewer': `عرض أقل`,
+        'faceMatch.allExisting.scenes': `كل من تم العثور عليهم موجودون بالفعل في هذا المشهد`,
+        'faceMatch.allExisting.images': `كل من تم العثور عليهم موجودون بالفعل في هذه الصورة`,
+        'faceMatch.allExisting.performers': `هذا المؤدي مرتبط بالفعل`,
+        'faceMatch.confirm.scenes': `إضافة إلى المشهد ({count})`,
+        'faceMatch.confirm.images': `إضافة إلى الصورة ({count})`,
+        'faceMatch.confirm.performers': `ربط ({count})`,
+        'faceMatch.adding.scenes': `جارٍ الإضافة…`,
+        'faceMatch.adding.performers': `جارٍ الربط…`,
+        'faceMatch.toast.added.scenes': `تمت إضافة {name} إلى هذا المشهد.`,
+        'faceMatch.toast.added.images': `تمت إضافة {name} إلى هذه الصورة.`,
+        'faceMatch.toast.addedMany.scenes': `تمت إضافة {count} من المؤدين إلى هذا المشهد.`,
+        'faceMatch.toast.addedMany.images': `تمت إضافة {count} من المؤدين إلى هذه الصورة.`,
+        'sprite.showMore': `عرض {count} من التطابقات الأقل احتمالًا`,
+        'sprite.showFewer': `إخفاء التطابقات الأقل احتمالًا`,
+        'search.overlayHintImage': `اسحب حول وجه. انقر أو اضغط Enter للصورة كاملة. Esc للإلغاء.`,
+        'search.noFacesPerformer': `لم يتم العثور على وجه في صورة هذا المؤدي.`,
+        'search.selectAgain': `التحديد مرة أخرى`,
+        'search.identifyImage': `Visage: التعرف على الصورة`,
+        'search.imageMenuTitle': `اعرف من في هذه الصورة. اسحب مربعًا حول وجه، أو انقر للصورة كاملة.`,
+        'faceMatch.adding.images': `جارٍ الإضافة…`,
+        'sprite.confirm': `إضافة إلى المشهد ({count})`,
     };
 
     // French. Missing keys fall back to English automatically.
@@ -12179,10 +12501,7 @@
         'backendSettings.sync.error': `Échec de la synchronisation`,
         'backendSettings.sync.connectionLost': `Connexion perdue`,
         // ---- FaceMatchModal.tsx ----
-        'faceMatch.title': `IMAGE ACTUELLE`,
         'faceMatch.close': `Fermer`,
-        'faceMatch.facesSelected': `{faces} visages trouvés · {selected} sélectionnés`,
-        'faceMatch.inScene': `· {count} dans la scène`,
         'faceMatch.stashboxMissing': `Aucun stash-box configuré.`,
         'faceMatch.stashboxMissingBody': ` Ajoutez un fournisseur stash-box dans Paramètres → Fournisseurs de métadonnées pour activer l'import d'interprètes.`,
         'faceMatch.stashboxWrongName': `Aucun fournisseur nommé « StashDB » trouvé.`,
@@ -12190,57 +12509,34 @@
         'faceMatch.learnMore': `En savoir plus.`,
         'faceMatch.scanning': `Analyse • reconnaissance faciale…`,
         'faceMatch.faceAlt': `Visage {index}`,
-        'faceMatch.minConf': `Conf. min.`,
-        'faceMatch.minConfTitle': `Confiance minimale : {percent}%`,
         'faceMatch.detected': `Détecté`,
         'faceMatch.detectedFaceAlt': `Visage détecté`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Soutenir sur Patreon`,
         'faceMatch.ofSelected': `{selected} sur {total} sélectionnés`,
-        'faceMatch.allInScene': `{total} visages trouvés · tous dans la scène`,
-        'faceMatch.clickToSelect': `{total} visages trouvés · cliquer pour sélectionner`,
+        'faceMatch.clickToSelect': `Cliquez sur une correspondance pour la sélectionner`,
         'faceMatch.kbSwitch': `Changer de visage`,
         'faceMatch.kbSelect': `Sélectionner les interprètes`,
         'faceMatch.kbToggle': `Basculer la sélection`,
         'faceMatch.kbAddInstant': `Maj+clic pour ajouter instantanément`,
-        'faceMatch.selectBest': `Sélectionner les meilleures correspondances`,
-        'faceMatch.adding': `Ajout...`,
-        'faceMatch.done': `Terminé ({count})`,
-        'faceMatch.toast.added': `Interprète ajouté à la {target}.`,
         'faceMatch.toast.addError': `Échec de l'ajout de l'interprète : {error}`,
         'faceMatch.toast.noStashbox': `Aucun stash-box configuré. Ajoutez un fournisseur stash-box dans Paramètres → Fournisseurs de métadonnées pour activer l'import d'interprètes. Voir {url}`,
         'faceMatch.toast.noProvider': `Aucun fournisseur nommé « StashDB » trouvé. Renommez votre fournisseur en « StashDB » dans Paramètres → Fournisseurs de métadonnées pour activer l'import d'interprètes.`,
         'faceMatch.toast.configureProvider': `Configurez un fournisseur stash-box dans Paramètres → Fournisseurs de métadonnées pour activer l'import d'interprètes.`,
-        'faceMatch.toast.addedMultiple': `{count} interprète{s} ajouté{s} à la {target}.`,
         'faceMatch.toast.linked': `{count} stash ID{s} lié{s} à cet interprète.`,
         // ---- SpriteResultModal.tsx ----
-        'sprite.title': `INTERPRÈTES DE LA SCÈNE`,
+        'sprite.title': `Qui est dans cette scène ?`,
         'sprite.close': `Fermer`,
-        'sprite.foundConfirmed': `{found} trouvé{s} · {confirmed} confirmé{s}`,
-        'sprite.confidence': `confiance`,
-        'sprite.name': `nom`,
-        'sprite.hits': `occurrences`,
-        'sprite.minConf': `Conf. min.`,
-        'sprite.minConfTitle': `Confiance minimale : {percent}%`,
         'sprite.scanning': `Analyse Visage…`,
         'sprite.cancel': `Annuler`,
         'sprite.empty': `Aucun interprète identifié dans ce sprite.`,
         'sprite.detectedFaceAlt': `Visage détecté`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Dans la scène`,
         'sprite.hitsCount': `{count} occurrence{s}`,
         'sprite.totalTime': `{time} au total`,
-        'sprite.alreadyInScene': `Déjà dans la scène`,
-        'sprite.clickToConfirm': `Cliquer pour confirmer`,
-        'sprite.confirmed': `Confirmé`,
         'sprite.supportPatreon': `Soutenir sur Patreon`,
         'sprite.confirmedCount': `{confirmed} sur {total} confirmés`,
-        'sprite.shownHint': `{shown} affiché{s} ({total} au total) · cliquer pour confirmer · ←→ naviguer · Enter pour confirmer`,
         'sprite.confirmHint': `Cliquer pour confirmer · ←→ naviguer · Enter pour confirmer`,
         'sprite.adding': `Ajout...`,
-        'sprite.done': `Terminé ({count})`,
         // ---- PerformerCard.tsx ----
         'gender.male': `Homme`,
         'gender.female': `Femme`,
@@ -12255,10 +12551,9 @@
         'card.deselect': `Désélectionner {name}`,
         'card.openOn': `Ouvrir sur {source}`,
         // ---- FaceSearchButton.tsx ----
-        'search.overlayHint': `Faites glisser pour sélectionner un visage — Enter pour analyser toute l'image — Esc pour annuler`,
+        'search.overlayHint': `Tracez un cadre autour d’un visage. Cliquez ou appuyez sur Entrée pour toute l’image. Échap pour annuler.`,
         'search.noFaces': `Aucun visage trouvé dans cette sélection. Essayez un recadrage plus serré ou appuyez sur Enter pour analyser toute l'image.`,
         'search.captureMediaFail': `Impossible de capturer le média. Assurez-vous que la scène/l'image est entièrement chargée.`,
-        'search.healthBanner': `L'API de reconnaissance faciale n'est pas joignable. Démarrez le backend et réessayez.`,
         'search.failed': `Échec de la recherche de visage : {error}`,
         'search.fetchImageFail': `Impossible de récupérer l'image depuis Stash.`,
         'search.captureFail': `Échec de la capture de l'image : {error}`,
@@ -12266,23 +12561,31 @@
         'search.captureFrameFail': `Impossible de capturer l'image actuelle.`,
         'search.captureFrameFail2': `Échec de la capture de l'image actuelle.`,
         'search.selectFaceVideo': `Sélectionnez un visage dans la zone du lecteur vidéo.`,
-        'search.menuItemTitle': `Tracez un cadre autour d'un visage ou appuyez sur Enter pour analyser toute l'image, afin de rechercher des correspondances dans StashDB`,
-        'search.currentFrame': `Visage : Image actuelle`,
-        'search.identifyFromImage': `Visage : Identifier depuis l'image`,
-        'search.identifyMenuTitle': `Rechercher l'image de cet interprète sur StashDB et lier un stash ID correspondant`,
+        'search.menuItemTitle': `Trouvez qui est dans cette image. Tracez un cadre autour d’un visage, ou cliquez pour toute l’image.`,
+        'search.currentFrame': `Visage : identifier l’image`,
+        'search.identifyFromImage': `Visage : identifier`,
+        'search.identifyMenuTitle': `Comparer l’image de ce performer à vos stash-box et lier le stash ID`,
         'search.noPerformerImage': `Aucune image d'interprète trouvée sur cette page.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Aucune feuille de sprite ou vidéo d'aperçu trouvée pour cette scène. Générez-les dans les paramètres de la scène, puis réessayez.`,
         'scene.noFaces': `Aucun visage ou interprète trouvé dans la feuille de sprite ou la vidéo d'aperçu de cette scène.`,
-        'scene.healthBanner': `L'API de reconnaissance faciale n'est pas joignable. Démarrez le backend et réessayez.`,
         'scene.failed': `Échec de l'analyse de la scène : {error}`,
-        'scene.menuItemTitle': `Identifier chaque interprète de la scène (nécessite une feuille de sprite ou une vidéo d'aperçu générée)`,
-        'scene.wholeScene': `Visage : Scène entière`,
+        'scene.menuItemTitle': `Trouvez toutes les personnes de cette scène. Nécessite une planche de vignettes ou une vidéo d’aperçu générée.`,
+        'scene.wholeScene': `Visage : identifier la scène`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Changer de backend`,
         'banner.dismiss': `Ignorer`,
         // ---- ErrorDialog.tsx ----
         'error.dismiss': `Ignorer`,
+        'error.retry': `Réessayer`,
+        'error.undo': `Annuler`,
+        'error.undone': `Modification annulée.`,
+        'error.undoFailed': `Impossible d’annuler : {error}`,
+        'backend.busy': `Le service de reconnaissance faciale est occupé ou en cours de démarrage. Réessayez dans un instant.`,
+        'backend.serverError': `Le service de reconnaissance faciale a rencontré un problème avec cette requête. Réessayez.`,
+        'backend.unreachableCloud': `Impossible de joindre le service de reconnaissance faciale dans le cloud. Vérifiez votre connexion et réessayez.`,
+        'backend.notBackend': `Le serveur à l’adresse {url} n’est pas un backend Visage. Vérifiez l’adresse dans les paramètres de Visage.`,
+        'backend.unreachableLocal': `Impossible de joindre votre serveur de reconnaissance faciale à l’adresse {url}. Démarrez-le et réessayez.`,
         // ---- FirstRunDialog.tsx ----
         'firstRun.title': `Configurer votre backend Visage`,
         'firstRun.subtitle': `Visage envoie des images de visage à un backend pour reconnaissance. Choisissez où l'exécuter.`,
@@ -12302,6 +12605,35 @@
         'frame.close': `Fermer le sélecteur d'image`,
         'frame.seekFail': `Échec de la navigation dans le lecteur vidéo.`,
         'frame.selectAt': `Sélectionner le visage à {time}s`,
+        'card.existing.scenes': `Dans la scène`,
+        'card.existing.images': `Sur l’image`,
+        'card.existing.performers': `Lié`,
+        'faceMatch.title.scenes': `Qui est dans cette image ?`,
+        'faceMatch.title.images': `Qui est sur cette photo ?`,
+        'faceMatch.title.performers': `Identifier ce performer`,
+        'faceMatch.showMore': `Afficher {count} de plus`,
+        'faceMatch.showFewer': `Afficher moins`,
+        'faceMatch.allExisting.scenes': `Toutes les personnes trouvées sont déjà dans cette scène`,
+        'faceMatch.allExisting.images': `Toutes les personnes trouvées sont déjà sur cette photo`,
+        'faceMatch.allExisting.performers': `Ce performer est déjà lié`,
+        'faceMatch.confirm.scenes': `Ajouter à la scène ({count})`,
+        'faceMatch.confirm.images': `Ajouter à la photo ({count})`,
+        'faceMatch.confirm.performers': `Lier ({count})`,
+        'faceMatch.adding.scenes': `Ajout…`,
+        'faceMatch.adding.performers': `Liaison…`,
+        'faceMatch.toast.added.scenes': `{name} ajouté(e) à cette scène.`,
+        'faceMatch.toast.added.images': `{name} ajouté(e) à cette photo.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performers ajoutés à cette scène.`,
+        'faceMatch.toast.addedMany.images': `{count} performers ajoutés à cette photo.`,
+        'sprite.showMore': `Afficher {count} correspondances moins probables`,
+        'sprite.showFewer': `Masquer les correspondances moins probables`,
+        'search.overlayHintImage': `Tracez un cadre autour d’un visage. Cliquez ou appuyez sur Entrée pour toute la photo. Échap pour annuler.`,
+        'search.noFacesPerformer': `Aucun visage trouvé dans l’image de ce performer.`,
+        'search.selectAgain': `Sélectionner à nouveau`,
+        'search.identifyImage': `Visage : identifier la photo`,
+        'search.imageMenuTitle': `Trouvez qui est sur cette photo. Tracez un cadre autour d’un visage, ou cliquez pour toute la photo.`,
+        'faceMatch.adding.images': `Ajout…`,
+        'sprite.confirm': `Ajouter à la scène ({count})`,
     };
 
     // Norwegian Nynorsk.
@@ -12341,10 +12673,7 @@
         'backendSettings.sync.alreadyRunning': `Synkroniseringa held allereie på`,
         'backendSettings.sync.error': `Synkronisering mislukkast`,
         'backendSettings.sync.connectionLost': `Tilkopling tapt`,
-        'faceMatch.title': `GJELDANDE RAME`,
         'faceMatch.close': `Lukk`,
-        'faceMatch.facesSelected': `{faces} andlet funne · {selected} valt`,
-        'faceMatch.inScene': `· {count} i scene`,
         'faceMatch.stashboxMissing': `Ingen stash-box konfigurert.`,
         'faceMatch.stashboxMissingBody': ` Legg til ein stash-box-leverandør under Innstillingar → Metadata-leverandørar for å aktivere performer-import.`,
         'faceMatch.stashboxWrongName': `Fann ingen "StashDB"-leverandør.`,
@@ -12352,56 +12681,33 @@
         'faceMatch.learnMore': `Les meir.`,
         'faceMatch.scanning': `Skannar • andletsattkjenning…`,
         'faceMatch.faceAlt': `Andlet {index}`,
-        'faceMatch.minConf': `Min. konf.`,
-        'faceMatch.minConfTitle': `Minimumssikkerheit: {percent}%`,
         'faceMatch.detected': `Funne`,
         'faceMatch.detectedFaceAlt': `Funnent andlet`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Støtt på Patreon`,
         'faceMatch.ofSelected': `{selected} av {total} valt`,
-        'faceMatch.allInScene': `{total} andlet funne · alle i scene`,
-        'faceMatch.clickToSelect': `{total} andlet funne · klikk for å velje`,
+        'faceMatch.clickToSelect': `Klikk på eit treff for å velje det`,
         'faceMatch.kbSwitch': `Bytt andlet`,
         'faceMatch.kbSelect': `Vel performarar`,
         'faceMatch.kbToggle': `Veksle markering`,
         'faceMatch.kbAddInstant': `Shift+klikk for å leggje til med ein gong`,
-        'faceMatch.selectBest': `Vel beste treff`,
-        'faceMatch.adding': `Legg til...`,
-        'faceMatch.done': `Ferdig ({count})`,
-        'faceMatch.toast.added': `La til performer i {target}.`,
         'faceMatch.toast.addError': `Kunne ikkje leggje til performer: {error}`,
         'faceMatch.toast.noStashbox': `Ingen stash-box konfigurert. Legg til ein stash-box-leverandør under Innstillingar → Metadata-leverandørar for å aktivere performer-import. Sjå {url}`,
         'faceMatch.toast.noProvider': `Fann ingen leverandør som heiter "StashDB". Gje leverandøren nytt namn til "StashDB" under Innstillingar → Metadata-leverandørar for å aktivere performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurer ein stash-box-leverandør under Innstillingar → Metadata-leverandørar for å aktivere performer-import.`,
-        'faceMatch.toast.addedMultiple': `La til {count} performarar i {target}.`,
         'faceMatch.toast.linked': `Lenka {count} stash-ID{s} til denne performeren.`,
-        'sprite.title': `SCENE-PERFORMARAR`,
+        'sprite.title': `Kven er i denne scena?`,
         'sprite.close': `Lukk`,
-        'sprite.foundConfirmed': `{found} funne · {confirmed} stadfesta`,
-        'sprite.confidence': `sikkerheit`,
-        'sprite.name': `namn`,
-        'sprite.hits': `treff`,
-        'sprite.minConf': `Min. konf.`,
-        'sprite.minConfTitle': `Minimumssikkerheit: {percent}%`,
         'sprite.scanning': `Visage skannar…`,
         'sprite.cancel': `Avbryt`,
         'sprite.empty': `Ingen performarar identifisert i denne spriten.`,
         'sprite.detectedFaceAlt': `Funnent andlet`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `I scene`,
         'sprite.hitsCount': `{count} treff`,
         'sprite.totalTime': `{time} totalt`,
-        'sprite.alreadyInScene': `Allereie i scene`,
-        'sprite.clickToConfirm': `Klikk for å stadfeste`,
-        'sprite.confirmed': `Stadfesta`,
         'sprite.supportPatreon': `Støtt på Patreon`,
         'sprite.confirmedCount': `{confirmed} av {total} stadfesta`,
-        'sprite.shownHint': `{shown} vist ({total} totalt) · klikk for å stadfeste · ←→ naviger · Enter stadfest`,
         'sprite.confirmHint': `Klikk for å stadfeste · ←→ naviger · Enter stadfest`,
         'sprite.adding': `Legg til...`,
-        'sprite.done': `Ferdig ({count})`,
         'gender.male': `Mann`,
         'gender.female': `Kvinne`,
         'gender.transMale': `Transmann`,
@@ -12414,10 +12720,9 @@
         'card.select': `Vel {name}`,
         'card.deselect': `Fravel {name}`,
         'card.openOn': `Opne på {source}`,
-        'search.overlayHint': `Dra for å velje eit andlet — Enter for å skanne heile rama — Esc for å avbryte`,
+        'search.overlayHint': `Dra rundt eit andlet. Klikk eller trykk Enter for heile biletet. Esc avbryt.`,
         'search.noFaces': `Ingen andlet funne i utvalet. Prøv ein tettare utskjering, eller trykk Enter for å skanne heile rama.`,
         'search.captureMediaFail': `Kunne ikkje fange mediet. Kontroller at scenen/biletet er fullasta.`,
-        'search.healthBanner': `Andletsattkjenning-API-et er ikkje tilgjengeleg. Start backend og prøv igjen.`,
         'search.failed': `Andletsøk mislukkast: {error}`,
         'search.fetchImageFail': `Kunne ikkje hente bilete frå Stash.`,
         'search.captureFail': `Kunne ikkje fange bilete: {error}`,
@@ -12425,20 +12730,28 @@
         'search.captureFrameFail': `Kunne ikkje fange gjeldande rame.`,
         'search.captureFrameFail2': `Innfanging av gjeldande rame mislukkast.`,
         'search.selectFaceVideo': `Vel eit andlet i videoavspelarområdet.`,
-        'search.menuItemTitle': `Dra ein boks rundt eit andlet, eller trykk Enter for å skanne heile rama, for å søkje StashDB etter treff`,
-        'search.currentFrame': `Visage: Gjeldande rame`,
-        'search.identifyFromImage': `Visage: Identifiser frå bilete`,
-        'search.identifyMenuTitle': `Søk etter biletet til denne performeren mot StashDB og lenk ein matchande stash-ID`,
+        'search.menuItemTitle': `Finn ut kven som er i biletet. Dra ei ramme rundt eit andlet, eller klikk for heile biletet.`,
+        'search.currentFrame': `Visage: Identifiser bilete`,
+        'search.identifyFromImage': `Visage: Identifiser`,
+        'search.identifyMenuTitle': `Samanlikn biletet av denne performeren med stash-boksane dine og kople stash-ID-en`,
         'search.noPerformerImage': `Fann inga performer-bilete på denne sida.`,
         'scene.noSprite': `Fann ingen sprite-ark eller forhåndsvisingsvideo for denne scenen. Generer dei i Scene-innstillingane, og prøv igjen.`,
         'scene.noFaces': `Fann ingen andlet eller performarar i sprite-arket eller forhåndsvisingsvideoen til denne scenen.`,
-        'scene.healthBanner': `Andletsattkjenning-API-et er ikkje tilgjengeleg. Start backend og prøv igjen.`,
         'scene.failed': `Scene-skanning mislukkast: {error}`,
-        'scene.menuItemTitle': `Identifiser kvar performer i scenen (krev eit generert sprite-ark eller ein forhåndsvisingsvideo)`,
-        'scene.wholeScene': `Visage: Heile scenen`,
+        'scene.menuItemTitle': `Finn alle i denne scena. Krev eit generert sprite sheet eller ein førehandsvisingsvideo.`,
+        'scene.wholeScene': `Visage: Identifiser scene`,
         'banner.changeBackend': `Byt backend`,
         'banner.dismiss': `Avvis`,
         'error.dismiss': `Avvis`,
+        'error.retry': `Prøv igjen`,
+        'error.undo': `Angre`,
+        'error.undone': `Endringa er angra.`,
+        'error.undoFailed': `Kunne ikkje angre: {error}`,
+        'backend.busy': `Andletsattkjenningstenesta er oppteken eller startar. Prøv igjen om eit augeblikk.`,
+        'backend.serverError': `Andletsattkjenningstenesta fekk eit problem med denne førespurnaden. Prøv igjen.`,
+        'backend.unreachableCloud': `Får ikkje kontakt med skytenesta for andletsattkjenning. Sjekk tilkoplinga og prøv igjen.`,
+        'backend.notBackend': `Tenaren på {url} er ikkje ein Visage-backend. Sjekk adressa i Visage-innstillingane.`,
+        'backend.unreachableLocal': `Får ikkje kontakt med andletsattkjenningstenaren din på {url}. Start han og prøv igjen.`,
         'firstRun.title': `Set opp Visage-backend-en din`,
         'firstRun.subtitle': `Visage sender andletsbilete til ein backend for attkjenning. Vel kor han skal køyre.`,
         'firstRun.cloud': `Bruk Hugging Face cloud`,
@@ -12454,6 +12767,35 @@
         'frame.close': `Lukk rammeveljaren`,
         'frame.seekFail': `Kunne ikkje søkje i videoavspelaren.`,
         'frame.selectAt': `Vel andletsrame ved {time}s`,
+        'card.existing.scenes': `I scena`,
+        'card.existing.images': `På biletet`,
+        'card.existing.performers': `Kopla`,
+        'faceMatch.title.scenes': `Kven er i dette biletet?`,
+        'faceMatch.title.images': `Kven er på dette fotoet?`,
+        'faceMatch.title.performers': `Match denne performeren`,
+        'faceMatch.showMore': `Vis {count} til`,
+        'faceMatch.showFewer': `Vis færre`,
+        'faceMatch.allExisting.scenes': `Alle som vart funne er alt i scena`,
+        'faceMatch.allExisting.images': `Alle som vart funne er alt på fotoet`,
+        'faceMatch.allExisting.performers': `Denne performeren er alt kopla`,
+        'faceMatch.confirm.scenes': `Legg til i scene ({count})`,
+        'faceMatch.confirm.images': `Legg til på foto ({count})`,
+        'faceMatch.confirm.performers': `Kople ({count})`,
+        'faceMatch.adding.scenes': `Legg til…`,
+        'faceMatch.adding.performers': `Koplar…`,
+        'faceMatch.toast.added.scenes': `{name} er lagd til i scena.`,
+        'faceMatch.toast.added.images': `{name} er lagd til på fotoet.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performarar lagde til i scena.`,
+        'faceMatch.toast.addedMany.images': `{count} performarar lagde til på fotoet.`,
+        'sprite.showMore': `Vis {count} mindre sannsynlege treff`,
+        'sprite.showFewer': `Skjul mindre sannsynlege treff`,
+        'search.overlayHintImage': `Dra rundt eit andlet. Klikk eller trykk Enter for heile fotoet. Esc avbryt.`,
+        'search.noFacesPerformer': `Fann ikkje noko andlet i biletet av denne performeren.`,
+        'search.selectAgain': `Vel på nytt`,
+        'search.identifyImage': `Visage: Identifiser foto`,
+        'search.imageMenuTitle': `Finn ut kven som er på fotoet. Dra ei ramme rundt eit andlet, eller klikk for heile fotoet.`,
+        'faceMatch.adding.images': `Legg til…`,
+        'sprite.confirm': `Legg til i scene ({count})`,
     };
 
     const ko = {
@@ -12492,10 +12834,7 @@
         'backendSettings.sync.alreadyRunning': `동기화가 이미 진행 중입니다`,
         'backendSettings.sync.error': `동기화 실패`,
         'backendSettings.sync.connectionLost': `연결이 끊어졌습니다`,
-        'faceMatch.title': `현재 프레임`,
         'faceMatch.close': `닫기`,
-        'faceMatch.facesSelected': `얼굴 {faces}개 발견 · {selected}개 선택됨`,
-        'faceMatch.inScene': `· 장면 내 {count}`,
         'faceMatch.stashboxMissing': `stash-box가 설정되어 있지 않습니다.`,
         'faceMatch.stashboxMissingBody': ` 설정 → 메타데이터 공급자에서 stash-box 공급자를 추가하면 출연자 가져오기를 활성화할 수 있습니다.`,
         'faceMatch.stashboxWrongName': `"StashDB" 공급자를 찾을 수 없습니다.`,
@@ -12503,56 +12842,33 @@
         'faceMatch.learnMore': `자세히 알아보기.`,
         'faceMatch.scanning': `스캔 중 · 얼굴 인식…`,
         'faceMatch.faceAlt': `얼굴 {index}`,
-        'faceMatch.minConf': `최소 신뢰도`,
-        'faceMatch.minConfTitle': `최소 신뢰도: {percent}%`,
         'faceMatch.detected': `감지됨`,
         'faceMatch.detectedFaceAlt': `감지된 얼굴`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Patreon에서 지원`,
         'faceMatch.ofSelected': `{total}개 중 {selected}개 선택됨`,
-        'faceMatch.allInScene': `얼굴 {total}개 발견 · 모두 장면 내`,
-        'faceMatch.clickToSelect': `얼굴 {total}개 발견 · 클릭하여 선택`,
+        'faceMatch.clickToSelect': `결과를 클릭해 선택하세요`,
         'faceMatch.kbSwitch': `얼굴 전환`,
         'faceMatch.kbSelect': `출연자 선택`,
         'faceMatch.kbToggle': `선택 전환`,
         'faceMatch.kbAddInstant': `Shift+클릭으로 즉시 추가`,
-        'faceMatch.selectBest': `최적 일치 선택`,
-        'faceMatch.adding': `추가 중...`,
-        'faceMatch.done': `완료({count})`,
-        'faceMatch.toast.added': `{target}에 출연자를 추가했습니다.`,
         'faceMatch.toast.addError': `출연자 추가 실패: {error}`,
         'faceMatch.toast.noStashbox': `stash-box가 설정되어 있지 않습니다. 설정 → 메타데이터 공급자에서 stash-box 공급자를 추가하면 출연자 가져오기를 활성화할 수 있습니다. 참조: {url}`,
         'faceMatch.toast.noProvider': `"StashDB"라는 이름의 공급자를 찾을 수 없습니다. 설정 → 메타데이터 공급자에서 공급자 이름을 "StashDB"로 변경하면 출연자 가져오기를 활성화할 수 있습니다.`,
         'faceMatch.toast.configureProvider': `설정 → 메타데이터 공급자에서 stash-box 공급자를 구성하면 출연자 가져오기를 활성화할 수 있습니다.`,
-        'faceMatch.toast.addedMultiple': `{target}에 {count}명의 출연자{s}를 추가했습니다.`,
         'faceMatch.toast.linked': `이 출연자에게 {count}개의 stash ID{s}를 연결했습니다.`,
-        'sprite.title': `장면 출연자`,
+        'sprite.title': `이 장면에 누가 있나요?`,
         'sprite.close': `닫기`,
-        'sprite.foundConfirmed': `{found}개 발견 · {confirmed}개 확인됨`,
-        'sprite.confidence': `신뢰도`,
-        'sprite.name': `이름`,
-        'sprite.hits': `조회수`,
-        'sprite.minConf': `최소 신뢰도`,
-        'sprite.minConfTitle': `최소 신뢰도: {percent}%`,
         'sprite.scanning': `Visage 스캔 중…`,
         'sprite.cancel': `취소`,
         'sprite.empty': `이 스프라이트에서 확인된 출연자가 없습니다.`,
         'sprite.detectedFaceAlt': `감지된 얼굴`,
-        'sprite.spriteLabel': `스프라이트`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `장면 내`,
         'sprite.hitsCount': `조회수 {count}회{s}`,
         'sprite.totalTime': `총 {time}`,
-        'sprite.alreadyInScene': `이미 장면에 있음`,
-        'sprite.clickToConfirm': `클릭하여 확인`,
-        'sprite.confirmed': `확인됨`,
         'sprite.supportPatreon': `Patreon에서 지원`,
         'sprite.confirmedCount': `{total}개 중 {confirmed}개 확인됨`,
-        'sprite.shownHint': `{shown}개 표시됨(총 {total}개) · 클릭하여 확인 · ←→ 탐색 · Enter 확인`,
         'sprite.confirmHint': `클릭하여 확인 · ←→ 탐색 · Enter 확인`,
         'sprite.adding': `추가 중...`,
-        'sprite.done': `완료({count})`,
         'gender.male': `남성`,
         'gender.female': `여성`,
         'gender.transMale': `트랜스젠더 남성`,
@@ -12565,10 +12881,9 @@
         'card.select': `{name} 선택`,
         'card.deselect': `{name} 선택 해제`,
         'card.openOn': `{source}에서 열기`,
-        'search.overlayHint': `얼굴을 드래그하여 선택 — Enter로 전체 프레임 스캔 — Esc로 취소`,
+        'search.overlayHint': `얼굴 주위를 드래그하세요. 클릭하거나 Enter를 누르면 프레임 전체. Esc로 취소.`,
         'search.noFaces': `해당 선택 영역에서 얼굴을 찾을 수 없습니다. 더 좁게 자르거나 Enter를 눌러 전체 프레임을 스캔하세요.`,
         'search.captureMediaFail': `미디어를 캡처할 수 없습니다. 장면/이미지가 완전히 로드되었는지 확인하세요.`,
-        'search.healthBanner': `얼굴 인식 API에 연결할 수 없습니다. 백엔드를 시작한 후 다시 시도하세요.`,
         'search.failed': `얼굴 검색 실패: {error}`,
         'search.fetchImageFail': `Stash에서 이미지를 가져올 수 없습니다.`,
         'search.captureFail': `이미지 캡처 실패: {error}`,
@@ -12576,20 +12891,28 @@
         'search.captureFrameFail': `현재 프레임을 캡처할 수 없습니다.`,
         'search.captureFrameFail2': `현재 프레임 캡처에 실패했습니다.`,
         'search.selectFaceVideo': `비디오 플레이어 영역 내에서 얼굴을 선택하세요.`,
-        'search.menuItemTitle': `얼굴 주위에 박스를 드래그하거나 Enter를 눌러 전체 프레임을 스캔하여 StashDB에서 일치 항목을 검색합니다`,
-        'search.currentFrame': `Visage: 현재 프레임`,
-        'search.identifyFromImage': `Visage: 이미지로 식별`,
-        'search.identifyMenuTitle': `이 출연자의 이미지로 StashDB를 검색하고 일치하는 stash ID를 연결`,
+        'search.menuItemTitle': `이 프레임에 누가 있는지 찾습니다. 얼굴 주위에 상자를 그리거나 클릭해 프레임 전체를 사용하세요.`,
+        'search.currentFrame': `Visage: 프레임 식별`,
+        'search.identifyFromImage': `Visage: 식별`,
+        'search.identifyMenuTitle': `이 퍼포머의 이미지를 stash-box와 비교하고 stash ID를 연결합니다`,
         'search.noPerformerImage': `이 페이지에서 출연자 이미지를 찾을 수 없습니다.`,
         'scene.noSprite': `이 장면에는 스프라이트 시트나 미리보기 비디오가 없습니다. 장면 설정에서 생성한 후 다시 시도하세요.`,
         'scene.noFaces': `이 장면의 스프라이트 시트나 미리보기 비디오에서 얼굴이나 출연자를 찾을 수 없습니다.`,
-        'scene.healthBanner': `얼굴 인식 API에 연결할 수 없습니다. 백엔드를 시작한 후 다시 시도하세요.`,
         'scene.failed': `장면 스캔 실패: {error}`,
-        'scene.menuItemTitle': `장면의 모든 출연자를 식별합니다(생성된 스프라이트 시트 또는 미리보기 비디오 필요)`,
-        'scene.wholeScene': `Visage: 전체 장면`,
+        'scene.menuItemTitle': `이 장면의 모든 사람을 찾습니다. 생성된 스프라이트 시트나 미리보기 영상이 필요합니다.`,
+        'scene.wholeScene': `Visage: 장면 식별`,
         'banner.changeBackend': `백엔드 변경`,
         'banner.dismiss': `닫기`,
         'error.dismiss': `닫기`,
+        'error.retry': `다시 시도`,
+        'error.undo': `실행 취소`,
+        'error.undone': `변경 사항을 취소했습니다.`,
+        'error.undoFailed': `실행 취소할 수 없습니다: {error}`,
+        'backend.busy': `얼굴 인식 서비스가 사용 중이거나 시작하는 중입니다. 잠시 후 다시 시도하세요.`,
+        'backend.serverError': `얼굴 인식 서비스에서 이 요청을 처리하는 중 문제가 발생했습니다. 다시 시도하세요.`,
+        'backend.unreachableCloud': `클라우드 얼굴 인식 서비스에 연결할 수 없습니다. 연결을 확인한 후 다시 시도하세요.`,
+        'backend.notBackend': `{url}의 서버는 Visage 백엔드가 아닙니다. Visage 설정에서 주소를 확인하세요.`,
+        'backend.unreachableLocal': `{url}의 얼굴 인식 서버에 연결할 수 없습니다. 서버를 시작한 후 다시 시도하세요.`,
         'firstRun.title': `Visage 백엔드 설정`,
         'firstRun.subtitle': `Visage는 얼굴 이미지를 백엔드로 전송하여 인식합니다. 실행 위치를 선택하세요.`,
         'firstRun.cloud': `Hugging Face 클라우드 사용`,
@@ -12605,6 +12928,35 @@
         'frame.close': `프레임 선택기 닫기`,
         'frame.seekFail': `비디오 플레이어를 탐색하지 못했습니다.`,
         'frame.selectAt': `{time}초에서 얼굴 프레임 선택`,
+        'card.existing.scenes': `장면에 있음`,
+        'card.existing.images': `이미지에 있음`,
+        'card.existing.performers': `연결됨`,
+        'faceMatch.title.scenes': `이 프레임에 누가 있나요?`,
+        'faceMatch.title.images': `이 이미지에 누가 있나요?`,
+        'faceMatch.title.performers': `이 퍼포머 매칭`,
+        'faceMatch.showMore': `{count}개 더 보기`,
+        'faceMatch.showFewer': `간단히 보기`,
+        'faceMatch.allExisting.scenes': `찾은 모든 사람이 이미 이 장면에 있습니다`,
+        'faceMatch.allExisting.images': `찾은 모든 사람이 이미 이 이미지에 있습니다`,
+        'faceMatch.allExisting.performers': `이 퍼포머는 이미 연결되어 있습니다`,
+        'faceMatch.confirm.scenes': `장면에 추가 ({count})`,
+        'faceMatch.confirm.images': `이미지에 추가 ({count})`,
+        'faceMatch.confirm.performers': `연결 ({count})`,
+        'faceMatch.adding.scenes': `추가 중…`,
+        'faceMatch.adding.performers': `연결 중…`,
+        'faceMatch.toast.added.scenes': `{name}을(를) 이 장면에 추가했습니다.`,
+        'faceMatch.toast.added.images': `{name}을(를) 이 이미지에 추가했습니다.`,
+        'faceMatch.toast.addedMany.scenes': `퍼포머 {count}명을 이 장면에 추가했습니다.`,
+        'faceMatch.toast.addedMany.images': `퍼포머 {count}명을 이 이미지에 추가했습니다.`,
+        'sprite.showMore': `가능성이 낮은 결과 {count}개 보기`,
+        'sprite.showFewer': `가능성이 낮은 결과 숨기기`,
+        'search.overlayHintImage': `얼굴 주위를 드래그하세요. 클릭하거나 Enter를 누르면 이미지 전체. Esc로 취소.`,
+        'search.noFacesPerformer': `이 퍼포머의 이미지에서 얼굴을 찾지 못했습니다.`,
+        'search.selectAgain': `다시 선택`,
+        'search.identifyImage': `Visage: 이미지 식별`,
+        'search.imageMenuTitle': `이 이미지에 누가 있는지 찾습니다. 얼굴 주위에 상자를 그리거나 클릭해 이미지 전체를 사용하세요.`,
+        'faceMatch.adding.images': `추가 중…`,
+        'sprite.confirm': `장면에 추가 ({count})`,
     };
 
     const zhCn = {
@@ -12643,10 +12995,7 @@
         'backendSettings.sync.alreadyRunning': `同步已在进行中`,
         'backendSettings.sync.error': `同步失败`,
         'backendSettings.sync.connectionLost': `连接已断开`,
-        'faceMatch.title': `当前帧`,
         'faceMatch.close': `关闭`,
-        'faceMatch.facesSelected': `发现 {faces} 张人脸 · 已选择 {selected}`,
-        'faceMatch.inScene': `· {count} 在场景中`,
         'faceMatch.stashboxMissing': `未配置 stash-box。`,
         'faceMatch.stashboxMissingBody': ` 请在设置 → 元数据提供程序中添加 stash-box 提供程序，以启用表演者导入。`,
         'faceMatch.stashboxWrongName': `未找到 "StashDB" 提供程序。`,
@@ -12654,56 +13003,33 @@
         'faceMatch.learnMore': `了解更多。`,
         'faceMatch.scanning': `正在扫描 · 人脸识别…`,
         'faceMatch.faceAlt': `人脸 {index}`,
-        'faceMatch.minConf': `最小置信度`,
-        'faceMatch.minConfTitle': `最低置信度：{percent}%`,
         'faceMatch.detected': `已检测到`,
         'faceMatch.detectedFaceAlt': `检测到的人脸`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `在 Patreon 上支持`,
         'faceMatch.ofSelected': `已选择 {total} 中的 {selected}`,
-        'faceMatch.allInScene': `发现 {total} 张人脸 · 全部在场景中`,
-        'faceMatch.clickToSelect': `发现 {total} 张人脸 · 点击以选择`,
+        'faceMatch.clickToSelect': `点击匹配项即可选择`,
         'faceMatch.kbSwitch': `切换人脸`,
         'faceMatch.kbSelect': `选择表演者`,
         'faceMatch.kbToggle': `切换选择`,
         'faceMatch.kbAddInstant': `Shift+点击立即添加`,
-        'faceMatch.selectBest': `选择最佳匹配`,
-        'faceMatch.adding': `正在添加...`,
-        'faceMatch.done': `完成（{count}）`,
-        'faceMatch.toast.added': `已将表演者添加到 {target}。`,
         'faceMatch.toast.addError': `添加表演者失败：{error}`,
         'faceMatch.toast.noStashbox': `未配置 stash-box。请在设置 → 元数据提供程序中添加 stash-box 提供程序以启用表演者导入。参见 {url}`,
         'faceMatch.toast.noProvider': `未找到名为 "StashDB" 的提供程序。请在设置 → 元数据提供程序中重命名你的提供程序，使其为 "StashDB"，以启用表演者导入。`,
         'faceMatch.toast.configureProvider': `请在设置 → 元数据提供程序中配置 stash-box 提供程序，以启用表演者导入。`,
-        'faceMatch.toast.addedMultiple': `已将 {count} 位表演者{s}添加到 {target}。`,
         'faceMatch.toast.linked': `已将 {count} 个 stash ID{s}关联到此表演者。`,
-        'sprite.title': `场景表演者`,
+        'sprite.title': `这个场景里是谁?`,
         'sprite.close': `关闭`,
-        'sprite.foundConfirmed': `找到 {found} · 已确认 {confirmed}`,
-        'sprite.confidence': `置信度`,
-        'sprite.name': `姓名`,
-        'sprite.hits': `命中`,
-        'sprite.minConf': `最小置信度`,
-        'sprite.minConfTitle': `最低置信度：{percent}%`,
         'sprite.scanning': `Visage 正在扫描…`,
         'sprite.cancel': `取消`,
         'sprite.empty': `此精灵图中未识别出任何表演者。`,
         'sprite.detectedFaceAlt': `检测到的人脸`,
-        'sprite.spriteLabel': `精灵图`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `在场景中`,
         'sprite.hitsCount': `{count} 次命中{s}`,
         'sprite.totalTime': `共 {time}`,
-        'sprite.alreadyInScene': `已在场景中`,
-        'sprite.clickToConfirm': `点击以确认`,
-        'sprite.confirmed': `已确认`,
         'sprite.supportPatreon': `在 Patreon 上支持`,
         'sprite.confirmedCount': `已确认 {total} 中的 {confirmed}`,
-        'sprite.shownHint': `显示 {shown}（共 {total} 个）· 点击以确认 · ←→ 导航 · Enter 确认`,
         'sprite.confirmHint': `点击以确认 · ←→ 导航 · Enter 确认`,
         'sprite.adding': `正在添加...`,
-        'sprite.done': `完成（{count}）`,
         'gender.male': `男性`,
         'gender.female': `女性`,
         'gender.transMale': `跨性别男性`,
@@ -12716,10 +13042,9 @@
         'card.select': `选择 {name}`,
         'card.deselect': `取消选择 {name}`,
         'card.openOn': `在 {source} 上打开`,
-        'search.overlayHint': `拖动以选择人脸 — Enter 扫描整个画面 — Esc 取消`,
+        'search.overlayHint': `在人脸周围拖动。点击或按 Enter 使用整帧。按 Esc 取消。`,
         'search.noFaces': `该选择中未找到人脸。请尝试更紧的裁剪，或按 Enter 扫描整个画面。`,
         'search.captureMediaFail': `无法捕获媒体。请确保场景/图像已完全加载。`,
-        'search.healthBanner': `人脸识别 API 不可访问。请启动后端并重试。`,
         'search.failed': `人脸搜索失败：{error}`,
         'search.fetchImageFail': `无法从 Stash 获取图像。`,
         'search.captureFail': `捕获图像失败：{error}`,
@@ -12727,20 +13052,28 @@
         'search.captureFrameFail': `无法捕获当前帧。`,
         'search.captureFrameFail2': `捕获当前帧失败。`,
         'search.selectFaceVideo': `在视频播放器区域内选择一张人脸。`,
-        'search.menuItemTitle': `拖动框选一张人脸，或按 Enter 扫描整个画面，以在 StashDB 中搜索匹配项`,
-        'search.currentFrame': `Visage：当前帧`,
-        'search.identifyFromImage': `Visage：从图片识别`,
-        'search.identifyMenuTitle': `在 StashDB 中搜索此表演者的图片并关联匹配的 stash ID`,
+        'search.menuItemTitle': `找出这一帧里是谁。在人脸周围拖出方框,或点击使用整帧。`,
+        'search.currentFrame': `Visage:识别画面`,
+        'search.identifyFromImage': `Visage:识别`,
+        'search.identifyMenuTitle': `将此演员的图片与你的 stash-box 比对并关联 stash ID`,
         'search.noPerformerImage': `此页面上未找到表演者图片。`,
         'scene.noSprite': `此场景没有精灵图或预览视频。请在场景设置中生成它们，然后重试。`,
         'scene.noFaces': `在此场景的精灵图或预览视频中未找到人脸或表演者。`,
-        'scene.healthBanner': `人脸识别 API 不可访问。请启动后端并重试。`,
         'scene.failed': `场景扫描失败：{error}`,
-        'scene.menuItemTitle': `识别场景中的每个表演者（需要生成的精灵图或预览视频）`,
-        'scene.wholeScene': `Visage：整个场景`,
+        'scene.menuItemTitle': `找出此场景中的所有人。需要已生成的雪碧图或预览视频。`,
+        'scene.wholeScene': `Visage:识别场景`,
         'banner.changeBackend': `更换后端`,
         'banner.dismiss': `关闭`,
         'error.dismiss': `关闭`,
+        'error.retry': `重试`,
+        'error.undo': `撤销`,
+        'error.undone': `已撤销更改。`,
+        'error.undoFailed': `无法撤销：{error}`,
+        'backend.busy': `人脸识别服务繁忙或正在启动。请稍后重试。`,
+        'backend.serverError': `人脸识别服务处理此请求时出现问题。请重试。`,
+        'backend.unreachableCloud': `无法连接云端人脸识别服务。请检查网络连接后重试。`,
+        'backend.notBackend': `{url} 上的服务器不是 Visage 后端。请在 Visage 设置中检查地址。`,
+        'backend.unreachableLocal': `无法连接位于 {url} 的人脸识别服务器。请启动它后重试。`,
         'firstRun.title': `设置你的 Visage 后端`,
         'firstRun.subtitle': `Visage 会将人脸图像发送到后端进行识别。选择在哪里运行它。`,
         'firstRun.cloud': `使用 Hugging Face 云端`,
@@ -12756,6 +13089,35 @@
         'frame.close': `关闭帧选择器`,
         'frame.seekFail': `无法快进视频播放器。`,
         'frame.selectAt': `选择 {time} 秒处的人脸帧`,
+        'card.existing.scenes': `已在场景中`,
+        'card.existing.images': `已在图片中`,
+        'card.existing.performers': `已关联`,
+        'faceMatch.title.scenes': `这一帧里是谁?`,
+        'faceMatch.title.images': `这张图片里是谁?`,
+        'faceMatch.title.performers': `匹配此演员`,
+        'faceMatch.showMore': `再显示 {count} 个`,
+        'faceMatch.showFewer': `收起`,
+        'faceMatch.allExisting.scenes': `找到的人都已在此场景中`,
+        'faceMatch.allExisting.images': `找到的人都已在此图片中`,
+        'faceMatch.allExisting.performers': `此演员已关联`,
+        'faceMatch.confirm.scenes': `添加到场景 ({count})`,
+        'faceMatch.confirm.images': `添加到图片 ({count})`,
+        'faceMatch.confirm.performers': `关联 ({count})`,
+        'faceMatch.adding.scenes': `正在添加…`,
+        'faceMatch.adding.performers': `正在关联…`,
+        'faceMatch.toast.added.scenes': `已将 {name} 添加到此场景。`,
+        'faceMatch.toast.added.images': `已将 {name} 添加到此图片。`,
+        'faceMatch.toast.addedMany.scenes': `已将 {count} 位演员添加到此场景。`,
+        'faceMatch.toast.addedMany.images': `已将 {count} 位演员添加到此图片。`,
+        'sprite.showMore': `显示 {count} 个可能性较低的匹配`,
+        'sprite.showFewer': `隐藏可能性较低的匹配`,
+        'search.overlayHintImage': `在人脸周围拖动。点击或按 Enter 使用整张图片。按 Esc 取消。`,
+        'search.noFacesPerformer': `在此演员的图片中未找到人脸。`,
+        'search.selectAgain': `重新选择`,
+        'search.identifyImage': `Visage:识别图片`,
+        'search.imageMenuTitle': `找出这张图片里是谁。在人脸周围拖出方框,或点击使用整张图片。`,
+        'faceMatch.adding.images': `正在添加…`,
+        'sprite.confirm': `添加到场景 ({count})`,
     };
 
     const bg = {
@@ -12794,10 +13156,7 @@
         'backendSettings.sync.alreadyRunning': `Синхронизацията вече е в ход`,
         'backendSettings.sync.error': `Синхронизацията е неуспешна`,
         'backendSettings.sync.connectionLost': `Връзката е прекъсната`,
-        'faceMatch.title': `ТЕКУЩ КАДЪР`,
         'faceMatch.close': `Затваряне`,
-        'faceMatch.facesSelected': `Намерени лица: {faces} · избрани: {selected}`,
-        'faceMatch.inScene': `· {count} в сцената`,
         'faceMatch.stashboxMissing': `Не е конфигуриран stash-box.`,
         'faceMatch.stashboxMissingBody': ` Добавете доставчик на stash-box в Settings → Metadata Providers, за да активирате импортирането на изпълнители.`,
         'faceMatch.stashboxWrongName': `Не е намерен доставчик "StashDB".`,
@@ -12805,56 +13164,33 @@
         'faceMatch.learnMore': `Научете повече.`,
         'faceMatch.scanning': `Сканиране • разпознаване на лица…`,
         'faceMatch.faceAlt': `Лице {index}`,
-        'faceMatch.minConf': `Мин. ув.`,
-        'faceMatch.minConfTitle': `Минимална увереност: {percent}%`,
         'faceMatch.detected': `Открито`,
         'faceMatch.detectedFaceAlt': `Открито лице`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Подкрепа в Patreon`,
         'faceMatch.ofSelected': `Избрани {selected} от {total}`,
-        'faceMatch.allInScene': `Намерени лица: {total} · всички в сцената`,
-        'faceMatch.clickToSelect': `Намерени лица: {total} · щракнете, за да изберете`,
+        'faceMatch.clickToSelect': `Щракнете върху съвпадение, за да го изберете`,
         'faceMatch.kbSwitch': `Превключване на лица`,
         'faceMatch.kbSelect': `Избор на изпълнители`,
         'faceMatch.kbToggle': `Превключване на избора`,
         'faceMatch.kbAddInstant': `Shift+щракване за незабавно добавяне`,
-        'faceMatch.selectBest': `Изберете най-добрите съвпадения`,
-        'faceMatch.adding': `Добавяне...`,
-        'faceMatch.done': `Готово ({count})`,
-        'faceMatch.toast.added': `Изпълнителят е добавен към {target}.`,
         'faceMatch.toast.addError': `Неуспешно добавяне на изпълнител: {error}`,
         'faceMatch.toast.noStashbox': `Не е конфигуриран stash-box. Добавете доставчик на stash-box в Settings → Metadata Providers, за да активирате импортирането на изпълнители. Вижте {url}`,
         'faceMatch.toast.noProvider': `Не е намерен доставчик "StashDB". Преименувайте доставчика на "StashDB" в Settings → Metadata Providers, за да активирате импортирането на изпълнители.`,
         'faceMatch.toast.configureProvider': `Конфигурирайте доставчик на stash-box в Settings → Metadata Providers, за да активирате импортирането на изпълнители.`,
-        'faceMatch.toast.addedMultiple': `Добавени изпълнители: {count} към {target}.`,
         'faceMatch.toast.linked': `Свързани {count} stash ID{s} с този изпълнител.`,
-        'sprite.title': `ИЗПЪЛНИТЕЛИ НА СЦЕНАТА`,
+        'sprite.title': `Кой е в тази сцена?`,
         'sprite.close': `Затвори`,
-        'sprite.foundConfirmed': `Намерени: {found} · потвърдени: {confirmed}`,
-        'sprite.confidence': `увереност`,
-        'sprite.name': `име`,
-        'sprite.hits': `съвпадения`,
-        'sprite.minConf': `Мин. ув.`,
-        'sprite.minConfTitle': `Минимална увереност: {percent}%`,
         'sprite.scanning': `Сканиране на Visage…`,
         'sprite.cancel': `Отказ`,
         'sprite.empty': `В този спрайт не са идентифицирани изпълнители.`,
         'sprite.detectedFaceAlt': `Открито лице`,
-        'sprite.spriteLabel': `СПРАЙТ`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `В сцената`,
         'sprite.hitsCount': `Съвпадения: {count}`,
         'sprite.totalTime': `Общо {time}`,
-        'sprite.alreadyInScene': `Вече в сцената`,
-        'sprite.clickToConfirm': `Щракнете, за да потвърдите`,
-        'sprite.confirmed': `Потвърдено`,
         'sprite.supportPatreon': `Подкрепа в Patreon`,
         'sprite.confirmedCount': `Потвърдени {confirmed} от {total}`,
-        'sprite.shownHint': `Показани: {shown} (общо {total}) · щракнете за потвърждение · ←→ навигация · Enter потвърждение`,
         'sprite.confirmHint': `Щракнете за потвърждение · ←→ навигация · Enter потвърждение`,
         'sprite.adding': `Добавяне...`,
-        'sprite.done': `Готово ({count})`,
         'gender.male': `Мъж`,
         'gender.female': `Жена`,
         'gender.transMale': `Трансджендър мъж`,
@@ -12867,10 +13203,9 @@
         'card.select': `Изберете {name}`,
         'card.deselect': `Отмяна на избора на {name}`,
         'card.openOn': `Отваряне в {source}`,
-        'search.overlayHint': `Плъзнете, за да изберете лице — Enter, за да сканирате целия кадър — Esc, за да отмените`,
+        'search.overlayHint': `Плъзнете около лице. Щракнете или натиснете Enter за целия кадър. Esc за отказ.`,
         'search.noFaces': `В избраната област не са открити лица. Опитайте по-плътно изрязване или натиснете Enter, за да сканирате целия кадър.`,
         'search.captureMediaFail': `Неуспешно заснемане на медията. Уверете се, че сцената/изображението е напълно заредено.`,
-        'search.healthBanner': `API за разпознаване на лица е недостъпен. Стартирайте бекенда и опитайте отново.`,
         'search.failed': `Търсенето на лице се провали: {error}`,
         'search.fetchImageFail': `Неуспешно извличане на изображение от Stash.`,
         'search.captureFail': `Неуспешно заснемане на изображение: {error}`,
@@ -12878,20 +13213,28 @@
         'search.captureFrameFail': `Неуспешно заснемане на текущия кадър.`,
         'search.captureFrameFail2': `Грешка при заснемане на текущия кадър.`,
         'search.selectFaceVideo': `Изберете лице в областта на видеоплейъра.`,
-        'search.menuItemTitle': `Плъзнете рамка около лице или натиснете Enter, за да сканирате целия кадър, за да потърсите съвпадения в StashDB`,
-        'search.currentFrame': `Visage: текущ кадър`,
-        'search.identifyFromImage': `Visage: Разпознаване от изображение`,
-        'search.identifyMenuTitle': `Търсене на изображението на този изпълнител в StashDB и свързване на съответстващ stash ID`,
+        'search.menuItemTitle': `Разберете кой е в този кадър. Плъзнете рамка около лице или щракнете за целия кадър.`,
+        'search.currentFrame': `Visage: Разпознай кадъра`,
+        'search.identifyFromImage': `Visage: Разпознай`,
+        'search.identifyMenuTitle': `Сравни изображението на този изпълнител със своите stash-box и свържи stash ID`,
         'search.noPerformerImage': `Няма намерено изображение на изпълнител на тази страница.`,
         'scene.noSprite': `За тази сцена не е намерен нито спрайт лист, нито превю видео. Генерирайте ги в настройките на сцената и опитайте отново.`,
         'scene.noFaces': `В спрайт листа или превю видеото на тази сцена не са открити лица или изпълнители.`,
-        'scene.healthBanner': `API за разпознаване на лица е недостъпен. Стартирайте бекенда и опитайте отново.`,
         'scene.failed': `Сканирането на сцената се провали: {error}`,
-        'scene.menuItemTitle': `Идентифицирайте всеки изпълнител в сцената (изисква генериран спрайт лист или превю видео)`,
-        'scene.wholeScene': `Visage: цялата сцена`,
+        'scene.menuItemTitle': `Намерете всички в тази сцена. Нужен е генериран sprite sheet или видео за преглед.`,
+        'scene.wholeScene': `Visage: Разпознай сцената`,
         'banner.changeBackend': `Смяна на бекенда`,
         'banner.dismiss': `Отхвърляне`,
         'error.dismiss': `Отхвърляне`,
+        'error.retry': `Опитайте отново`,
+        'error.undo': `Отмяна`,
+        'error.undone': `Промяната е отменена.`,
+        'error.undoFailed': `Отмяната не бе успешна: {error}`,
+        'backend.busy': `Услугата за разпознаване на лица е заета или се стартира. Опитайте отново след малко.`,
+        'backend.serverError': `Услугата за разпознаване на лица срещна проблем с тази заявка. Опитайте отново.`,
+        'backend.unreachableCloud': `Облачната услуга за разпознаване на лица е недостъпна. Проверете връзката си и опитайте отново.`,
+        'backend.notBackend': `Сървърът на {url} не е бекенд на Visage. Проверете адреса в настройките на Visage.`,
+        'backend.unreachableLocal': `Сървърът ви за разпознаване на лица на {url} е недостъпен. Стартирайте го и опитайте отново.`,
         'firstRun.title': `Настройте бекенда на Visage`,
         'firstRun.subtitle': `Visage изпраща изображения на лица към бекенда за разпознаване. Изберете къде да го стартирате.`,
         'firstRun.cloud': `Използване на облака Hugging Face`,
@@ -12907,6 +13250,35 @@
         'frame.close': `Затваряне на избора на кадър`,
         'frame.seekFail': `Неуспешно превъртане на видеоплейъра.`,
         'frame.selectAt': `Изберете кадър с лице на {time} s`,
+        'card.existing.scenes': `В сцената`,
+        'card.existing.images': `В изображението`,
+        'card.existing.performers': `Свързан`,
+        'faceMatch.title.scenes': `Кой е в този кадър?`,
+        'faceMatch.title.images': `Кой е в това изображение?`,
+        'faceMatch.title.performers': `Разпознаване на този изпълнител`,
+        'faceMatch.showMore': `Покажи още {count}`,
+        'faceMatch.showFewer': `Покажи по-малко`,
+        'faceMatch.allExisting.scenes': `Всички намерени вече са в тази сцена`,
+        'faceMatch.allExisting.images': `Всички намерени вече са в това изображение`,
+        'faceMatch.allExisting.performers': `Този изпълнител вече е свързан`,
+        'faceMatch.confirm.scenes': `Добави към сцената ({count})`,
+        'faceMatch.confirm.images': `Добави към изображението ({count})`,
+        'faceMatch.confirm.performers': `Свържи ({count})`,
+        'faceMatch.adding.scenes': `Добавяне…`,
+        'faceMatch.adding.performers': `Свързване…`,
+        'faceMatch.toast.added.scenes': `{name} е добавен(а) към тази сцена.`,
+        'faceMatch.toast.added.images': `{name} е добавен(а) към това изображение.`,
+        'faceMatch.toast.addedMany.scenes': `Добавени изпълнители към сцената: {count}.`,
+        'faceMatch.toast.addedMany.images': `Добавени изпълнители към изображението: {count}.`,
+        'sprite.showMore': `Покажи по-малко вероятни съвпадения ({count})`,
+        'sprite.showFewer': `Скрий по-малко вероятните съвпадения`,
+        'search.overlayHintImage': `Плъзнете около лице. Щракнете или натиснете Enter за цялото изображение. Esc за отказ.`,
+        'search.noFacesPerformer': `Не е намерено лице в изображението на този изпълнител.`,
+        'search.selectAgain': `Избери отново`,
+        'search.identifyImage': `Visage: Разпознай изображението`,
+        'search.imageMenuTitle': `Разберете кой е в това изображение. Плъзнете рамка около лице или щракнете за цялото изображение.`,
+        'faceMatch.adding.images': `Добавяне…`,
+        'sprite.confirm': `Добави към сцената ({count})`,
     };
 
     const ru = {
@@ -12945,10 +13317,7 @@
         'backendSettings.sync.alreadyRunning': `Синхронизация уже выполняется`,
         'backendSettings.sync.error': `Ошибка синхронизации`,
         'backendSettings.sync.connectionLost': `Соединение потеряно`,
-        'faceMatch.title': `ТЕКУЩИЙ КАДР`,
         'faceMatch.close': `Закрыть`,
-        'faceMatch.facesSelected': `Найдено лиц: {faces} · выбрано: {selected}`,
-        'faceMatch.inScene': `· {count} в сцене`,
         'faceMatch.stashboxMissing': `Stash-box не настроен.`,
         'faceMatch.stashboxMissingBody': ` Добавьте провайдера stash-box в Settings → Metadata Providers, чтобы включить импорт исполнителей.`,
         'faceMatch.stashboxWrongName': `Провайдер "StashDB" не найден.`,
@@ -12956,56 +13325,33 @@
         'faceMatch.learnMore': `Подробнее.`,
         'faceMatch.scanning': `Сканирование • распознавание лиц…`,
         'faceMatch.faceAlt': `Лицо {index}`,
-        'faceMatch.minConf': `Мин. дост.`,
-        'faceMatch.minConfTitle': `Минимальная достоверность: {percent}%`,
         'faceMatch.detected': `Обнаружено`,
         'faceMatch.detectedFaceAlt': `Обнаруженное лицо`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Поддержать на Patreon`,
         'faceMatch.ofSelected': `Выбрано {selected} из {total}`,
-        'faceMatch.allInScene': `Найдено лиц: {total} · все в сцене`,
-        'faceMatch.clickToSelect': `Найдено лиц: {total} · нажмите, чтобы выбрать`,
+        'faceMatch.clickToSelect': `Нажмите на совпадение, чтобы выбрать его`,
         'faceMatch.kbSwitch': `Переключение лиц`,
         'faceMatch.kbSelect': `Выбор исполнителей`,
         'faceMatch.kbToggle': `Переключить выбор`,
         'faceMatch.kbAddInstant': `Shift+клик, чтобы добавить сразу`,
-        'faceMatch.selectBest': `Выбрать лучшие совпадения`,
-        'faceMatch.adding': `Добавление...`,
-        'faceMatch.done': `Готово ({count})`,
-        'faceMatch.toast.added': `Исполнитель добавлен в {target}.`,
         'faceMatch.toast.addError': `Не удалось добавить исполнителя: {error}`,
         'faceMatch.toast.noStashbox': `Stash-box не настроен. Добавьте провайдера stash-box в Settings → Metadata Providers, чтобы включить импорт исполнителей. См. {url}`,
         'faceMatch.toast.noProvider': `Провайдер "StashDB" не найден. Переименуйте провайдера в "StashDB" в Settings → Metadata Providers, чтобы включить импорт исполнителей.`,
         'faceMatch.toast.configureProvider': `Настройте провайдера stash-box в Settings → Metadata Providers, чтобы включить импорт исполнителей.`,
-        'faceMatch.toast.addedMultiple': `Добавлено исполнителей: {count} в {target}.`,
         'faceMatch.toast.linked': `Привязано {count} stash ID к этому исполнителю.`,
-        'sprite.title': `ИСПОЛНИТЕЛИ СЦЕНЫ`,
+        'sprite.title': `Кто в этой сцене?`,
         'sprite.close': `Закрыть`,
-        'sprite.foundConfirmed': `Найдено: {found} · подтверждено: {confirmed}`,
-        'sprite.confidence': `достоверность`,
-        'sprite.name': `имя`,
-        'sprite.hits': `совпадения`,
-        'sprite.minConf': `Мин. дост.`,
-        'sprite.minConfTitle': `Минимальная достоверность: {percent}%`,
         'sprite.scanning': `Сканирование Visage…`,
         'sprite.cancel': `Отмена`,
         'sprite.empty': `В этом спрайте исполнители не обнаружены.`,
         'sprite.detectedFaceAlt': `Обнаруженное лицо`,
-        'sprite.spriteLabel': `СПРАЙТ`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `В сцене`,
         'sprite.hitsCount': `Совпадений: {count}`,
         'sprite.totalTime': `Всего {time}`,
-        'sprite.alreadyInScene': `Уже в сцене`,
-        'sprite.clickToConfirm': `Нажмите для подтверждения`,
-        'sprite.confirmed': `Подтверждено`,
         'sprite.supportPatreon': `Поддержать на Patreon`,
         'sprite.confirmedCount': `Подтверждено {confirmed} из {total}`,
-        'sprite.shownHint': `Показано: {shown} (всего {total}) · нажмите для подтверждения · ←→ навигация · Enter подтверждение`,
         'sprite.confirmHint': `Нажмите для подтверждения · ←→ навигация · Enter подтверждение`,
         'sprite.adding': `Добавление...`,
-        'sprite.done': `Готово ({count})`,
         'gender.male': `Мужчина`,
         'gender.female': `Женщина`,
         'gender.transMale': `Трансгендерный мужчина`,
@@ -13018,10 +13364,9 @@
         'card.select': `Выбрать {name}`,
         'card.deselect': `Снять выбор с {name}`,
         'card.openOn': `Открыть на {source}`,
-        'search.overlayHint': `Перетащите, чтобы выделить лицо — Enter, чтобы просканировать весь кадр — Esc, чтобы отменить`,
+        'search.overlayHint': `Обведите лицо рамкой. Нажмите или Enter для всего кадра. Esc для отмены.`,
         'search.noFaces': `В выбранной области лица не найдены. Попробуйте более плотный кадр или нажмите Enter, чтобы просканировать весь кадр.`,
         'search.captureMediaFail': `Не удалось захватить медиа. Убедитесь, что сцена/изображение полностью загружены.`,
-        'search.healthBanner': `API распознавания лиц недоступен. Запустите бэкенд и попробуйте снова.`,
         'search.failed': `Поиск лиц не удался: {error}`,
         'search.fetchImageFail': `Не удалось получить изображение из Stash.`,
         'search.captureFail': `Не удалось захватить изображение: {error}`,
@@ -13029,20 +13374,28 @@
         'search.captureFrameFail': `Не удалось захватить текущий кадр.`,
         'search.captureFrameFail2': `Ошибка при захвате текущего кадра.`,
         'search.selectFaceVideo': `Выделите лицо в области видеоплеера.`,
-        'search.menuItemTitle': `Перетащите рамку вокруг лица или нажмите Enter, чтобы просканировать весь кадр и выполнить поиск совпадений в StashDB`,
-        'search.currentFrame': `Visage: текущий кадр`,
-        'search.identifyFromImage': `Visage: Определить по изображению`,
-        'search.identifyMenuTitle': `Поискать изображение этого исполнителя на StashDB и привязать подходящий stash ID`,
+        'search.menuItemTitle': `Узнайте, кто в этом кадре. Обведите лицо рамкой или нажмите для всего кадра.`,
+        'search.currentFrame': `Visage: Распознать кадр`,
+        'search.identifyFromImage': `Visage: Распознать`,
+        'search.identifyMenuTitle': `Сравнить изображение исполнителя с вашими stash-box и связать stash ID`,
         'search.noPerformerImage': `Изображение исполнителя на этой странице не найдено.`,
         'scene.noSprite': `Для этой сцены не найдено ни спрайт-листа, ни превью-видео. Создайте их в настройках сцены и попробуйте снова.`,
         'scene.noFaces': `В спрайт-листе или превью-видео этой сцены не найдено лиц или исполнителей.`,
-        'scene.healthBanner': `API распознавания лиц недоступен. Запустите бэкенд и попробуйте снова.`,
         'scene.failed': `Сканирование сцены не удалось: {error}`,
-        'scene.menuItemTitle': `Определите каждого исполнителя в сцене (требуется сгенерированный спрайт-лист или превью-видео)`,
-        'scene.wholeScene': `Visage: вся сцена`,
+        'scene.menuItemTitle': `Найдите всех в этой сцене. Нужен сгенерированный sprite sheet или видео превью.`,
+        'scene.wholeScene': `Visage: Распознать сцену`,
         'banner.changeBackend': `Сменить бэкенд`,
         'banner.dismiss': `Отклонить`,
         'error.dismiss': `Отклонить`,
+        'error.retry': `Повторить`,
+        'error.undo': `Отменить`,
+        'error.undone': `Изменение отменено.`,
+        'error.undoFailed': `Не удалось отменить: {error}`,
+        'backend.busy': `Сервис распознавания лиц занят или запускается. Попробуйте снова через минуту.`,
+        'backend.serverError': `Сервис распознавания лиц не смог обработать этот запрос. Попробуйте снова.`,
+        'backend.unreachableCloud': `Облачный сервис распознавания лиц недоступен. Проверьте подключение и попробуйте снова.`,
+        'backend.notBackend': `Сервер по адресу {url} не является бэкендом Visage. Проверьте адрес в настройках Visage.`,
+        'backend.unreachableLocal': `Ваш сервер распознавания лиц по адресу {url} недоступен. Запустите его и попробуйте снова.`,
         'firstRun.title': `Настройте бэкенд Visage`,
         'firstRun.subtitle': `Visage отправляет изображения лиц в бэкенд для распознавания. Выберите, где его запустить.`,
         'firstRun.cloud': `Использовать облако Hugging Face`,
@@ -13058,6 +13411,35 @@
         'frame.close': `Закрыть выбор кадра`,
         'frame.seekFail': `Не удалось перемотать видеоплеер.`,
         'frame.selectAt': `Выбрать кадр лица на {time} с`,
+        'card.existing.scenes': `В сцене`,
+        'card.existing.images': `На изображении`,
+        'card.existing.performers': `Связан`,
+        'faceMatch.title.scenes': `Кто в этом кадре?`,
+        'faceMatch.title.images': `Кто на этом изображении?`,
+        'faceMatch.title.performers': `Сопоставить исполнителя`,
+        'faceMatch.showMore': `Показать ещё {count}`,
+        'faceMatch.showFewer': `Показать меньше`,
+        'faceMatch.allExisting.scenes': `Все найденные уже есть в этой сцене`,
+        'faceMatch.allExisting.images': `Все найденные уже есть на этом изображении`,
+        'faceMatch.allExisting.performers': `Этот исполнитель уже связан`,
+        'faceMatch.confirm.scenes': `Добавить в сцену ({count})`,
+        'faceMatch.confirm.images': `Добавить к изображению ({count})`,
+        'faceMatch.confirm.performers': `Связать ({count})`,
+        'faceMatch.adding.scenes': `Добавление…`,
+        'faceMatch.adding.performers': `Связывание…`,
+        'faceMatch.toast.added.scenes': `{name} добавлен(а) в эту сцену.`,
+        'faceMatch.toast.added.images': `{name} добавлен(а) к этому изображению.`,
+        'faceMatch.toast.addedMany.scenes': `Добавлено исполнителей в сцену: {count}.`,
+        'faceMatch.toast.addedMany.images': `Добавлено исполнителей к изображению: {count}.`,
+        'sprite.showMore': `Показать менее вероятные совпадения ({count})`,
+        'sprite.showFewer': `Скрыть менее вероятные совпадения`,
+        'search.overlayHintImage': `Обведите лицо рамкой. Нажмите или Enter для всего изображения. Esc для отмены.`,
+        'search.noFacesPerformer': `На изображении этого исполнителя не найдено лицо.`,
+        'search.selectAgain': `Выбрать снова`,
+        'search.identifyImage': `Visage: Распознать изображение`,
+        'search.imageMenuTitle': `Узнайте, кто на этом изображении. Обведите лицо рамкой или нажмите для всего изображения.`,
+        'faceMatch.adding.images': `Добавление…`,
+        'sprite.confirm': `Добавить в сцену ({count})`,
     };
 
     const id = {
@@ -13096,10 +13478,7 @@
         'backendSettings.sync.alreadyRunning': `Sinkronisasi sedang berlangsung`,
         'backendSettings.sync.error': `Sinkronisasi gagal`,
         'backendSettings.sync.connectionLost': `Koneksi terputus`,
-        'faceMatch.title': `BINGKAI SAAT INI`,
         'faceMatch.close': `Tutup`,
-        'faceMatch.facesSelected': `{faces} wajah ditemukan · {selected} dipilih`,
-        'faceMatch.inScene': `· {count} dalam scene`,
         'faceMatch.stashboxMissing': `Tidak ada stash-box yang dikonfigurasi.`,
         'faceMatch.stashboxMissingBody': ` Tambahkan penyedia stash-box di Pengaturan → Penyedia Metadata untuk mengaktifkan impor pemain.`,
         'faceMatch.stashboxWrongName': `Tidak ditemukan penyedia "StashDB".`,
@@ -13107,56 +13486,33 @@
         'faceMatch.learnMore': `Pelajari lebih lanjut.`,
         'faceMatch.scanning': `Memindai • pengenalan wajah…`,
         'faceMatch.faceAlt': `Wajah {index}`,
-        'faceMatch.minConf': `Kepercayaan min.`,
-        'faceMatch.minConfTitle': `Kepercayaan minimum: {percent}%`,
         'faceMatch.detected': `Terdeteksi`,
         'faceMatch.detectedFaceAlt': `Wajah terdeteksi`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Dukung di Patreon`,
         'faceMatch.ofSelected': `{selected} dari {total} dipilih`,
-        'faceMatch.allInScene': `{total} wajah ditemukan · semua dalam scene`,
-        'faceMatch.clickToSelect': `{total} wajah ditemukan · klik untuk memilih`,
+        'faceMatch.clickToSelect': `Klik kecocokan untuk memilihnya`,
         'faceMatch.kbSwitch': `Ganti wajah`,
         'faceMatch.kbSelect': `Pilih pemain`,
         'faceMatch.kbToggle': `Alihkan pemilihan`,
         'faceMatch.kbAddInstant': `Shift+klik untuk menambah langsung`,
-        'faceMatch.selectBest': `Pilih Kecocokan Terbaik`,
-        'faceMatch.adding': `Menambahkan...`,
-        'faceMatch.done': `Selesai ({count})`,
-        'faceMatch.toast.added': `Pemain ditambahkan ke {target}.`,
         'faceMatch.toast.addError': `Gagal menambah pemain: {error}`,
         'faceMatch.toast.noStashbox': `Tidak ada stash-box yang dikonfigurasi. Tambahkan penyedia stash-box di Pengaturan → Penyedia Metadata untuk mengaktifkan impor pemain. Lihat {url}`,
         'faceMatch.toast.noProvider': `Tidak ditemukan penyedia bernama "StashDB". Ganti nama penyedia Anda menjadi "StashDB" di Pengaturan → Penyedia Metadata untuk mengaktifkan impor pemain.`,
         'faceMatch.toast.configureProvider': `Konfigurasi penyedia stash-box di Pengaturan → Penyedia Metadata untuk mengaktifkan impor pemain.`,
-        'faceMatch.toast.addedMultiple': `{count} pemain{s} ditambahkan ke {target}.`,
         'faceMatch.toast.linked': `{count} stash ID{s} ditautkan ke pemain ini.`,
-        'sprite.title': `PEMERAN SCENE`,
+        'sprite.title': `Siapa di adegan ini?`,
         'sprite.close': `Tutup`,
-        'sprite.foundConfirmed': `{found} ditemukan · {confirmed} dikonfirmasi`,
-        'sprite.confidence': `kepercayaan`,
-        'sprite.name': `nama`,
-        'sprite.hits': `hit`,
-        'sprite.minConf': `Kepercayaan min.`,
-        'sprite.minConfTitle': `Kepercayaan minimum: {percent}%`,
         'sprite.scanning': `Visage Memindai…`,
         'sprite.cancel': `Batal`,
         'sprite.empty': `Tidak ada pemain yang teridentifikasi dalam sprite ini.`,
         'sprite.detectedFaceAlt': `Wajah terdeteksi`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Dalam scene`,
         'sprite.hitsCount': `{count} hit{s}`,
         'sprite.totalTime': `{time} total`,
-        'sprite.alreadyInScene': `Sudah dalam scene`,
-        'sprite.clickToConfirm': `Klik untuk konfirmasi`,
-        'sprite.confirmed': `Dikonfirmasi`,
         'sprite.supportPatreon': `Dukung di Patreon`,
         'sprite.confirmedCount': `{confirmed} dari {total} dikonfirmasi`,
-        'sprite.shownHint': `{shown} ditampilkan ({total} total) · klik untuk konfirmasi · ←→ navigasi · Enter konfirmasi`,
         'sprite.confirmHint': `Klik untuk konfirmasi · ←→ navigasi · Enter konfirmasi`,
         'sprite.adding': `Menambahkan...`,
-        'sprite.done': `Selesai ({count})`,
         'gender.male': `Pria`,
         'gender.female': `Wanita`,
         'gender.transMale': `Pria transgender`,
@@ -13169,10 +13525,9 @@
         'card.select': `Pilih {name}`,
         'card.deselect': `Batalkan pilihan {name}`,
         'card.openOn': `Buka di {source}`,
-        'search.overlayHint': `Seret untuk memilih wajah — Enter untuk memindai seluruh bingkai — Esc untuk membatalkan`,
+        'search.overlayHint': `Seret di sekitar wajah. Klik atau tekan Enter untuk seluruh bingkai. Esc untuk batal.`,
         'search.noFaces': `Tidak ada wajah yang ditemukan pada pilihan tersebut. Coba potongan yang lebih rapat, atau tekan Enter untuk memindai seluruh bingkai.`,
         'search.captureMediaFail': `Tidak dapat menangkap media. Pastikan scene/gambar telah dimuat sepenuhnya.`,
-        'search.healthBanner': `API pengenalan wajah tidak dapat dijangkau. Mulai backend dan coba lagi.`,
         'search.failed': `Pencarian wajah gagal: {error}`,
         'search.fetchImageFail': `Tidak dapat mengambil gambar dari Stash.`,
         'search.captureFail': `Gagal menangkap gambar: {error}`,
@@ -13180,20 +13535,28 @@
         'search.captureFrameFail': `Tidak dapat menangkap bingkai saat ini.`,
         'search.captureFrameFail2': `Gagal menangkap bingkai saat ini.`,
         'search.selectFaceVideo': `Pilih wajah di dalam area pemutar video.`,
-        'search.menuItemTitle': `Seret kotak di sekitar wajah, atau tekan Enter untuk memindai seluruh bingkai, untuk mencari kecocokan di StashDB`,
-        'search.currentFrame': `Visage: Bingkai Saat Ini`,
-        'search.identifyFromImage': `Visage: Identifikasi dari gambar`,
-        'search.identifyMenuTitle': `Cari gambar pemain ini di StashDB dan tautkan stash ID yang cocok`,
+        'search.menuItemTitle': `Cari tahu siapa di bingkai ini. Seret kotak di sekitar wajah, atau klik untuk seluruh bingkai.`,
+        'search.currentFrame': `Visage: Kenali bingkai`,
+        'search.identifyFromImage': `Visage: Kenali`,
+        'search.identifyMenuTitle': `Cocokkan gambar performer ini dengan stash-box Anda dan tautkan stash ID`,
         'search.noPerformerImage': `Gambar pemain tidak ditemukan di halaman ini.`,
         'scene.noSprite': `Tidak ada sprite sheet atau video pratinjau untuk scene ini. Buat di pengaturan Scene, lalu coba lagi.`,
         'scene.noFaces': `Tidak ada wajah atau pemain yang ditemukan di sprite sheet atau video pratinjau scene ini.`,
-        'scene.healthBanner': `API pengenalan wajah tidak dapat dijangkau. Mulai backend dan coba lagi.`,
         'scene.failed': `Pemindaian scene gagal: {error}`,
-        'scene.menuItemTitle': `Identifikasi setiap pemain dalam scene (membutuhkan sprite sheet atau video pratinjau yang dibuat)`,
-        'scene.wholeScene': `Visage: Seluruh Scene`,
+        'scene.menuItemTitle': `Temukan semua orang di adegan ini. Perlu sprite sheet atau video pratinjau yang sudah dibuat.`,
+        'scene.wholeScene': `Visage: Kenali adegan`,
         'banner.changeBackend': `Ganti backend`,
         'banner.dismiss': `Tutup`,
         'error.dismiss': `Tutup`,
+        'error.retry': `Coba lagi`,
+        'error.undo': `Urungkan`,
+        'error.undone': `Perubahan diurungkan.`,
+        'error.undoFailed': `Tidak dapat mengurungkan: {error}`,
+        'backend.busy': `Layanan pengenalan wajah sedang sibuk atau sedang dimulai. Coba lagi sebentar lagi.`,
+        'backend.serverError': `Layanan pengenalan wajah mengalami masalah dengan permintaan ini. Coba lagi.`,
+        'backend.unreachableCloud': `Tidak dapat menjangkau layanan pengenalan wajah cloud. Periksa koneksi Anda dan coba lagi.`,
+        'backend.notBackend': `Server di {url} bukan backend Visage. Periksa alamat di pengaturan Visage.`,
+        'backend.unreachableLocal': `Tidak dapat menjangkau server pengenalan wajah Anda di {url}. Jalankan server tersebut dan coba lagi.`,
         'firstRun.title': `Siapkan backend Visage Anda`,
         'firstRun.subtitle': `Visage mengirim gambar wajah ke backend untuk pengenalan. Pilih tempat menjalankannya.`,
         'firstRun.cloud': `Gunakan cloud Hugging Face`,
@@ -13209,6 +13572,35 @@
         'frame.close': `Tutup pemilih bingkai`,
         'frame.seekFail': `Gagal menavigasi pemutar video.`,
         'frame.selectAt': `Pilih bingkai wajah pada {time} detik`,
+        'card.existing.scenes': `Di adegan`,
+        'card.existing.images': `Di gambar`,
+        'card.existing.performers': `Tertaut`,
+        'faceMatch.title.scenes': `Siapa di bingkai ini?`,
+        'faceMatch.title.images': `Siapa di gambar ini?`,
+        'faceMatch.title.performers': `Cocokkan performer ini`,
+        'faceMatch.showMore': `Tampilkan {count} lagi`,
+        'faceMatch.showFewer': `Tampilkan lebih sedikit`,
+        'faceMatch.allExisting.scenes': `Semua yang ditemukan sudah ada di adegan ini`,
+        'faceMatch.allExisting.images': `Semua yang ditemukan sudah ada di gambar ini`,
+        'faceMatch.allExisting.performers': `Performer ini sudah tertaut`,
+        'faceMatch.confirm.scenes': `Tambah ke adegan ({count})`,
+        'faceMatch.confirm.images': `Tambah ke gambar ({count})`,
+        'faceMatch.confirm.performers': `Tautkan ({count})`,
+        'faceMatch.adding.scenes': `Menambahkan…`,
+        'faceMatch.adding.performers': `Menautkan…`,
+        'faceMatch.toast.added.scenes': `{name} ditambahkan ke adegan ini.`,
+        'faceMatch.toast.added.images': `{name} ditambahkan ke gambar ini.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performer ditambahkan ke adegan ini.`,
+        'faceMatch.toast.addedMany.images': `{count} performer ditambahkan ke gambar ini.`,
+        'sprite.showMore': `Tampilkan {count} kecocokan yang kurang mungkin`,
+        'sprite.showFewer': `Sembunyikan kecocokan yang kurang mungkin`,
+        'search.overlayHintImage': `Seret di sekitar wajah. Klik atau tekan Enter untuk seluruh gambar. Esc untuk batal.`,
+        'search.noFacesPerformer': `Tidak ada wajah di gambar performer ini.`,
+        'search.selectAgain': `Pilih lagi`,
+        'search.identifyImage': `Visage: Kenali gambar`,
+        'search.imageMenuTitle': `Cari tahu siapa di gambar ini. Seret kotak di sekitar wajah, atau klik untuk seluruh gambar.`,
+        'faceMatch.adding.images': `Menambahkan…`,
+        'sprite.confirm': `Tambah ke adegan ({count})`,
     };
 
     const cs = {
@@ -13247,10 +13639,7 @@
         'backendSettings.sync.alreadyRunning': `Synchronizace již probíhá`,
         'backendSettings.sync.error': `Synchronizace selhala`,
         'backendSettings.sync.connectionLost': `Připojení ztraceno`,
-        'faceMatch.title': `AKTUÁLNÍ SNÍMEK`,
         'faceMatch.close': `Zavřít`,
-        'faceMatch.facesSelected': `Nalezeno tváří: {faces} · vybráno: {selected}`,
-        'faceMatch.inScene': `· {count} ve scéně`,
         'faceMatch.stashboxMissing': `Není nakonfigurován stash-box.`,
         'faceMatch.stashboxMissingBody': ` Přidejte poskytovatele stash-box v Settings → Metadata Providers, abyste povolili import performerů.`,
         'faceMatch.stashboxWrongName': `Poskytovatel "StashDB" nebyl nalezen.`,
@@ -13258,56 +13647,33 @@
         'faceMatch.learnMore': `Zjistit více.`,
         'faceMatch.scanning': `Skenování • rozpoznávání tváří…`,
         'faceMatch.faceAlt': `Tvář {index}`,
-        'faceMatch.minConf': `Min. jist.`,
-        'faceMatch.minConfTitle': `Minimální jistota: {percent}%`,
         'faceMatch.detected': `Zjištěno`,
         'faceMatch.detectedFaceAlt': `Zjištěná tvář`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Podpořit na Patreon`,
         'faceMatch.ofSelected': `Vybráno {selected} z {total}`,
-        'faceMatch.allInScene': `Nalezeno tváří: {total} · všechny ve scéně`,
-        'faceMatch.clickToSelect': `Nalezeno tváří: {total} · klikněte pro výběr`,
+        'faceMatch.clickToSelect': `Kliknutím vyberte shodu`,
         'faceMatch.kbSwitch': `Přepínání tváří`,
         'faceMatch.kbSelect': `Výběr performerů`,
         'faceMatch.kbToggle': `Přepnout výběr`,
         'faceMatch.kbAddInstant': `Shift+klik pro okamžité přidání`,
-        'faceMatch.selectBest': `Vybrat nejlepší shody`,
-        'faceMatch.adding': `Přidávání...`,
-        'faceMatch.done': `Hotovo ({count})`,
-        'faceMatch.toast.added': `Performer byl přidán do {target}.`,
         'faceMatch.toast.addError': `Nepodařilo se přidat performera: {error}`,
         'faceMatch.toast.noStashbox': `Není nakonfigurován stash-box. Přidejte poskytovatele stash-box v Settings → Metadata Providers, abyste povolili import performerů. Viz {url}`,
         'faceMatch.toast.noProvider': `Poskytovatel "StashDB" nebyl nalezen. Přejmenujte poskytovatele na "StashDB" v Settings → Metadata Providers, abyste povolili import performerů.`,
         'faceMatch.toast.configureProvider': `Nakonfigurujte poskytovatele stash-box v Settings → Metadata Providers, abyste povolili import performerů.`,
-        'faceMatch.toast.addedMultiple': `Přidáno performerů: {count} do {target}.`,
         'faceMatch.toast.linked': `K tomuto performerovi bylo přiřazeno {count} stash ID.`,
-        'sprite.title': `PERFORMERI SCÉNY`,
+        'sprite.title': `Kdo je v této scéně?`,
         'sprite.close': `Zavřít`,
-        'sprite.foundConfirmed': `Nalezeno: {found} · potvrzeno: {confirmed}`,
-        'sprite.confidence': `jistota`,
-        'sprite.name': `jméno`,
-        'sprite.hits': `shody`,
-        'sprite.minConf': `Min. jist.`,
-        'sprite.minConfTitle': `Minimální jistota: {percent}%`,
         'sprite.scanning': `Skenování Visage…`,
         'sprite.cancel': `Zrušit`,
         'sprite.empty': `V tomto sprite nebyli identifikováni žádní performeři.`,
         'sprite.detectedFaceAlt': `Zjištěná tvář`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Ve scéně`,
         'sprite.hitsCount': `Shod: {count}`,
         'sprite.totalTime': `Celkem {time}`,
-        'sprite.alreadyInScene': `Již ve scéně`,
-        'sprite.clickToConfirm': `Klikněte pro potvrzení`,
-        'sprite.confirmed': `Potvrzeno`,
         'sprite.supportPatreon': `Podpořit na Patreon`,
         'sprite.confirmedCount': `Potvrzeno {confirmed} z {total}`,
-        'sprite.shownHint': `Zobrazeno: {shown} (celkem {total}) · klikněte pro potvrzení · ←→ navigace · Enter potvrzení`,
         'sprite.confirmHint': `Klikněte pro potvrzení · ←→ navigace · Enter potvrzení`,
         'sprite.adding': `Přidávání...`,
-        'sprite.done': `Hotovo ({count})`,
         'gender.male': `Muž`,
         'gender.female': `Žena`,
         'gender.transMale': `Transgender muž`,
@@ -13320,10 +13686,9 @@
         'card.select': `Vybrat {name}`,
         'card.deselect': `Zrušit výběr {name}`,
         'card.openOn': `Otevřít na {source}`,
-        'search.overlayHint': `Přetáhněte pro výběr tváře — Enter pro skenování celého snímku — Esc pro zrušení`,
+        'search.overlayHint': `Táhněte kolem obličeje. Klikněte nebo stiskněte Enter pro celý snímek. Esc zruší.`,
         'search.noFaces': `Ve vybrané oblasti nebyly nalezeny žádné tváře. Zkuste užší ořez nebo stiskněte Enter pro skenování celého snímku.`,
         'search.captureMediaFail': `Nepodařilo se zachytit média. Ujistěte se, že scéna/obrázek je plně načten.`,
-        'search.healthBanner': `API pro rozpoznávání tváří je nedosažitelné. Spusťte backend a zkuste to znovu.`,
         'search.failed': `Hledání tváře se nezdařilo: {error}`,
         'search.fetchImageFail': `Nepodařilo se načíst obrázek ze Stash.`,
         'search.captureFail': `Nepodařilo se zachytit obrázek: {error}`,
@@ -13331,20 +13696,28 @@
         'search.captureFrameFail': `Nepodařilo se zachytit aktuální snímek.`,
         'search.captureFrameFail2': `Chyba při zachycení aktuálního snímku.`,
         'search.selectFaceVideo': `Vyberte tvář v oblasti přehrávače videa.`,
-        'search.menuItemTitle': `Přetáhněte rámeček kolem tváře nebo stiskněte Enter pro skenování celého snímku, abyste vyhledali shody v StashDB`,
-        'search.currentFrame': `Visage: aktuální snímek`,
-        'search.identifyFromImage': `Visage: Identifikuj ze snímku`,
-        'search.identifyMenuTitle': `Prohledat snímek tohoto performera ve StashDB a přiřadit odpovídající stash ID`,
+        'search.menuItemTitle': `Zjistěte, kdo je v tomto snímku. Táhněte rámeček kolem obličeje, nebo klikněte pro celý snímek.`,
+        'search.currentFrame': `Visage: Rozpoznat snímek`,
+        'search.identifyFromImage': `Visage: Rozpoznat`,
+        'search.identifyMenuTitle': `Porovnat obrázek tohoto účinkujícího s vašimi stash-boxy a propojit stash ID`,
         'search.noPerformerImage': `Na této stránce nebyl nalezen žádný snímek performera.`,
         'scene.noSprite': `Pro tuto scénu nebyl nalezen žádný sprite list ani náhledové video. Vygenerujte je v nastavení scény a zkuste to znovu.`,
         'scene.noFaces': `Ve sprite listu nebo náhledovém videu této scény nebyly nalezeny žádné tváře ani performeři.`,
-        'scene.healthBanner': `API pro rozpoznávání tváří je nedosažitelné. Spusťte backend a zkuste to znovu.`,
         'scene.failed': `Skenování scény se nezdařilo: {error}`,
-        'scene.menuItemTitle': `Identifikujte každého performera ve scéně (vyžaduje vygenerovaný sprite list nebo náhledové video)`,
-        'scene.wholeScene': `Visage: celá scéna`,
+        'scene.menuItemTitle': `Najděte všechny v této scéně. Vyžaduje vygenerovaný sprite sheet nebo náhledové video.`,
+        'scene.wholeScene': `Visage: Rozpoznat scénu`,
         'banner.changeBackend': `Změnit backend`,
         'banner.dismiss': `Zavřít`,
         'error.dismiss': `Zavřít`,
+        'error.retry': `Zkusit znovu`,
+        'error.undo': `Zpět`,
+        'error.undone': `Změna vrácena.`,
+        'error.undoFailed': `Nelze vrátit zpět: {error}`,
+        'backend.busy': `Služba rozpoznávání tváří je zaneprázdněná nebo se spouští. Zkuste to za chvíli znovu.`,
+        'backend.serverError': `Služba rozpoznávání tváří měla s tímto požadavkem problém. Zkuste to znovu.`,
+        'backend.unreachableCloud': `Cloudová služba rozpoznávání tváří je nedosažitelná. Zkontrolujte připojení a zkuste to znovu.`,
+        'backend.notBackend': `Server na {url} není backend Visage. Zkontrolujte adresu v nastavení Visage.`,
+        'backend.unreachableLocal': `Váš server pro rozpoznávání tváří na {url} je nedosažitelný. Spusťte ho a zkuste to znovu.`,
         'firstRun.title': `Nastavte backend Visage`,
         'firstRun.subtitle': `Visage odesílá obrázky tváří do backendu pro rozpoznání. Vyberte, kde jej spustit.`,
         'firstRun.cloud': `Použít cloud Hugging Face`,
@@ -13360,6 +13733,35 @@
         'frame.close': `Zavřít výběr snímku`,
         'frame.seekFail': `Nepodařilo se přetočit přehrávač videa.`,
         'frame.selectAt': `Vybrat snímek tváře v {time} s`,
+        'card.existing.scenes': `Ve scéně`,
+        'card.existing.images': `Na obrázku`,
+        'card.existing.performers': `Propojeno`,
+        'faceMatch.title.scenes': `Kdo je v tomto snímku?`,
+        'faceMatch.title.images': `Kdo je na tomto obrázku?`,
+        'faceMatch.title.performers': `Přiřadit tohoto účinkujícího`,
+        'faceMatch.showMore': `Zobrazit dalších {count}`,
+        'faceMatch.showFewer': `Zobrazit méně`,
+        'faceMatch.allExisting.scenes': `Všichni nalezení už jsou v této scéně`,
+        'faceMatch.allExisting.images': `Všichni nalezení už jsou na tomto obrázku`,
+        'faceMatch.allExisting.performers': `Tento účinkující už je propojen`,
+        'faceMatch.confirm.scenes': `Přidat do scény ({count})`,
+        'faceMatch.confirm.images': `Přidat k obrázku ({count})`,
+        'faceMatch.confirm.performers': `Propojit ({count})`,
+        'faceMatch.adding.scenes': `Přidávání…`,
+        'faceMatch.adding.performers': `Propojování…`,
+        'faceMatch.toast.added.scenes': `{name} přidán(a) do této scény.`,
+        'faceMatch.toast.added.images': `{name} přidán(a) k tomuto obrázku.`,
+        'faceMatch.toast.addedMany.scenes': `Do této scény přidáno účinkujících: {count}.`,
+        'faceMatch.toast.addedMany.images': `K tomuto obrázku přidáno účinkujících: {count}.`,
+        'sprite.showMore': `Zobrazit méně pravděpodobné shody ({count})`,
+        'sprite.showFewer': `Skrýt méně pravděpodobné shody`,
+        'search.overlayHintImage': `Táhněte kolem obličeje. Klikněte nebo stiskněte Enter pro celý obrázek. Esc zruší.`,
+        'search.noFacesPerformer': `Na obrázku tohoto účinkujícího nebyl nalezen žádný obličej.`,
+        'search.selectAgain': `Vybrat znovu`,
+        'search.identifyImage': `Visage: Rozpoznat obrázek`,
+        'search.imageMenuTitle': `Zjistěte, kdo je na tomto obrázku. Táhněte rámeček kolem obličeje, nebo klikněte pro celý obrázek.`,
+        'faceMatch.adding.images': `Přidávání…`,
+        'sprite.confirm': `Přidat do scény ({count})`,
     };
 
     const hr = {
@@ -13398,10 +13800,7 @@
         'backendSettings.sync.alreadyRunning': `Sinkronizacija je već u tijeku`,
         'backendSettings.sync.error': `Sinkronizacija nije uspjela`,
         'backendSettings.sync.connectionLost': `Veza je izgubljena`,
-        'faceMatch.title': `TRENUTNI OKVIR`,
         'faceMatch.close': `Zatvori`,
-        'faceMatch.facesSelected': `Pronađena lica: {faces} · odabrano: {selected}`,
-        'faceMatch.inScene': `· {count} u sceni`,
         'faceMatch.stashboxMissing': `Stash-box nije konfiguriran.`,
         'faceMatch.stashboxMissingBody': ` Dodajte pružatelja stash-box u Settings → Metadata Providers da biste omogućili uvoz izvođača.`,
         'faceMatch.stashboxWrongName': `Pružatelj "StashDB" nije pronađen.`,
@@ -13409,56 +13808,33 @@
         'faceMatch.learnMore': `Saznajte više.`,
         'faceMatch.scanning': `Skeniranje • prepoznavanje lica…`,
         'faceMatch.faceAlt': `Lice {index}`,
-        'faceMatch.minConf': `Min. povj.`,
-        'faceMatch.minConfTitle': `Minimalna pouzdanost: {percent}%`,
         'faceMatch.detected': `Otkriveno`,
         'faceMatch.detectedFaceAlt': `Otkriveno lice`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Podržite na Patreonu`,
         'faceMatch.ofSelected': `Odabrano {selected} od {total}`,
-        'faceMatch.allInScene': `Pronađena lica: {total} · sva u sceni`,
-        'faceMatch.clickToSelect': `Pronađena lica: {total} · kliknite za odabir`,
+        'faceMatch.clickToSelect': `Kliknite podudaranje da biste ga odabrali`,
         'faceMatch.kbSwitch': `Promjena lica`,
         'faceMatch.kbSelect': `Odabir izvođača`,
         'faceMatch.kbToggle': `Uključi/isključi odabir`,
         'faceMatch.kbAddInstant': `Shift+klik za trenutno dodavanje`,
-        'faceMatch.selectBest': `Odaberi najbolja podudaranja`,
-        'faceMatch.adding': `Dodavanje...`,
-        'faceMatch.done': `Gotovo ({count})`,
-        'faceMatch.toast.added': `Izvođač je dodan u {target}.`,
         'faceMatch.toast.addError': `Neuspješno dodavanje izvođača: {error}`,
         'faceMatch.toast.noStashbox': `Stash-box nije konfiguriran. Dodajte pružatelja stash-box u Settings → Metadata Providers da biste omogućili uvoz izvođača. Pogledajte {url}`,
         'faceMatch.toast.noProvider': `Pružatelj "StashDB" nije pronađen. Preimenujte pružatelja u "StashDB" u Settings → Metadata Providers da biste omogućili uvoz izvođača.`,
         'faceMatch.toast.configureProvider': `Konfigurirajte pružatelja stash-box u Settings → Metadata Providers da biste omogućili uvoz izvođača.`,
-        'faceMatch.toast.addedMultiple': `Dodano izvođača: {count} u {target}.`,
         'faceMatch.toast.linked': `Povezano {count} stash ID{s} s ovim izvođačem.`,
-        'sprite.title': `IZVOĐAČI SCENE`,
+        'sprite.title': `Tko je u ovoj sceni?`,
         'sprite.close': `Zatvori`,
-        'sprite.foundConfirmed': `Pronađeno: {found} · potvrđeno: {confirmed}`,
-        'sprite.confidence': `pouzdanost`,
-        'sprite.name': `ime`,
-        'sprite.hits': `podudaranja`,
-        'sprite.minConf': `Min. povj.`,
-        'sprite.minConfTitle': `Minimalna pouzdanost: {percent}%`,
         'sprite.scanning': `Visage skeniranje…`,
         'sprite.cancel': `Odustani`,
         'sprite.empty': `U ovom spriteu nisu identificirani izvođači.`,
         'sprite.detectedFaceAlt': `Otkriveno lice`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `U sceni`,
         'sprite.hitsCount': `Podudaranja: {count}`,
         'sprite.totalTime': `Ukupno {time}`,
-        'sprite.alreadyInScene': `Već u sceni`,
-        'sprite.clickToConfirm': `Kliknite za potvrdu`,
-        'sprite.confirmed': `Potvrđeno`,
         'sprite.supportPatreon': `Podržite na Patreonu`,
         'sprite.confirmedCount': `Potvrđeno {confirmed} od {total}`,
-        'sprite.shownHint': `Prikazano: {shown} (ukupno {total}) · kliknite za potvrdu · ←→ navigacija · Enter potvrda`,
         'sprite.confirmHint': `Kliknite za potvrdu · ←→ navigacija · Enter potvrda`,
         'sprite.adding': `Dodavanje...`,
-        'sprite.done': `Gotovo ({count})`,
         'gender.male': `Muško`,
         'gender.female': `Žensko`,
         'gender.transMale': `Transrodno muško`,
@@ -13471,10 +13847,9 @@
         'card.select': `Odaberi {name}`,
         'card.deselect': `Poništi odabir {name}`,
         'card.openOn': `Otvori na {source}`,
-        'search.overlayHint': `Povucite za odabir lica — Enter za skeniranje cijelog okvira — Esc za odustajanje`,
+        'search.overlayHint': `Povucite oko lica. Kliknite ili pritisnite Enter za cijeli kadar. Esc za odustajanje.`,
         'search.noFaces': `U odabranom području nisu pronađena lica. Pokušajte s užim kadrom ili pritisnite Enter za skeniranje cijelog okvira.`,
         'search.captureMediaFail': `Neuspješno snimanje medija. Provjerite je li scena/slika u potpunosti učitana.`,
-        'search.healthBanner': `API za prepoznavanje lica nije dostupan. Pokrenite pozadinski poslužitelj i pokušajte ponovno.`,
         'search.failed': `Pretraga lica nije uspjela: {error}`,
         'search.fetchImageFail': `Neuspješno dohvaćanje slike iz Stasha.`,
         'search.captureFail': `Neuspješno snimanje slike: {error}`,
@@ -13482,20 +13857,28 @@
         'search.captureFrameFail': `Neuspješno snimanje trenutnog okvira.`,
         'search.captureFrameFail2': `Greška pri snimanju trenutnog okvira.`,
         'search.selectFaceVideo': `Odaberite lice unutar područja video playera.`,
-        'search.menuItemTitle': `Povucite okvir oko lica ili pritisnite Enter za skeniranje cijelog okvira, da biste pretražili podudaranja u StashDB`,
-        'search.currentFrame': `Visage: trenutni okvir`,
-        'search.identifyFromImage': `Visage: Prepoznaj iz slike`,
-        'search.identifyMenuTitle': `Pretraži sliku ovog izvođača na StashDB i poveži odgovarajući stash ID`,
+        'search.menuItemTitle': `Saznajte tko je u ovom kadru. Povucite okvir oko lica ili kliknite za cijeli kadar.`,
+        'search.currentFrame': `Visage: Prepoznaj kadar`,
+        'search.identifyFromImage': `Visage: Prepoznaj`,
+        'search.identifyMenuTitle': `Usporedi sliku ovog izvođača sa svojim stash-boxovima i poveži stash ID`,
         'search.noPerformerImage': `Na ovoj stranici nije pronađena slika izvođača.`,
         'scene.noSprite': `Za ovu scenu nije pronađen sprite sheet ni video pregled. Generirajte ih u postavkama scene i pokušajte ponovno.`,
         'scene.noFaces': `U sprite sheetu ili videu pregleda ove scene nisu pronađena lica ni izvođači.`,
-        'scene.healthBanner': `API za prepoznavanje lica nije dostupan. Pokrenite pozadinski poslužitelj i pokušajte ponovno.`,
         'scene.failed': `Skeniranje scene nije uspjelo: {error}`,
-        'scene.menuItemTitle': `Identificirajte svakog izvođača u sceni (zahtijeva generirani sprite sheet ili video pregled)`,
-        'scene.wholeScene': `Visage: cijela scena`,
+        'scene.menuItemTitle': `Pronađite sve u ovoj sceni. Potreban je generirani sprite sheet ili video pregleda.`,
+        'scene.wholeScene': `Visage: Prepoznaj scenu`,
         'banner.changeBackend': `Promijeni pozadinski poslužitelj`,
         'banner.dismiss': `Odbaci`,
         'error.dismiss': `Odbaci`,
+        'error.retry': `Pokušaj ponovno`,
+        'error.undo': `Poništi`,
+        'error.undone': `Promjena je poništena.`,
+        'error.undoFailed': `Poništavanje nije uspjelo: {error}`,
+        'backend.busy': `Usluga prepoznavanja lica je zauzeta ili se pokreće. Pokušajte ponovno za trenutak.`,
+        'backend.serverError': `Usluga prepoznavanja lica imala je problem s ovim zahtjevom. Pokušajte ponovno.`,
+        'backend.unreachableCloud': `Usluga prepoznavanja lica u oblaku nije dostupna. Provjerite vezu i pokušajte ponovno.`,
+        'backend.notBackend': `Poslužitelj na {url} nije Visage pozadinski poslužitelj. Provjerite adresu u postavkama Visagea.`,
+        'backend.unreachableLocal': `Vaš poslužitelj za prepoznavanje lica na {url} nije dostupan. Pokrenite ga i pokušajte ponovno.`,
         'firstRun.title': `Postavite svoj Visage pozadinski poslužitelj`,
         'firstRun.subtitle': `Visage šalje slike lica pozadinskom poslužitelju na prepoznavanje. Odaberite gdje ga pokrenuti.`,
         'firstRun.cloud': `Koristi oblak Hugging Face`,
@@ -13511,6 +13894,35 @@
         'frame.close': `Zatvori odabir okvira`,
         'frame.seekFail': `Neuspješno pomicanje video playera.`,
         'frame.selectAt': `Odaberite okvir lica na {time} s`,
+        'card.existing.scenes': `U sceni`,
+        'card.existing.images': `Na slici`,
+        'card.existing.performers': `Povezano`,
+        'faceMatch.title.scenes': `Tko je u ovom kadru?`,
+        'faceMatch.title.images': `Tko je na ovoj slici?`,
+        'faceMatch.title.performers': `Upari ovog izvođača`,
+        'faceMatch.showMore': `Prikaži još {count}`,
+        'faceMatch.showFewer': `Prikaži manje`,
+        'faceMatch.allExisting.scenes': `Svi pronađeni već su u ovoj sceni`,
+        'faceMatch.allExisting.images': `Svi pronađeni već su na ovoj slici`,
+        'faceMatch.allExisting.performers': `Ovaj izvođač već je povezan`,
+        'faceMatch.confirm.scenes': `Dodaj u scenu ({count})`,
+        'faceMatch.confirm.images': `Dodaj na sliku ({count})`,
+        'faceMatch.confirm.performers': `Poveži ({count})`,
+        'faceMatch.adding.scenes': `Dodavanje…`,
+        'faceMatch.adding.performers': `Povezivanje…`,
+        'faceMatch.toast.added.scenes': `{name} dodan(a) u ovu scenu.`,
+        'faceMatch.toast.added.images': `{name} dodan(a) na ovu sliku.`,
+        'faceMatch.toast.addedMany.scenes': `Dodano izvođača u scenu: {count}.`,
+        'faceMatch.toast.addedMany.images': `Dodano izvođača na sliku: {count}.`,
+        'sprite.showMore': `Prikaži manje vjerojatna podudaranja ({count})`,
+        'sprite.showFewer': `Sakrij manje vjerojatna podudaranja`,
+        'search.overlayHintImage': `Povucite oko lica. Kliknite ili pritisnite Enter za cijelu sliku. Esc za odustajanje.`,
+        'search.noFacesPerformer': `Na slici ovog izvođača nije pronađeno lice.`,
+        'search.selectAgain': `Odaberi ponovno`,
+        'search.identifyImage': `Visage: Prepoznaj sliku`,
+        'search.imageMenuTitle': `Saznajte tko je na ovoj slici. Povucite okvir oko lica ili kliknite za cijelu sliku.`,
+        'faceMatch.adding.images': `Dodavanje…`,
+        'sprite.confirm': `Dodaj u scenu ({count})`,
     };
 
     const th = {
@@ -13549,10 +13961,7 @@
         'backendSettings.sync.alreadyRunning': `กำลังซิงค์อยู่แล้ว`,
         'backendSettings.sync.error': `การซิงค์ล้มเหลว`,
         'backendSettings.sync.connectionLost': `การเชื่อมต่อขาดหาย`,
-        'faceMatch.title': `เฟรมปัจจุบัน`,
         'faceMatch.close': `ปิด`,
-        'faceMatch.facesSelected': `พบใบหน้า {faces} ใบ · เลือกแล้ว {selected}`,
-        'faceMatch.inScene': `· {count} ในฉาก`,
         'faceMatch.stashboxMissing': `ยังไม่ได้กำหนดค่า stash-box`,
         'faceMatch.stashboxMissingBody': ` เพิ่มผู้ให้บริการ stash-box ในการตั้งค่า → ผู้ให้บริการเมตาดาต้าเพื่อเปิดใช้งานการนำเข้านักแสดง`,
         'faceMatch.stashboxWrongName': `ไม่พบผู้ให้บริการ "StashDB"`,
@@ -13560,56 +13969,33 @@
         'faceMatch.learnMore': `เรียนรู้เพิ่มเติม`,
         'faceMatch.scanning': `กำลังสแกน · การจดจำใบหน้า…`,
         'faceMatch.faceAlt': `ใบหน้า {index}`,
-        'faceMatch.minConf': `ความมั่นใจต่ำสุด`,
-        'faceMatch.minConfTitle': `ความมั่นใจต่ำสุด: {percent}%`,
         'faceMatch.detected': `ตรวจพบแล้ว`,
         'faceMatch.detectedFaceAlt': `ใบหน้าที่ตรวจพบ`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `สนับสนุนบน Patreon`,
         'faceMatch.ofSelected': `เลือก {selected} จาก {total}`,
-        'faceMatch.allInScene': `พบใบหน้า {total} ใบ · ทั้งหมดในฉาก`,
-        'faceMatch.clickToSelect': `พบใบหน้า {total} ใบ · คลิกเพื่อเลือก`,
+        'faceMatch.clickToSelect': `คลิกผลที่ตรงกันเพื่อเลือก`,
         'faceMatch.kbSwitch': `สลับใบหน้า`,
         'faceMatch.kbSelect': `เลือกนักแสดง`,
         'faceMatch.kbToggle': `สลับการเลือก`,
         'faceMatch.kbAddInstant': `Shift+คลิกเพื่อเพิ่มทันที`,
-        'faceMatch.selectBest': `เลือกผลลัพธ์ที่ดีที่สุด`,
-        'faceMatch.adding': `กำลังเพิ่ม...`,
-        'faceMatch.done': `เสร็จสิ้น ({count})`,
-        'faceMatch.toast.added': `เพิ่มนักแสดงลงใน {target} แล้ว`,
         'faceMatch.toast.addError': `เพิ่มนักแสดงไม่สำเร็จ: {error}`,
         'faceMatch.toast.noStashbox': `ยังไม่ได้กำหนดค่า stash-box เพิ่มผู้ให้บริการ stash-box ในการตั้งค่า → ผู้ให้บริการเมตาดาต้าเพื่อเปิดใช้งานการนำเข้านักแสดง ดู {url}`,
         'faceMatch.toast.noProvider': `ไม่พบผู้ให้บริการชื่อ "StashDB" เปลี่ยนชื่อผู้ให้บริการของคุณเป็น "StashDB" ในการตั้งค่า → ผู้ให้บริการเมตาดาต้าเพื่อเปิดใช้งานการนำเข้านักแสดง`,
         'faceMatch.toast.configureProvider': `กำหนดค่าผู้ให้บริการ stash-box ในการตั้งค่า → ผู้ให้บริการเมตาดาต้าเพื่อเปิดใช้งานการนำเข้านักแสดง`,
-        'faceMatch.toast.addedMultiple': `เพิ่มนักแสดง {count} คน{s}ลงใน {target} แล้ว`,
         'faceMatch.toast.linked': `เชื่อมโยง stash ID {count} รายการ{s}กับนักแสดงคนนี้แล้ว`,
-        'sprite.title': `นักแสดงในฉาก`,
+        'sprite.title': `ใครอยู่ในฉากนี้?`,
         'sprite.close': `ปิด`,
-        'sprite.foundConfirmed': `พบ {found} · ยืนยันแล้ว {confirmed}`,
-        'sprite.confidence': `ความมั่นใจ`,
-        'sprite.name': `ชื่อ`,
-        'sprite.hits': `การเข้าชม`,
-        'sprite.minConf': `ความมั่นใจต่ำสุด`,
-        'sprite.minConfTitle': `ความมั่นใจต่ำสุด: {percent}%`,
         'sprite.scanning': `Visage กำลังสแกน…`,
         'sprite.cancel': `ยกเลิก`,
         'sprite.empty': `ไม่พบนักแสดงที่ระบุในสไปรต์นี้`,
         'sprite.detectedFaceAlt': `ใบหน้าที่ตรวจพบ`,
-        'sprite.spriteLabel': `สไปรต์`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `ในฉาก`,
         'sprite.hitsCount': `เข้าชม {count} ครั้ง{s}`,
         'sprite.totalTime': `รวม {time}`,
-        'sprite.alreadyInScene': `อยู่ในฉากแล้ว`,
-        'sprite.clickToConfirm': `คลิกเพื่อยืนยัน`,
-        'sprite.confirmed': `ยืนยันแล้ว`,
         'sprite.supportPatreon': `สนับสนุนบน Patreon`,
         'sprite.confirmedCount': `ยืนยัน {confirmed} จาก {total}`,
-        'sprite.shownHint': `แสดง {shown} (รวม {total}) · คลิกเพื่อยืนยัน · ←→ นำทาง · Enter ยืนยัน`,
         'sprite.confirmHint': `คลิกเพื่อยืนยัน · ←→ นำทาง · Enter ยืนยัน`,
         'sprite.adding': `กำลังเพิ่ม...`,
-        'sprite.done': `เสร็จสิ้น ({count})`,
         'gender.male': `ชาย`,
         'gender.female': `หญิง`,
         'gender.transMale': `ชายข้ามเพศ`,
@@ -13622,10 +14008,9 @@
         'card.select': `เลือก {name}`,
         'card.deselect': `ยกเลิกการเลือก {name}`,
         'card.openOn': `เปิดบน {source}`,
-        'search.overlayHint': `ลากเพื่อเลือกใบหน้า — Enter เพื่อสแกนทั้งเฟรม — Esc เพื่อยกเลิก`,
+        'search.overlayHint': `ลากรอบใบหน้า คลิกหรือกด Enter เพื่อใช้ทั้งเฟรม กด Esc เพื่อยกเลิก`,
         'search.noFaces': `ไม่พบใบหน้าในการเลือกนั้น ลองครอบให้แคบลง หรือกด Enter เพื่อสแกนทั้งเฟรม`,
         'search.captureMediaFail': `ไม่สามารถจับภาพสื่อได้ โปรดตรวจสอบว่าฉาก/รูปภาพโหลดเสร็จสมบูรณ์`,
-        'search.healthBanner': `ไม่สามารถเข้าถึง API การจดจำใบหน้า เริ่มแบ็กเอนด์แล้วลองอีกครั้ง`,
         'search.failed': `การค้นหาใบหน้าล้มเหลว: {error}`,
         'search.fetchImageFail': `ไม่สามารถดึงรูปภาพจาก Stash ได้`,
         'search.captureFail': `การจับภาพล้มเหลว: {error}`,
@@ -13633,20 +14018,28 @@
         'search.captureFrameFail': `ไม่สามารถจับภาพเฟรมปัจจุบันได้`,
         'search.captureFrameFail2': `การจับภาพเฟรมปัจจุบันล้มเหลว`,
         'search.selectFaceVideo': `เลือกใบหน้าภายในพื้นที่เครื่องเล่นวิดีโอ`,
-        'search.menuItemTitle': `ลากกล่องรอบใบหน้า หรือกด Enter เพื่อสแกนทั้งเฟรม เพื่อค้นหาการจับคู่บน StashDB`,
-        'search.currentFrame': `Visage: เฟรมปัจจุบัน`,
-        'search.identifyFromImage': `Visage: ระบุตัวตนจากรูปภาพ`,
-        'search.identifyMenuTitle': `ค้นหารูปภาพของนักแสดงคนนี้ใน StashDB และเชื่อมโยง stash ID ที่ตรงกัน`,
+        'search.menuItemTitle': `ดูว่าใครอยู่ในเฟรมนี้ ลากกรอบรอบใบหน้า หรือคลิกเพื่อใช้ทั้งเฟรม`,
+        'search.currentFrame': `Visage: ระบุเฟรม`,
+        'search.identifyFromImage': `Visage: ระบุ`,
+        'search.identifyMenuTitle': `เทียบภาพของนักแสดงคนนี้กับ stash-box ของคุณและเชื่อมโยง stash ID`,
         'search.noPerformerImage': `ไม่พบรูปภาพนักแสดงในหน้านี้`,
         'scene.noSprite': `ไม่พบสไปรต์ชีตหรือวิดีโอตัวอย่างสำหรับฉากนี้ สร้างในการตั้งค่าฉาก แล้วลองอีกครั้ง`,
         'scene.noFaces': `ไม่พบใบหน้าหรือนักแสดงในสไปรต์ชีตหรือวิดีโอตัวอย่างของฉากนี้`,
-        'scene.healthBanner': `ไม่สามารถเข้าถึง API การจดจำใบหน้า เริ่มแบ็กเอนด์แล้วลองอีกครั้ง`,
         'scene.failed': `การสแกนฉากล้มเหลว: {error}`,
-        'scene.menuItemTitle': `ระบุนักแสดงทุกคนในฉาก (ต้องมีสไปรต์ชีตหรือวิดีโอตัวอย่างที่สร้างแล้ว)`,
-        'scene.wholeScene': `Visage: ทั้งฉาก`,
+        'scene.menuItemTitle': `ค้นหาทุกคนในฉากนี้ ต้องมี sprite sheet หรือวิดีโอตัวอย่างที่สร้างไว้`,
+        'scene.wholeScene': `Visage: ระบุฉาก`,
         'banner.changeBackend': `เปลี่ยนแบ็กเอนด์`,
         'banner.dismiss': `ปิด`,
         'error.dismiss': `ปิด`,
+        'error.retry': `ลองอีกครั้ง`,
+        'error.undo': `เลิกทำ`,
+        'error.undone': `เลิกทำการเปลี่ยนแปลงแล้ว`,
+        'error.undoFailed': `ไม่สามารถเลิกทำได้: {error}`,
+        'backend.busy': `บริการจดจำใบหน้าไม่ว่างหรือกำลังเริ่มทำงาน ลองอีกครั้งในอีกสักครู่`,
+        'backend.serverError': `บริการจดจำใบหน้ามีปัญหากับคำขอนี้ ลองอีกครั้ง`,
+        'backend.unreachableCloud': `ไม่สามารถเข้าถึงบริการจดจำใบหน้าบนคลาวด์ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง`,
+        'backend.notBackend': `เซิร์ฟเวอร์ที่ {url} ไม่ใช่แบ็กเอนด์ของ Visage ตรวจสอบที่อยู่ในการตั้งค่า Visage`,
+        'backend.unreachableLocal': `ไม่สามารถเข้าถึงเซิร์ฟเวอร์จดจำใบหน้าของคุณที่ {url} เริ่มเซิร์ฟเวอร์แล้วลองอีกครั้ง`,
         'firstRun.title': `ตั้งค่าแบ็กเอนด์ Visage ของคุณ`,
         'firstRun.subtitle': `Visage ส่งภาพใบหน้าไปยังแบ็กเอนด์เพื่อการจดจำ เลือกสถานที่ที่จะเรียกใช้`,
         'firstRun.cloud': `ใช้คลาวด์ Hugging Face`,
@@ -13662,6 +14055,35 @@
         'frame.close': `ปิดตัวเลือกเฟรม`,
         'frame.seekFail': `ไม่สามารถเลื่อนไปยังตำแหน่งในเครื่องเล่นวิดีโอได้`,
         'frame.selectAt': `เลือกเฟรมใบหน้าที่ {time} วินาที`,
+        'card.existing.scenes': `อยู่ในฉาก`,
+        'card.existing.images': `อยู่ในภาพ`,
+        'card.existing.performers': `เชื่อมโยงแล้ว`,
+        'faceMatch.title.scenes': `ใครอยู่ในเฟรมนี้?`,
+        'faceMatch.title.images': `ใครอยู่ในภาพนี้?`,
+        'faceMatch.title.performers': `จับคู่นักแสดงคนนี้`,
+        'faceMatch.showMore': `แสดงเพิ่มอีก {count}`,
+        'faceMatch.showFewer': `แสดงน้อยลง`,
+        'faceMatch.allExisting.scenes': `ทุกคนที่พบอยู่ในฉากนี้แล้ว`,
+        'faceMatch.allExisting.images': `ทุกคนที่พบอยู่ในภาพนี้แล้ว`,
+        'faceMatch.allExisting.performers': `นักแสดงคนนี้เชื่อมโยงแล้ว`,
+        'faceMatch.confirm.scenes': `เพิ่มในฉาก ({count})`,
+        'faceMatch.confirm.images': `เพิ่มในภาพ ({count})`,
+        'faceMatch.confirm.performers': `เชื่อมโยง ({count})`,
+        'faceMatch.adding.scenes': `กำลังเพิ่ม…`,
+        'faceMatch.adding.performers': `กำลังเชื่อมโยง…`,
+        'faceMatch.toast.added.scenes': `เพิ่ม {name} ในฉากนี้แล้ว`,
+        'faceMatch.toast.added.images': `เพิ่ม {name} ในภาพนี้แล้ว`,
+        'faceMatch.toast.addedMany.scenes': `เพิ่มนักแสดง {count} คนในฉากนี้แล้ว`,
+        'faceMatch.toast.addedMany.images': `เพิ่มนักแสดง {count} คนในภาพนี้แล้ว`,
+        'sprite.showMore': `แสดงผลที่มีโอกาสน้อยกว่า {count} รายการ`,
+        'sprite.showFewer': `ซ่อนผลที่มีโอกาสน้อยกว่า`,
+        'search.overlayHintImage': `ลากรอบใบหน้า คลิกหรือกด Enter เพื่อใช้ทั้งภาพ กด Esc เพื่อยกเลิก`,
+        'search.noFacesPerformer': `ไม่พบใบหน้าในภาพของนักแสดงคนนี้`,
+        'search.selectAgain': `เลือกใหม่`,
+        'search.identifyImage': `Visage: ระบุภาพ`,
+        'search.imageMenuTitle': `ดูว่าใครอยู่ในภาพนี้ ลากกรอบรอบใบหน้า หรือคลิกเพื่อใช้ทั้งภาพ`,
+        'faceMatch.adding.images': `กำลังเพิ่ม…`,
+        'sprite.confirm': `เพิ่มในฉาก ({count})`,
     };
 
     // Brazilian Portuguese. Missing keys fall back to English automatically.
@@ -13703,10 +14125,7 @@
         'backendSettings.sync.error': `Falha na sincronização`,
         'backendSettings.sync.connectionLost': `Conexão perdida`,
         // ---- FaceMatchModal.tsx ----
-        'faceMatch.title': `QUADRO ATUAL`,
         'faceMatch.close': `Fechar`,
-        'faceMatch.facesSelected': `{faces} rostos encontrados · {selected} selecionados`,
-        'faceMatch.inScene': `· {count} na cena`,
         'faceMatch.stashboxMissing': `Nenhum stash-box configurado.`,
         'faceMatch.stashboxMissingBody': ` Adicione um provedor de stash-box em Configurações → Provedores de metadados para ativar a importação de artistas.`,
         'faceMatch.stashboxWrongName': `Nenhum provedor chamado "StashDB" encontrado.`,
@@ -13714,57 +14133,34 @@
         'faceMatch.learnMore': `Saiba mais.`,
         'faceMatch.scanning': `Escaneando • reconhecimento facial…`,
         'faceMatch.faceAlt': `Rosto {index}`,
-        'faceMatch.minConf': `Conf. mín.`,
-        'faceMatch.minConfTitle': `Confiança mínima: {percent}%`,
         'faceMatch.detected': `Detectado`,
         'faceMatch.detectedFaceAlt': `Rosto detectado`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Apoiar no Patreon`,
         'faceMatch.ofSelected': `{selected} de {total} selecionados`,
-        'faceMatch.allInScene': `{total} rostos encontrados · todos na cena`,
-        'faceMatch.clickToSelect': `{total} rostos encontrados · clique para selecionar`,
+        'faceMatch.clickToSelect': `Clique em uma correspondência para selecioná-la`,
         'faceMatch.kbSwitch': `Alternar rostos`,
         'faceMatch.kbSelect': `Selecionar artistas`,
         'faceMatch.kbToggle': `Alternar seleção`,
         'faceMatch.kbAddInstant': `Shift+clique para adicionar instantaneamente`,
-        'faceMatch.selectBest': `Selecionar melhores correspondências`,
-        'faceMatch.adding': `Adicionando...`,
-        'faceMatch.done': `Concluir ({count})`,
-        'faceMatch.toast.added': `Artista adicionado ao {target}.`,
         'faceMatch.toast.addError': `Falha ao adicionar o artista: {error}`,
         'faceMatch.toast.noStashbox': `Nenhum stash-box configurado. Adicione um provedor de stash-box em Configurações → Provedores de metadados para ativar a importação de artistas. Veja {url}`,
         'faceMatch.toast.noProvider': `Nenhum provedor chamado "StashDB" encontrado. Renomeie seu provedor para "StashDB" em Configurações → Provedores de metadados para ativar a importação de artistas.`,
         'faceMatch.toast.configureProvider': `Configure um provedor de stash-box em Configurações → Provedores de metadados para ativar a importação de artistas.`,
-        'faceMatch.toast.addedMultiple': `{count} artista{s} adicionado{s} ao {target}.`,
         'faceMatch.toast.linked': `{count} stash ID{s} vinculado{s} a este artista.`,
         // ---- SpriteResultModal.tsx ----
-        'sprite.title': `ARTISTAS DA CENA`,
+        'sprite.title': `Quem está nesta cena?`,
         'sprite.close': `Fechar`,
-        'sprite.foundConfirmed': `{found} encontrados · {confirmed} confirmados`,
-        'sprite.confidence': `confiança`,
-        'sprite.name': `nome`,
-        'sprite.hits': `acertos`,
-        'sprite.minConf': `Conf. mín.`,
-        'sprite.minConfTitle': `Confiança mínima: {percent}%`,
         'sprite.scanning': `Visage escaneando…`,
         'sprite.cancel': `Cancelar`,
         'sprite.empty': `Nenhum artista identificado neste sprite.`,
         'sprite.detectedFaceAlt': `Rosto detectado`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Na cena`,
         'sprite.hitsCount': `{count} acerto{s}`,
         'sprite.totalTime': `{time} no total`,
-        'sprite.alreadyInScene': `Já na cena`,
-        'sprite.clickToConfirm': `Clique para confirmar`,
-        'sprite.confirmed': `Confirmado`,
         'sprite.supportPatreon': `Apoiar no Patreon`,
         'sprite.confirmedCount': `{confirmed} de {total} confirmados`,
-        'sprite.shownHint': `{shown} exibidos ({total} no total) · clique para confirmar · ←→ navegar · Enter confirmar`,
         'sprite.confirmHint': `Clique para confirmar · ←→ navegar · Enter confirmar`,
         'sprite.adding': `Adicionando...`,
-        'sprite.done': `Concluir ({count})`,
         // ---- PerformerCard.tsx ----
         'gender.male': `Masculino`,
         'gender.female': `Feminino`,
@@ -13779,10 +14175,9 @@
         'card.deselect': `Desselecionar {name}`,
         'card.openOn': `Abrir em {source}`,
         // ---- FaceSearchButton.tsx ----
-        'search.overlayHint': `Arraste para selecionar um rosto — Enter para escanear a imagem inteira — Esc para cancelar`,
+        'search.overlayHint': `Arraste em volta de um rosto. Clique ou pressione Enter para o quadro inteiro. Esc para cancelar.`,
         'search.noFaces': `Nenhum rosto encontrado nessa seleção. Tente um recorte mais fechado ou pressione Enter para escanear a imagem inteira.`,
         'search.captureMediaFail': `Não foi possível capturar a mídia. Certifique-se de que a cena/imagem está totalmente carregada.`,
-        'search.healthBanner': `A API de reconhecimento facial não está acessível. Inicie o backend e tente novamente.`,
         'search.failed': `A busca facial falhou: {error}`,
         'search.fetchImageFail': `Não foi possível buscar a imagem no Stash.`,
         'search.captureFail': `Falha ao capturar a imagem: {error}`,
@@ -13790,23 +14185,31 @@
         'search.captureFrameFail': `Não foi possível capturar o quadro atual.`,
         'search.captureFrameFail2': `Falha ao capturar o quadro atual.`,
         'search.selectFaceVideo': `Selecione um rosto dentro da área do player de vídeo.`,
-        'search.menuItemTitle': `Arraste uma caixa ao redor de um rosto ou pressione Enter para escanear a imagem inteira, para buscar correspondências no StashDB`,
-        'search.currentFrame': `Visage: Quadro atual`,
-        'search.identifyFromImage': `Visage: Identificar da imagem`,
-        'search.identifyMenuTitle': `Buscar a imagem deste artista no StashDB e vincular um stash ID correspondente`,
+        'search.menuItemTitle': `Descubra quem está neste quadro. Arraste uma caixa em volta de um rosto, ou clique para o quadro inteiro.`,
+        'search.currentFrame': `Visage: identificar quadro`,
+        'search.identifyFromImage': `Visage: identificar`,
+        'search.identifyMenuTitle': `Compare a imagem deste performer com seus stash-boxes e vincule o stash ID`,
         'search.noPerformerImage': `Nenhuma imagem de artista encontrada nesta página.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Nenhuma folha de sprites ou vídeo de prévia encontrado para esta cena. Gere-os nas configurações da cena e tente novamente.`,
         'scene.noFaces': `Nenhum rosto ou artista encontrado na folha de sprites ou no vídeo de prévia desta cena.`,
-        'scene.healthBanner': `A API de reconhecimento facial não está acessível. Inicie o backend e tente novamente.`,
         'scene.failed': `A varredura da cena falhou: {error}`,
-        'scene.menuItemTitle': `Identificar cada artista na cena (requer uma folha de sprites ou um vídeo de prévia gerados)`,
-        'scene.wholeScene': `Visage: Cena inteira`,
+        'scene.menuItemTitle': `Encontre todos nesta cena. Precisa de um sprite sheet ou vídeo de prévia gerado.`,
+        'scene.wholeScene': `Visage: identificar cena`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Alterar backend`,
         'banner.dismiss': `Dispensar`,
         // ---- ErrorDialog.tsx ----
         'error.dismiss': `Dispensar`,
+        'error.retry': `Tentar novamente`,
+        'error.undo': `Desfazer`,
+        'error.undone': `Alteração desfeita.`,
+        'error.undoFailed': `Não foi possível desfazer: {error}`,
+        'backend.busy': `O serviço de reconhecimento facial está ocupado ou iniciando. Tente novamente em instantes.`,
+        'backend.serverError': `O serviço de reconhecimento facial teve um problema com esta solicitação. Tente novamente.`,
+        'backend.unreachableCloud': `Não foi possível acessar o serviço de reconhecimento facial na nuvem. Verifique sua conexão e tente novamente.`,
+        'backend.notBackend': `O servidor em {url} não é um backend do Visage. Verifique o endereço nas configurações do Visage.`,
+        'backend.unreachableLocal': `Não foi possível acessar seu servidor de reconhecimento facial em {url}. Inicie-o e tente novamente.`,
         // ---- FirstRunDialog.tsx ----
         'firstRun.title': `Configure seu backend do Visage`,
         'firstRun.subtitle': `O Visage envia imagens de rostos a um backend para reconhecimento. Escolha onde executá-lo.`,
@@ -13826,6 +14229,35 @@
         'frame.close': `Fechar seletor de quadro`,
         'frame.seekFail': `Falha ao buscar no player de vídeo.`,
         'frame.selectAt': `Selecionar rosto em {time}s`,
+        'card.existing.scenes': `Na cena`,
+        'card.existing.images': `Na imagem`,
+        'card.existing.performers': `Vinculado`,
+        'faceMatch.title.scenes': `Quem está neste quadro?`,
+        'faceMatch.title.images': `Quem está nesta imagem?`,
+        'faceMatch.title.performers': `Identificar este performer`,
+        'faceMatch.showMore': `Mostrar mais {count}`,
+        'faceMatch.showFewer': `Mostrar menos`,
+        'faceMatch.allExisting.scenes': `Todos os encontrados já estão nesta cena`,
+        'faceMatch.allExisting.images': `Todos os encontrados já estão nesta imagem`,
+        'faceMatch.allExisting.performers': `Este performer já está vinculado`,
+        'faceMatch.confirm.scenes': `Adicionar à cena ({count})`,
+        'faceMatch.confirm.images': `Adicionar à imagem ({count})`,
+        'faceMatch.confirm.performers': `Vincular ({count})`,
+        'faceMatch.adding.scenes': `Adicionando…`,
+        'faceMatch.adding.performers': `Vinculando…`,
+        'faceMatch.toast.added.scenes': `{name} adicionado a esta cena.`,
+        'faceMatch.toast.added.images': `{name} adicionado a esta imagem.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performers adicionados a esta cena.`,
+        'faceMatch.toast.addedMany.images': `{count} performers adicionados a esta imagem.`,
+        'sprite.showMore': `Mostrar {count} correspondências menos prováveis`,
+        'sprite.showFewer': `Ocultar correspondências menos prováveis`,
+        'search.overlayHintImage': `Arraste em volta de um rosto. Clique ou pressione Enter para a imagem inteira. Esc para cancelar.`,
+        'search.noFacesPerformer': `Nenhum rosto encontrado na imagem deste performer.`,
+        'search.selectAgain': `Selecionar novamente`,
+        'search.identifyImage': `Visage: identificar imagem`,
+        'search.imageMenuTitle': `Descubra quem está nesta imagem. Arraste uma caixa em volta de um rosto, ou clique para a imagem inteira.`,
+        'faceMatch.adding.images': `Adicionando…`,
+        'sprite.confirm': `Adicionar à cena ({count})`,
     };
 
     // Danish.
@@ -13865,10 +14297,7 @@
         'backendSettings.sync.alreadyRunning': `Synkronisering allerede i gang`,
         'backendSettings.sync.error': `Synkronisering mislykkedes`,
         'backendSettings.sync.connectionLost': `Forbindelsen mistet`,
-        'faceMatch.title': `AKTUELLE RAMME`,
         'faceMatch.close': `Luk`,
-        'faceMatch.facesSelected': `{faces} ansigter fundet · {selected} valgt`,
-        'faceMatch.inScene': `· {count} i scene`,
         'faceMatch.stashboxMissing': `Ingen stash-box konfigureret.`,
         'faceMatch.stashboxMissingBody': ` Tilføj en stash-box-udbyder under Indstillinger → Metadata-udbydere for at aktivere performer-import.`,
         'faceMatch.stashboxWrongName': `Ingen "StashDB"-udbyder fundet.`,
@@ -13876,56 +14305,33 @@
         'faceMatch.learnMore': `Lær mere.`,
         'faceMatch.scanning': `Scanner • ansigtsgenkendelse…`,
         'faceMatch.faceAlt': `Ansigt {index}`,
-        'faceMatch.minConf': `Min. konf.`,
-        'faceMatch.minConfTitle': `Minimums-sikkerhed: {percent}%`,
         'faceMatch.detected': `Registreret`,
         'faceMatch.detectedFaceAlt': `Registreret ansigt`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Støt på Patreon`,
         'faceMatch.ofSelected': `{selected} af {total} valgt`,
-        'faceMatch.allInScene': `{total} ansigter fundet · alle i scene`,
-        'faceMatch.clickToSelect': `{total} ansigter fundet · klik for at vælge`,
+        'faceMatch.clickToSelect': `Klik på et match for at vælge det`,
         'faceMatch.kbSwitch': `Skift ansigter`,
         'faceMatch.kbSelect': `Vælg performere`,
         'faceMatch.kbToggle': `Skift markering`,
         'faceMatch.kbAddInstant': `Shift+klik for at tilføje med det samme`,
-        'faceMatch.selectBest': `Vælg bedste matches`,
-        'faceMatch.adding': `Tilføjer...`,
-        'faceMatch.done': `Færdig ({count})`,
-        'faceMatch.toast.added': `Tilføjede performer til {target}.`,
         'faceMatch.toast.addError': `Kunne ikke tilføje performer: {error}`,
         'faceMatch.toast.noStashbox': `Ingen stash-box konfigureret. Tilføj en stash-box-udbyder under Indstillinger → Metadata-udbydere for at aktivere performer-import. Se {url}`,
         'faceMatch.toast.noProvider': `Ingen udbyder kaldet "StashDB" fundet. Omdøb din udbyder til "StashDB" under Indstillinger → Metadata-udbydere for at aktivere performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurér en stash-box-udbyder under Indstillinger → Metadata-udbydere for at aktivere performer-import.`,
-        'faceMatch.toast.addedMultiple': `Tilføjede {count} performere til {target}.`,
         'faceMatch.toast.linked': `Linkede {count} stash-ID{s} til denne performer.`,
-        'sprite.title': `SCENE-PERFORMERE`,
+        'sprite.title': `Hvem er i denne scene?`,
         'sprite.close': `Luk`,
-        'sprite.foundConfirmed': `{found} fundet · {confirmed} bekræftet`,
-        'sprite.confidence': `sikkerhed`,
-        'sprite.name': `navn`,
-        'sprite.hits': `hit`,
-        'sprite.minConf': `Min. konf.`,
-        'sprite.minConfTitle': `Minimums-sikkerhed: {percent}%`,
         'sprite.scanning': `Visage scanner…`,
         'sprite.cancel': `Annullér`,
         'sprite.empty': `Ingen performere identificeret i denne sprite.`,
         'sprite.detectedFaceAlt': `Registreret ansigt`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `I scene`,
         'sprite.hitsCount': `{count} hit`,
         'sprite.totalTime': `{time} i alt`,
-        'sprite.alreadyInScene': `Allerede i scene`,
-        'sprite.clickToConfirm': `Klik for at bekræfte`,
-        'sprite.confirmed': `Bekræftet`,
         'sprite.supportPatreon': `Støt på Patreon`,
         'sprite.confirmedCount': `{confirmed} af {total} bekræftet`,
-        'sprite.shownHint': `{shown} vist ({total} i alt) · klik for at bekræfte · ←→ navigér · Enter bekræft`,
         'sprite.confirmHint': `Klik for at bekræfte · ←→ navigér · Enter bekræft`,
         'sprite.adding': `Tilføjer...`,
-        'sprite.done': `Færdig ({count})`,
         'gender.male': `Mand`,
         'gender.female': `Kvinde`,
         'gender.transMale': `Transkønnet mand`,
@@ -13938,10 +14344,9 @@
         'card.select': `Vælg {name}`,
         'card.deselect': `Fravælg {name}`,
         'card.openOn': `Åbn på {source}`,
-        'search.overlayHint': `Træk for at vælge et ansigt — Enter for at scanne hele rammen — Esc for at annullere`,
+        'search.overlayHint': `Træk omkring et ansigt. Klik eller tryk Enter for hele billedet. Esc annullerer.`,
         'search.noFaces': `Ingen ansigter fundet i dette udsnit. Prøv en tættere beskæring, eller tryk på Enter for at scanne hele rammen.`,
         'search.captureMediaFail': `Kunne ikke optage mediet. Sørg for, at scenen/billedet er fuldt indlæst.`,
-        'search.healthBanner': `Ansigtsgenkendelses-API'en er ikke tilgængelig. Start backend og prøv igen.`,
         'search.failed': `Ansigtssøgning mislykkedes: {error}`,
         'search.fetchImageFail': `Kunne ikke hente billede fra Stash.`,
         'search.captureFail': `Kunne ikke optage billede: {error}`,
@@ -13949,20 +14354,28 @@
         'search.captureFrameFail': `Kunne ikke optage den aktuelle ramme.`,
         'search.captureFrameFail2': `Optagelse af den aktuelle ramme mislykkedes.`,
         'search.selectFaceVideo': `Vælg et ansigt inden for videoafspillerområdet.`,
-        'search.menuItemTitle': `Træk en boks om et ansigt, eller tryk på Enter for at scanne hele rammen, for at søge StashDB efter matches`,
-        'search.currentFrame': `Visage: Aktuelle ramme`,
-        'search.identifyFromImage': `Visage: Identificer fra billede`,
-        'search.identifyMenuTitle': `Søg efter denne performers billede mod StashDB og link et matchende stash-ID`,
+        'search.menuItemTitle': `Find ud af, hvem der er i dette billede. Træk en ramme om et ansigt, eller klik for hele billedet.`,
+        'search.currentFrame': `Visage: Identificer billede`,
+        'search.identifyFromImage': `Visage: Identificer`,
+        'search.identifyMenuTitle': `Sammenlign denne performers billede med dine stash-bokse og link stash-ID’et`,
         'search.noPerformerImage': `Intet performer-billede fundet på denne side.`,
         'scene.noSprite': `Ingen sprite-ark eller forhåndsvisningsvideo fundet for denne scene. Generér dem i Scene-indstillingerne, og prøv igen.`,
         'scene.noFaces': `Ingen ansigter eller performere fundet i denne scenes sprite-ark eller forhåndsvisningsvideo.`,
-        'scene.healthBanner': `Ansigtsgenkendelses-API'en er ikke tilgængelig. Start backend og prøv igen.`,
         'scene.failed': `Scene-scanning mislykkedes: {error}`,
-        'scene.menuItemTitle': `Identificér hver performer i scenen (kræver et genereret sprite-ark eller en forhåndsvisningsvideo)`,
-        'scene.wholeScene': `Visage: Hele scenen`,
+        'scene.menuItemTitle': `Find alle i denne scene. Kræver et genereret sprite sheet eller en preview-video.`,
+        'scene.wholeScene': `Visage: Identificer scene`,
         'banner.changeBackend': `Skift backend`,
         'banner.dismiss': `Afvis`,
         'error.dismiss': `Afvis`,
+        'error.retry': `Prøv igen`,
+        'error.undo': `Fortryd`,
+        'error.undone': `Ændringen er fortrudt.`,
+        'error.undoFailed': `Kunne ikke fortryde: {error}`,
+        'backend.busy': `Ansigtsgenkendelsestjenesten er optaget eller starter op. Prøv igen om et øjeblik.`,
+        'backend.serverError': `Ansigtsgenkendelsestjenesten havde et problem med denne anmodning. Prøv igen.`,
+        'backend.unreachableCloud': `Kan ikke nå cloud-tjenesten til ansigtsgenkendelse. Tjek din forbindelse og prøv igen.`,
+        'backend.notBackend': `Serveren på {url} er ikke en Visage-backend. Tjek adressen i Visage-indstillingerne.`,
+        'backend.unreachableLocal': `Kan ikke nå din ansigtsgenkendelsesserver på {url}. Start den og prøv igen.`,
         'firstRun.title': `Konfigurér din Visage-backend`,
         'firstRun.subtitle': `Visage sender ansigtsbilleder til en backend til genkendelse. Vælg, hvor den skal køre.`,
         'firstRun.cloud': `Brug Hugging Face cloud`,
@@ -13978,6 +14391,35 @@
         'frame.close': `Luk ramme-vælgeren`,
         'frame.seekFail': `Kunne ikke søge i videoafspilleren.`,
         'frame.selectAt': `Vælg ansigtsramme ved {time}s`,
+        'card.existing.scenes': `I scenen`,
+        'card.existing.images': `På billedet`,
+        'card.existing.performers': `Linket`,
+        'faceMatch.title.scenes': `Hvem er i dette billede?`,
+        'faceMatch.title.images': `Hvem er på dette foto?`,
+        'faceMatch.title.performers': `Match denne performer`,
+        'faceMatch.showMore': `Vis {count} mere`,
+        'faceMatch.showFewer': `Vis færre`,
+        'faceMatch.allExisting.scenes': `Alle fundne er allerede i denne scene`,
+        'faceMatch.allExisting.images': `Alle fundne er allerede på dette foto`,
+        'faceMatch.allExisting.performers': `Denne performer er allerede linket`,
+        'faceMatch.confirm.scenes': `Tilføj til scene ({count})`,
+        'faceMatch.confirm.images': `Tilføj til foto ({count})`,
+        'faceMatch.confirm.performers': `Link ({count})`,
+        'faceMatch.adding.scenes': `Tilføjer…`,
+        'faceMatch.adding.performers': `Linker…`,
+        'faceMatch.toast.added.scenes': `{name} er tilføjet til denne scene.`,
+        'faceMatch.toast.added.images': `{name} er tilføjet til dette foto.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performere tilføjet til denne scene.`,
+        'faceMatch.toast.addedMany.images': `{count} performere tilføjet til dette foto.`,
+        'sprite.showMore': `Vis {count} mindre sandsynlige match`,
+        'sprite.showFewer': `Skjul mindre sandsynlige match`,
+        'search.overlayHintImage': `Træk omkring et ansigt. Klik eller tryk Enter for hele fotoet. Esc annullerer.`,
+        'search.noFacesPerformer': `Intet ansigt fundet i denne performers billede.`,
+        'search.selectAgain': `Vælg igen`,
+        'search.identifyImage': `Visage: Identificer foto`,
+        'search.imageMenuTitle': `Find ud af, hvem der er på dette foto. Træk en ramme om et ansigt, eller klik for hele fotoet.`,
+        'faceMatch.adding.images': `Tilføjer…`,
+        'sprite.confirm': `Tilføj til scene ({count})`,
     };
 
     // Hungarian.
@@ -14017,10 +14459,7 @@
         'backendSettings.sync.alreadyRunning': `A szinkronizálás már folyamatban van`,
         'backendSettings.sync.error': `Szinkronizálás sikertelen`,
         'backendSettings.sync.connectionLost': `Kapcsolat megszakadt`,
-        'faceMatch.title': `AKTUÁLIS KERET`,
         'faceMatch.close': `Bezárás`,
-        'faceMatch.facesSelected': `{faces} arc található · {selected} kiválasztva`,
-        'faceMatch.inScene': `· {count} a jelenetben`,
         'faceMatch.stashboxMissing': `Nincs stash-box konfigurálva.`,
         'faceMatch.stashboxMissingBody': ` Az előadó-importálás engedélyezéséhez adj hozzá egy stash-box szolgáltatót a Beállítások → Metaadatszolgáltatók alatt.`,
         'faceMatch.stashboxWrongName': `Nem található "StashDB" szolgáltató.`,
@@ -14028,56 +14467,33 @@
         'faceMatch.learnMore': `További információk.`,
         'faceMatch.scanning': `Vizsgálat • arcfelismerés…`,
         'faceMatch.faceAlt': `{index}. arc`,
-        'faceMatch.minConf': `Min. konf.`,
-        'faceMatch.minConfTitle': `Minimális megbízhatóság: {percent}%`,
         'faceMatch.detected': `Észlelve`,
         'faceMatch.detectedFaceAlt': `Észlelt arc`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Támogatás a Patreonon`,
         'faceMatch.ofSelected': `{total} közül {selected} kiválasztva`,
-        'faceMatch.allInScene': `{total} arc található · mind a jelenetben`,
-        'faceMatch.clickToSelect': `{total} arc található · kattints a kiválasztáshoz`,
+        'faceMatch.clickToSelect': `Kattints egy találatra a kiválasztáshoz`,
         'faceMatch.kbSwitch': `Arcváltás`,
         'faceMatch.kbSelect': `Előadók kiválasztása`,
         'faceMatch.kbToggle': `Kijelölés váltása`,
         'faceMatch.kbAddInstant': `Shift+kattintás az azonnali hozzáadáshoz`,
-        'faceMatch.selectBest': `Legjobb egyezések kiválasztása`,
-        'faceMatch.adding': `Hozzáadás...`,
-        'faceMatch.done': `Kész ({count})`,
-        'faceMatch.toast.added': `Előadó hozzáadva ehhez: {target}.`,
         'faceMatch.toast.addError': `Az előadó hozzáadása sikertelen: {error}`,
         'faceMatch.toast.noStashbox': `Nincs stash-box konfigurálva. Az előadó-importálás engedélyezéséhez adj hozzá egy stash-box szolgáltatót a Beállítások → Metaadatszolgáltatók alatt. Lásd: {url}`,
         'faceMatch.toast.noProvider': `Nem található "StashDB" nevű szolgáltató. Az előadó-importálás engedélyezéséhez nevezd át a szolgáltatót "StashDB"-re a Beállítások → Metaadatszolgáltatók alatt.`,
         'faceMatch.toast.configureProvider': `Az előadó-importálás engedélyezéséhez konfigurálj egy stash-box szolgáltatót a Beállítások → Metaadatszolgáltatók alatt.`,
-        'faceMatch.toast.addedMultiple': `{count} előadó hozzáadva ehhez: {target}.`,
         'faceMatch.toast.linked': `{count} stash ID{s} hozzárendelve ehhez az előadóhoz.`,
-        'sprite.title': `JELENET ELŐADÓI`,
+        'sprite.title': `Ki van ebben a jelenetben?`,
         'sprite.close': `Bezárás`,
-        'sprite.foundConfirmed': `{found} található · {confirmed} megerősítve`,
-        'sprite.confidence': `megbízhatóság`,
-        'sprite.name': `név`,
-        'sprite.hits': `találat`,
-        'sprite.minConf': `Min. konf.`,
-        'sprite.minConfTitle': `Minimális megbízhatóság: {percent}%`,
         'sprite.scanning': `Visage vizsgál…`,
         'sprite.cancel': `Mégse`,
         'sprite.empty': `Ebben a sprite-ban nem azonosítható előadó.`,
         'sprite.detectedFaceAlt': `Észlelt arc`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `A jelenetben`,
         'sprite.hitsCount': `{count} találat`,
         'sprite.totalTime': `{time} összesen`,
-        'sprite.alreadyInScene': `Már a jelenetben van`,
-        'sprite.clickToConfirm': `Kattints a megerősítéshez`,
-        'sprite.confirmed': `Megerősítve`,
         'sprite.supportPatreon': `Támogatás a Patreonon`,
         'sprite.confirmedCount': `{total} közül {confirmed} megerősítve`,
-        'sprite.shownHint': `{shown} megjelenítve ({total} összesen) · kattints a megerősítéshez · ←→ navigálás · Enter megerősít`,
         'sprite.confirmHint': `Kattints a megerősítéshez · ←→ navigálás · Enter megerősít`,
         'sprite.adding': `Hozzáadás...`,
-        'sprite.done': `Kész ({count})`,
         'gender.male': `Férfi`,
         'gender.female': `Nő`,
         'gender.transMale': `Transznemű férfi`,
@@ -14090,10 +14506,9 @@
         'card.select': `{name} kiválasztása`,
         'card.deselect': `{name} kijelölésének törlése`,
         'card.openOn': `Megnyitás ezen: {source}`,
-        'search.overlayHint': `Húzd az arc kijelöléséhez — Enter az egész keret vizsgálatához — Esc a megszakításhoz`,
+        'search.overlayHint': `Húzz keretet egy arc köré. Kattints vagy nyomj Entert a teljes képkockához. Esc a megszakításhoz.`,
         'search.noFaces': `Ebben a kijelölésben nincs arc. Próbálj szorosabb vágást, vagy nyomj Entert az egész keret vizsgálatához.`,
         'search.captureMediaFail': `A média rögzítése nem sikerült. Győződj meg róla, hogy a jelenet/kép teljesen betöltött.`,
-        'search.healthBanner': `Az arcfelismerő API nem érhető el. Indítsd el a backendet, és próbáld újra.`,
         'search.failed': `Arckeresés sikertelen: {error}`,
         'search.fetchImageFail': `A kép lekérése a Stashból nem sikerült.`,
         'search.captureFail': `A kép rögzítése nem sikerült: {error}`,
@@ -14101,20 +14516,28 @@
         'search.captureFrameFail': `Az aktuális keret rögzítése nem sikerült.`,
         'search.captureFrameFail2': `Az aktuális keret rögzítése nem sikerült.`,
         'search.selectFaceVideo': `Válassz egy arcot a videolejátszó területén belül.`,
-        'search.menuItemTitle': `Húzz egy keretet egy arc köré, vagy nyomj Entert az egész keret vizsgálatához, hogy egyezéseket keress a StashDB-ben`,
-        'search.currentFrame': `Visage: Aktuális keret`,
-        'search.identifyFromImage': `Visage: Azonosítás képről`,
-        'search.identifyMenuTitle': `Keresse meg előadó képét a StashDB-n, és rendeljen hozzá egy megfelelő stash ID-t`,
+        'search.menuItemTitle': `Derítsd ki, ki van ezen a képkockán. Húzz keretet egy arc köré, vagy kattints a teljes képkockához.`,
+        'search.currentFrame': `Visage: Képkocka azonosítása`,
+        'search.identifyFromImage': `Visage: Azonosítás`,
+        'search.identifyMenuTitle': `A szereplő képének összevetése a stash-boxaiddal és a stash ID összekapcsolása`,
         'search.noPerformerImage': `Nem található előadó-kép ezen az oldalon.`,
         'scene.noSprite': `Ehhez a jelenethez nem található sprite-lap vagy előnézeti videó. Hozd létre őket a Scene beállításokban, majd próbáld újra.`,
         'scene.noFaces': `A jelenet sprite-lapjában vagy előnézeti videójában nem található arc vagy előadó.`,
-        'scene.healthBanner': `Az arcfelismerő API nem érhető el. Indítsd el a backendet, és próbáld újra.`,
         'scene.failed': `Jelenetvizsgálat sikertelen: {error}`,
-        'scene.menuItemTitle': `Azonosítsd a jelenet minden előadóját (létrehozott sprite-lap vagy előnézeti videó szükséges)`,
-        'scene.wholeScene': `Visage: Teljes jelenet`,
+        'scene.menuItemTitle': `Találd meg a jelenet összes szereplőjét. Ehhez generált sprite sheet vagy előnézeti videó kell.`,
+        'scene.wholeScene': `Visage: Jelenet azonosítása`,
         'banner.changeBackend': `Backend módosítása`,
         'banner.dismiss': `Elutasítás`,
         'error.dismiss': `Elutasítás`,
+        'error.retry': `Próbáld újra`,
+        'error.undo': `Visszavonás`,
+        'error.undone': `A módosítás visszavonva.`,
+        'error.undoFailed': `A visszavonás nem sikerült: {error}`,
+        'backend.busy': `Az arcfelismerő szolgáltatás foglalt vagy éppen indul. Próbáld újra egy kicsit később.`,
+        'backend.serverError': `Az arcfelismerő szolgáltatásnak problémája volt ezzel a kéréssel. Próbáld újra.`,
+        'backend.unreachableCloud': `A felhőalapú arcfelismerő szolgáltatás nem érhető el. Ellenőrizd a kapcsolatot, és próbáld újra.`,
+        'backend.notBackend': `A(z) {url} címen lévő szerver nem Visage backend. Ellenőrizd a címet a Visage beállításaiban.`,
+        'backend.unreachableLocal': `Az arcfelismerő szervered nem érhető el ezen a címen: {url}. Indítsd el, és próbáld újra.`,
         'firstRun.title': `A Visage backend beállítása`,
         'firstRun.subtitle': `A Visage arc-képeket küld egy backendnek felismerés céljából. Válaszd ki, hol futtatod.`,
         'firstRun.cloud': `Hugging Face cloud használata`,
@@ -14130,6 +14553,35 @@
         'frame.close': `Keretválasztó bezárása`,
         'frame.seekFail': `A videolejátszóban való keresés nem sikerült.`,
         'frame.selectAt': `Arckeret kiválasztása itt: {time}s`,
+        'card.existing.scenes': `A jelenetben`,
+        'card.existing.images': `A képen`,
+        'card.existing.performers': `Összekapcsolva`,
+        'faceMatch.title.scenes': `Ki van ezen a képkockán?`,
+        'faceMatch.title.images': `Ki van ezen a képen?`,
+        'faceMatch.title.performers': `Szereplő azonosítása`,
+        'faceMatch.showMore': `{count} további megjelenítése`,
+        'faceMatch.showFewer': `Kevesebb`,
+        'faceMatch.allExisting.scenes': `Minden talált személy már a jelenetben van`,
+        'faceMatch.allExisting.images': `Minden talált személy már a képen van`,
+        'faceMatch.allExisting.performers': `Ez a szereplő már össze van kapcsolva`,
+        'faceMatch.confirm.scenes': `Hozzáadás a jelenethez ({count})`,
+        'faceMatch.confirm.images': `Hozzáadás a képhez ({count})`,
+        'faceMatch.confirm.performers': `Összekapcsolás ({count})`,
+        'faceMatch.adding.scenes': `Hozzáadás…`,
+        'faceMatch.adding.performers': `Összekapcsolás…`,
+        'faceMatch.toast.added.scenes': `{name} hozzáadva a jelenethez.`,
+        'faceMatch.toast.added.images': `{name} hozzáadva a képhez.`,
+        'faceMatch.toast.addedMany.scenes': `{count} szereplő hozzáadva a jelenethez.`,
+        'faceMatch.toast.addedMany.images': `{count} szereplő hozzáadva a képhez.`,
+        'sprite.showMore': `{count} kevésbé valószínű találat megjelenítése`,
+        'sprite.showFewer': `Kevésbé valószínű találatok elrejtése`,
+        'search.overlayHintImage': `Húzz keretet egy arc köré. Kattints vagy nyomj Entert a teljes képhez. Esc a megszakításhoz.`,
+        'search.noFacesPerformer': `Nem található arc ennek a szereplőnek a képén.`,
+        'search.selectAgain': `Újra kijelölés`,
+        'search.identifyImage': `Visage: Kép azonosítása`,
+        'search.imageMenuTitle': `Derítsd ki, ki van ezen a képen. Húzz keretet egy arc köré, vagy kattints a teljes képhez.`,
+        'faceMatch.adding.images': `Hozzáadás…`,
+        'sprite.confirm': `Hozzáadás a jelenethez ({count})`,
     };
 
     const uk = {
@@ -14168,10 +14620,7 @@
         'backendSettings.sync.alreadyRunning': `Синхронізація вже виконується`,
         'backendSettings.sync.error': `Помилка синхронізації`,
         'backendSettings.sync.connectionLost': `З'єднання втрачено`,
-        'faceMatch.title': `ПОТОЧНИЙ КАДР`,
         'faceMatch.close': `Закрити`,
-        'faceMatch.facesSelected': `Знайдено облич: {faces} · вибрано: {selected}`,
-        'faceMatch.inScene': `· {count} у сцені`,
         'faceMatch.stashboxMissing': `Stash-box не налаштовано.`,
         'faceMatch.stashboxMissingBody': ` Додайте провайдера stash-box у Settings → Metadata Providers, щоб увімкнути імпорт виконавців.`,
         'faceMatch.stashboxWrongName': `Провайдера "StashDB" не знайдено.`,
@@ -14179,56 +14628,33 @@
         'faceMatch.learnMore': `Дізнатися більше.`,
         'faceMatch.scanning': `Сканування • розпізнавання облич…`,
         'faceMatch.faceAlt': `Обличчя {index}`,
-        'faceMatch.minConf': `Мін. дост.`,
-        'faceMatch.minConfTitle': `Мінімальна достовірність: {percent}%`,
         'faceMatch.detected': `Виявлено`,
         'faceMatch.detectedFaceAlt': `Виявлене обличчя`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Підтримати на Patreon`,
         'faceMatch.ofSelected': `Вибрано {selected} з {total}`,
-        'faceMatch.allInScene': `Знайдено облич: {total} · усі у сцені`,
-        'faceMatch.clickToSelect': `Знайдено облич: {total} · натисніть, щоб вибрати`,
+        'faceMatch.clickToSelect': `Натисніть на збіг, щоб вибрати його`,
         'faceMatch.kbSwitch': `Перемикання облич`,
         'faceMatch.kbSelect': `Вибір виконавців`,
         'faceMatch.kbToggle': `Перемкнути вибір`,
         'faceMatch.kbAddInstant': `Shift+клік, щоб додати одразу`,
-        'faceMatch.selectBest': `Вибрати найкращі збіги`,
-        'faceMatch.adding': `Додавання...`,
-        'faceMatch.done': `Готово ({count})`,
-        'faceMatch.toast.added': `Виконавця додано до {target}.`,
         'faceMatch.toast.addError': `Не вдалося додати виконавця: {error}`,
         'faceMatch.toast.noStashbox': `Stash-box не налаштовано. Додайте провайдера stash-box у Settings → Metadata Providers, щоб увімкнути імпорт виконавців. Див. {url}`,
         'faceMatch.toast.noProvider': `Провайдера "StashDB" не знайдено. Перейменуйте провайдера на "StashDB" у Settings → Metadata Providers, щоб увімкнути імпорт виконавців.`,
         'faceMatch.toast.configureProvider': `Налаштуйте провайдера stash-box у Settings → Metadata Providers, щоб увімкнути імпорт виконавців.`,
-        'faceMatch.toast.addedMultiple': `Додано виконавців: {count} у {target}.`,
         'faceMatch.toast.linked': `Прив'язано {count} stash ID до цього виконавця.`,
-        'sprite.title': `ВИКОНАВЦІ СЦЕНИ`,
+        'sprite.title': `Хто в цій сцені?`,
         'sprite.close': `Закрити`,
-        'sprite.foundConfirmed': `Знайдено: {found} · підтверджено: {confirmed}`,
-        'sprite.confidence': `достовірність`,
-        'sprite.name': `ім'я`,
-        'sprite.hits': `збіги`,
-        'sprite.minConf': `Мін. дост.`,
-        'sprite.minConfTitle': `Мінімальна достовірність: {percent}%`,
         'sprite.scanning': `Сканування Visage…`,
         'sprite.cancel': `Скасувати`,
         'sprite.empty': `У цьому спрайті виконавців не виявлено.`,
         'sprite.detectedFaceAlt': `Виявлене обличчя`,
-        'sprite.spriteLabel': `СПРАЙТ`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `У сцені`,
         'sprite.hitsCount': `Збігів: {count}`,
         'sprite.totalTime': `Усього {time}`,
-        'sprite.alreadyInScene': `Уже у сцені`,
-        'sprite.clickToConfirm': `Натисніть для підтвердження`,
-        'sprite.confirmed': `Підтверджено`,
         'sprite.supportPatreon': `Підтримати на Patreon`,
         'sprite.confirmedCount': `Підтверджено {confirmed} з {total}`,
-        'sprite.shownHint': `Показано: {shown} (усього {total}) · натисніть для підтвердження · ←→ навігація · Enter підтвердження`,
         'sprite.confirmHint': `Натисніть для підтвердження · ←→ навігація · Enter підтвердження`,
         'sprite.adding': `Додавання...`,
-        'sprite.done': `Готово ({count})`,
         'gender.male': `Чоловік`,
         'gender.female': `Жінка`,
         'gender.transMale': `Трансгендерний чоловік`,
@@ -14241,10 +14667,9 @@
         'card.select': `Вибрати {name}`,
         'card.deselect': `Зняти вибір з {name}`,
         'card.openOn': `Відкрити на {source}`,
-        'search.overlayHint': `Перетягніть, щоб виділити обличчя — Enter, щоб просканувати весь кадр — Esc, щоб скасувати`,
+        'search.overlayHint': `Обведіть обличчя рамкою. Натисніть або Enter для всього кадру. Esc для скасування.`,
         'search.noFaces': `У вибраній області облич не знайдено. Спробуйте щільніший кадр або натисніть Enter, щоб просканувати весь кадр.`,
         'search.captureMediaFail': `Не вдалося захопити медіа. Переконайтеся, що сцена/зображення повністю завантажені.`,
-        'search.healthBanner': `API розпізнавання облич недоступний. Запустіть бекенд і спробуйте знову.`,
         'search.failed': `Пошук облич не вдався: {error}`,
         'search.fetchImageFail': `Не вдалося отримати зображення з Stash.`,
         'search.captureFail': `Не вдалося захопити зображення: {error}`,
@@ -14252,20 +14677,28 @@
         'search.captureFrameFail': `Не вдалося захопити поточний кадр.`,
         'search.captureFrameFail2': `Помилка під час захоплення поточного кадру.`,
         'search.selectFaceVideo': `Виділіть обличчя в області відеоплеєра.`,
-        'search.menuItemTitle': `Перетягніть рамку навколо обличчя або натисніть Enter, щоб просканувати весь кадр і виконати пошук збігів у StashDB`,
-        'search.currentFrame': `Visage: поточний кадр`,
-        'search.identifyFromImage': `Visage: Визначити за зображенням`,
-        'search.identifyMenuTitle': `Пошук зображення цього виконавця на StashDB та прив'язка відповідного stash ID`,
+        'search.menuItemTitle': `Дізнайтеся, хто в цьому кадрі. Обведіть обличчя рамкою або натисніть для всього кадру.`,
+        'search.currentFrame': `Visage: Розпізнати кадр`,
+        'search.identifyFromImage': `Visage: Розпізнати`,
+        'search.identifyMenuTitle': `Порівняти зображення виконавця з вашими stash-box і пов’язати stash ID`,
         'search.noPerformerImage': `Зображення виконавця на цій сторінці не знайдено.`,
         'scene.noSprite': `Для цієї сцени не знайдено ані спрайт-листа, ані прев'ю-відео. Створіть їх у налаштуваннях сцени та спробуйте знову.`,
         'scene.noFaces': `У спрайт-листі або прев'ю-відео цієї сцени не знайдено облич або виконавців.`,
-        'scene.healthBanner': `API розпізнавання облич недоступний. Запустіть бекенд і спробуйте знову.`,
         'scene.failed': `Сканування сцени не вдалося: {error}`,
-        'scene.menuItemTitle': `Визначте кожного виконавця у сцені (потрібен згенерований спрайт-лист або прев'ю-відео)`,
-        'scene.wholeScene': `Visage: вся сцена`,
+        'scene.menuItemTitle': `Знайдіть усіх у цій сцені. Потрібен згенерований sprite sheet або відео попереднього перегляду.`,
+        'scene.wholeScene': `Visage: Розпізнати сцену`,
         'banner.changeBackend': `Змінити бекенд`,
         'banner.dismiss': `Відхилити`,
         'error.dismiss': `Відхилити`,
+        'error.retry': `Спробувати знову`,
+        'error.undo': `Скасувати`,
+        'error.undone': `Зміну скасовано.`,
+        'error.undoFailed': `Не вдалося скасувати: {error}`,
+        'backend.busy': `Сервіс розпізнавання облич зайнятий або запускається. Спробуйте знову за мить.`,
+        'backend.serverError': `Сервіс розпізнавання облич не зміг обробити цей запит. Спробуйте знову.`,
+        'backend.unreachableCloud': `Хмарний сервіс розпізнавання облич недоступний. Перевірте з’єднання і спробуйте знову.`,
+        'backend.notBackend': `Сервер за адресою {url} не є бекендом Visage. Перевірте адресу в налаштуваннях Visage.`,
+        'backend.unreachableLocal': `Ваш сервер розпізнавання облич за адресою {url} недоступний. Запустіть його і спробуйте знову.`,
         'firstRun.title': `Налаштуйте бекенд Visage`,
         'firstRun.subtitle': `Visage надсилає зображення облич до бекенду для розпізнавання. Виберіть, де його запустити.`,
         'firstRun.cloud': `Використовувати хмару Hugging Face`,
@@ -14281,6 +14714,35 @@
         'frame.close': `Закрити вибір кадру`,
         'frame.seekFail': `Не вдалося перемотати відеоплеєр.`,
         'frame.selectAt': `Вибрати кадр обличчя на {time} с`,
+        'card.existing.scenes': `У сцені`,
+        'card.existing.images': `На зображенні`,
+        'card.existing.performers': `Пов’язано`,
+        'faceMatch.title.scenes': `Хто в цьому кадрі?`,
+        'faceMatch.title.images': `Хто на цьому зображенні?`,
+        'faceMatch.title.performers': `Зіставити виконавця`,
+        'faceMatch.showMore': `Показати ще {count}`,
+        'faceMatch.showFewer': `Показати менше`,
+        'faceMatch.allExisting.scenes': `Усі знайдені вже є в цій сцені`,
+        'faceMatch.allExisting.images': `Усі знайдені вже є на цьому зображенні`,
+        'faceMatch.allExisting.performers': `Цей виконавець уже пов’язаний`,
+        'faceMatch.confirm.scenes': `Додати до сцени ({count})`,
+        'faceMatch.confirm.images': `Додати до зображення ({count})`,
+        'faceMatch.confirm.performers': `Пов’язати ({count})`,
+        'faceMatch.adding.scenes': `Додавання…`,
+        'faceMatch.adding.performers': `Пов’язування…`,
+        'faceMatch.toast.added.scenes': `{name} додано до цієї сцени.`,
+        'faceMatch.toast.added.images': `{name} додано до цього зображення.`,
+        'faceMatch.toast.addedMany.scenes': `Додано виконавців до сцени: {count}.`,
+        'faceMatch.toast.addedMany.images': `Додано виконавців до зображення: {count}.`,
+        'sprite.showMore': `Показати менш імовірні збіги ({count})`,
+        'sprite.showFewer': `Сховати менш імовірні збіги`,
+        'search.overlayHintImage': `Обведіть обличчя рамкою. Натисніть або Enter для всього зображення. Esc для скасування.`,
+        'search.noFacesPerformer': `На зображенні цього виконавця не знайдено обличчя.`,
+        'search.selectAgain': `Вибрати знову`,
+        'search.identifyImage': `Visage: Розпізнати зображення`,
+        'search.imageMenuTitle': `Дізнайтеся, хто на цьому зображенні. Обведіть обличчя рамкою або натисніть для всього зображення.`,
+        'faceMatch.adding.images': `Додавання…`,
+        'sprite.confirm': `Додати до сцени ({count})`,
     };
 
     // German. Missing keys fall back to English automatically.
@@ -14322,10 +14784,7 @@
         'backendSettings.sync.error': `Synchronisierung fehlgeschlagen`,
         'backendSettings.sync.connectionLost': `Verbindung verloren`,
         // ---- FaceMatchModal.tsx ----
-        'faceMatch.title': `AKTUELLES BILD`,
         'faceMatch.close': `Schließen`,
-        'faceMatch.facesSelected': `{faces} Gesichter gefunden · {selected} ausgewählt`,
-        'faceMatch.inScene': `· {count} in der Szene`,
         'faceMatch.stashboxMissing': `Kein Stash-box konfiguriert.`,
         'faceMatch.stashboxMissingBody': ` Füge in Einstellungen → Metadaten-Anbieter einen Stash-box-Anbieter hinzu, um den Performer-Import zu aktivieren.`,
         'faceMatch.stashboxWrongName': `Kein Anbieter namens "StashDB" gefunden.`,
@@ -14333,57 +14792,34 @@
         'faceMatch.learnMore': `Mehr erfahren.`,
         'faceMatch.scanning': `Scannen • Gesichtserkennung…`,
         'faceMatch.faceAlt': `Gesicht {index}`,
-        'faceMatch.minConf': `Min. Konf.`,
-        'faceMatch.minConfTitle': `Minimale Konfidenz: {percent}%`,
         'faceMatch.detected': `Erkannt`,
         'faceMatch.detectedFaceAlt': `Erkanntes Gesicht`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Auf Patreon unterstützen`,
         'faceMatch.ofSelected': `{selected} von {total} ausgewählt`,
-        'faceMatch.allInScene': `{total} Gesichter gefunden · alle in der Szene`,
-        'faceMatch.clickToSelect': `{total} Gesichter gefunden · zum Auswählen klicken`,
+        'faceMatch.clickToSelect': `Klicke auf einen Treffer, um ihn auszuwählen`,
         'faceMatch.kbSwitch': `Gesichter wechseln`,
         'faceMatch.kbSelect': `Performer auswählen`,
         'faceMatch.kbToggle': `Auswahl umschalten`,
         'faceMatch.kbAddInstant': `Umschalt+Klick zum sofortigen Hinzufügen`,
-        'faceMatch.selectBest': `Beste Treffer auswählen`,
-        'faceMatch.adding': `Hinzufügen...`,
-        'faceMatch.done': `Fertig ({count})`,
-        'faceMatch.toast.added': `Performer zum {target} hinzugefügt.`,
         'faceMatch.toast.addError': `Performer konnte nicht hinzugefügt werden: {error}`,
         'faceMatch.toast.noStashbox': `Kein Stash-box konfiguriert. Füge in Einstellungen → Metadaten-Anbieter einen Stash-box-Anbieter hinzu, um den Performer-Import zu aktivieren. Siehe {url}`,
         'faceMatch.toast.noProvider': `Kein Anbieter namens "StashDB" gefunden. Benenne deinen Anbieter in Einstellungen → Metadaten-Anbieter in "StashDB" um, um den Performer-Import zu aktivieren.`,
         'faceMatch.toast.configureProvider': `Konfiguriere in Einstellungen → Metadaten-Anbieter einen Stash-box-Anbieter, um den Performer-Import zu aktivieren.`,
-        'faceMatch.toast.addedMultiple': `{count} Performer{s} zum {target} hinzugefügt.`,
         'faceMatch.toast.linked': `{count} stash-ID{s} mit diesem Performer verknüpft.`,
         // ---- SpriteResultModal.tsx ----
-        'sprite.title': `SZENEN-PERFORMER`,
+        'sprite.title': `Wer ist in dieser Szene?`,
         'sprite.close': `Schließen`,
-        'sprite.foundConfirmed': `{found} gefunden · {confirmed} bestätigt`,
-        'sprite.confidence': `Konfidenz`,
-        'sprite.name': `Name`,
-        'sprite.hits': `Treffer`,
-        'sprite.minConf': `Min. Konf.`,
-        'sprite.minConfTitle': `Minimale Konfidenz: {percent}%`,
         'sprite.scanning': `Visage wird gescannt…`,
         'sprite.cancel': `Abbrechen`,
         'sprite.empty': `In diesem Sprite wurden keine Performer identifiziert.`,
         'sprite.detectedFaceAlt': `Erkanntes Gesicht`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `In der Szene`,
         'sprite.hitsCount': `{count} Treffer{s}`,
         'sprite.totalTime': `{time} gesamt`,
-        'sprite.alreadyInScene': `Bereits in der Szene`,
-        'sprite.clickToConfirm': `Zum Bestätigen klicken`,
-        'sprite.confirmed': `Bestätigt`,
         'sprite.supportPatreon': `Auf Patreon unterstützen`,
         'sprite.confirmedCount': `{confirmed} von {total} bestätigt`,
-        'sprite.shownHint': `{shown} angezeigt ({total} gesamt) · zum Bestätigen klicken · ←→ navigieren · Enter bestätigen`,
         'sprite.confirmHint': `Zum Bestätigen klicken · ←→ navigieren · Enter bestätigen`,
         'sprite.adding': `Hinzufügen...`,
-        'sprite.done': `Fertig ({count})`,
         // ---- PerformerCard.tsx ----
         'gender.male': `Männlich`,
         'gender.female': `Weiblich`,
@@ -14398,10 +14834,9 @@
         'card.deselect': `{name} abwählen`,
         'card.openOn': `Auf {source} öffnen`,
         // ---- FaceSearchButton.tsx ----
-        'search.overlayHint': `Ziehen, um ein Gesicht auszuwählen — Enter, um das ganze Bild zu scannen — Esc zum Abbrechen`,
+        'search.overlayHint': `Ziehe einen Rahmen um ein Gesicht. Klicke oder drücke Enter für das ganze Bild. Esc bricht ab.`,
         'search.noFaces': `In dieser Auswahl wurden keine Gesichter gefunden. Versuche einen engeren Zuschnitt oder drücke Enter, um das ganze Bild zu scannen.`,
         'search.captureMediaFail': `Medien konnten nicht erfasst werden. Stelle sicher, dass Szene/Bild vollständig geladen ist.`,
-        'search.healthBanner': `Die Gesichtserkennungs-API ist nicht erreichbar. Starte das Backend und versuche es erneut.`,
         'search.failed': `Gesichtssuche fehlgeschlagen: {error}`,
         'search.fetchImageFail': `Bild konnte nicht von Stash abgerufen werden.`,
         'search.captureFail': `Bildaufnahme fehlgeschlagen: {error}`,
@@ -14409,23 +14844,31 @@
         'search.captureFrameFail': `Aktuelles Bild konnte nicht erfasst werden.`,
         'search.captureFrameFail2': `Aktuelles Bild konnte nicht erfasst werden.`,
         'search.selectFaceVideo': `Wähle ein Gesicht im Videoplayer-Bereich aus.`,
-        'search.menuItemTitle': `Ziehe ein Feld um ein Gesicht oder drücke Enter, um das ganze Bild zu scannen, um in StashDB nach Übereinstimmungen zu suchen`,
-        'search.currentFrame': `Visage: Aktuelles Bild`,
-        'search.identifyFromImage': `Visage: Aus Bild identifizieren`,
-        'search.identifyMenuTitle': `Durchsuche das Bild dieses Performers in StashDB und verknüpfe eine passende stash-ID`,
+        'search.menuItemTitle': `Finde heraus, wer in diesem Bild ist. Ziehe einen Rahmen um ein Gesicht oder klicke für das ganze Bild.`,
+        'search.currentFrame': `Visage: Bild identifizieren`,
+        'search.identifyFromImage': `Visage: Identifizieren`,
+        'search.identifyMenuTitle': `Gleiche das Bild dieses Performers mit deinen Stash-Boxen ab und verknüpfe die Stash-ID`,
         'search.noPerformerImage': `Kein Performer-Bild auf dieser Seite gefunden.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Für diese Szene wurde kein Sprite-Sheet oder Vorschaubild gefunden. Erzeuge sie in den Szene-Einstellungen und versuche es erneut.`,
         'scene.noFaces': `Im Sprite-Sheet oder Vorschaubild dieser Szene wurden keine Gesichter oder Performer gefunden.`,
-        'scene.healthBanner': `Die Gesichtserkennungs-API ist nicht erreichbar. Starte das Backend und versuche es erneut.`,
         'scene.failed': `Szenen-Scan fehlgeschlagen: {error}`,
-        'scene.menuItemTitle': `Jeden Performer in der Szene identifizieren (benötigt ein erzeugtes Sprite-Sheet oder Vorschaubild)`,
-        'scene.wholeScene': `Visage: Gesamte Szene`,
+        'scene.menuItemTitle': `Finde alle Personen in dieser Szene. Benötigt ein erzeugtes Sprite-Sheet oder Vorschauvideo.`,
+        'scene.wholeScene': `Visage: Szene identifizieren`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Backend ändern`,
         'banner.dismiss': `Ausblenden`,
         // ---- ErrorDialog.tsx ----
         'error.dismiss': `Ausblenden`,
+        'error.retry': `Erneut versuchen`,
+        'error.undo': `Rückgängig`,
+        'error.undone': `Änderung rückgängig gemacht.`,
+        'error.undoFailed': `Rückgängig machen fehlgeschlagen: {error}`,
+        'backend.busy': `Der Gesichtserkennungsdienst ist ausgelastet oder startet gerade. Versuche es gleich noch einmal.`,
+        'backend.serverError': `Der Gesichtserkennungsdienst hatte ein Problem mit dieser Anfrage. Versuche es erneut.`,
+        'backend.unreachableCloud': `Der Cloud-Gesichtserkennungsdienst ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.`,
+        'backend.notBackend': `Der Server unter {url} ist kein Visage-Backend. Prüfe die Adresse in den Visage-Einstellungen.`,
+        'backend.unreachableLocal': `Dein Gesichtserkennungsserver unter {url} ist nicht erreichbar. Starte ihn und versuche es erneut.`,
         // ---- FirstRunDialog.tsx ----
         'firstRun.title': `Richte dein Visage-Backend ein`,
         'firstRun.subtitle': `Visage sendet Gesichtsbilder zur Erkennung an ein Backend. Wähle, wo es ausgeführt werden soll.`,
@@ -14445,6 +14888,35 @@
         'frame.close': `Bildauswahl schließen`,
         'frame.seekFail': `Der Videoplayer konnte nicht gesucht werden.`,
         'frame.selectAt': `Gesichtsbild bei {time}s auswählen`,
+        'card.existing.scenes': `In der Szene`,
+        'card.existing.images': `Im Bild`,
+        'card.existing.performers': `Verknüpft`,
+        'faceMatch.title.scenes': `Wer ist in diesem Bild?`,
+        'faceMatch.title.images': `Wer ist auf diesem Foto?`,
+        'faceMatch.title.performers': `Diesen Performer zuordnen`,
+        'faceMatch.showMore': `{count} weitere anzeigen`,
+        'faceMatch.showFewer': `Weniger anzeigen`,
+        'faceMatch.allExisting.scenes': `Alle Gefundenen sind schon in dieser Szene`,
+        'faceMatch.allExisting.images': `Alle Gefundenen sind schon auf diesem Foto`,
+        'faceMatch.allExisting.performers': `Dieser Performer ist schon verknüpft`,
+        'faceMatch.confirm.scenes': `Zur Szene hinzufügen ({count})`,
+        'faceMatch.confirm.images': `Zum Foto hinzufügen ({count})`,
+        'faceMatch.confirm.performers': `Verknüpfen ({count})`,
+        'faceMatch.adding.scenes': `Wird hinzugefügt…`,
+        'faceMatch.adding.performers': `Wird verknüpft…`,
+        'faceMatch.toast.added.scenes': `{name} zur Szene hinzugefügt.`,
+        'faceMatch.toast.added.images': `{name} zum Foto hinzugefügt.`,
+        'faceMatch.toast.addedMany.scenes': `{count} Performer zur Szene hinzugefügt.`,
+        'faceMatch.toast.addedMany.images': `{count} Performer zum Foto hinzugefügt.`,
+        'sprite.showMore': `{count} unwahrscheinlichere Treffer anzeigen`,
+        'sprite.showFewer': `Unwahrscheinlichere Treffer ausblenden`,
+        'search.overlayHintImage': `Ziehe einen Rahmen um ein Gesicht. Klicke oder drücke Enter für das ganze Foto. Esc bricht ab.`,
+        'search.noFacesPerformer': `Im Bild dieses Performers wurde kein Gesicht gefunden.`,
+        'search.selectAgain': `Erneut auswählen`,
+        'search.identifyImage': `Visage: Foto identifizieren`,
+        'search.imageMenuTitle': `Finde heraus, wer auf diesem Foto ist. Ziehe einen Rahmen um ein Gesicht oder klicke für das ganze Foto.`,
+        'faceMatch.adding.images': `Wird hinzugefügt…`,
+        'sprite.confirm': `Zur Szene hinzufügen ({count})`,
     };
 
     // Finnish.
@@ -14484,10 +14956,7 @@
         'backendSettings.sync.alreadyRunning': `Synkronointi käynnissä`,
         'backendSettings.sync.error': `Synkronointi epäonnistui`,
         'backendSettings.sync.connectionLost': `Yhteys katkennut`,
-        'faceMatch.title': `NYKYINEN RUUTU`,
         'faceMatch.close': `Sulje`,
-        'faceMatch.facesSelected': `{faces} kasvoa löydetty · {selected} valittu`,
-        'faceMatch.inScene': `· {count} kohtauksessa`,
         'faceMatch.stashboxMissing': `Stash-boxia ei ole määritetty.`,
         'faceMatch.stashboxMissingBody': ` Lisää stash-box-palveluntarjoaja kohdassa Asetukset → Metadatan tarjoajat aktivoidaksesi esiintyjien tuonnin.`,
         'faceMatch.stashboxWrongName': `Palveluntarjoajaa "StashDB" ei löytynyt.`,
@@ -14495,56 +14964,33 @@
         'faceMatch.learnMore': `Lue lisää.`,
         'faceMatch.scanning': `Skannataan • kasvojentunnistus…`,
         'faceMatch.faceAlt': `Kasvot {index}`,
-        'faceMatch.minConf': `Min. luot.`,
-        'faceMatch.minConfTitle': `Minimiluottamus: {percent}%`,
         'faceMatch.detected': `Havaittu`,
         'faceMatch.detectedFaceAlt': `Havaittu kasvot`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Tue Patreonissa`,
         'faceMatch.ofSelected': `{selected} / {total} valittu`,
-        'faceMatch.allInScene': `{total} kasvoa löydetty · kaikki kohtauksessa`,
-        'faceMatch.clickToSelect': `{total} kasvoa löydetty · valitse napsauttamalla`,
+        'faceMatch.clickToSelect': `Valitse osuma napsauttamalla`,
         'faceMatch.kbSwitch': `Vaihda kasvoja`,
         'faceMatch.kbSelect': `Valitse esiintyjät`,
         'faceMatch.kbToggle': `Vaihda valintaa`,
         'faceMatch.kbAddInstant': `Shift+klikkaus lisää välittömästi`,
-        'faceMatch.selectBest': `Valitse parhaat osumat`,
-        'faceMatch.adding': `Lisätään...`,
-        'faceMatch.done': `Valmis ({count})`,
-        'faceMatch.toast.added': `Esiintyjä lisätty kohteeseen {target}.`,
         'faceMatch.toast.addError': `Esiintyjän lisääminen epäonnistui: {error}`,
         'faceMatch.toast.noStashbox': `Stash-boxia ei ole määritetty. Lisää stash-box-palveluntarjoaja kohdassa Asetukset → Metadatan tarjoajat aktivoidaksesi esiintyjien tuonnin. Katso {url}`,
         'faceMatch.toast.noProvider': `Palveluntarjoajaa nimeltä "StashDB" ei löytynyt. Nimeä palveluntarjoaja uudelleen "StashDB":ksi kohdassa Asetukset → Metadatan tarjoajat aktivoidaksesi esiintyjien tuonnin.`,
         'faceMatch.toast.configureProvider': `Määritä stash-box-palveluntarjoaja kohdassa Asetukset → Metadatan tarjoajat aktivoidaksesi esiintyjien tuonnin.`,
-        'faceMatch.toast.addedMultiple': `Lisätty {count} esiintyjää kohteeseen {target}.`,
         'faceMatch.toast.linked': `Liitetty {count} stash-ID{s} tähän esiintyjään.`,
-        'sprite.title': `KOHTAUKSEN ESIINTYJÄT`,
+        'sprite.title': `Kuka on tässä kohtauksessa?`,
         'sprite.close': `Sulje`,
-        'sprite.foundConfirmed': `{found} löydetty · {confirmed} vahvistettu`,
-        'sprite.confidence': `luottamus`,
-        'sprite.name': `nimi`,
-        'sprite.hits': `osumat`,
-        'sprite.minConf': `Min. luot.`,
-        'sprite.minConfTitle': `Minimiluottamus: {percent}%`,
         'sprite.scanning': `Visage skannaa…`,
         'sprite.cancel': `Peruuta`,
         'sprite.empty': `Tästä spritestä ei tunnistettu esiintyjiä.`,
         'sprite.detectedFaceAlt': `Havaittu kasvot`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Kohtauksessa`,
         'sprite.hitsCount': `{count} osuma`,
         'sprite.totalTime': `{time} yhteensä`,
-        'sprite.alreadyInScene': `Jo kohtauksessa`,
-        'sprite.clickToConfirm': `Vahvista napsauttamalla`,
-        'sprite.confirmed': `Vahvistettu`,
         'sprite.supportPatreon': `Tue Patreonissa`,
         'sprite.confirmedCount': `{confirmed} / {total} vahvistettu`,
-        'sprite.shownHint': `{shown} näytetty ({total} yhteensä) · vahvista napsauttamalla · ←→ navigoi · Enter vahvista`,
         'sprite.confirmHint': `Vahvista napsauttamalla · ←→ navigoi · Enter vahvista`,
         'sprite.adding': `Lisätään...`,
-        'sprite.done': `Valmis ({count})`,
         'gender.male': `Mies`,
         'gender.female': `Nainen`,
         'gender.transMale': `Transmies`,
@@ -14557,10 +15003,9 @@
         'card.select': `Valitse {name}`,
         'card.deselect': `Poista valinta {name}`,
         'card.openOn': `Avaa kohteessa {source}`,
-        'search.overlayHint': `Valitse kasvot vetämällä — Enter skannaa koko ruudun — Esc peruuttaa`,
+        'search.overlayHint': `Rajaa kasvot vetämällä. Napsauta tai paina Enter koko ruudulle. Esc peruuttaa.`,
         'search.noFaces': `Valinnasta ei löytynyt kasvoja. Kokeile tarkempaa rajausta tai paina Enter skannataksesi koko ruudun.`,
         'search.captureMediaFail': `Median tallentaminen epäonnistui. Varmista, että kohtaus/kuva on täysin ladattu.`,
-        'search.healthBanner': `Kasvojentunnistuksen API ei ole tavoitettavissa. Käynnistä backend ja yritä uudelleen.`,
         'search.failed': `Kasvohaku epäonnistui: {error}`,
         'search.fetchImageFail': `Kuvan noutaminen Stashista epäonnistui.`,
         'search.captureFail': `Kuvan tallentaminen epäonnistui: {error}`,
@@ -14568,20 +15013,28 @@
         'search.captureFrameFail': `Nykyisen ruudun tallentaminen epäonnistui.`,
         'search.captureFrameFail2': `Nykyisen ruudun tallentaminen ei onnistunut.`,
         'search.selectFaceVideo': `Valitse kasvot videotoistimen alueelta.`,
-        'search.menuItemTitle': `Vedä laatikko kasvojen ympärille tai paina Enter skannataksesi koko ruudun hakeaksesi osumia StashDB:stä`,
-        'search.currentFrame': `Visage: Nykyinen ruutu`,
-        'search.identifyFromImage': `Visage: Tunrista kuvasta`,
-        'search.identifyMenuTitle': `Etsi tämän esiintyjän kuva StashDB:stä ja liitä vastaava stash-ID`,
+        'search.menuItemTitle': `Selvitä, kuka on tässä ruudussa. Rajaa kasvot vetämällä tai napsauta koko ruudulle.`,
+        'search.currentFrame': `Visage: Tunnista ruutu`,
+        'search.identifyFromImage': `Visage: Tunnista`,
+        'search.identifyMenuTitle': `Vertaa tämän esiintyjän kuvaa stash-boxeihisi ja linkitä stash-ID`,
         'search.noPerformerImage': `Esiintyjän kuvaa ei löytynyt tältä sivulta.`,
         'scene.noSprite': `Tälle kohtaukselle ei löytynyt sprite-arkkia tai esikatseluvideota. Luo ne Scene-asetuksissa ja yritä sitten uudelleen.`,
         'scene.noFaces': `Tämän kohtauksen sprite-arkista tai esikatseluvideosta ei löytynyt kasvoja tai esiintyjiä.`,
-        'scene.healthBanner': `Kasvojentunnistuksen API ei ole tavoitettavissa. Käynnistä backend ja yritä uudelleen.`,
         'scene.failed': `Kohtauksen skannaus epäonnistui: {error}`,
-        'scene.menuItemTitle': `Tunnista jokainen kohtauksen esiintyjä (edellyttää luotua sprite-arkkia tai esikatseluvideota)`,
-        'scene.wholeScene': `Visage: Koko kohtaus`,
+        'scene.menuItemTitle': `Löydä kaikki tämän kohtauksen esiintyjät. Vaatii luodun sprite sheetin tai esikatseluvideon.`,
+        'scene.wholeScene': `Visage: Tunnista kohtaus`,
         'banner.changeBackend': `Vaihda backend`,
         'banner.dismiss': `Hylkää`,
         'error.dismiss': `Hylkää`,
+        'error.retry': `Yritä uudelleen`,
+        'error.undo': `Kumoa`,
+        'error.undone': `Muutos kumottu.`,
+        'error.undoFailed': `Kumoaminen epäonnistui: {error}`,
+        'backend.busy': `Kasvojentunnistuspalvelu on varattu tai käynnistymässä. Yritä hetken päästä uudelleen.`,
+        'backend.serverError': `Kasvojentunnistuspalvelulla oli ongelma tämän pyynnön kanssa. Yritä uudelleen.`,
+        'backend.unreachableCloud': `Pilven kasvojentunnistuspalvelua ei tavoiteta. Tarkista yhteys ja yritä uudelleen.`,
+        'backend.notBackend': `Palvelin osoitteessa {url} ei ole Visage-backend. Tarkista osoite Visagen asetuksista.`,
+        'backend.unreachableLocal': `Kasvojentunnistuspalvelintasi osoitteessa {url} ei tavoiteta. Käynnistä se ja yritä uudelleen.`,
         'firstRun.title': `Määritä Visage-backendisi`,
         'firstRun.subtitle': `Visage lähettää kasvokuvia backendille tunnistusta varten. Valitse, missä se suoritetaan.`,
         'firstRun.cloud': `Käytä Hugging Face cloudia`,
@@ -14597,6 +15050,35 @@
         'frame.close': `Sulje ruutuvalitsin`,
         'frame.seekFail': `Videotoistimen siirtyminen epäonnistui.`,
         'frame.selectAt': `Valitse kasvoruutu kohdassa {time}s`,
+        'card.existing.scenes': `Kohtauksessa`,
+        'card.existing.images': `Kuvassa`,
+        'card.existing.performers': `Linkitetty`,
+        'faceMatch.title.scenes': `Kuka on tässä ruudussa?`,
+        'faceMatch.title.images': `Kuka on tässä kuvassa?`,
+        'faceMatch.title.performers': `Tunnista tämä esiintyjä`,
+        'faceMatch.showMore': `Näytä {count} lisää`,
+        'faceMatch.showFewer': `Näytä vähemmän`,
+        'faceMatch.allExisting.scenes': `Kaikki löydetyt ovat jo tässä kohtauksessa`,
+        'faceMatch.allExisting.images': `Kaikki löydetyt ovat jo tässä kuvassa`,
+        'faceMatch.allExisting.performers': `Tämä esiintyjä on jo linkitetty`,
+        'faceMatch.confirm.scenes': `Lisää kohtaukseen ({count})`,
+        'faceMatch.confirm.images': `Lisää kuvaan ({count})`,
+        'faceMatch.confirm.performers': `Linkitä ({count})`,
+        'faceMatch.adding.scenes': `Lisätään…`,
+        'faceMatch.adding.performers': `Linkitetään…`,
+        'faceMatch.toast.added.scenes': `{name} lisätty tähän kohtaukseen.`,
+        'faceMatch.toast.added.images': `{name} lisätty tähän kuvaan.`,
+        'faceMatch.toast.addedMany.scenes': `{count} esiintyjää lisätty tähän kohtaukseen.`,
+        'faceMatch.toast.addedMany.images': `{count} esiintyjää lisätty tähän kuvaan.`,
+        'sprite.showMore': `Näytä {count} epätodennäköisempää osumaa`,
+        'sprite.showFewer': `Piilota epätodennäköisemmät osumat`,
+        'search.overlayHintImage': `Rajaa kasvot vetämällä. Napsauta tai paina Enter koko kuvalle. Esc peruuttaa.`,
+        'search.noFacesPerformer': `Tämän esiintyjän kuvasta ei löytynyt kasvoja.`,
+        'search.selectAgain': `Valitse uudelleen`,
+        'search.identifyImage': `Visage: Tunnista kuva`,
+        'search.imageMenuTitle': `Selvitä, kuka on tässä kuvassa. Rajaa kasvot vetämällä tai napsauta koko kuvalle.`,
+        'faceMatch.adding.images': `Lisätään…`,
+        'sprite.confirm': `Lisää kohtaukseen ({count})`,
     };
 
     const lv = {
@@ -14635,10 +15117,7 @@
         'backendSettings.sync.alreadyRunning': `Sinhronizēšana jau notiek`,
         'backendSettings.sync.error': `Sinhronizēšana neizdevās`,
         'backendSettings.sync.connectionLost': `Savienojums zaudēts`,
-        'faceMatch.title': `PAŠREIZĒJAIS KADRĪTIS`,
         'faceMatch.close': `Aizvērt`,
-        'faceMatch.facesSelected': `Atrastas sejas: {faces} · atlasītas: {selected}`,
-        'faceMatch.inScene': `· {count} ainā`,
         'faceMatch.stashboxMissing': `Nav konfigurēts stash-box.`,
         'faceMatch.stashboxMissingBody': ` Pievienojiet stash-box nodrošinātāju vietnē Settings → Metadata Providers, lai iespējotu izpildītāju importēšanu.`,
         'faceMatch.stashboxWrongName': `Nodrošinātājs "StashDB" nav atrasts.`,
@@ -14646,56 +15125,33 @@
         'faceMatch.learnMore': `Uzziniet vairāk.`,
         'faceMatch.scanning': `Skenēšana • seju atpazīšana…`,
         'faceMatch.faceAlt': `Seja {index}`,
-        'faceMatch.minConf': `Min. ticam.`,
-        'faceMatch.minConfTitle': `Minimālā ticamība: {percent}%`,
         'faceMatch.detected': `Atklāts`,
         'faceMatch.detectedFaceAlt': `Atklātā seja`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Atbalstīt pakalpojumā Patreon`,
         'faceMatch.ofSelected': `Atlasītas {selected} no {total}`,
-        'faceMatch.allInScene': `Atrastas sejas: {total} · visas ainā`,
-        'faceMatch.clickToSelect': `Atrastas sejas: {total} · noklikšķiniet, lai atlasītu`,
+        'faceMatch.clickToSelect': `Noklikšķiniet uz atbilstības, lai to atlasītu`,
         'faceMatch.kbSwitch': `Seju pārslēgšana`,
         'faceMatch.kbSelect': `Izpildītāju atlase`,
         'faceMatch.kbToggle': `Pārslēgt atlasi`,
         'faceMatch.kbAddInstant': `Shift+klikšķis, lai pievienotu uzreiz`,
-        'faceMatch.selectBest': `Izvēlēties labākās atbilstības`,
-        'faceMatch.adding': `Pievienošana...`,
-        'faceMatch.done': `Gatavs ({count})`,
-        'faceMatch.toast.added': `Izpildītājs pievienots {target}.`,
         'faceMatch.toast.addError': `Neizdevās pievienot izpildītāju: {error}`,
         'faceMatch.toast.noStashbox': `Nav konfigurēts stash-box. Pievienojiet stash-box nodrošinātāju vietnē Settings → Metadata Providers, lai iespējotu izpildītāju importēšanu. Skatiet {url}`,
         'faceMatch.toast.noProvider': `Nodrošinātājs "StashDB" nav atrasts. Pārdēvējiet nodrošinātāju uz "StashDB" vietnē Settings → Metadata Providers, lai iespējotu izpildītāju importēšanu.`,
         'faceMatch.toast.configureProvider': `Konfigurējiet stash-box nodrošinātāju vietnē Settings → Metadata Providers, lai iespējotu izpildītāju importēšanu.`,
-        'faceMatch.toast.addedMultiple': `Pievienoti izpildītāji: {count} uz {target}.`,
         'faceMatch.toast.linked': `Piesaistīti {count} stash ID{s} šim izpildītājam.`,
-        'sprite.title': `AINAS IZPILDĪTĀJI`,
+        'sprite.title': `Kas ir šajā ainā?`,
         'sprite.close': `Aizvērt`,
-        'sprite.foundConfirmed': `Atrasti: {found} · apstiprināti: {confirmed}`,
-        'sprite.confidence': `ticamība`,
-        'sprite.name': `vārds`,
-        'sprite.hits': `trāpījumi`,
-        'sprite.minConf': `Min. ticam.`,
-        'sprite.minConfTitle': `Minimālā ticamība: {percent}%`,
         'sprite.scanning': `Visage skenēšana…`,
         'sprite.cancel': `Atcelt`,
         'sprite.empty': `Šajā spraitā nav identificēti izpildītāji.`,
         'sprite.detectedFaceAlt': `Atklātā seja`,
-        'sprite.spriteLabel': `SPRAITS`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Ainā`,
         'sprite.hitsCount': `Trāpījumi: {count}`,
         'sprite.totalTime': `Kopā {time}`,
-        'sprite.alreadyInScene': `Jau ainā`,
-        'sprite.clickToConfirm': `Noklikšķiniet, lai apstiprinātu`,
-        'sprite.confirmed': `Apstiprināts`,
         'sprite.supportPatreon': `Atbalstīt pakalpojumā Patreon`,
         'sprite.confirmedCount': `Apstiprināti {confirmed} no {total}`,
-        'sprite.shownHint': `Rādīti: {shown} (kopā {total}) · noklikšķiniet, lai apstiprinātu · ←→ navigācija · Enter apstiprināšana`,
         'sprite.confirmHint': `Noklikšķiniet, lai apstiprinātu · ←→ navigācija · Enter apstiprināšana`,
         'sprite.adding': `Pievienošana...`,
-        'sprite.done': `Gatavs ({count})`,
         'gender.male': `Vīrietis`,
         'gender.female': `Sieviete`,
         'gender.transMale': `Transpersona vīrietis`,
@@ -14708,10 +15164,9 @@
         'card.select': `Atlasīt {name}`,
         'card.deselect': `Noņemt atlasi {name}`,
         'card.openOn': `Atvērt vietnē {source}`,
-        'search.overlayHint': `Velciet, lai atlasītu seju — Enter, lai skenētu visu kadrīti — Esc, lai atceltu`,
+        'search.overlayHint': `Velciet ap seju. Noklikšķiniet vai nospiediet Enter visam kadram. Esc atceļ.`,
         'search.noFaces': `Atlasītajā apgabalā nav atrastas sejas. Mēģiniet ar ciešāku apgriešanu vai nospiediet Enter, lai skenētu visu kadrīti.`,
         'search.captureMediaFail': `Neizdevās notvert medijus. Pārliecinieties, ka aina/attēls ir pilnībā ielādēta.`,
-        'search.healthBanner': `Seju atpazīšanas API nesasniedzams. Palaidiet pamata pakalpojumu un mēģiniet vēlreiz.`,
         'search.failed': `Sejas meklēšana neizdevās: {error}`,
         'search.fetchImageFail': `Neizdevās iegūt attēlu no Stash.`,
         'search.captureFail': `Neizdevās notvert attēlu: {error}`,
@@ -14719,20 +15174,28 @@
         'search.captureFrameFail': `Neizdevās notvert pašreizējo kadrīti.`,
         'search.captureFrameFail2': `Kļūda, notverot pašreizējo kadrīti.`,
         'search.selectFaceVideo': `Atlasiet seju video atskaņotāja apgabalā.`,
-        'search.menuItemTitle': `Velciet rāmi ap seju vai nospiediet Enter, lai skenētu visu kadrīti, lai meklētu atbilstības StashDB`,
-        'search.currentFrame': `Visage: pašreizējais kadrītis`,
-        'search.identifyFromImage': `Visage: Identificēt no attēla`,
-        'search.identifyMenuTitle': `Meklēt šī izpildītāja attēlu StashDB un piesaistīt atbilstošu stash ID`,
+        'search.menuItemTitle': `Uzziniet, kas ir šajā kadrā. Velciet rāmi ap seju vai noklikšķiniet visam kadram.`,
+        'search.currentFrame': `Visage: atpazīt kadru`,
+        'search.identifyFromImage': `Visage: atpazīt`,
+        'search.identifyMenuTitle': `Salīdzināt šī izpildītāja attēlu ar jūsu stash-box un saistīt stash ID`,
         'search.noPerformerImage': `Šajā lapā nav atrasts izpildītāja attēls.`,
         'scene.noSprite': `Šai ainai nav atrasts sprite lapa vai priekšskatījuma video. Ģenerējiet tos ainas iestatījumos un mēģiniet vēlreiz.`,
         'scene.noFaces': `Šīs ainas sprite lapā vai priekšskatījuma video nav atrastas sejas vai izpildītāji.`,
-        'scene.healthBanner': `Seju atpazīšanas API nesasniedzams. Palaidiet pamata pakalpojumu un mēģiniet vēlreiz.`,
         'scene.failed': `Ainas skenēšana neizdevās: {error}`,
-        'scene.menuItemTitle': `Identificējiet katru izpildītāju ainā (nepieciešama ģenerēta sprite lapa vai priekšskatījuma video)`,
-        'scene.wholeScene': `Visage: visa aina`,
+        'scene.menuItemTitle': `Atrodiet visus šajā ainā. Nepieciešams ģenerēts sprite sheet vai priekšskatījuma video.`,
+        'scene.wholeScene': `Visage: atpazīt ainu`,
         'banner.changeBackend': `Mainīt pamata pakalpojumu`,
         'banner.dismiss': `Noraidīt`,
         'error.dismiss': `Noraidīt`,
+        'error.retry': `Mēģināt vēlreiz`,
+        'error.undo': `Atsaukt`,
+        'error.undone': `Izmaiņas atsauktas.`,
+        'error.undoFailed': `Neizdevās atsaukt: {error}`,
+        'backend.busy': `Seju atpazīšanas pakalpojums ir aizņemts vai startē. Mēģiniet vēlreiz pēc brīža.`,
+        'backend.serverError': `Seju atpazīšanas pakalpojumam radās problēma ar šo pieprasījumu. Mēģiniet vēlreiz.`,
+        'backend.unreachableCloud': `Nevar sasniegt mākoņa seju atpazīšanas pakalpojumu. Pārbaudiet savienojumu un mēģiniet vēlreiz.`,
+        'backend.notBackend': `Serveris adresē {url} nav Visage pamata pakalpojums. Pārbaudiet adresi Visage iestatījumos.`,
+        'backend.unreachableLocal': `Nevar sasniegt jūsu seju atpazīšanas serveri adresē {url}. Palaidiet to un mēģiniet vēlreiz.`,
         'firstRun.title': `Iestatiet savu Visage pamata pakalpojumu`,
         'firstRun.subtitle': `Visage nosūta seju attēlus pamata pakalpojumam atpazīšanai. Izvēlieties, kur to palaist.`,
         'firstRun.cloud': `Izmantot Hugging Face mākoni`,
@@ -14748,6 +15211,35 @@
         'frame.close': `Aizvērt kadrīša atlasītāju`,
         'frame.seekFail': `Neizdevās pārtīt video atskaņotāju.`,
         'frame.selectAt': `Atlasīt sejas kadrīti {time} s`,
+        'card.existing.scenes': `Ainā`,
+        'card.existing.images': `Attēlā`,
+        'card.existing.performers': `Saistīts`,
+        'faceMatch.title.scenes': `Kas ir šajā kadrā?`,
+        'faceMatch.title.images': `Kas ir šajā attēlā?`,
+        'faceMatch.title.performers': `Saskaņot šo izpildītāju`,
+        'faceMatch.showMore': `Rādīt vēl {count}`,
+        'faceMatch.showFewer': `Rādīt mazāk`,
+        'faceMatch.allExisting.scenes': `Visi atrastie jau ir šajā ainā`,
+        'faceMatch.allExisting.images': `Visi atrastie jau ir šajā attēlā`,
+        'faceMatch.allExisting.performers': `Šis izpildītājs jau ir saistīts`,
+        'faceMatch.confirm.scenes': `Pievienot ainai ({count})`,
+        'faceMatch.confirm.images': `Pievienot attēlam ({count})`,
+        'faceMatch.confirm.performers': `Saistīt ({count})`,
+        'faceMatch.adding.scenes': `Pievieno…`,
+        'faceMatch.adding.performers': `Sasaista…`,
+        'faceMatch.toast.added.scenes': `{name} pievienots(-a) šai ainai.`,
+        'faceMatch.toast.added.images': `{name} pievienots(-a) šim attēlam.`,
+        'faceMatch.toast.addedMany.scenes': `Ainai pievienoti izpildītāji: {count}.`,
+        'faceMatch.toast.addedMany.images': `Attēlam pievienoti izpildītāji: {count}.`,
+        'sprite.showMore': `Rādīt mazāk ticamas atbilstības ({count})`,
+        'sprite.showFewer': `Paslēpt mazāk ticamas atbilstības`,
+        'search.overlayHintImage': `Velciet ap seju. Noklikšķiniet vai nospiediet Enter visam attēlam. Esc atceļ.`,
+        'search.noFacesPerformer': `Šī izpildītāja attēlā seja netika atrasta.`,
+        'search.selectAgain': `Atlasīt vēlreiz`,
+        'search.identifyImage': `Visage: atpazīt attēlu`,
+        'search.imageMenuTitle': `Uzziniet, kas ir šajā attēlā. Velciet rāmi ap seju vai noklikšķiniet visam attēlam.`,
+        'faceMatch.adding.images': `Pievieno…`,
+        'sprite.confirm': `Pievienot ainai ({count})`,
     };
 
     const vi = {
@@ -14786,10 +15278,7 @@
         'backendSettings.sync.alreadyRunning': `Đồng bộ đang chạy`,
         'backendSettings.sync.error': `Đồng bộ thất bại`,
         'backendSettings.sync.connectionLost': `Mất kết nối`,
-        'faceMatch.title': `KHUNG HÌNH HIỆN TẠI`,
         'faceMatch.close': `Đóng`,
-        'faceMatch.facesSelected': `Tìm thấy {faces} khuôn mặt · đã chọn {selected}`,
-        'faceMatch.inScene': `· {count} trong cảnh`,
         'faceMatch.stashboxMissing': `Chưa cấu hình stash-box.`,
         'faceMatch.stashboxMissingBody': ` Thêm nhà cung cấp stash-box trong Cài đặt → Nhà cung cấp siêu dữ liệu để bật nhập diễn viên.`,
         'faceMatch.stashboxWrongName': `Không tìm thấy nhà cung cấp "StashDB".`,
@@ -14797,56 +15286,33 @@
         'faceMatch.learnMore': `Tìm hiểu thêm.`,
         'faceMatch.scanning': `Đang quét · nhận dạng khuôn mặt…`,
         'faceMatch.faceAlt': `Khuôn mặt {index}`,
-        'faceMatch.minConf': `Độ tin cậy tối thiểu`,
-        'faceMatch.minConfTitle': `Độ tin cậy tối thiểu: {percent}%`,
         'faceMatch.detected': `Đã phát hiện`,
         'faceMatch.detectedFaceAlt': `Khuôn mặt được phát hiện`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Ủng hộ trên Patreon`,
         'faceMatch.ofSelected': `Đã chọn {selected} trong tổng {total}`,
-        'faceMatch.allInScene': `Tìm thấy {total} khuôn mặt · tất cả trong cảnh`,
-        'faceMatch.clickToSelect': `Tìm thấy {total} khuôn mặt · bấm để chọn`,
+        'faceMatch.clickToSelect': `Nhấp vào một kết quả để chọn`,
         'faceMatch.kbSwitch': `Chuyển khuôn mặt`,
         'faceMatch.kbSelect': `Chọn diễn viên`,
         'faceMatch.kbToggle': `Bật/tắt chọn`,
         'faceMatch.kbAddInstant': `Shift+bấm để thêm ngay`,
-        'faceMatch.selectBest': `Chọn kết quả khớp tốt nhất`,
-        'faceMatch.adding': `Đang thêm...`,
-        'faceMatch.done': `Xong ({count})`,
-        'faceMatch.toast.added': `Đã thêm diễn viên vào {target}.`,
         'faceMatch.toast.addError': `Không thêm được diễn viên: {error}`,
         'faceMatch.toast.noStashbox': `Chưa cấu hình stash-box. Thêm nhà cung cấp stash-box trong Cài đặt → Nhà cung cấp siêu dữ liệu để bật nhập diễn viên. Xem {url}`,
         'faceMatch.toast.noProvider': `Không tìm thấy nhà cung cấp tên "StashDB". Đổi tên nhà cung cấp của bạn thành "StashDB" trong Cài đặt → Nhà cung cấp siêu dữ liệu để bật nhập diễn viên.`,
         'faceMatch.toast.configureProvider': `Cấu hình nhà cung cấp stash-box trong Cài đặt → Nhà cung cấp siêu dữ liệu để bật nhập diễn viên.`,
-        'faceMatch.toast.addedMultiple': `Đã thêm {count} diễn viên{s} vào {target}.`,
         'faceMatch.toast.linked': `Đã liên kết {count} stash ID{s} với diễn viên này.`,
-        'sprite.title': `DIỄN VIÊN TRONG CẢNH`,
+        'sprite.title': `Ai trong cảnh này?`,
         'sprite.close': `Đóng`,
-        'sprite.foundConfirmed': `Tìm thấy {found} · đã xác nhận {confirmed}`,
-        'sprite.confidence': `độ tin cậy`,
-        'sprite.name': `tên`,
-        'sprite.hits': `lượt khớp`,
-        'sprite.minConf': `Độ tin cậy tối thiểu`,
-        'sprite.minConfTitle': `Độ tin cậy tối thiểu: {percent}%`,
         'sprite.scanning': `Visage đang quét…`,
         'sprite.cancel': `Hủy`,
         'sprite.empty': `Không xác định được diễn viên nào trong sprite này.`,
         'sprite.detectedFaceAlt': `Khuôn mặt được phát hiện`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Trong cảnh`,
         'sprite.hitsCount': `{count} lượt khớp{s}`,
         'sprite.totalTime': `tổng {time}`,
-        'sprite.alreadyInScene': `Đã có trong cảnh`,
-        'sprite.clickToConfirm': `Bấm để xác nhận`,
-        'sprite.confirmed': `Đã xác nhận`,
         'sprite.supportPatreon': `Ủng hộ trên Patreon`,
         'sprite.confirmedCount': `Đã xác nhận {confirmed} trong tổng {total}`,
-        'sprite.shownHint': `Hiển thị {shown} (tổng {total}) · bấm để xác nhận · ←→ điều hướng · Enter xác nhận`,
         'sprite.confirmHint': `Bấm để xác nhận · ←→ điều hướng · Enter xác nhận`,
         'sprite.adding': `Đang thêm...`,
-        'sprite.done': `Xong ({count})`,
         'gender.male': `Nam`,
         'gender.female': `Nữ`,
         'gender.transMale': `Nam chuyển giới`,
@@ -14859,10 +15325,9 @@
         'card.select': `Chọn {name}`,
         'card.deselect': `Bỏ chọn {name}`,
         'card.openOn': `Mở trên {source}`,
-        'search.overlayHint': `Kéo để chọn khuôn mặt — Enter để quét toàn bộ khung hình — Esc để hủy`,
+        'search.overlayHint': `Kéo quanh một khuôn mặt. Nhấp hoặc nhấn Enter cho cả khung hình. Esc để hủy.`,
         'search.noFaces': `Không tìm thấy khuôn mặt nào trong vùng chọn đó. Hãy thử cắt hẹp hơn hoặc nhấn Enter để quét toàn bộ khung hình.`,
         'search.captureMediaFail': `Không thể chụp phương tiện. Vui lòng đảm bảo cảnh/hình ảnh đã được tải hoàn toàn.`,
-        'search.healthBanner': `API nhận dạng khuôn mặt không truy cập được. Hãy khởi động backend và thử lại.`,
         'search.failed': `Tìm kiếm khuôn mặt thất bại: {error}`,
         'search.fetchImageFail': `Không thể lấy hình ảnh từ Stash.`,
         'search.captureFail': `Chụp hình ảnh thất bại: {error}`,
@@ -14870,20 +15335,28 @@
         'search.captureFrameFail': `Không thể chụp khung hình hiện tại.`,
         'search.captureFrameFail2': `Chụp khung hình hiện tại thất bại.`,
         'search.selectFaceVideo': `Chọn một khuôn mặt trong vùng trình phát video.`,
-        'search.menuItemTitle': `Kéo một khung quanh khuôn mặt hoặc nhấn Enter để quét toàn bộ khung hình nhằm tìm kiếm kết quả khớp trên StashDB`,
-        'search.currentFrame': `Visage: Khung hình hiện tại`,
-        'search.identifyFromImage': `Visage: Nhận diện từ hình ảnh`,
-        'search.identifyMenuTitle': `Tìm hình ảnh của diễn viên này trên StashDB và liên kết stash ID phù hợp`,
+        'search.menuItemTitle': `Tìm xem ai trong khung hình này. Kéo khung quanh một khuôn mặt, hoặc nhấp cho cả khung hình.`,
+        'search.currentFrame': `Visage: Nhận dạng khung hình`,
+        'search.identifyFromImage': `Visage: Nhận dạng`,
+        'search.identifyMenuTitle': `So khớp ảnh của nghệ sĩ này với các stash-box của bạn và liên kết stash ID`,
         'search.noPerformerImage': `Không tìm thấy hình ảnh diễn viên trên trang này.`,
         'scene.noSprite': `Không có sprite sheet hoặc video xem trước cho cảnh này. Hãy tạo chúng trong Cài đặt cảnh, rồi thử lại.`,
         'scene.noFaces': `Không tìm thấy khuôn mặt hoặc diễn viên nào trong sprite sheet hoặc video xem trước của cảnh này.`,
-        'scene.healthBanner': `API nhận dạng khuôn mặt không truy cập được. Hãy khởi động backend và thử lại.`,
         'scene.failed': `Quét cảnh thất bại: {error}`,
-        'scene.menuItemTitle': `Xác định mọi diễn viên trong cảnh (cần sprite sheet hoặc video xem trước đã tạo)`,
-        'scene.wholeScene': `Visage: Toàn bộ cảnh`,
+        'scene.menuItemTitle': `Tìm mọi người trong cảnh này. Cần sprite sheet hoặc video xem trước đã tạo.`,
+        'scene.wholeScene': `Visage: Nhận dạng cảnh`,
         'banner.changeBackend': `Đổi backend`,
         'banner.dismiss': `Bỏ qua`,
         'error.dismiss': `Bỏ qua`,
+        'error.retry': `Thử lại`,
+        'error.undo': `Hoàn tác`,
+        'error.undone': `Đã hoàn tác thay đổi.`,
+        'error.undoFailed': `Không thể hoàn tác: {error}`,
+        'backend.busy': `Dịch vụ nhận dạng khuôn mặt đang bận hoặc đang khởi động. Hãy thử lại sau giây lát.`,
+        'backend.serverError': `Dịch vụ nhận dạng khuôn mặt gặp sự cố với yêu cầu này. Hãy thử lại.`,
+        'backend.unreachableCloud': `Không thể kết nối dịch vụ nhận dạng khuôn mặt trên đám mây. Hãy kiểm tra kết nối và thử lại.`,
+        'backend.notBackend': `Máy chủ tại {url} không phải là backend Visage. Hãy kiểm tra địa chỉ trong cài đặt Visage.`,
+        'backend.unreachableLocal': `Không thể kết nối máy chủ nhận dạng khuôn mặt của bạn tại {url}. Hãy khởi động nó và thử lại.`,
         'firstRun.title': `Thiết lập backend Visage của bạn`,
         'firstRun.subtitle': `Visage gửi hình ảnh khuôn mặt đến backend để nhận dạng. Chọn nơi chạy nó.`,
         'firstRun.cloud': `Dùng đám mây Hugging Face`,
@@ -14899,6 +15372,35 @@
         'frame.close': `Đóng trình chọn khung hình`,
         'frame.seekFail': `Không thể tua trình phát video.`,
         'frame.selectAt': `Chọn khung hình khuôn mặt tại {time} giây`,
+        'card.existing.scenes': `Trong cảnh`,
+        'card.existing.images': `Trong ảnh`,
+        'card.existing.performers': `Đã liên kết`,
+        'faceMatch.title.scenes': `Ai trong khung hình này?`,
+        'faceMatch.title.images': `Ai trong ảnh này?`,
+        'faceMatch.title.performers': `Ghép nghệ sĩ này`,
+        'faceMatch.showMore': `Hiện thêm {count}`,
+        'faceMatch.showFewer': `Ẩn bớt`,
+        'faceMatch.allExisting.scenes': `Mọi người tìm thấy đã có trong cảnh này`,
+        'faceMatch.allExisting.images': `Mọi người tìm thấy đã có trong ảnh này`,
+        'faceMatch.allExisting.performers': `Nghệ sĩ này đã được liên kết`,
+        'faceMatch.confirm.scenes': `Thêm vào cảnh ({count})`,
+        'faceMatch.confirm.images': `Thêm vào ảnh ({count})`,
+        'faceMatch.confirm.performers': `Liên kết ({count})`,
+        'faceMatch.adding.scenes': `Đang thêm…`,
+        'faceMatch.adding.performers': `Đang liên kết…`,
+        'faceMatch.toast.added.scenes': `Đã thêm {name} vào cảnh này.`,
+        'faceMatch.toast.added.images': `Đã thêm {name} vào ảnh này.`,
+        'faceMatch.toast.addedMany.scenes': `Đã thêm {count} nghệ sĩ vào cảnh này.`,
+        'faceMatch.toast.addedMany.images': `Đã thêm {count} nghệ sĩ vào ảnh này.`,
+        'sprite.showMore': `Hiện {count} kết quả ít khả năng hơn`,
+        'sprite.showFewer': `Ẩn kết quả ít khả năng hơn`,
+        'search.overlayHintImage': `Kéo quanh một khuôn mặt. Nhấp hoặc nhấn Enter cho cả ảnh. Esc để hủy.`,
+        'search.noFacesPerformer': `Không tìm thấy khuôn mặt trong ảnh của nghệ sĩ này.`,
+        'search.selectAgain': `Chọn lại`,
+        'search.identifyImage': `Visage: Nhận dạng ảnh`,
+        'search.imageMenuTitle': `Tìm xem ai trong ảnh này. Kéo khung quanh một khuôn mặt, hoặc nhấp cho cả ảnh.`,
+        'faceMatch.adding.images': `Đang thêm…`,
+        'sprite.confirm': `Thêm vào cảnh ({count})`,
     };
 
     // Estonian.
@@ -14938,10 +15440,7 @@
         'backendSettings.sync.alreadyRunning': `Sünkroonimine juba käib`,
         'backendSettings.sync.error': `Sünkroonimine ebaõnnestus`,
         'backendSettings.sync.connectionLost': `Ühendus kadus`,
-        'faceMatch.title': `PRAEGUNE KAADER`,
         'faceMatch.close': `Sule`,
-        'faceMatch.facesSelected': `Leitud {faces} nägu · valitud {selected}`,
-        'faceMatch.inScene': `· {count} stseenis`,
         'faceMatch.stashboxMissing': `Stash-box pole konfigureeritud.`,
         'faceMatch.stashboxMissingBody': ` Lisa esinejate impordi lubamiseks stash-box-pakkuja jaotises Seaded → Metaandmete pakkujad.`,
         'faceMatch.stashboxWrongName': `Pakkujat "StashDB" ei leitud.`,
@@ -14949,56 +15448,33 @@
         'faceMatch.learnMore': `Lisateave.`,
         'faceMatch.scanning': `Skannimine • näotuvastus…`,
         'faceMatch.faceAlt': `Nägu {index}`,
-        'faceMatch.minConf': `Min. kindl.`,
-        'faceMatch.minConfTitle': `Minimaalne kindlus: {percent}%`,
         'faceMatch.detected': `Tuvastatud`,
         'faceMatch.detectedFaceAlt': `Tuvastatud nägu`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Toeta Patreonis`,
         'faceMatch.ofSelected': `Valitud {selected}/{total}`,
-        'faceMatch.allInScene': `Leitud {total} nägu · kõik stseenis`,
-        'faceMatch.clickToSelect': `Leitud {total} nägu · valimiseks klõpsa`,
+        'faceMatch.clickToSelect': `Klõpsa vastel, et see valida`,
         'faceMatch.kbSwitch': `Vaheta nägusid`,
         'faceMatch.kbSelect': `Vali esinejad`,
         'faceMatch.kbToggle': `Vaheta valikut`,
         'faceMatch.kbAddInstant': `Shift+klõps lisab kohe`,
-        'faceMatch.selectBest': `Vali parimad vasted`,
-        'faceMatch.adding': `Lisamine...`,
-        'faceMatch.done': `Valmis ({count})`,
-        'faceMatch.toast.added': `Esineja lisatud sihtkohta {target}.`,
         'faceMatch.toast.addError': `Esineja lisamine ebaõnnestus: {error}`,
         'faceMatch.toast.noStashbox': `Stash-box pole konfigureeritud. Lisa esinejate impordi lubamiseks stash-box-pakkuja jaotises Seaded → Metaandmete pakkujad. Vaata {url}`,
         'faceMatch.toast.noProvider': `Pakkujat nimega "StashDB" ei leitud. Nimeta esinejate impordi lubamiseks oma pakkuja ümber "StashDB"-ks jaotises Seaded → Metaandmete pakkujad.`,
         'faceMatch.toast.configureProvider': `Konfigureeri stash-box-pakkuja jaotises Seaded → Metaandmete pakkujad esinejate impordi lubamiseks.`,
-        'faceMatch.toast.addedMultiple': `Sihtkohta {target} lisati {count} esinejat.`,
         'faceMatch.toast.linked': `Seoti {count} stash ID{s} selle esinejaga.`,
-        'sprite.title': `STSEENI ESINEJAD`,
+        'sprite.title': `Kes on selles stseenis?`,
         'sprite.close': `Sulge`,
-        'sprite.foundConfirmed': `Leitud {found} · kinnitatud {confirmed}`,
-        'sprite.confidence': `kindlus`,
-        'sprite.name': `nimi`,
-        'sprite.hits': `tabamused`,
-        'sprite.minConf': `Min. kindl.`,
-        'sprite.minConfTitle': `Minimaalne kindlus: {percent}%`,
         'sprite.scanning': `Visage skannib…`,
         'sprite.cancel': `Tühista`,
         'sprite.empty': `Selles sprites ei tuvastatud ühtegi esinejat.`,
         'sprite.detectedFaceAlt': `Tuvastatud nägu`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Stseenis`,
         'sprite.hitsCount': `{count} tabamus`,
         'sprite.totalTime': `{time} kokku`,
-        'sprite.alreadyInScene': `Juba stseenis`,
-        'sprite.clickToConfirm': `Kinnitamiseks klõpsa`,
-        'sprite.confirmed': `Kinnitatud`,
         'sprite.supportPatreon': `Toeta Patreonis`,
         'sprite.confirmedCount': `Kinnitatud {confirmed}/{total}`,
-        'sprite.shownHint': `Näidatud {shown} ({total} kokku) · kinnitamiseks klõpsa · ←→ navigeerimine · Enter kinnitab`,
         'sprite.confirmHint': `Kinnitamiseks klõpsa · ←→ navigeerimine · Enter kinnitab`,
         'sprite.adding': `Lisamine...`,
-        'sprite.done': `Valmis ({count})`,
         'gender.male': `Mees`,
         'gender.female': `Naine`,
         'gender.transMale': `Transmees`,
@@ -15011,10 +15487,9 @@
         'card.select': `Vali {name}`,
         'card.deselect': `Tühista valik {name}`,
         'card.openOn': `Ava saidil {source}`,
-        'search.overlayHint': `Näo valimiseks lohista — Enter skannib kogu kaadri — Esc tühistab`,
+        'search.overlayHint': `Lohista ümber näo. Klõpsa või vajuta Enter kogu kaadri jaoks. Esc tühistab.`,
         'search.noFaces': `Sellest valikust ei leitud ühtegi nägu. Proovi täpsemat kärpimist või vajuta Enter, et skannida kogu kaader.`,
         'search.captureMediaFail': `Meedia jäädvustamine ebaõnnestus. Veendu, et stseen/pilt on täielikult laaditud.`,
-        'search.healthBanner': `Näotuvastuse API ei ole kättesaadav. Käivita backend ja proovi uuesti.`,
         'search.failed': `Näootsing ebaõnnestus: {error}`,
         'search.fetchImageFail': `Pildi toomine Stashist ebaõnnestus.`,
         'search.captureFail': `Pildi jäädvustamine ebaõnnestus: {error}`,
@@ -15022,20 +15497,28 @@
         'search.captureFrameFail': `Praeguse kaadri jäädvustamine ebaõnnestus.`,
         'search.captureFrameFail2': `Praeguse kaadri jäädvustamine ei õnnestunud.`,
         'search.selectFaceVideo': `Vali nägu videopleieri piirkonnast.`,
-        'search.menuItemTitle': `Lohista kast ümber näo või vajuta Enter kogu kaadri skannimiseks, et otsida StashDB-st vasted`,
-        'search.currentFrame': `Visage: praegune kaader`,
-        'search.identifyFromImage': `Visage: Tuvasta pildist`,
-        'search.identifyMenuTitle': `Otsi selle esineja pilti StashDB-st ja seo sobiv stash ID`,
+        'search.menuItemTitle': `Uuri, kes on selles kaadris. Lohista kast ümber näo või klõpsa kogu kaadri jaoks.`,
+        'search.currentFrame': `Visage: Tuvasta kaader`,
+        'search.identifyFromImage': `Visage: Tuvasta`,
+        'search.identifyMenuTitle': `Võrdle selle esineja pilti oma stash-boxidega ja lingi stash ID`,
         'search.noPerformerImage': `Sellel lehel esineja pilti ei leitud.`,
         'scene.noSprite': `Selle stseeni jaoks ei leitud sprite-lehte ega eelvaatuse videot. Genereeri need Scene-seadetes ja proovi siis uuesti.`,
         'scene.noFaces': `Selle stseeni sprite-lehest või eelvaatuse videost ei leitud ühtegi nägu ega esinejat.`,
-        'scene.healthBanner': `Näotuvastuse API ei ole kättesaadav. Käivita backend ja proovi uuesti.`,
         'scene.failed': `Stseeni skannimine ebaõnnestus: {error}`,
-        'scene.menuItemTitle': `Tuvasta iga esineja stseenis (nõuab genereeritud sprite-lehte või eelvaatuse videot)`,
-        'scene.wholeScene': `Visage: kogu stseen`,
+        'scene.menuItemTitle': `Leia kõik selles stseenis. Vajab loodud sprite sheeti või eelvaatevideot.`,
+        'scene.wholeScene': `Visage: Tuvasta stseen`,
         'banner.changeBackend': `Vaheta backend`,
         'banner.dismiss': `Lükka tagasi`,
         'error.dismiss': `Lükka tagasi`,
+        'error.retry': `Proovi uuesti`,
+        'error.undo': `Võta tagasi`,
+        'error.undone': `Muudatus võeti tagasi.`,
+        'error.undoFailed': `Tagasivõtmine ebaõnnestus: {error}`,
+        'backend.busy': `Näotuvastusteenus on hõivatud või käivitub. Proovi hetke pärast uuesti.`,
+        'backend.serverError': `Näotuvastusteenusel tekkis selle päringuga probleem. Proovi uuesti.`,
+        'backend.unreachableCloud': `Pilvepõhist näotuvastusteenust ei õnnestu kätte saada. Kontrolli ühendust ja proovi uuesti.`,
+        'backend.notBackend': `Server aadressil {url} ei ole Visage backend. Kontrolli aadressi Visage seadetes.`,
+        'backend.unreachableLocal': `Sinu näotuvastusserverit aadressil {url} ei õnnestu kätte saada. Käivita see ja proovi uuesti.`,
         'firstRun.title': `Seadista oma Visage backend`,
         'firstRun.subtitle': `Visage saadab näopildid tuvastamiseks backendile. Vali, kus seda käitada.`,
         'firstRun.cloud': `Kasuta Hugging Face cloudi`,
@@ -15051,6 +15534,35 @@
         'frame.close': `Sule kaadrivalija`,
         'frame.seekFail': `Videopleieris navigeerimine ebaõnnestus.`,
         'frame.selectAt': `Vali näokaader kohas {time}s`,
+        'card.existing.scenes': `Stseenis`,
+        'card.existing.images': `Pildil`,
+        'card.existing.performers': `Lingitud`,
+        'faceMatch.title.scenes': `Kes on selles kaadris?`,
+        'faceMatch.title.images': `Kes on sellel pildil?`,
+        'faceMatch.title.performers': `Seosta see esineja`,
+        'faceMatch.showMore': `Näita veel {count}`,
+        'faceMatch.showFewer': `Näita vähem`,
+        'faceMatch.allExisting.scenes': `Kõik leitud on juba selles stseenis`,
+        'faceMatch.allExisting.images': `Kõik leitud on juba sellel pildil`,
+        'faceMatch.allExisting.performers': `See esineja on juba lingitud`,
+        'faceMatch.confirm.scenes': `Lisa stseeni ({count})`,
+        'faceMatch.confirm.images': `Lisa pildile ({count})`,
+        'faceMatch.confirm.performers': `Lingi ({count})`,
+        'faceMatch.adding.scenes': `Lisamine…`,
+        'faceMatch.adding.performers': `Linkimine…`,
+        'faceMatch.toast.added.scenes': `{name} lisati sellesse stseeni.`,
+        'faceMatch.toast.added.images': `{name} lisati sellele pildile.`,
+        'faceMatch.toast.addedMany.scenes': `Stseeni lisati {count} esinejat.`,
+        'faceMatch.toast.addedMany.images': `Pildile lisati {count} esinejat.`,
+        'sprite.showMore': `Näita {count} vähem tõenäolist vastet`,
+        'sprite.showFewer': `Peida vähem tõenäolised vasted`,
+        'search.overlayHintImage': `Lohista ümber näo. Klõpsa või vajuta Enter kogu pildi jaoks. Esc tühistab.`,
+        'search.noFacesPerformer': `Selle esineja pildilt ei leitud nägu.`,
+        'search.selectAgain': `Vali uuesti`,
+        'search.identifyImage': `Visage: Tuvasta pilt`,
+        'search.imageMenuTitle': `Uuri, kes on sellel pildil. Lohista kast ümber näo või klõpsa kogu pildi jaoks.`,
+        'faceMatch.adding.images': `Lisamine…`,
+        'sprite.confirm': `Lisa stseeni ({count})`,
     };
 
     // Norwegian Bokmål.
@@ -15090,10 +15602,7 @@
         'backendSettings.sync.alreadyRunning': `Synkronisering pågår allerede`,
         'backendSettings.sync.error': `Synkronisering mislyktes`,
         'backendSettings.sync.connectionLost': `Tilkobling tapt`,
-        'faceMatch.title': `GJELDENDE RAMME`,
         'faceMatch.close': `Lukk`,
-        'faceMatch.facesSelected': `{faces} ansikter funnet · {selected} valgt`,
-        'faceMatch.inScene': `· {count} i scene`,
         'faceMatch.stashboxMissing': `Ingen stash-box konfigurert.`,
         'faceMatch.stashboxMissingBody': ` Legg til en stash-box-leverandør under Innstillinger → Metadata-leverandører for å aktivere performer-import.`,
         'faceMatch.stashboxWrongName': `Fant ingen "StashDB"-leverandør.`,
@@ -15101,56 +15610,33 @@
         'faceMatch.learnMore': `Les mer.`,
         'faceMatch.scanning': `Skanner • ansiktsgjenkjenning…`,
         'faceMatch.faceAlt': `Ansikt {index}`,
-        'faceMatch.minConf': `Min. konf.`,
-        'faceMatch.minConfTitle': `Minimumskonfidens: {percent}%`,
         'faceMatch.detected': `Oppdaget`,
         'faceMatch.detectedFaceAlt': `Oppdaget ansikt`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Støtt på Patreon`,
         'faceMatch.ofSelected': `{selected} av {total} valgt`,
-        'faceMatch.allInScene': `{total} ansikter funnet · alle i scene`,
-        'faceMatch.clickToSelect': `{total} ansikter funnet · klikk for å velge`,
+        'faceMatch.clickToSelect': `Klikk på et treff for å velge det`,
         'faceMatch.kbSwitch': `Bytt ansikter`,
         'faceMatch.kbSelect': `Velg performere`,
         'faceMatch.kbToggle': `Veksle markering`,
         'faceMatch.kbAddInstant': `Shift+klikk for å legge til umiddelbart`,
-        'faceMatch.selectBest': `Velg beste treff`,
-        'faceMatch.adding': `Legger til...`,
-        'faceMatch.done': `Ferdig ({count})`,
-        'faceMatch.toast.added': `La til performer i {target}.`,
         'faceMatch.toast.addError': `Kunne ikke legge til performer: {error}`,
         'faceMatch.toast.noStashbox': `Ingen stash-box konfigurert. Legg til en stash-box-leverandør under Innstillinger → Metadata-leverandører for å aktivere performer-import. Se {url}`,
         'faceMatch.toast.noProvider': `Fant ingen leverandør kalt "StashDB". Gi leverandøren nytt navn til "StashDB" under Innstillinger → Metadata-leverandører for å aktivere performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurer en stash-box-leverandør under Innstillinger → Metadata-leverandører for å aktivere performer-import.`,
-        'faceMatch.toast.addedMultiple': `La til {count} performere i {target}.`,
         'faceMatch.toast.linked': `Lenket {count} stash-ID{s} til denne performeren.`,
-        'sprite.title': `SCENE-PERFORMERE`,
+        'sprite.title': `Hvem er i denne scenen?`,
         'sprite.close': `Lukk`,
-        'sprite.foundConfirmed': `{found} funnet · {confirmed} bekreftet`,
-        'sprite.confidence': `konfidens`,
-        'sprite.name': `navn`,
-        'sprite.hits': `treff`,
-        'sprite.minConf': `Min. konf.`,
-        'sprite.minConfTitle': `Minimumskonfidens: {percent}%`,
         'sprite.scanning': `Visage skanner…`,
         'sprite.cancel': `Avbryt`,
         'sprite.empty': `Ingen performere identifisert i denne spriten.`,
         'sprite.detectedFaceAlt': `Oppdaget ansikt`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `I scene`,
         'sprite.hitsCount': `{count} treff`,
         'sprite.totalTime': `{time} totalt`,
-        'sprite.alreadyInScene': `Allerede i scene`,
-        'sprite.clickToConfirm': `Klikk for å bekrefte`,
-        'sprite.confirmed': `Bekreftet`,
         'sprite.supportPatreon': `Støtt på Patreon`,
         'sprite.confirmedCount': `{confirmed} av {total} bekreftet`,
-        'sprite.shownHint': `{shown} vist ({total} totalt) · klikk for å bekrefte · ←→ naviger · Enter bekreft`,
         'sprite.confirmHint': `Klikk for å bekrefte · ←→ naviger · Enter bekreft`,
         'sprite.adding': `Legger til...`,
-        'sprite.done': `Ferdig ({count})`,
         'gender.male': `Mann`,
         'gender.female': `Kvinne`,
         'gender.transMale': `Transmann`,
@@ -15163,10 +15649,9 @@
         'card.select': `Velg {name}`,
         'card.deselect': `Fravelg {name}`,
         'card.openOn': `Åpne på {source}`,
-        'search.overlayHint': `Dra for å velge et ansikt — Enter for å skanne hele rammen — Esc for å avbryte`,
+        'search.overlayHint': `Dra rundt et ansikt. Klikk eller trykk Enter for hele bildet. Esc avbryter.`,
         'search.noFaces': `Ingen ansikter funnet i utvalget. Prøv en tettere beskjæring, eller trykk Enter for å skanne hele rammen.`,
         'search.captureMediaFail': `Kunne ikke fange mediet. Kontroller at scenen/bildet er fullastet.`,
-        'search.healthBanner': `Ansiktsgjenkjennings-API-et er ikke tilgjengelig. Start backend og prøv igjen.`,
         'search.failed': `Ansiktssøk mislyktes: {error}`,
         'search.fetchImageFail': `Kunne ikke hente bilde fra Stash.`,
         'search.captureFail': `Kunne ikke fange bilde: {error}`,
@@ -15174,20 +15659,28 @@
         'search.captureFrameFail': `Kunne ikke fange gjeldende ramme.`,
         'search.captureFrameFail2': `Innfanging av gjeldende ramme mislyktes.`,
         'search.selectFaceVideo': `Velg et ansikt i videoavspillerområdet.`,
-        'search.menuItemTitle': `Dra en boks rundt et ansikt, eller trykk Enter for å skanne hele rammen, for å søke StashDB etter treff`,
-        'search.currentFrame': `Visage: Gjeldende ramme`,
-        'search.identifyFromImage': `Visage: Identifiser fra bilde`,
-        'search.identifyMenuTitle': `Søk etter denne performerens bilde mot StashDB og lenk en matchende stash-ID`,
+        'search.menuItemTitle': `Finn ut hvem som er i bildet. Dra en ramme rundt et ansikt, eller klikk for hele bildet.`,
+        'search.currentFrame': `Visage: Identifiser bilde`,
+        'search.identifyFromImage': `Visage: Identifiser`,
+        'search.identifyMenuTitle': `Sammenlign bildet av denne performeren med stash-boksene dine og koble stash-ID-en`,
         'search.noPerformerImage': `Fant ingen performer-bilde på denne siden.`,
         'scene.noSprite': `Fant ingen sprite-ark eller forhåndsvisningsvideo for denne scenen. Generer dem i Scene-innstillingene, og prøv igjen.`,
         'scene.noFaces': `Fant ingen ansikter eller performere i denne scenens sprite-ark eller forhåndsvisningsvideo.`,
-        'scene.healthBanner': `Ansiktsgjenkjennings-API-et er ikke tilgjengelig. Start backend og prøv igjen.`,
         'scene.failed': `Scene-skanning mislyktes: {error}`,
-        'scene.menuItemTitle': `Identifiser hver performer i scenen (krever et generert sprite-ark eller en forhåndsvisningsvideo)`,
-        'scene.wholeScene': `Visage: Hele scenen`,
+        'scene.menuItemTitle': `Finn alle i denne scenen. Krever et generert sprite sheet eller en forhåndsvisningsvideo.`,
+        'scene.wholeScene': `Visage: Identifiser scene`,
         'banner.changeBackend': `Bytt backend`,
         'banner.dismiss': `Avvis`,
         'error.dismiss': `Avvis`,
+        'error.retry': `Prøv igjen`,
+        'error.undo': `Angre`,
+        'error.undone': `Endringen er angret.`,
+        'error.undoFailed': `Kunne ikke angre: {error}`,
+        'backend.busy': `Ansiktsgjenkjenningstjenesten er opptatt eller starter. Prøv igjen om et øyeblikk.`,
+        'backend.serverError': `Ansiktsgjenkjenningstjenesten fikk et problem med denne forespørselen. Prøv igjen.`,
+        'backend.unreachableCloud': `Får ikke kontakt med skytjenesten for ansiktsgjenkjenning. Sjekk tilkoblingen og prøv igjen.`,
+        'backend.notBackend': `Serveren på {url} er ikke en Visage-backend. Sjekk adressen i Visage-innstillingene.`,
+        'backend.unreachableLocal': `Får ikke kontakt med ansiktsgjenkjenningsserveren din på {url}. Start den og prøv igjen.`,
         'firstRun.title': `Sett opp Visage-backend-en din`,
         'firstRun.subtitle': `Visage sender ansiktsbilder til en backend for gjenkjenning. Velg hvor den skal kjøres.`,
         'firstRun.cloud': `Bruk Hugging Face cloud`,
@@ -15203,6 +15696,35 @@
         'frame.close': `Lukk rammevelgeren`,
         'frame.seekFail': `Kunne ikke søke i videoavspilleren.`,
         'frame.selectAt': `Velg ansiktsramme ved {time}s`,
+        'card.existing.scenes': `I scenen`,
+        'card.existing.images': `På bildet`,
+        'card.existing.performers': `Koblet`,
+        'faceMatch.title.scenes': `Hvem er i dette bildet?`,
+        'faceMatch.title.images': `Hvem er på dette fotoet?`,
+        'faceMatch.title.performers': `Match denne performeren`,
+        'faceMatch.showMore': `Vis {count} til`,
+        'faceMatch.showFewer': `Vis færre`,
+        'faceMatch.allExisting.scenes': `Alle som ble funnet er allerede i scenen`,
+        'faceMatch.allExisting.images': `Alle som ble funnet er allerede på fotoet`,
+        'faceMatch.allExisting.performers': `Denne performeren er allerede koblet`,
+        'faceMatch.confirm.scenes': `Legg til i scene ({count})`,
+        'faceMatch.confirm.images': `Legg til på foto ({count})`,
+        'faceMatch.confirm.performers': `Koble ({count})`,
+        'faceMatch.adding.scenes': `Legger til…`,
+        'faceMatch.adding.performers': `Kobler…`,
+        'faceMatch.toast.added.scenes': `{name} er lagt til i scenen.`,
+        'faceMatch.toast.added.images': `{name} er lagt til på fotoet.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performere lagt til i scenen.`,
+        'faceMatch.toast.addedMany.images': `{count} performere lagt til på fotoet.`,
+        'sprite.showMore': `Vis {count} mindre sannsynlige treff`,
+        'sprite.showFewer': `Skjul mindre sannsynlige treff`,
+        'search.overlayHintImage': `Dra rundt et ansikt. Klikk eller trykk Enter for hele fotoet. Esc avbryter.`,
+        'search.noFacesPerformer': `Fant ikke noe ansikt i bildet av denne performeren.`,
+        'search.selectAgain': `Velg på nytt`,
+        'search.identifyImage': `Visage: Identifiser foto`,
+        'search.imageMenuTitle': `Finn ut hvem som er på fotoet. Dra en ramme rundt et ansikt, eller klikk for hele fotoet.`,
+        'faceMatch.adding.images': `Legger til…`,
+        'sprite.confirm': `Legg til i scene ({count})`,
     };
 
     // Turkish.
@@ -15242,10 +15764,7 @@
         'backendSettings.sync.alreadyRunning': `Senkronizasyon zaten devam ediyor`,
         'backendSettings.sync.error': `Senkronizasyon başarısız`,
         'backendSettings.sync.connectionLost': `Bağlantı kesildi`,
-        'faceMatch.title': `MEVCUT KARE`,
         'faceMatch.close': `Kapat`,
-        'faceMatch.facesSelected': `{faces} yüz bulundu · {selected} seçildi`,
-        'faceMatch.inScene': `· sahnede {count}`,
         'faceMatch.stashboxMissing': `stash-box yapılandırılmadı.`,
         'faceMatch.stashboxMissingBody': ` Oyuncu içe aktarmayı etkinleştirmek için Ayarlar → Meta Veri Sağlayıcıları altına bir stash-box sağlayıcısı ekleyin.`,
         'faceMatch.stashboxWrongName': `"StashDB" sağlayıcısı bulunamadı.`,
@@ -15253,56 +15772,33 @@
         'faceMatch.learnMore': `Daha fazla bilgi.`,
         'faceMatch.scanning': `Taranıyor • yüz tanıma…`,
         'faceMatch.faceAlt': `Yüz {index}`,
-        'faceMatch.minConf': `Min. güv.`,
-        'faceMatch.minConfTitle': `Minimum güven: {percent}%`,
         'faceMatch.detected': `Algılandı`,
         'faceMatch.detectedFaceAlt': `Algılanan yüz`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Patreon\u2019da destekle`,
         'faceMatch.ofSelected': `{total} içinden {selected} seçildi`,
-        'faceMatch.allInScene': `{total} yüz bulundu · tümü sahnede`,
-        'faceMatch.clickToSelect': `{total} yüz bulundu · seçmek için tıklayın`,
+        'faceMatch.clickToSelect': `Seçmek için bir eşleşmeye tıklayın`,
         'faceMatch.kbSwitch': `Yüzleri değiştir`,
         'faceMatch.kbSelect': `Oyuncuları seç`,
         'faceMatch.kbToggle': `Seçimi değiştir`,
         'faceMatch.kbAddInstant': `Anında eklemek için Shift+tıklayın`,
-        'faceMatch.selectBest': `En İyi Eşleşmeleri Seç`,
-        'faceMatch.adding': `Ekleniyor...`,
-        'faceMatch.done': `Bitti ({count})`,
-        'faceMatch.toast.added': `{target} konumuna oyuncu eklendi.`,
         'faceMatch.toast.addError': `Oyuncu eklenemedi: {error}`,
         'faceMatch.toast.noStashbox': `stash-box yapılandırılmadı. Oyuncu içe aktarmayı etkinleştirmek için Ayarlar → Meta Veri Sağlayıcıları altına bir stash-box sağlayıcısı ekleyin. {url} adresine bakın`,
         'faceMatch.toast.noProvider': `"StashDB" adında bir sağlayıcı bulunamadı. Oyuncu içe aktarmayı etkinleştirmek için sağlayıcınızı Ayarlar → Meta Veri Sağlayıcıları altında "StashDB" olarak yeniden adlandırın.`,
         'faceMatch.toast.configureProvider': `Oyuncu içe aktarmayı etkinleştirmek için Ayarlar → Meta Veri Sağlayıcıları altında bir stash-box sağlayıcısı yapılandırın.`,
-        'faceMatch.toast.addedMultiple': `{target} konumuna {count} oyuncu eklendi.`,
         'faceMatch.toast.linked': `{count} stash ID{s} bu oyuncuya bağlandı.`,
-        'sprite.title': `SAHNE OYUNCULARI`,
+        'sprite.title': `Bu sahnede kim var?`,
         'sprite.close': `Kapat`,
-        'sprite.foundConfirmed': `{found} bulundu · {confirmed} onaylandı`,
-        'sprite.confidence': `güven`,
-        'sprite.name': `ad`,
-        'sprite.hits': `eşleşme`,
-        'sprite.minConf': `Min. güv.`,
-        'sprite.minConfTitle': `Minimum güven: {percent}%`,
         'sprite.scanning': `Visage taranıyor…`,
         'sprite.cancel': `İptal`,
         'sprite.empty': `Bu spritede oyuncu tanımlanmadı.`,
         'sprite.detectedFaceAlt': `Algılanan yüz`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Sahnede`,
         'sprite.hitsCount': `{count} eşleşme`,
         'sprite.totalTime': `toplam {time}`,
-        'sprite.alreadyInScene': `Zaten sahnede`,
-        'sprite.clickToConfirm': `Onaylamak için tıklayın`,
-        'sprite.confirmed': `Onaylandı`,
         'sprite.supportPatreon': `Patreon\u2019da destekle`,
         'sprite.confirmedCount': `{total} içinden {confirmed} onaylandı`,
-        'sprite.shownHint': `{shown} gösterildi (toplam {total}) · onaylamak için tıklayın · ←→ gezin · Enter onayla`,
         'sprite.confirmHint': `Onaylamak için tıklayın · ←→ gezin · Enter onayla`,
         'sprite.adding': `Ekleniyor...`,
-        'sprite.done': `Bitti ({count})`,
         'gender.male': `Erkek`,
         'gender.female': `Kadın`,
         'gender.transMale': `Trans erkek`,
@@ -15315,10 +15811,9 @@
         'card.select': `{name} seç`,
         'card.deselect': `{name} seçimini kaldır`,
         'card.openOn': `{source} üzerinde aç`,
-        'search.overlayHint': `Bir yüz seçmek için sürükleyin — tüm kareyi taramak için Enter — iptal için Esc`,
+        'search.overlayHint': `Bir yüzün etrafını sürükleyin. Tüm kare için tıklayın veya Enter’a basın. İptal için Esc.`,
         'search.noFaces': `Bu seçimde yüz bulunamadı. Daha dar bir kırpma deneyin veya tüm kareyi taramak için Enter\u2019a basın.`,
         'search.captureMediaFail': `Medya yakalanamadı. Sahnenin/görselin tamamen yüklendiğinden emin olun.`,
-        'search.healthBanner': `Yüz tanıma API\u2019sine ulaşılamıyor. Backend\u2019i başlatın ve tekrar deneyin.`,
         'search.failed': `Yüz araması başarısız: {error}`,
         'search.fetchImageFail': `Stash\u2019tan görsel alınamadı.`,
         'search.captureFail': `Görsel yakalanamadı: {error}`,
@@ -15326,20 +15821,28 @@
         'search.captureFrameFail': `Geçerli kare yakalanamadı.`,
         'search.captureFrameFail2': `Geçerli kare yakalanamadı.`,
         'search.selectFaceVideo': `Video oynatıcı alanı içinde bir yüz seçin.`,
-        'search.menuItemTitle': `StashDB\u2019de eşleşme aramak için bir yüzün etrafına kutu çizin veya tüm kareyi taramak için Enter\u2019a basın`,
-        'search.currentFrame': `Visage: Geçerli Kare`,
-        'search.identifyFromImage': `Visage: Görselden tanımla`,
-        'search.identifyMenuTitle': `Bu oyuncunun görselinde StashDB'de ara ve eşleşen bir stash ID bağla`,
+        'search.menuItemTitle': `Bu karede kim olduğunu bulun. Bir yüzün etrafına kutu çizin veya tüm kare için tıklayın.`,
+        'search.currentFrame': `Visage: Kareyi tanı`,
+        'search.identifyFromImage': `Visage: Tanı`,
+        'search.identifyMenuTitle': `Bu oyuncunun görselini stash-box’larınızla karşılaştırın ve stash ID’yi bağlayın`,
         'search.noPerformerImage': `Bu sayfada oyuncu görseli bulunamadı.`,
         'scene.noSprite': `Bu sahne için sprite sayfası veya önizleme videosu bulunamadı. Scene ayarlarından oluşturun, ardından tekrar deneyin.`,
         'scene.noFaces': `Bu sahnenin sprite sayfasında veya önizleme videosunda yüz veya oyuncu bulunamadı.`,
-        'scene.healthBanner': `Yüz tanıma API\u2019sine ulaşılamıyor. Backend\u2019i başlatın ve tekrar deneyin.`,
         'scene.failed': `Sahne taraması başarısız: {error}`,
-        'scene.menuItemTitle': `Sahnedeki her oyuncuyu tanımlayın (oluşturulmuş bir sprite sayfası veya önizleme videosu gerektirir)`,
-        'scene.wholeScene': `Visage: Tüm Sahne`,
+        'scene.menuItemTitle': `Bu sahnedeki herkesi bulun. Oluşturulmuş bir sprite sheet veya önizleme videosu gerekir.`,
+        'scene.wholeScene': `Visage: Sahneyi tanı`,
         'banner.changeBackend': `Backend değiştir`,
         'banner.dismiss': `Kapat`,
         'error.dismiss': `Kapat`,
+        'error.retry': `Tekrar dene`,
+        'error.undo': `Geri al`,
+        'error.undone': `Değişiklik geri alındı.`,
+        'error.undoFailed': `Geri alınamadı: {error}`,
+        'backend.busy': `Yüz tanıma hizmeti meşgul veya başlatılıyor. Biraz sonra tekrar deneyin.`,
+        'backend.serverError': `Yüz tanıma hizmeti bu istekte bir sorunla karşılaştı. Tekrar deneyin.`,
+        'backend.unreachableCloud': `Bulut yüz tanıma hizmetine ulaşılamıyor. Bağlantınızı kontrol edip tekrar deneyin.`,
+        'backend.notBackend': `{url} adresindeki sunucu bir Visage backend’i değil. Visage ayarlarındaki adresi kontrol edin.`,
+        'backend.unreachableLocal': `{url} adresindeki yüz tanıma sunucunuza ulaşılamıyor. Sunucuyu başlatıp tekrar deneyin.`,
         'firstRun.title': `Visage backend\u2019inizi kurun`,
         'firstRun.subtitle': `Visage, tanıma için yüz görsellerini bir backend\u2019e gönderir. Nerede çalıştırılacağını seçin.`,
         'firstRun.cloud': `Hugging Face cloud kullan`,
@@ -15355,6 +15858,35 @@
         'frame.close': `Kare seçiciyi kapat`,
         'frame.seekFail': `Video oynatıcıya atlanamadı.`,
         'frame.selectAt': `{time}s konumunda yüz karesi seçin`,
+        'card.existing.scenes': `Sahnede`,
+        'card.existing.images': `Görselde`,
+        'card.existing.performers': `Bağlı`,
+        'faceMatch.title.scenes': `Bu karede kim var?`,
+        'faceMatch.title.images': `Bu görselde kim var?`,
+        'faceMatch.title.performers': `Bu oyuncuyu eşleştir`,
+        'faceMatch.showMore': `{count} tane daha göster`,
+        'faceMatch.showFewer': `Daha az göster`,
+        'faceMatch.allExisting.scenes': `Bulunanların hepsi zaten bu sahnede`,
+        'faceMatch.allExisting.images': `Bulunanların hepsi zaten bu görselde`,
+        'faceMatch.allExisting.performers': `Bu oyuncu zaten bağlı`,
+        'faceMatch.confirm.scenes': `Sahneye ekle ({count})`,
+        'faceMatch.confirm.images': `Görsele ekle ({count})`,
+        'faceMatch.confirm.performers': `Bağla ({count})`,
+        'faceMatch.adding.scenes': `Ekleniyor…`,
+        'faceMatch.adding.performers': `Bağlanıyor…`,
+        'faceMatch.toast.added.scenes': `{name} bu sahneye eklendi.`,
+        'faceMatch.toast.added.images': `{name} bu görsele eklendi.`,
+        'faceMatch.toast.addedMany.scenes': `{count} oyuncu bu sahneye eklendi.`,
+        'faceMatch.toast.addedMany.images': `{count} oyuncu bu görsele eklendi.`,
+        'sprite.showMore': `{count} düşük olasılıklı eşleşmeyi göster`,
+        'sprite.showFewer': `Düşük olasılıklı eşleşmeleri gizle`,
+        'search.overlayHintImage': `Bir yüzün etrafını sürükleyin. Tüm görsel için tıklayın veya Enter’a basın. İptal için Esc.`,
+        'search.noFacesPerformer': `Bu oyuncunun görselinde yüz bulunamadı.`,
+        'search.selectAgain': `Yeniden seç`,
+        'search.identifyImage': `Visage: Görseli tanı`,
+        'search.imageMenuTitle': `Bu görselde kim olduğunu bulun. Bir yüzün etrafına kutu çizin veya tüm görsel için tıklayın.`,
+        'faceMatch.adding.images': `Ekleniyor…`,
+        'sprite.confirm': `Sahneye ekle ({count})`,
     };
 
     const zhTw = {
@@ -15393,10 +15925,7 @@
         'backendSettings.sync.alreadyRunning': `同步已在執行中`,
         'backendSettings.sync.error': `同步失敗`,
         'backendSettings.sync.connectionLost': `連線已中斷`,
-        'faceMatch.title': `目前影格`,
         'faceMatch.close': `關閉`,
-        'faceMatch.facesSelected': `找到 {faces} 張臉 · 已選擇 {selected}`,
-        'faceMatch.inScene': `· {count} 在場景中`,
         'faceMatch.stashboxMissing': `未設定 stash-box。`,
         'faceMatch.stashboxMissingBody': ` 請在設定 → 中繼資料提供者中新增 stash-box 提供者，以啟用表演者匯入。`,
         'faceMatch.stashboxWrongName': `找不到「StashDB」提供者。`,
@@ -15404,56 +15933,33 @@
         'faceMatch.learnMore': `深入瞭解。`,
         'faceMatch.scanning': `正在掃描 · 人臉辨識…`,
         'faceMatch.faceAlt': `臉 {index}`,
-        'faceMatch.minConf': `最小信心值`,
-        'faceMatch.minConfTitle': `最低信心值：{percent}%`,
         'faceMatch.detected': `已偵測到`,
         'faceMatch.detectedFaceAlt': `偵測到的人臉`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `在 Patreon 上支持`,
         'faceMatch.ofSelected': `已選擇 {total} 中的 {selected}`,
-        'faceMatch.allInScene': `找到 {total} 張臉 · 全部在場景中`,
-        'faceMatch.clickToSelect': `找到 {total} 張臉 · 按一下以選擇`,
+        'faceMatch.clickToSelect': `點選比對結果即可選取`,
         'faceMatch.kbSwitch': `切換人臉`,
         'faceMatch.kbSelect': `選擇表演者`,
         'faceMatch.kbToggle': `切換選擇`,
         'faceMatch.kbAddInstant': `Shift+按一下立即新增`,
-        'faceMatch.selectBest': `選擇最佳相符項目`,
-        'faceMatch.adding': `正在新增...`,
-        'faceMatch.done': `完成（{count}）`,
-        'faceMatch.toast.added': `已將表演者加入 {target}。`,
         'faceMatch.toast.addError': `新增表演者失敗：{error}`,
         'faceMatch.toast.noStashbox': `未設定 stash-box。請在設定 → 中繼資料提供者中新增 stash-box 提供者以啟用表演者匯入。參見 {url}`,
         'faceMatch.toast.noProvider': `找不到名為「StashDB」的提供者。請在設定 → 中繼資料提供者中重新命名你的提供者，使其為「StashDB」，以啟用表演者匯入。`,
         'faceMatch.toast.configureProvider': `請在設定 → 中繼資料提供者中設定 stash-box 提供者，以啟用表演者匯入。`,
-        'faceMatch.toast.addedMultiple': `已將 {count} 位表演者{s}加入 {target}。`,
         'faceMatch.toast.linked': `已將 {count} 個 stash ID{s}關聯至此表演者。`,
-        'sprite.title': `場景表演者`,
+        'sprite.title': `這個場景裡是誰?`,
         'sprite.close': `關閉`,
-        'sprite.foundConfirmed': `找到 {found} · 已確認 {confirmed}`,
-        'sprite.confidence': `信心值`,
-        'sprite.name': `名稱`,
-        'sprite.hits': `命中`,
-        'sprite.minConf': `最小信心值`,
-        'sprite.minConfTitle': `最低信心值：{percent}%`,
         'sprite.scanning': `Visage 正在掃描…`,
         'sprite.cancel': `取消`,
         'sprite.empty': `此精靈圖中未識別出任何表演者。`,
         'sprite.detectedFaceAlt': `偵測到的人臉`,
-        'sprite.spriteLabel': `精靈圖`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `在場景中`,
         'sprite.hitsCount': `{count} 次命中{s}`,
         'sprite.totalTime': `共 {time}`,
-        'sprite.alreadyInScene': `已在場景中`,
-        'sprite.clickToConfirm': `按一下以確認`,
-        'sprite.confirmed': `已確認`,
         'sprite.supportPatreon': `在 Patreon 上支持`,
         'sprite.confirmedCount': `已確認 {total} 中的 {confirmed}`,
-        'sprite.shownHint': `顯示 {shown}（共 {total} 個）· 按一下以確認 · ←→ 導覽 · Enter 確認`,
         'sprite.confirmHint': `按一下以確認 · ←→ 導覽 · Enter 確認`,
         'sprite.adding': `正在新增...`,
-        'sprite.done': `完成（{count}）`,
         'gender.male': `男性`,
         'gender.female': `女性`,
         'gender.transMale': `跨性別男性`,
@@ -15466,10 +15972,9 @@
         'card.select': `選擇 {name}`,
         'card.deselect': `取消選擇 {name}`,
         'card.openOn': `在 {source} 上開啟`,
-        'search.overlayHint': `拖曳以選擇一張臉 — Enter 掃描整個畫面 — Esc 取消`,
+        'search.overlayHint': `在臉部周圍拖曳。點選或按 Enter 使用整格畫面。按 Esc 取消。`,
         'search.noFaces': `該選擇中找不到人臉。請嘗試更緊密的裁剪，或按 Enter 掃描整個畫面。`,
         'search.captureMediaFail': `無法擷取媒體。請確認場景/影像已完全載入。`,
-        'search.healthBanner': `人臉辨識 API 無法連線。請啟動後端並重試。`,
         'search.failed': `人臉搜尋失敗：{error}`,
         'search.fetchImageFail': `無法從 Stash 取得影像。`,
         'search.captureFail': `擷取影像失敗：{error}`,
@@ -15477,20 +15982,28 @@
         'search.captureFrameFail': `無法擷取目前影格。`,
         'search.captureFrameFail2': `擷取目前影格失敗。`,
         'search.selectFaceVideo': `請在影片播放器區域內選擇一張人臉。`,
-        'search.menuItemTitle': `拖曳框選一張人臉，或按 Enter 掃描整個畫面，以在 StashDB 中搜尋相符項目`,
-        'search.currentFrame': `Visage：目前影格`,
-        'search.identifyFromImage': `Visage：從圖片識別`,
-        'search.identifyMenuTitle': `在 StashDB 中搜尋此表演者的圖片並關聯相符的 stash ID`,
+        'search.menuItemTitle': `找出這一格畫面裡是誰。在臉部周圍拖曳方框,或點選使用整格畫面。`,
+        'search.currentFrame': `Visage:辨識畫面`,
+        'search.identifyFromImage': `Visage:辨識`,
+        'search.identifyMenuTitle': `將此演員的圖片與你的 stash-box 比對並連結 stash ID`,
         'search.noPerformerImage': `此頁面上未找到表演者圖片。`,
         'scene.noSprite': `此場景沒有精靈圖或預覽影片。請在場景設定中產生它們，然後重試。`,
         'scene.noFaces': `在此場景的精靈圖或預覽影片中找不到人臉或表演者。`,
-        'scene.healthBanner': `人臉辨識 API 無法連線。請啟動後端並重試。`,
         'scene.failed': `場景掃描失敗：{error}`,
-        'scene.menuItemTitle': `識別場景中的每個表演者（需要產生的精靈圖或預覽影片）`,
-        'scene.wholeScene': `Visage：整個場景`,
+        'scene.menuItemTitle': `找出此場景中的所有人。需要已產生的 sprite sheet 或預覽影片。`,
+        'scene.wholeScene': `Visage:辨識場景`,
         'banner.changeBackend': `更換後端`,
         'banner.dismiss': `關閉`,
         'error.dismiss': `關閉`,
+        'error.retry': `重試`,
+        'error.undo': `復原`,
+        'error.undone': `已復原變更。`,
+        'error.undoFailed': `無法復原：{error}`,
+        'backend.busy': `人臉辨識服務忙碌中或正在啟動。請稍後再試。`,
+        'backend.serverError': `人臉辨識服務處理此要求時發生問題。請再試一次。`,
+        'backend.unreachableCloud': `無法連線至雲端人臉辨識服務。請檢查網路連線後再試一次。`,
+        'backend.notBackend': `{url} 上的伺服器不是 Visage 後端。請在 Visage 設定中檢查位址。`,
+        'backend.unreachableLocal': `無法連線至位於 {url} 的人臉辨識伺服器。請啟動它後再試一次。`,
         'firstRun.title': `設定你的 Visage 後端`,
         'firstRun.subtitle': `Visage 會將人臉影像傳送至後端進行識別。選擇要在哪裡執行它。`,
         'firstRun.cloud': `使用 Hugging Face 雲端`,
@@ -15506,6 +16019,35 @@
         'frame.close': `關閉影格選擇器`,
         'frame.seekFail': `無法快轉影片播放器。`,
         'frame.selectAt': `選擇 {time} 秒處的人臉影格`,
+        'card.existing.scenes': `已在場景中`,
+        'card.existing.images': `已在圖片中`,
+        'card.existing.performers': `已連結`,
+        'faceMatch.title.scenes': `這一格畫面裡是誰?`,
+        'faceMatch.title.images': `這張圖片裡是誰?`,
+        'faceMatch.title.performers': `比對此演員`,
+        'faceMatch.showMore': `再顯示 {count} 個`,
+        'faceMatch.showFewer': `收合`,
+        'faceMatch.allExisting.scenes': `找到的人都已在此場景中`,
+        'faceMatch.allExisting.images': `找到的人都已在此圖片中`,
+        'faceMatch.allExisting.performers': `此演員已連結`,
+        'faceMatch.confirm.scenes': `加入場景 ({count})`,
+        'faceMatch.confirm.images': `加入圖片 ({count})`,
+        'faceMatch.confirm.performers': `連結 ({count})`,
+        'faceMatch.adding.scenes': `加入中…`,
+        'faceMatch.adding.performers': `連結中…`,
+        'faceMatch.toast.added.scenes': `已將 {name} 加入此場景。`,
+        'faceMatch.toast.added.images': `已將 {name} 加入此圖片。`,
+        'faceMatch.toast.addedMany.scenes': `已將 {count} 位演員加入此場景。`,
+        'faceMatch.toast.addedMany.images': `已將 {count} 位演員加入此圖片。`,
+        'sprite.showMore': `顯示 {count} 個可能性較低的結果`,
+        'sprite.showFewer': `隱藏可能性較低的結果`,
+        'search.overlayHintImage': `在臉部周圍拖曳。點選或按 Enter 使用整張圖片。按 Esc 取消。`,
+        'search.noFacesPerformer': `在此演員的圖片中找不到臉部。`,
+        'search.selectAgain': `重新選取`,
+        'search.identifyImage': `Visage:辨識圖片`,
+        'search.imageMenuTitle': `找出這張圖片裡是誰。在臉部周圍拖曳方框,或點選使用整張圖片。`,
+        'faceMatch.adding.images': `加入中…`,
+        'sprite.confirm': `加入場景 ({count})`,
     };
 
     // Romanian.
@@ -15545,10 +16087,7 @@
         'backendSettings.sync.alreadyRunning': `Sincronizare deja în desfășurare`,
         'backendSettings.sync.error': `Sincronizare eșuată`,
         'backendSettings.sync.connectionLost': `Conexiune pierdută`,
-        'faceMatch.title': `CADRUL CURENT`,
         'faceMatch.close': `Închide`,
-        'faceMatch.facesSelected': `{faces} fețe găsite · {selected} selectate`,
-        'faceMatch.inScene': `· {count} în scenă`,
         'faceMatch.stashboxMissing': `Niciun stash-box configurat.`,
         'faceMatch.stashboxMissingBody': ` Adaugă un furnizor stash-box în Setări → Furnizori de metadate pentru a activa importul de performeri.`,
         'faceMatch.stashboxWrongName': `Niciun furnizor "StashDB" găsit.`,
@@ -15556,56 +16095,33 @@
         'faceMatch.learnMore': `Află mai multe.`,
         'faceMatch.scanning': `Se scanează • recunoaștere facială…`,
         'faceMatch.faceAlt': `Față {index}`,
-        'faceMatch.minConf': `Min. conf.`,
-        'faceMatch.minConfTitle': `Încredere minimă: {percent}%`,
         'faceMatch.detected': `Detectat`,
         'faceMatch.detectedFaceAlt': `Față detectată`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Susține pe Patreon`,
         'faceMatch.ofSelected': `{selected} din {total} selectate`,
-        'faceMatch.allInScene': `{total} fețe găsite · toate în scenă`,
-        'faceMatch.clickToSelect': `{total} fețe găsite · faceți clic pentru a selecta`,
+        'faceMatch.clickToSelect': `Fă clic pe o potrivire pentru a o selecta`,
         'faceMatch.kbSwitch': `Schimbă fețele`,
         'faceMatch.kbSelect': `Selectează performeri`,
         'faceMatch.kbToggle': `Comută selecția`,
         'faceMatch.kbAddInstant': `Shift+clic pentru a adăuga instant`,
-        'faceMatch.selectBest': `Selectează cele mai bune potriviri`,
-        'faceMatch.adding': `Se adaugă...`,
-        'faceMatch.done': `Gata ({count})`,
-        'faceMatch.toast.added': `Performer adăugat în {target}.`,
         'faceMatch.toast.addError': `Nu s-a reușit adăugarea performerului: {error}`,
         'faceMatch.toast.noStashbox': `Niciun stash-box configurat. Adaugă un furnizor stash-box în Setări → Furnizori de metadate pentru a activa importul de performeri. Vezi {url}`,
         'faceMatch.toast.noProvider': `Niciun furnizor numit "StashDB" găsit. Redenumește furnizorul în "StashDB" în Setări → Furnizori de metadate pentru a activa importul de performeri.`,
         'faceMatch.toast.configureProvider': `Configurează un furnizor stash-box în Setări → Furnizori de metadate pentru a activa importul de performeri.`,
-        'faceMatch.toast.addedMultiple': `S-au adăugat {count} performeri în {target}.`,
         'faceMatch.toast.linked': `Au fost legate {count} stash ID{s} de acest performer.`,
-        'sprite.title': `PERFORMERI DIN SCENĂ`,
+        'sprite.title': `Cine este în această scenă?`,
         'sprite.close': `Închide`,
-        'sprite.foundConfirmed': `{found} găsite · {confirmed} confirmate`,
-        'sprite.confidence': `încredere`,
-        'sprite.name': `nume`,
-        'sprite.hits': `potriviri`,
-        'sprite.minConf': `Min. conf.`,
-        'sprite.minConfTitle': `Încredere minimă: {percent}%`,
         'sprite.scanning': `Visage scanează…`,
         'sprite.cancel': `Anulează`,
         'sprite.empty': `Niciun performer identificat în acest sprite.`,
         'sprite.detectedFaceAlt': `Față detectată`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `În scenă`,
         'sprite.hitsCount': `{count} potriviri`,
         'sprite.totalTime': `{time} total`,
-        'sprite.alreadyInScene': `Deja în scenă`,
-        'sprite.clickToConfirm': `Faceți clic pentru a confirma`,
-        'sprite.confirmed': `Confirmat`,
         'sprite.supportPatreon': `Susține pe Patreon`,
         'sprite.confirmedCount': `{confirmed} din {total} confirmate`,
-        'sprite.shownHint': `{shown} afișate ({total} total) · faceți clic pentru a confirma · ←→ navigare · Enter confirmă`,
         'sprite.confirmHint': `Faceți clic pentru a confirma · ←→ navigare · Enter confirmă`,
         'sprite.adding': `Se adaugă...`,
-        'sprite.done': `Gata ({count})`,
         'gender.male': `Bărbat`,
         'gender.female': `Femeie`,
         'gender.transMale': `Bărbat trans`,
@@ -15618,10 +16134,9 @@
         'card.select': `Selectează {name}`,
         'card.deselect': `Deselectează {name}`,
         'card.openOn': `Deschide pe {source}`,
-        'search.overlayHint': `Trageți pentru a selecta o față — Enter pentru a scana întregul cadru — Esc pentru a anula`,
+        'search.overlayHint': `Trage în jurul unei fețe. Fă clic sau apasă Enter pentru tot cadrul. Esc pentru anulare.`,
         'search.noFaces': `Nicio față găsită în această selecție. Încearcă o decupare mai strânsă sau apasă Enter pentru a scana întregul cadru.`,
         'search.captureMediaFail': `Nu s-a putut captura media. Asigură-te că scena/imaginea este complet încărcată.`,
-        'search.healthBanner': `API-ul de recunoaștere facială nu este accesibil. Pornește backend-ul și încearcă din nou.`,
         'search.failed': `Căutarea feței a eșuat: {error}`,
         'search.fetchImageFail': `Nu s-a putut prelua imaginea din Stash.`,
         'search.captureFail': `Nu s-a reușit capturarea imaginii: {error}`,
@@ -15629,20 +16144,28 @@
         'search.captureFrameFail': `Nu s-a putut captura cadrul curent.`,
         'search.captureFrameFail2': `Nu s-a reușit capturarea cadrului curent.`,
         'search.selectFaceVideo': `Selectează o față în zona playerului video.`,
-        'search.menuItemTitle': `Trageți o casetă în jurul unei fețe, sau apăsați Enter pentru a scana întregul cadru, pentru a căuta potriviri în StashDB`,
-        'search.currentFrame': `Visage: Cadrul curent`,
-        'search.identifyFromImage': `Visage: Identifică din imagine`,
-        'search.identifyMenuTitle': `Caută imaginea acestui performer pe StashDB și leagă un stash ID potrivit`,
+        'search.menuItemTitle': `Află cine este în acest cadru. Trage un chenar în jurul unei fețe sau fă clic pentru tot cadrul.`,
+        'search.currentFrame': `Visage: identifică cadrul`,
+        'search.identifyFromImage': `Visage: identifică`,
+        'search.identifyMenuTitle': `Compară imaginea acestui performer cu stash-box-urile tale și leagă stash ID-ul`,
         'search.noPerformerImage': `Nu s-a găsit imaginea performerului pe această pagină.`,
         'scene.noSprite': `Nu s-a găsit nicio foaie de sprite sau video de previzualizare pentru această scenă. Generează-le în Setările scenei, apoi încearcă din nou.`,
         'scene.noFaces': `Nu s-au găsit fețe sau performeri în foaia de sprite sau video-ul de previzualizare al acestei scene.`,
-        'scene.healthBanner': `API-ul de recunoaștere facială nu este accesibil. Pornește backend-ul și încearcă din nou.`,
         'scene.failed': `Scanarea scenei a eșuat: {error}`,
-        'scene.menuItemTitle': `Identifică fiecare performer din scenă (necesită o foaie de sprite generată sau un video de previzualizare)`,
-        'scene.wholeScene': `Visage: Toată scena`,
+        'scene.menuItemTitle': `Găsește pe toată lumea din această scenă. Necesită un sprite sheet sau un video de previzualizare generat.`,
+        'scene.wholeScene': `Visage: identifică scena`,
         'banner.changeBackend': `Schimbă backend-ul`,
         'banner.dismiss': `Închide`,
         'error.dismiss': `Închide`,
+        'error.retry': `Încearcă din nou`,
+        'error.undo': `Anulează`,
+        'error.undone': `Modificarea a fost anulată.`,
+        'error.undoFailed': `Anularea nu a reușit: {error}`,
+        'backend.busy': `Serviciul de recunoaștere facială este ocupat sau pornește. Încearcă din nou peste câteva momente.`,
+        'backend.serverError': `Serviciul de recunoaștere facială a avut o problemă cu această cerere. Încearcă din nou.`,
+        'backend.unreachableCloud': `Serviciul de recunoaștere facială din cloud nu poate fi accesat. Verifică conexiunea și încearcă din nou.`,
+        'backend.notBackend': `Serverul de la {url} nu este un backend Visage. Verifică adresa în setările Visage.`,
+        'backend.unreachableLocal': `Serverul tău de recunoaștere facială de la {url} nu poate fi accesat. Pornește-l și încearcă din nou.`,
         'firstRun.title': `Configurează backend-ul Visage`,
         'firstRun.subtitle': `Visage trimite imagini cu fețe către un backend pentru recunoaștere. Alege unde să-l rulezi.`,
         'firstRun.cloud': `Folosește cloud Hugging Face`,
@@ -15658,6 +16181,35 @@
         'frame.close': `Închide selectorul de cadru`,
         'frame.seekFail': `Nu s-a reușit căutarea în playerul video.`,
         'frame.selectAt': `Selectează cadrul feței la {time}s`,
+        'card.existing.scenes': `În scenă`,
+        'card.existing.images': `În imagine`,
+        'card.existing.performers': `Legat`,
+        'faceMatch.title.scenes': `Cine este în acest cadru?`,
+        'faceMatch.title.images': `Cine este în această imagine?`,
+        'faceMatch.title.performers': `Potrivește acest performer`,
+        'faceMatch.showMore': `Arată încă {count}`,
+        'faceMatch.showFewer': `Arată mai puține`,
+        'faceMatch.allExisting.scenes': `Toți cei găsiți sunt deja în această scenă`,
+        'faceMatch.allExisting.images': `Toți cei găsiți sunt deja în această imagine`,
+        'faceMatch.allExisting.performers': `Acest performer este deja legat`,
+        'faceMatch.confirm.scenes': `Adaugă la scenă ({count})`,
+        'faceMatch.confirm.images': `Adaugă la imagine ({count})`,
+        'faceMatch.confirm.performers': `Leagă ({count})`,
+        'faceMatch.adding.scenes': `Se adaugă…`,
+        'faceMatch.adding.performers': `Se leagă…`,
+        'faceMatch.toast.added.scenes': `{name} a fost adăugat(ă) la această scenă.`,
+        'faceMatch.toast.added.images': `{name} a fost adăugat(ă) la această imagine.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performeri adăugați la această scenă.`,
+        'faceMatch.toast.addedMany.images': `{count} performeri adăugați la această imagine.`,
+        'sprite.showMore': `Arată {count} potriviri mai puțin probabile`,
+        'sprite.showFewer': `Ascunde potrivirile mai puțin probabile`,
+        'search.overlayHintImage': `Trage în jurul unei fețe. Fă clic sau apasă Enter pentru toată imaginea. Esc pentru anulare.`,
+        'search.noFacesPerformer': `Nicio față găsită în imaginea acestui performer.`,
+        'search.selectAgain': `Selectează din nou`,
+        'search.identifyImage': `Visage: identifică imaginea`,
+        'search.imageMenuTitle': `Află cine este în această imagine. Trage un chenar în jurul unei fețe sau fă clic pentru toată imaginea.`,
+        'faceMatch.adding.images': `Se adaugă…`,
+        'sprite.confirm': `Adaugă la scenă ({count})`,
     };
 
     const sk = {
@@ -15696,10 +16248,7 @@
         'backendSettings.sync.alreadyRunning': `Synchronizácia už prebieha`,
         'backendSettings.sync.error': `Synchronizácia zlyhala`,
         'backendSettings.sync.connectionLost': `Strata pripojenia`,
-        'faceMatch.title': `AKTUÁLNY SNÍMOK`,
         'faceMatch.close': `Zavrieť`,
-        'faceMatch.facesSelected': `Nájdených tvárí: {faces} · vybratých: {selected}`,
-        'faceMatch.inScene': `· {count} v scéne`,
         'faceMatch.stashboxMissing': `Nie je nakonfigurovaný stash-box.`,
         'faceMatch.stashboxMissingBody': ` Pridajte poskytovateľa stash-box v Settings → Metadata Providers, aby ste povolili import performerov.`,
         'faceMatch.stashboxWrongName': `Poskytovateľ "StashDB" nebol nájdený.`,
@@ -15707,56 +16256,33 @@
         'faceMatch.learnMore': `Zistiť viac.`,
         'faceMatch.scanning': `Skenovanie • rozpoznávanie tvárí…`,
         'faceMatch.faceAlt': `Tvár {index}`,
-        'faceMatch.minConf': `Min. ist.`,
-        'faceMatch.minConfTitle': `Minimálna istota: {percent}%`,
         'faceMatch.detected': `Zistené`,
         'faceMatch.detectedFaceAlt': `Zistená tvár`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Podporiť na Patreon`,
         'faceMatch.ofSelected': `Vybratých {selected} z {total}`,
-        'faceMatch.allInScene': `Nájdených tvárí: {total} · všetky v scéne`,
-        'faceMatch.clickToSelect': `Nájdených tvárí: {total} · kliknite pre výber`,
+        'faceMatch.clickToSelect': `Kliknutím vyberte zhodu`,
         'faceMatch.kbSwitch': `Prepínanie tvárí`,
         'faceMatch.kbSelect': `Výber performerov`,
         'faceMatch.kbToggle': `Prepínať výber`,
         'faceMatch.kbAddInstant': `Shift+klik pre okamžité pridanie`,
-        'faceMatch.selectBest': `Vybrať najlepšie zhody`,
-        'faceMatch.adding': `Pridávanie...`,
-        'faceMatch.done': `Hotovo ({count})`,
-        'faceMatch.toast.added': `Performer bol pridaný do {target}.`,
         'faceMatch.toast.addError': `Nepodarilo sa pridať performera: {error}`,
         'faceMatch.toast.noStashbox': `Nie je nakonfigurovaný stash-box. Pridajte poskytovateľa stash-box v Settings → Metadata Providers, aby ste povolili import performerov. Pozri {url}`,
         'faceMatch.toast.noProvider': `Poskytovateľ "StashDB" nebol nájdený. Premenujte poskytovateľa na "StashDB" v Settings → Metadata Providers, aby ste povolili import performerov.`,
         'faceMatch.toast.configureProvider': `Nakonfigurujte poskytovateľa stash-box v Settings → Metadata Providers, aby ste povolili import performerov.`,
-        'faceMatch.toast.addedMultiple': `Pridaní performeri: {count} do {target}.`,
         'faceMatch.toast.linked': `K tomuto performerovi bolo priradených {count} stash ID.`,
-        'sprite.title': `PERFORMERI SCÉNY`,
+        'sprite.title': `Kto je v tejto scéne?`,
         'sprite.close': `Zavrieť`,
-        'sprite.foundConfirmed': `Nájdených: {found} · potvrdených: {confirmed}`,
-        'sprite.confidence': `istota`,
-        'sprite.name': `meno`,
-        'sprite.hits': `zhody`,
-        'sprite.minConf': `Min. ist.`,
-        'sprite.minConfTitle': `Minimálna istota: {percent}%`,
         'sprite.scanning': `Skenovanie Visage…`,
         'sprite.cancel': `Zrušiť`,
         'sprite.empty': `V tomto sprite neboli identifikovaní žiadni performeri.`,
         'sprite.detectedFaceAlt': `Zistená tvár`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `V scéne`,
         'sprite.hitsCount': `Zhôd: {count}`,
         'sprite.totalTime': `Spolu {time}`,
-        'sprite.alreadyInScene': `Už v scéne`,
-        'sprite.clickToConfirm': `Kliknite pre potvrdenie`,
-        'sprite.confirmed': `Potvrdené`,
         'sprite.supportPatreon': `Podporiť na Patreon`,
         'sprite.confirmedCount': `Potvrdených {confirmed} z {total}`,
-        'sprite.shownHint': `Zobrazených: {shown} (spolu {total}) · kliknite pre potvrdenie · ←→ navigácia · Enter potvrdenie`,
         'sprite.confirmHint': `Kliknite pre potvrdenie · ←→ navigácia · Enter potvrdenie`,
         'sprite.adding': `Pridávanie...`,
-        'sprite.done': `Hotovo ({count})`,
         'gender.male': `Muž`,
         'gender.female': `Žena`,
         'gender.transMale': `Transgender muž`,
@@ -15769,10 +16295,9 @@
         'card.select': `Vybrať {name}`,
         'card.deselect': `Zrušiť výber {name}`,
         'card.openOn': `Otvoriť na {source}`,
-        'search.overlayHint': `Pretiahnite pre výber tváre — Enter pre skenovanie celého snímku — Esc pre zrušenie`,
+        'search.overlayHint': `Ťahajte okolo tváre. Kliknite alebo stlačte Enter pre celý záber. Esc zruší.`,
         'search.noFaces': `Vo vybranej oblasti neboli nájdené žiadne tváre. Skúste užší orez alebo stlačte Enter pre skenovanie celého snímku.`,
         'search.captureMediaFail': `Nepodarilo sa zachytiť médiá. Uistite sa, že scéna/obrázok je plne načítaný.`,
-        'search.healthBanner': `API pre rozpoznávanie tvárí je nedosiahnuteľné. Spustite backend a skúste to znova.`,
         'search.failed': `Hľadanie tváre zlyhalo: {error}`,
         'search.fetchImageFail': `Nepodarilo sa načítať obrázok zo Stash.`,
         'search.captureFail': `Nepodarilo sa zachytiť obrázok: {error}`,
@@ -15780,20 +16305,28 @@
         'search.captureFrameFail': `Nepodarilo sa zachytiť aktuálny snímok.`,
         'search.captureFrameFail2': `Chyba pri zachytení aktuálneho snímku.`,
         'search.selectFaceVideo': `Vyberte tvár v oblasti prehrávača videa.`,
-        'search.menuItemTitle': `Pretiahnite rámček okolo tváre alebo stlačte Enter pre skenovanie celého snímku, aby ste vyhľadali zhody v StashDB`,
-        'search.currentFrame': `Visage: aktuálny snímok`,
-        'search.identifyFromImage': `Visage: Identifikuj zo snímku`,
-        'search.identifyMenuTitle': `Prehľadať snímok tohto performera vo StashDB a priradiť zodpovedajúce stash ID`,
+        'search.menuItemTitle': `Zistite, kto je v tomto zábere. Ťahajte rámček okolo tváre, alebo kliknite pre celý záber.`,
+        'search.currentFrame': `Visage: Rozpoznať záber`,
+        'search.identifyFromImage': `Visage: Rozpoznať`,
+        'search.identifyMenuTitle': `Porovnať obrázok tohto účinkujúceho s vašimi stash-boxami a prepojiť stash ID`,
         'search.noPerformerImage': `Na tejto stránke sa nenašiel žiadny snímok performera.`,
         'scene.noSprite': `Pre túto scénu sa nenašiel žiadny sprite list ani náhľadové video. Vygenerujte ich v nastaveniach scény a skúste to znova.`,
         'scene.noFaces': `V sprite liste alebo náhľadovom videu tejto scény sa nenašli žiadne tváre ani performeri.`,
-        'scene.healthBanner': `API pre rozpoznávanie tvárí je nedosiahnuteľné. Spustite backend a skúste to znova.`,
         'scene.failed': `Skenovanie scény zlyhalo: {error}`,
-        'scene.menuItemTitle': `Identifikujte každého performera v scéne (vyžaduje vygenerovaný sprite list alebo náhľadové video)`,
-        'scene.wholeScene': `Visage: celá scéna`,
+        'scene.menuItemTitle': `Nájdite všetkých v tejto scéne. Vyžaduje vygenerovaný sprite sheet alebo náhľadové video.`,
+        'scene.wholeScene': `Visage: Rozpoznať scénu`,
         'banner.changeBackend': `Zmeniť backend`,
         'banner.dismiss': `Zavrieť`,
         'error.dismiss': `Zavrieť`,
+        'error.retry': `Skúsiť znova`,
+        'error.undo': `Späť`,
+        'error.undone': `Zmena vrátená.`,
+        'error.undoFailed': `Nepodarilo sa vrátiť späť: {error}`,
+        'backend.busy': `Služba rozpoznávania tvárí je zaneprázdnená alebo sa spúšťa. Skúste to o chvíľu znova.`,
+        'backend.serverError': `Služba rozpoznávania tvárí mala s touto požiadavkou problém. Skúste to znova.`,
+        'backend.unreachableCloud': `Cloudová služba rozpoznávania tvárí je nedosiahnuteľná. Skontrolujte pripojenie a skúste to znova.`,
+        'backend.notBackend': `Server na {url} nie je backend Visage. Skontrolujte adresu v nastaveniach Visage.`,
+        'backend.unreachableLocal': `Váš server na rozpoznávanie tvárí na {url} je nedosiahnuteľný. Spustite ho a skúste to znova.`,
         'firstRun.title': `Nastavte backend Visage`,
         'firstRun.subtitle': `Visage odosiela obrázky tvárí do backendu na rozpoznanie. Vyberte, kde ho spustiť.`,
         'firstRun.cloud': `Použiť cloud Hugging Face`,
@@ -15809,6 +16342,35 @@
         'frame.close': `Zavrieť výber snímku`,
         'frame.seekFail': `Nepodarilo sa pretočiť prehrávač videa.`,
         'frame.selectAt': `Vybrať snímok tváre v {time} s`,
+        'card.existing.scenes': `V scéne`,
+        'card.existing.images': `Na obrázku`,
+        'card.existing.performers': `Prepojené`,
+        'faceMatch.title.scenes': `Kto je v tomto zábere?`,
+        'faceMatch.title.images': `Kto je na tomto obrázku?`,
+        'faceMatch.title.performers': `Priradiť tohto účinkujúceho`,
+        'faceMatch.showMore': `Zobraziť ďalších {count}`,
+        'faceMatch.showFewer': `Zobraziť menej`,
+        'faceMatch.allExisting.scenes': `Všetci nájdení už sú v tejto scéne`,
+        'faceMatch.allExisting.images': `Všetci nájdení už sú na tomto obrázku`,
+        'faceMatch.allExisting.performers': `Tento účinkujúci už je prepojený`,
+        'faceMatch.confirm.scenes': `Pridať do scény ({count})`,
+        'faceMatch.confirm.images': `Pridať k obrázku ({count})`,
+        'faceMatch.confirm.performers': `Prepojiť ({count})`,
+        'faceMatch.adding.scenes': `Pridáva sa…`,
+        'faceMatch.adding.performers': `Prepája sa…`,
+        'faceMatch.toast.added.scenes': `{name} pridaný(á) do tejto scény.`,
+        'faceMatch.toast.added.images': `{name} pridaný(á) k tomuto obrázku.`,
+        'faceMatch.toast.addedMany.scenes': `Do tejto scény pridaní účinkujúci: {count}.`,
+        'faceMatch.toast.addedMany.images': `K tomuto obrázku pridaní účinkujúci: {count}.`,
+        'sprite.showMore': `Zobraziť menej pravdepodobné zhody ({count})`,
+        'sprite.showFewer': `Skryť menej pravdepodobné zhody`,
+        'search.overlayHintImage': `Ťahajte okolo tváre. Kliknite alebo stlačte Enter pre celý obrázok. Esc zruší.`,
+        'search.noFacesPerformer': `Na obrázku tohto účinkujúceho sa nenašla žiadna tvár.`,
+        'search.selectAgain': `Vybrať znova`,
+        'search.identifyImage': `Visage: Rozpoznať obrázok`,
+        'search.imageMenuTitle': `Zistite, kto je na tomto obrázku. Ťahajte rámček okolo tváre, alebo kliknite pre celý obrázok.`,
+        'faceMatch.adding.images': `Pridáva sa…`,
+        'sprite.confirm': `Pridať do scény ({count})`,
     };
 
     const pl = {
@@ -15847,10 +16409,7 @@
         'backendSettings.sync.alreadyRunning': `Synchronizacja już trwa`,
         'backendSettings.sync.error': `Synchronizacja nie powiodła się`,
         'backendSettings.sync.connectionLost': `Utracono połączenie`,
-        'faceMatch.title': `AKTUALNA KLATKA`,
         'faceMatch.close': `Zamknij`,
-        'faceMatch.facesSelected': `Znaleziono twarzy: {faces} · wybrano: {selected}`,
-        'faceMatch.inScene': `· {count} w scenie`,
         'faceMatch.stashboxMissing': `Brak skonfigurowanego stash-box.`,
         'faceMatch.stashboxMissingBody': ` Dodaj dostawcę stash-box w Settings → Metadata Providers, aby włączyć import wykonawców.`,
         'faceMatch.stashboxWrongName': `Nie znaleziono dostawcy "StashDB".`,
@@ -15858,56 +16417,33 @@
         'faceMatch.learnMore': `Dowiedz się więcej.`,
         'faceMatch.scanning': `Skanowanie • rozpoznawanie twarzy…`,
         'faceMatch.faceAlt': `Twarz {index}`,
-        'faceMatch.minConf': `Min. pew.`,
-        'faceMatch.minConfTitle': `Minimalna pewność: {percent}%`,
         'faceMatch.detected': `Wykryto`,
         'faceMatch.detectedFaceAlt': `Wykryta twarz`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Wesprzyj na Patreon`,
         'faceMatch.ofSelected': `Wybrano {selected} z {total}`,
-        'faceMatch.allInScene': `Znaleziono twarzy: {total} · wszystkie w scenie`,
-        'faceMatch.clickToSelect': `Znaleziono twarzy: {total} · kliknij, aby wybrać`,
+        'faceMatch.clickToSelect': `Kliknij dopasowanie, aby je wybrać`,
         'faceMatch.kbSwitch': `Przełączanie twarzy`,
         'faceMatch.kbSelect': `Wybór wykonawców`,
         'faceMatch.kbToggle': `Przełącz wybór`,
         'faceMatch.kbAddInstant': `Shift+klik, aby dodać natychmiast`,
-        'faceMatch.selectBest': `Wybierz najlepsze dopasowania`,
-        'faceMatch.adding': `Dodawanie...`,
-        'faceMatch.done': `Gotowe ({count})`,
-        'faceMatch.toast.added': `Dodano wykonawcę do {target}.`,
         'faceMatch.toast.addError': `Nie udało się dodać wykonawcy: {error}`,
         'faceMatch.toast.noStashbox': `Brak skonfigurowanego stash-box. Dodaj dostawcę stash-box w Settings → Metadata Providers, aby włączyć import wykonawców. Zobacz {url}`,
         'faceMatch.toast.noProvider': `Nie znaleziono dostawcy "StashDB". Zmień nazwę dostawcy na "StashDB" w Settings → Metadata Providers, aby włączyć import wykonawców.`,
         'faceMatch.toast.configureProvider': `Skonfiguruj dostawcę stash-box w Settings → Metadata Providers, aby włączyć import wykonawców.`,
-        'faceMatch.toast.addedMultiple': `Dodano wykonawców: {count} do {target}.`,
         'faceMatch.toast.linked': `Przypisano {count} stash ID do tego wykonawcy.`,
-        'sprite.title': `WYKONAWCY SCENY`,
+        'sprite.title': `Kto jest w tej scenie?`,
         'sprite.close': `Zamknij`,
-        'sprite.foundConfirmed': `Znaleziono: {found} · potwierdzono: {confirmed}`,
-        'sprite.confidence': `pewność`,
-        'sprite.name': `nazwa`,
-        'sprite.hits': `trafienia`,
-        'sprite.minConf': `Min. pew.`,
-        'sprite.minConfTitle': `Minimalna pewność: {percent}%`,
         'sprite.scanning': `Skanowanie Visage…`,
         'sprite.cancel': `Anuluj`,
         'sprite.empty': `W tym sprite nie zidentyfikowano wykonawców.`,
         'sprite.detectedFaceAlt': `Wykryta twarz`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `W scenie`,
         'sprite.hitsCount': `Trafień: {count}`,
         'sprite.totalTime': `Łącznie {time}`,
-        'sprite.alreadyInScene': `Już w scenie`,
-        'sprite.clickToConfirm': `Kliknij, aby potwierdzić`,
-        'sprite.confirmed': `Potwierdzono`,
         'sprite.supportPatreon': `Wesprzyj na Patreon`,
         'sprite.confirmedCount': `Potwierdzono {confirmed} z {total}`,
-        'sprite.shownHint': `Pokazano: {shown} (łącznie {total}) · kliknij, aby potwierdzić · ←→ nawigacja · Enter potwierdzenie`,
         'sprite.confirmHint': `Kliknij, aby potwierdzić · ←→ nawigacja · Enter potwierdzenie`,
         'sprite.adding': `Dodawanie...`,
-        'sprite.done': `Gotowe ({count})`,
         'gender.male': `Mężczyzna`,
         'gender.female': `Kobieta`,
         'gender.transMale': `Transpłciowy mężczyzna`,
@@ -15920,10 +16456,9 @@
         'card.select': `Wybierz {name}`,
         'card.deselect': `Odznacz {name}`,
         'card.openOn': `Otwórz na {source}`,
-        'search.overlayHint': `Przeciągnij, aby wybrać twarz — Enter, aby przeskanować całą klatkę — Esc, aby anulować`,
+        'search.overlayHint': `Przeciągnij wokół twarzy. Kliknij lub naciśnij Enter dla całej klatki. Esc anuluje.`,
         'search.noFaces': `W wybranym obszarze nie znaleziono twarzy. Spróbuj ciaśniejszego kadru lub naciśnij Enter, aby przeskanować całą klatkę.`,
         'search.captureMediaFail': `Nie udało się przechwycić mediów. Upewnij się, że scena/obraz jest w pełni załadowany.`,
-        'search.healthBanner': `API rozpoznawania twarzy jest nieosiągalne. Uruchom backend i spróbuj ponownie.`,
         'search.failed': `Wyszukiwanie twarzy nie powiodło się: {error}`,
         'search.fetchImageFail': `Nie udało się pobrać obrazu ze Stash.`,
         'search.captureFail': `Nie udało się przechwycić obrazu: {error}`,
@@ -15931,20 +16466,28 @@
         'search.captureFrameFail': `Nie udało się przechwycić bieżącej klatki.`,
         'search.captureFrameFail2': `Błąd podczas przechwytywania bieżącej klatki.`,
         'search.selectFaceVideo': `Zaznacz twarz w obszarze odtwarzacza wideo.`,
-        'search.menuItemTitle': `Przeciągnij ramkę wokół twarzy lub naciśnij Enter, aby przeskanować całą klatkę i wyszukać dopasowania w StashDB`,
-        'search.currentFrame': `Visage: bieżąca klatka`,
-        'search.identifyFromImage': `Visage: Identyfikuj ze zdjęcia`,
-        'search.identifyMenuTitle': `Przeszukaj zdjęcie tego wykonawcy w StashDB i przypisz pasujące stash ID`,
+        'search.menuItemTitle': `Sprawdź, kto jest w tej klatce. Przeciągnij ramkę wokół twarzy lub kliknij dla całej klatki.`,
+        'search.currentFrame': `Visage: rozpoznaj klatkę`,
+        'search.identifyFromImage': `Visage: rozpoznaj`,
+        'search.identifyMenuTitle': `Porównaj zdjęcie tego wykonawcy ze swoimi stash-boxami i powiąż stash ID`,
         'search.noPerformerImage': `Nie znaleziono zdjęcia wykonawcy na tej stronie.`,
         'scene.noSprite': `Nie znaleziono arkusza sprite ani wideo podglądu dla tej sceny. Wygeneruj je w ustawieniach sceny, a następnie spróbuj ponownie.`,
         'scene.noFaces': `Nie znaleziono twarzy ani wykonawców w arkuszu sprite lub wideo podglądu tej sceny.`,
-        'scene.healthBanner': `API rozpoznawania twarzy jest nieosiągalne. Uruchom backend i spróbuj ponownie.`,
         'scene.failed': `Skanowanie sceny nie powiodło się: {error}`,
-        'scene.menuItemTitle': `Zidentyfikuj każdego wykonawcę w scenie (wymaga wygenerowanego arkusza sprite lub wideo podglądu)`,
-        'scene.wholeScene': `Visage: cała scena`,
+        'scene.menuItemTitle': `Znajdź wszystkich w tej scenie. Wymaga wygenerowanego sprite sheetu lub wideo podglądu.`,
+        'scene.wholeScene': `Visage: rozpoznaj scenę`,
         'banner.changeBackend': `Zmień backend`,
         'banner.dismiss': `Odrzuć`,
         'error.dismiss': `Odrzuć`,
+        'error.retry': `Spróbuj ponownie`,
+        'error.undo': `Cofnij`,
+        'error.undone': `Zmiana cofnięta.`,
+        'error.undoFailed': `Nie udało się cofnąć: {error}`,
+        'backend.busy': `Usługa rozpoznawania twarzy jest zajęta lub się uruchamia. Spróbuj ponownie za chwilę.`,
+        'backend.serverError': `Usługa rozpoznawania twarzy napotkała problem z tym żądaniem. Spróbuj ponownie.`,
+        'backend.unreachableCloud': `Nie można połączyć się z chmurową usługą rozpoznawania twarzy. Sprawdź połączenie i spróbuj ponownie.`,
+        'backend.notBackend': `Serwer pod adresem {url} nie jest backendem Visage. Sprawdź adres w ustawieniach Visage.`,
+        'backend.unreachableLocal': `Nie można połączyć się z twoim serwerem rozpoznawania twarzy pod adresem {url}. Uruchom go i spróbuj ponownie.`,
         'firstRun.title': `Skonfiguruj backend Visage`,
         'firstRun.subtitle': `Visage wysyła obrazy twarzy do backendu w celu rozpoznania. Wybierz, gdzie go uruchomić.`,
         'firstRun.cloud': `Użyj chmury Hugging Face`,
@@ -15960,6 +16503,35 @@
         'frame.close': `Zamknij wybór klatki`,
         'frame.seekFail': `Nie udało się przewinąć odtwarzacza wideo.`,
         'frame.selectAt': `Wybierz klatkę twarzy w {time} s`,
+        'card.existing.scenes': `W scenie`,
+        'card.existing.images': `Na obrazie`,
+        'card.existing.performers': `Powiązany`,
+        'faceMatch.title.scenes': `Kto jest w tej klatce?`,
+        'faceMatch.title.images': `Kto jest na tym obrazie?`,
+        'faceMatch.title.performers': `Dopasuj tego wykonawcę`,
+        'faceMatch.showMore': `Pokaż {count} więcej`,
+        'faceMatch.showFewer': `Pokaż mniej`,
+        'faceMatch.allExisting.scenes': `Wszyscy znalezieni są już w tej scenie`,
+        'faceMatch.allExisting.images': `Wszyscy znalezieni są już na tym obrazie`,
+        'faceMatch.allExisting.performers': `Ten wykonawca jest już powiązany`,
+        'faceMatch.confirm.scenes': `Dodaj do sceny ({count})`,
+        'faceMatch.confirm.images': `Dodaj do obrazu ({count})`,
+        'faceMatch.confirm.performers': `Powiąż ({count})`,
+        'faceMatch.adding.scenes': `Dodawanie…`,
+        'faceMatch.adding.performers': `Wiązanie…`,
+        'faceMatch.toast.added.scenes': `Dodano {name} do tej sceny.`,
+        'faceMatch.toast.added.images': `Dodano {name} do tego obrazu.`,
+        'faceMatch.toast.addedMany.scenes': `Dodano wykonawców do tej sceny: {count}.`,
+        'faceMatch.toast.addedMany.images': `Dodano wykonawców do tego obrazu: {count}.`,
+        'sprite.showMore': `Pokaż mniej prawdopodobne dopasowania: {count}`,
+        'sprite.showFewer': `Ukryj mniej prawdopodobne dopasowania`,
+        'search.overlayHintImage': `Przeciągnij wokół twarzy. Kliknij lub naciśnij Enter dla całego obrazu. Esc anuluje.`,
+        'search.noFacesPerformer': `Nie znaleziono twarzy na zdjęciu tego wykonawcy.`,
+        'search.selectAgain': `Zaznacz ponownie`,
+        'search.identifyImage': `Visage: rozpoznaj obraz`,
+        'search.imageMenuTitle': `Sprawdź, kto jest na tym obrazie. Przeciągnij ramkę wokół twarzy lub kliknij dla całego obrazu.`,
+        'faceMatch.adding.images': `Dodawanie…`,
+        'sprite.confirm': `Dodaj do sceny ({count})`,
     };
 
     // Greek.
@@ -15999,10 +16571,7 @@
         'backendSettings.sync.alreadyRunning': `Ο συγχρονισμός είναι ήδη σε εξέλιξη`,
         'backendSettings.sync.error': `Ο συγχρονισμός απέτυχε`,
         'backendSettings.sync.connectionLost': `Η σύνδεση χάθηκε`,
-        'faceMatch.title': `ΤΡΕΧΟΝ ΚΑΡΕ`,
         'faceMatch.close': `Κλείσιμο`,
-        'faceMatch.facesSelected': `{faces} πρόσωπα βρέθηκαν · {selected} επιλέχθηκαν`,
-        'faceMatch.inScene': `· {count} στη σκηνή`,
         'faceMatch.stashboxMissing': `Δεν έχει διαμορφωθεί stash-box.`,
         'faceMatch.stashboxMissingBody': ` Προσθέστε έναν πάροχο stash-box στις Ρυθμίσεις → Πάροχοι μεταδεδομένων για να ενεργοποιήσετε την εισαγωγή ερμηνευτών.`,
         'faceMatch.stashboxWrongName': `Δεν βρέθηκε πάροχος "StashDB".`,
@@ -16010,56 +16579,33 @@
         'faceMatch.learnMore': `Μάθετε περισσότερα.`,
         'faceMatch.scanning': `Σάρωση • αναγνώριση προσώπου…`,
         'faceMatch.faceAlt': `Πρόσωπο {index}`,
-        'faceMatch.minConf': `Ελάχ. εμπ.`,
-        'faceMatch.minConfTitle': `Ελάχιστη εμπιστοσύνη: {percent}%`,
         'faceMatch.detected': `Εντοπίστηκε`,
         'faceMatch.detectedFaceAlt': `Πρόσωπο που εντοπίστηκε`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Υποστήριξη στο Patreon`,
         'faceMatch.ofSelected': `{selected} από {total} επιλέχθηκαν`,
-        'faceMatch.allInScene': `{total} πρόσωπα βρέθηκαν · όλα στη σκηνή`,
-        'faceMatch.clickToSelect': `{total} πρόσωπα βρέθηκαν · κάντε κλικ για επιλογή`,
+        'faceMatch.clickToSelect': `Κάντε κλικ σε μια αντιστοίχιση για να την επιλέξετε`,
         'faceMatch.kbSwitch': `Αλλαγή προσώπων`,
         'faceMatch.kbSelect': `Επιλογή ερμηνευτών`,
         'faceMatch.kbToggle': `Εναλλαγή επιλογής`,
         'faceMatch.kbAddInstant': `Shift+κλικ για άμεση προσθήκη`,
-        'faceMatch.selectBest': `Επιλογή καλύτερων αντιστοιχιών`,
-        'faceMatch.adding': `Προσθήκη...`,
-        'faceMatch.done': `Τέλος ({count})`,
-        'faceMatch.toast.added': `Προστέθηκε ερμηνευτής στο {target}.`,
         'faceMatch.toast.addError': `Αποτυχία προσθήκης ερμηνευτή: {error}`,
         'faceMatch.toast.noStashbox': `Δεν έχει διαμορφωθεί stash-box. Προσθέστε έναν πάροχο stash-box στις Ρυθμίσεις → Πάροχοι μεταδεδομένων για να ενεργοποιήσετε την εισαγωγή ερμηνευτών. Δείτε {url}`,
         'faceMatch.toast.noProvider': `Δεν βρέθηκε πάροχος με το όνομα "StashDB". Μετονομάστε τον πάροχό σας σε "StashDB" στις Ρυθμίσεις → Πάροχοι μεταδεδομένων για να ενεργοποιήσετε την εισαγωγή ερμηνευτών.`,
         'faceMatch.toast.configureProvider': `Διαμορφώστε έναν πάροχο stash-box στις Ρυθμίσεις → Πάροχοι μεταδεδομένων για να ενεργοποιήσετε την εισαγωγή ερμηνευτών.`,
-        'faceMatch.toast.addedMultiple': `Προστέθηκαν {count} ερμηνευτές στο {target}.`,
         'faceMatch.toast.linked': `Συνδέθηκαν {count} stash ID{s} με αυτόν τον ερμηνευτή.`,
-        'sprite.title': `ΕΡΜΗΝΕΥΤΕΣ ΣΚΗΝΗΣ`,
+        'sprite.title': `Ποιος είναι σε αυτή τη σκηνή;`,
         'sprite.close': `Κλείσιμο`,
-        'sprite.foundConfirmed': `{found} βρέθηκαν · {confirmed} επιβεβαιώθηκαν`,
-        'sprite.confidence': `εμπιστοσύνη`,
-        'sprite.name': `όνομα`,
-        'sprite.hits': `αντιστοιχίες`,
-        'sprite.minConf': `Ελάχ. εμπ.`,
-        'sprite.minConfTitle': `Ελάχιστη εμπιστοσύνη: {percent}%`,
         'sprite.scanning': `Σάρωση Visage…`,
         'sprite.cancel': `Ακύρωση`,
         'sprite.empty': `Δεν ταυτοποιήθηκαν ερμηνευτές σε αυτό το sprite.`,
         'sprite.detectedFaceAlt': `Πρόσωπο που εντοπίστηκε`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Στη σκηνή`,
         'sprite.hitsCount': `{count} αντιστοιχίες`,
         'sprite.totalTime': `{time} συνολικά`,
-        'sprite.alreadyInScene': `Ήδη στη σκηνή`,
-        'sprite.clickToConfirm': `Κάντε κλικ για επιβεβαίωση`,
-        'sprite.confirmed': `Επιβεβαιώθηκε`,
         'sprite.supportPatreon': `Υποστήριξη στο Patreon`,
         'sprite.confirmedCount': `{confirmed} από {total} επιβεβαιώθηκαν`,
-        'sprite.shownHint': `{shown} εμφανίζονται ({total} συνολικά) · κάντε κλικ για επιβεβαίωση · ←→ πλοήγηση · Enter επιβεβαίωση`,
         'sprite.confirmHint': `Κάντε κλικ για επιβεβαίωση · ←→ πλοήγηση · Enter επιβεβαίωση`,
         'sprite.adding': `Προσθήκη...`,
-        'sprite.done': `Τέλος ({count})`,
         'gender.male': `Άνδρας`,
         'gender.female': `Γυναίκα`,
         'gender.transMale': `Τρανς άνδρας`,
@@ -16072,10 +16618,9 @@
         'card.select': `Επιλογή {name}`,
         'card.deselect': `Αποεπιλογή {name}`,
         'card.openOn': `Άνοιγμα στο {source}`,
-        'search.overlayHint': `Σύρετε για να επιλέξετε ένα πρόσωπο — Enter για σάρωση ολόκληρου του καρέ — Esc για ακύρωση`,
+        'search.overlayHint': `Σύρετε γύρω από ένα πρόσωπο. Κάντε κλικ ή πατήστε Enter για όλο το καρέ. Esc για ακύρωση.`,
         'search.noFaces': `Δεν βρέθηκαν πρόσωπα σε αυτή την επιλογή. Δοκιμάστε στενότερη περικοπή ή πατήστε Enter για σάρωση ολόκληρου του καρέ.`,
         'search.captureMediaFail': `Δεν ήταν δυνατή η λήψη του μέσου. Βεβαιωθείτε ότι η σκηνή/εικόνα έχει φορτωθεί πλήρως.`,
-        'search.healthBanner': `Το API αναγνώρισης προσώπου δεν είναι προσβάσιμο. Εκκινήστε το backend και δοκιμάστε ξανά.`,
         'search.failed': `Η αναζήτηση προσώπου απέτυχε: {error}`,
         'search.fetchImageFail': `Δεν ήταν δυνατή η λήψη εικόνας από το Stash.`,
         'search.captureFail': `Αποτυχία λήψης εικόνας: {error}`,
@@ -16083,20 +16628,28 @@
         'search.captureFrameFail': `Δεν ήταν δυνατή η λήψη του τρέχοντος καρέ.`,
         'search.captureFrameFail2': `Αποτυχία λήψης του τρέχοντος καρέ.`,
         'search.selectFaceVideo': `Επιλέξτε ένα πρόσωπο στην περιοχή του προγράμματος αναπαραγωγής βίντεο.`,
-        'search.menuItemTitle': `Σύρετε ένα πλαίσιο γύρω από ένα πρόσωπο ή πατήστε Enter για σάρωση ολόκληρου του καρέ, για αναζήτηση αντιστοιχιών στο StashDB`,
-        'search.currentFrame': `Visage: Τρέχον καρέ`,
-        'search.identifyFromImage': `Visage: Αναγνώριση από εικόνα`,
-        'search.identifyMenuTitle': `Αναζήτηση της εικόνας αυτού του ερμηνευτή στο StashDB και σύνδεση αντίστοιχου stash ID`,
+        'search.menuItemTitle': `Βρείτε ποιος είναι σε αυτό το καρέ. Σύρετε ένα πλαίσιο γύρω από ένα πρόσωπο ή κάντε κλικ για όλο το καρέ.`,
+        'search.currentFrame': `Visage: Αναγνώριση καρέ`,
+        'search.identifyFromImage': `Visage: Αναγνώριση`,
+        'search.identifyMenuTitle': `Σύγκριση της εικόνας αυτού του performer με τα stash-box σας και σύνδεση του stash ID`,
         'search.noPerformerImage': `Δεν βρέθηκε εικόνα ερμηνευτή σε αυτήν τη σελίδα.`,
         'scene.noSprite': `Δεν βρέθηκε φύλλο sprite ή βίντεο προεπισκόπησης για αυτή τη σκηνή. Δημιουργήστε τα στις ρυθμίσεις Scene και δοκιμάστε ξανά.`,
         'scene.noFaces': `Δεν βρέθηκαν πρόσωπα ή ερμηνευτές στο φύλλο sprite ή στο βίντεο προεπισκόπησης αυτής της σκηνής.`,
-        'scene.healthBanner': `Το API αναγνώρισης προσώπου δεν είναι προσβάσιμο. Εκκινήστε το backend και δοκιμάστε ξανά.`,
         'scene.failed': `Η σάρωση σκηνής απέτυχε: {error}`,
-        'scene.menuItemTitle': `Ταυτοποιήστε κάθε ερμηνευτή στη σκηνή (απαιτεί δημιουργημένο φύλλο sprite ή βίντεο προεπισκόπησης)`,
-        'scene.wholeScene': `Visage: Ολόκληρη σκηνή`,
+        'scene.menuItemTitle': `Βρείτε όλους σε αυτή τη σκηνή. Απαιτείται sprite sheet ή βίντεο προεπισκόπησης.`,
+        'scene.wholeScene': `Visage: Αναγνώριση σκηνής`,
         'banner.changeBackend': `Αλλαγή backend`,
         'banner.dismiss': `Απόρριψη`,
         'error.dismiss': `Απόρριψη`,
+        'error.retry': `Δοκιμάστε ξανά`,
+        'error.undo': `Αναίρεση`,
+        'error.undone': `Η αλλαγή αναιρέθηκε.`,
+        'error.undoFailed': `Η αναίρεση απέτυχε: {error}`,
+        'backend.busy': `Η υπηρεσία αναγνώρισης προσώπου είναι απασχολημένη ή ξεκινά. Δοκιμάστε ξανά σε λίγο.`,
+        'backend.serverError': `Η υπηρεσία αναγνώρισης προσώπου είχε πρόβλημα με αυτό το αίτημα. Δοκιμάστε ξανά.`,
+        'backend.unreachableCloud': `Η υπηρεσία αναγνώρισης προσώπου στο cloud δεν είναι προσβάσιμη. Ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.`,
+        'backend.notBackend': `Ο διακομιστής στο {url} δεν είναι backend του Visage. Ελέγξτε τη διεύθυνση στις ρυθμίσεις του Visage.`,
+        'backend.unreachableLocal': `Ο διακομιστής αναγνώρισης προσώπου στο {url} δεν είναι προσβάσιμος. Εκκινήστε τον και δοκιμάστε ξανά.`,
         'firstRun.title': `Ρυθμίστε το backend του Visage`,
         'firstRun.subtitle': `Το Visage στέλνει εικόνες προσώπων σε ένα backend για αναγνώριση. Επιλέξτε πού θα το εκτελέσετε.`,
         'firstRun.cloud': `Χρήση cloud Hugging Face`,
@@ -16112,6 +16665,35 @@
         'frame.close': `Κλείσιμο επιλογέα καρέ`,
         'frame.seekFail': `Αποτυχία μετάβασης στο πρόγραμμα αναπαραγωγής βίντεο.`,
         'frame.selectAt': `Επιλογή καρέ προσώπου στο {time}s`,
+        'card.existing.scenes': `Στη σκηνή`,
+        'card.existing.images': `Στην εικόνα`,
+        'card.existing.performers': `Συνδεδεμένο`,
+        'faceMatch.title.scenes': `Ποιος είναι σε αυτό το καρέ;`,
+        'faceMatch.title.images': `Ποιος είναι σε αυτή την εικόνα;`,
+        'faceMatch.title.performers': `Αντιστοίχιση αυτού του performer`,
+        'faceMatch.showMore': `Εμφάνιση {count} ακόμη`,
+        'faceMatch.showFewer': `Εμφάνιση λιγότερων`,
+        'faceMatch.allExisting.scenes': `Όλοι όσοι βρέθηκαν είναι ήδη στη σκηνή`,
+        'faceMatch.allExisting.images': `Όλοι όσοι βρέθηκαν είναι ήδη στην εικόνα`,
+        'faceMatch.allExisting.performers': `Αυτός ο performer είναι ήδη συνδεδεμένος`,
+        'faceMatch.confirm.scenes': `Προσθήκη στη σκηνή ({count})`,
+        'faceMatch.confirm.images': `Προσθήκη στην εικόνα ({count})`,
+        'faceMatch.confirm.performers': `Σύνδεση ({count})`,
+        'faceMatch.adding.scenes': `Προσθήκη…`,
+        'faceMatch.adding.performers': `Σύνδεση…`,
+        'faceMatch.toast.added.scenes': `Ο/Η {name} προστέθηκε στη σκηνή.`,
+        'faceMatch.toast.added.images': `Ο/Η {name} προστέθηκε στην εικόνα.`,
+        'faceMatch.toast.addedMany.scenes': `Προστέθηκαν {count} performers στη σκηνή.`,
+        'faceMatch.toast.addedMany.images': `Προστέθηκαν {count} performers στην εικόνα.`,
+        'sprite.showMore': `Εμφάνιση {count} λιγότερο πιθανών αντιστοιχίσεων`,
+        'sprite.showFewer': `Απόκρυψη λιγότερο πιθανών αντιστοιχίσεων`,
+        'search.overlayHintImage': `Σύρετε γύρω από ένα πρόσωπο. Κάντε κλικ ή πατήστε Enter για όλη την εικόνα. Esc για ακύρωση.`,
+        'search.noFacesPerformer': `Δεν βρέθηκε πρόσωπο στην εικόνα αυτού του performer.`,
+        'search.selectAgain': `Επιλογή ξανά`,
+        'search.identifyImage': `Visage: Αναγνώριση εικόνας`,
+        'search.imageMenuTitle': `Βρείτε ποιος είναι σε αυτή την εικόνα. Σύρετε ένα πλαίσιο γύρω από ένα πρόσωπο ή κάντε κλικ για όλη την εικόνα.`,
+        'faceMatch.adding.images': `Προσθήκη…`,
+        'sprite.confirm': `Προσθήκη στη σκηνή ({count})`,
     };
 
     const ja = {
@@ -16150,10 +16732,7 @@
         'backendSettings.sync.alreadyRunning': `同期はすでに進行中です`,
         'backendSettings.sync.error': `同期に失敗しました`,
         'backendSettings.sync.connectionLost': `接続が切断されました`,
-        'faceMatch.title': `現在のフレーム`,
         'faceMatch.close': `閉じる`,
-        'faceMatch.facesSelected': `{faces} 個の顔を検出 · {selected} 個を選択`,
-        'faceMatch.inScene': `· シーン内 {count}`,
         'faceMatch.stashboxMissing': `stash-box が設定されていません。`,
         'faceMatch.stashboxMissingBody': ` 設定 → メタデータプロバイダーで stash-box プロバイダーを追加すると、パフォーマーのインポートが可能になります。`,
         'faceMatch.stashboxWrongName': `「StashDB」プロバイダーが見つかりません。`,
@@ -16161,56 +16740,33 @@
         'faceMatch.learnMore': `詳細はこちら。`,
         'faceMatch.scanning': `スキャン中 · 顔認識…`,
         'faceMatch.faceAlt': `顔 {index}`,
-        'faceMatch.minConf': `最小信頼度`,
-        'faceMatch.minConfTitle': `最小信頼度：{percent}%`,
         'faceMatch.detected': `検出済み`,
         'faceMatch.detectedFaceAlt': `検出された顔`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Patreon で支援する`,
         'faceMatch.ofSelected': `{total} 個中 {selected} 個を選択`,
-        'faceMatch.allInScene': `{total} 個の顔を検出 · すべてシーン内`,
-        'faceMatch.clickToSelect': `{total} 個の顔を検出 · クリックして選択`,
+        'faceMatch.clickToSelect': `候補をクリックして選択`,
         'faceMatch.kbSwitch': `顔を切り替え`,
         'faceMatch.kbSelect': `パフォーマーを選択`,
         'faceMatch.kbToggle': `選択を切り替え`,
         'faceMatch.kbAddInstant': `Shift+クリックで即座に追加`,
-        'faceMatch.selectBest': `最良の一致を選択`,
-        'faceMatch.adding': `追加中...`,
-        'faceMatch.done': `完了（{count}）`,
-        'faceMatch.toast.added': `パフォーマーを {target} に追加しました。`,
         'faceMatch.toast.addError': `パフォーマーの追加に失敗しました：{error}`,
         'faceMatch.toast.noStashbox': `stash-box が設定されていません。設定 → メタデータプロバイダーで stash-box プロバイダーを追加すると、パフォーマーのインポートが可能になります。参照：{url}`,
         'faceMatch.toast.noProvider': `「StashDB」という名前のプロバイダーが見つかりません。設定 → メタデータプロバイダーでプロバイダーの名前を「StashDB」に変更すると、パフォーマーのインポートが可能になります。`,
         'faceMatch.toast.configureProvider': `設定 → メタデータプロバイダーで stash-box プロバイダーを設定すると、パフォーマーのインポートが可能になります。`,
-        'faceMatch.toast.addedMultiple': `{count} 人のパフォーマー{s}を {target} に追加しました。`,
         'faceMatch.toast.linked': `{count} 件の stash ID{s}をこのパフォーマーに関連付けました。`,
-        'sprite.title': `シーンのパフォーマー`,
+        'sprite.title': `このシーンに写っているのは?`,
         'sprite.close': `閉じる`,
-        'sprite.foundConfirmed': `{found} 件検出 · {confirmed} 件確定`,
-        'sprite.confidence': `信頼度`,
-        'sprite.name': `名前`,
-        'sprite.hits': `ヒット`,
-        'sprite.minConf': `最小信頼度`,
-        'sprite.minConfTitle': `最小信頼度：{percent}%`,
         'sprite.scanning': `Visage スキャン中…`,
         'sprite.cancel': `キャンセル`,
         'sprite.empty': `このスプライトで特定されたパフォーマーはありません。`,
         'sprite.detectedFaceAlt': `検出された顔`,
-        'sprite.spriteLabel': `スプライト`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `シーン内`,
         'sprite.hitsCount': `{count} ヒット{s}`,
         'sprite.totalTime': `合計 {time}`,
-        'sprite.alreadyInScene': `すでにシーン内`,
-        'sprite.clickToConfirm': `クリックして確定`,
-        'sprite.confirmed': `確定済み`,
         'sprite.supportPatreon': `Patreon で支援する`,
         'sprite.confirmedCount': `{total} 件中 {confirmed} 件を確定`,
-        'sprite.shownHint': `{shown} 件を表示（計 {total} 件）· クリックして確定 · ←→ ナビゲート · Enter で確定`,
         'sprite.confirmHint': `クリックして確定 · ←→ ナビゲート · Enter で確定`,
         'sprite.adding': `追加中...`,
-        'sprite.done': `完了（{count}）`,
         'gender.male': `男性`,
         'gender.female': `女性`,
         'gender.transMale': `トランスジェンダー男性`,
@@ -16223,10 +16779,9 @@
         'card.select': `{name} を選択`,
         'card.deselect': `{name} の選択を解除`,
         'card.openOn': `{source} で開く`,
-        'search.overlayHint': `ドラッグして顔を選択 — Enter でフレーム全体をスキャン — Esc でキャンセル`,
+        'search.overlayHint': `顔の周りをドラッグします。クリックまたは Enter でフレーム全体。Esc でキャンセル。`,
         'search.noFaces': `その選択範囲では顔が見つかりませんでした。より狭く切り取ってみるか、Enter を押してフレーム全体をスキャンしてください。`,
         'search.captureMediaFail': `メディアをキャプチャできませんでした。シーン/画像が完全に読み込まれていることを確認してください。`,
-        'search.healthBanner': `顔認識 API に接続できません。バックエンドを起動して、もう一度お試しください。`,
         'search.failed': `顔の検索に失敗しました：{error}`,
         'search.fetchImageFail': `Stash から画像を取得できませんでした。`,
         'search.captureFail': `画像のキャプチャに失敗しました：{error}`,
@@ -16234,20 +16789,28 @@
         'search.captureFrameFail': `現在のフレームをキャプチャできませんでした。`,
         'search.captureFrameFail2': `現在のフレームのキャプチャに失敗しました。`,
         'search.selectFaceVideo': `ビデオプレーヤー領域内の顔を選択してください。`,
-        'search.menuItemTitle': `顔の周りにボックスをドラッグするか、Enter を押してフレーム全体をスキャンし、StashDB で一致を検索します`,
-        'search.currentFrame': `Visage：現在のフレーム`,
-        'search.identifyFromImage': `Visage：画像から特定`,
-        'search.identifyMenuTitle': `このパフォーマーの画像を StashDB で検索し、一致する stash ID を関連付けます`,
+        'search.menuItemTitle': `このフレームに誰が写っているか調べます。顔の周りを囲むか、クリックでフレーム全体。`,
+        'search.currentFrame': `Visage: フレームを識別`,
+        'search.identifyFromImage': `Visage: 識別`,
+        'search.identifyMenuTitle': `このパフォーマーの画像を stash-box と照合し、stash ID をリンク`,
         'search.noPerformerImage': `このページにパフォーマーの画像が見つかりませんでした。`,
         'scene.noSprite': `このシーンにはスプライトシートまたはプレビュービデオがありません。シーン設定で生成してから、もう一度お試しください。`,
         'scene.noFaces': `このシーンのスプライトシートまたはプレビュービデオに顔やパフォーマーが見つかりませんでした。`,
-        'scene.healthBanner': `顔認識 API に接続できません。バックエンドを起動して、もう一度お試しください。`,
         'scene.failed': `シーンのスキャンに失敗しました：{error}`,
-        'scene.menuItemTitle': `シーン内のすべてのパフォーマーを特定します（生成されたスプライトシートまたはプレビュービデオが必要です）`,
-        'scene.wholeScene': `Visage：シーン全体`,
+        'scene.menuItemTitle': `このシーンの全員を探します。生成済みのスプライトシートかプレビュー動画が必要です。`,
+        'scene.wholeScene': `Visage: シーンを識別`,
         'banner.changeBackend': `バックエンドを変更`,
         'banner.dismiss': `閉じる`,
         'error.dismiss': `閉じる`,
+        'error.retry': `再試行`,
+        'error.undo': `元に戻す`,
+        'error.undone': `変更を元に戻しました。`,
+        'error.undoFailed': `元に戻せませんでした: {error}`,
+        'backend.busy': `顔認識サービスがビジー状態か起動中です。しばらくしてからもう一度お試しください。`,
+        'backend.serverError': `顔認識サービスでこのリクエストの処理中に問題が発生しました。もう一度お試しください。`,
+        'backend.unreachableCloud': `クラウドの顔認識サービスに接続できません。接続を確認して、もう一度お試しください。`,
+        'backend.notBackend': `{url} のサーバーは Visage バックエンドではありません。Visage の設定でアドレスを確認してください。`,
+        'backend.unreachableLocal': `{url} の顔認識サーバーに接続できません。サーバーを起動して、もう一度お試しください。`,
         'firstRun.title': `Visage バックエンドを設定する`,
         'firstRun.subtitle': `Visage は顔画像をバックエンドに送信して認識を行います。実行場所を選択してください。`,
         'firstRun.cloud': `Hugging Face クラウドを使用`,
@@ -16263,6 +16826,35 @@
         'frame.close': `フレームセレクターを閉じる`,
         'frame.seekFail': `ビデオプレーヤーをシークできませんでした。`,
         'frame.selectAt': `{time} 秒の顔フレームを選択`,
+        'card.existing.scenes': `シーン内`,
+        'card.existing.images': `画像内`,
+        'card.existing.performers': `リンク済み`,
+        'faceMatch.title.scenes': `このフレームに写っているのは?`,
+        'faceMatch.title.images': `この画像に写っているのは?`,
+        'faceMatch.title.performers': `このパフォーマーを照合`,
+        'faceMatch.showMore': `さらに{count}件表示`,
+        'faceMatch.showFewer': `表示を減らす`,
+        'faceMatch.allExisting.scenes': `見つかった全員がすでにこのシーンにいます`,
+        'faceMatch.allExisting.images': `見つかった全員がすでにこの画像にいます`,
+        'faceMatch.allExisting.performers': `このパフォーマーはリンク済みです`,
+        'faceMatch.confirm.scenes': `シーンに追加 ({count})`,
+        'faceMatch.confirm.images': `画像に追加 ({count})`,
+        'faceMatch.confirm.performers': `リンク ({count})`,
+        'faceMatch.adding.scenes': `追加中…`,
+        'faceMatch.adding.performers': `リンク中…`,
+        'faceMatch.toast.added.scenes': `{name} をこのシーンに追加しました。`,
+        'faceMatch.toast.added.images': `{name} をこの画像に追加しました。`,
+        'faceMatch.toast.addedMany.scenes': `{count} 人のパフォーマーをこのシーンに追加しました。`,
+        'faceMatch.toast.addedMany.images': `{count} 人のパフォーマーをこの画像に追加しました。`,
+        'sprite.showMore': `可能性の低い候補を{count}件表示`,
+        'sprite.showFewer': `可能性の低い候補を隠す`,
+        'search.overlayHintImage': `顔の周りをドラッグします。クリックまたは Enter で画像全体。Esc でキャンセル。`,
+        'search.noFacesPerformer': `このパフォーマーの画像に顔が見つかりませんでした。`,
+        'search.selectAgain': `もう一度選択`,
+        'search.identifyImage': `Visage: 画像を識別`,
+        'search.imageMenuTitle': `この画像に誰が写っているか調べます。顔の周りを囲むか、クリックで画像全体。`,
+        'faceMatch.adding.images': `追加中…`,
+        'sprite.confirm': `シーンに追加 ({count})`,
     };
 
     // Swedish.
@@ -16302,10 +16894,7 @@
         'backendSettings.sync.alreadyRunning': `Synkronisering pågår redan`,
         'backendSettings.sync.error': `Synkronisering misslyckades`,
         'backendSettings.sync.connectionLost': `Anslutningen bröts`,
-        'faceMatch.title': `AKTUELL RUTA`,
         'faceMatch.close': `Stäng`,
-        'faceMatch.facesSelected': `{faces} ansikten hittade · {selected} valda`,
-        'faceMatch.inScene': `· {count} i scen`,
         'faceMatch.stashboxMissing': `Ingen stash-box konfigurerad.`,
         'faceMatch.stashboxMissingBody': ` Lägg till en stash-box-leverantör under Inställningar → Metadata-leverantörer för att aktivera performer-import.`,
         'faceMatch.stashboxWrongName': `Ingen "StashDB"-leverantör hittades.`,
@@ -16313,56 +16902,33 @@
         'faceMatch.learnMore': `Läs mer.`,
         'faceMatch.scanning': `Skannar • ansiktsigenkänning…`,
         'faceMatch.faceAlt': `Ansikte {index}`,
-        'faceMatch.minConf': `Min. konf.`,
-        'faceMatch.minConfTitle': `Minsta förtroende: {percent}%`,
         'faceMatch.detected': `Upptäckt`,
         'faceMatch.detectedFaceAlt': `Upptäckt ansikte`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Stöd på Patreon`,
         'faceMatch.ofSelected': `{selected} av {total} valda`,
-        'faceMatch.allInScene': `{total} ansikten hittade · alla i scen`,
-        'faceMatch.clickToSelect': `{total} ansikten hittade · klicka för att välja`,
+        'faceMatch.clickToSelect': `Klicka på en träff för att välja den`,
         'faceMatch.kbSwitch': `Byt ansikten`,
         'faceMatch.kbSelect': `Välj performers`,
         'faceMatch.kbToggle': `Växla markering`,
         'faceMatch.kbAddInstant': `Shift+klick för att lägga till direkt`,
-        'faceMatch.selectBest': `Välj bästa matchningar`,
-        'faceMatch.adding': `Lägger till...`,
-        'faceMatch.done': `Klar ({count})`,
-        'faceMatch.toast.added': `Lade till performer i {target}.`,
         'faceMatch.toast.addError': `Misslyckades att lägga till performer: {error}`,
         'faceMatch.toast.noStashbox': `Ingen stash-box konfigurerad. Lägg till en stash-box-leverantör under Inställningar → Metadata-leverantörer för att aktivera performer-import. Se {url}`,
         'faceMatch.toast.noProvider': `Ingen leverantör med namnet "StashDB" hittades. Byt namn på leverantören till "StashDB" under Inställningar → Metadata-leverantörer för att aktivera performer-import.`,
         'faceMatch.toast.configureProvider': `Konfigurera en stash-box-leverantör under Inställningar → Metadata-leverantörer för att aktivera performer-import.`,
-        'faceMatch.toast.addedMultiple': `Lade till {count} performers i {target}.`,
         'faceMatch.toast.linked': `Länkade {count} stash-ID{s} till denna performer.`,
-        'sprite.title': `SCEN-PERFORMERS`,
+        'sprite.title': `Vem är i den här scenen?`,
         'sprite.close': `Stäng`,
-        'sprite.foundConfirmed': `{found} hittade · {confirmed} bekräftade`,
-        'sprite.confidence': `förtroende`,
-        'sprite.name': `namn`,
-        'sprite.hits': `träffar`,
-        'sprite.minConf': `Min. konf.`,
-        'sprite.minConfTitle': `Minsta förtroende: {percent}%`,
         'sprite.scanning': `Visage skannar…`,
         'sprite.cancel': `Avbryt`,
         'sprite.empty': `Inga performers identifierades i denna sprite.`,
         'sprite.detectedFaceAlt': `Upptäckt ansikte`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `I scen`,
         'sprite.hitsCount': `{count} träff`,
         'sprite.totalTime': `{time} totalt`,
-        'sprite.alreadyInScene': `Redan i scen`,
-        'sprite.clickToConfirm': `Klicka för att bekräfta`,
-        'sprite.confirmed': `Bekräftad`,
         'sprite.supportPatreon': `Stöd på Patreon`,
         'sprite.confirmedCount': `{confirmed} av {total} bekräftade`,
-        'sprite.shownHint': `{shown} visade ({total} totalt) · klicka för att bekräfta · ←→ navigera · Enter bekräfta`,
         'sprite.confirmHint': `Klicka för att bekräfta · ←→ navigera · Enter bekräfta`,
         'sprite.adding': `Lägger till...`,
-        'sprite.done': `Klar ({count})`,
         'gender.male': `Man`,
         'gender.female': `Kvinna`,
         'gender.transMale': `Transperson man`,
@@ -16375,10 +16941,9 @@
         'card.select': `Välj {name}`,
         'card.deselect': `Avmarkera {name}`,
         'card.openOn': `Öppna på {source}`,
-        'search.overlayHint': `Dra för att välja ett ansikte — Enter för att skanna hela rutan — Esc för att avbryta`,
+        'search.overlayHint': `Dra runt ett ansikte. Klicka eller tryck Enter för hela bildrutan. Esc avbryter.`,
         'search.noFaces': `Inga ansikten hittades i det valet. Prova en tätare beskärning, eller tryck Enter för att skanna hela rutan.`,
         'search.captureMediaFail': `Kunde inte fånga media. Se till att scenen/bilden är fullständigt inläst.`,
-        'search.healthBanner': `Ansiktsigenkännings-API:et är inte nåbart. Starta backend och försök igen.`,
         'search.failed': `Ansiktssökning misslyckades: {error}`,
         'search.fetchImageFail': `Kunde inte hämta bild från Stash.`,
         'search.captureFail': `Kunde inte fånga bild: {error}`,
@@ -16386,20 +16951,28 @@
         'search.captureFrameFail': `Kunde inte fånga den aktuella rutan.`,
         'search.captureFrameFail2': `Misslyckades att fånga den aktuella rutan.`,
         'search.selectFaceVideo': `Välj ett ansikte i videoavspelarområdet.`,
-        'search.menuItemTitle': `Dra en ruta runt ett ansikte, eller tryck Enter för att skanna hela rutan, för att söka StashDB efter matchningar`,
-        'search.currentFrame': `Visage: Aktuell ruta`,
-        'search.identifyFromImage': `Visage: Identifiera från bild`,
-        'search.identifyMenuTitle': `Sök denna performers bild mot StashDB och länka ett matchande stash-ID`,
+        'search.menuItemTitle': `Ta reda på vem som är i bildrutan. Dra en ram runt ett ansikte, eller klicka för hela bildrutan.`,
+        'search.currentFrame': `Visage: Identifiera bildruta`,
+        'search.identifyFromImage': `Visage: Identifiera`,
+        'search.identifyMenuTitle': `Jämför den här performerns bild med dina stash-boxar och länka stash-ID:t`,
         'search.noPerformerImage': `Ingen performer-bild hittades på denna sida.`,
         'scene.noSprite': `Ingen sprite-ark eller förhandsvisningsvideo hittades för denna scen. Generera dem i Scene-inställningarna och försök igen.`,
         'scene.noFaces': `Inga ansikten eller performers hittades i denna scen sprite-ark eller förhandsvisningsvideo.`,
-        'scene.healthBanner': `Ansiktsigenkännings-API:et är inte nåbart. Starta backend och försök igen.`,
         'scene.failed': `Scen-skanning misslyckades: {error}`,
-        'scene.menuItemTitle': `Identifiera varje performer i scenen (kräver ett genererat sprite-ark eller en förhandsvisningsvideo)`,
-        'scene.wholeScene': `Visage: Hela scenen`,
+        'scene.menuItemTitle': `Hitta alla i den här scenen. Kräver ett genererat sprite sheet eller en förhandsvisningsvideo.`,
+        'scene.wholeScene': `Visage: Identifiera scen`,
         'banner.changeBackend': `Byt backend`,
         'banner.dismiss': `Avvisa`,
         'error.dismiss': `Avvisa`,
+        'error.retry': `Försök igen`,
+        'error.undo': `Ångra`,
+        'error.undone': `Ändringen har ångrats.`,
+        'error.undoFailed': `Kunde inte ångra: {error}`,
+        'backend.busy': `Ansiktsigenkänningstjänsten är upptagen eller startar. Försök igen om en stund.`,
+        'backend.serverError': `Ansiktsigenkänningstjänsten fick ett problem med den här begäran. Försök igen.`,
+        'backend.unreachableCloud': `Det går inte att nå ansiktsigenkänningstjänsten i molnet. Kontrollera anslutningen och försök igen.`,
+        'backend.notBackend': `Servern på {url} är inte en Visage-backend. Kontrollera adressen i Visage-inställningarna.`,
+        'backend.unreachableLocal': `Det går inte att nå din ansiktsigenkänningsserver på {url}. Starta den och försök igen.`,
         'firstRun.title': `Konfigurera din Visage-backend`,
         'firstRun.subtitle': `Visage skickar ansiktsbilder till en backend för igenkänning. Välj var den ska köras.`,
         'firstRun.cloud': `Använd Hugging Face cloud`,
@@ -16415,6 +16988,35 @@
         'frame.close': `Stäng rutväljaren`,
         'frame.seekFail': `Kunde inte söka i videoavspelaren.`,
         'frame.selectAt': `Välj ansiktsruta vid {time}s`,
+        'card.existing.scenes': `I scenen`,
+        'card.existing.images': `På bilden`,
+        'card.existing.performers': `Länkad`,
+        'faceMatch.title.scenes': `Vem är i den här bildrutan?`,
+        'faceMatch.title.images': `Vem är på den här bilden?`,
+        'faceMatch.title.performers': `Matcha den här performern`,
+        'faceMatch.showMore': `Visa {count} till`,
+        'faceMatch.showFewer': `Visa färre`,
+        'faceMatch.allExisting.scenes': `Alla som hittades finns redan i scenen`,
+        'faceMatch.allExisting.images': `Alla som hittades finns redan på bilden`,
+        'faceMatch.allExisting.performers': `Den här performern är redan länkad`,
+        'faceMatch.confirm.scenes': `Lägg till i scen ({count})`,
+        'faceMatch.confirm.images': `Lägg till på bild ({count})`,
+        'faceMatch.confirm.performers': `Länka ({count})`,
+        'faceMatch.adding.scenes': `Lägger till…`,
+        'faceMatch.adding.performers': `Länkar…`,
+        'faceMatch.toast.added.scenes': `{name} har lagts till i scenen.`,
+        'faceMatch.toast.added.images': `{name} har lagts till på bilden.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performers har lagts till i scenen.`,
+        'faceMatch.toast.addedMany.images': `{count} performers har lagts till på bilden.`,
+        'sprite.showMore': `Visa {count} mindre sannolika träffar`,
+        'sprite.showFewer': `Dölj mindre sannolika träffar`,
+        'search.overlayHintImage': `Dra runt ett ansikte. Klicka eller tryck Enter för hela bilden. Esc avbryter.`,
+        'search.noFacesPerformer': `Inget ansikte hittades i den här performerns bild.`,
+        'search.selectAgain': `Välj igen`,
+        'search.identifyImage': `Visage: Identifiera bild`,
+        'search.imageMenuTitle': `Ta reda på vem som är på bilden. Dra en ram runt ett ansikte, eller klicka för hela bilden.`,
+        'faceMatch.adding.images': `Lägger till…`,
+        'sprite.confirm': `Lägg till i scen ({count})`,
     };
 
     // Italian. Missing keys fall back to English automatically.
@@ -16456,10 +17058,7 @@
         'backendSettings.sync.error': `Sincronizzazione non riuscita`,
         'backendSettings.sync.connectionLost': `Connessione persa`,
         // ---- FaceMatchModal.tsx ----
-        'faceMatch.title': `FOTO CORRENTE`,
         'faceMatch.close': `Chiudi`,
-        'faceMatch.facesSelected': `{faces} volti trovati · {selected} selezionati`,
-        'faceMatch.inScene': `· {count} nella scena`,
         'faceMatch.stashboxMissing': `Nessuno stash-box configurato.`,
         'faceMatch.stashboxMissingBody': ` Aggiungi un provider stash-box in Impostazioni → Provider di metadati per attivare l'importazione dei performer.`,
         'faceMatch.stashboxWrongName': `Nessun provider chiamato "StashDB" trovato.`,
@@ -16467,57 +17066,34 @@
         'faceMatch.learnMore': `Scopri di più.`,
         'faceMatch.scanning': `Scansione • riconoscimento facciale…`,
         'faceMatch.faceAlt': `Volto {index}`,
-        'faceMatch.minConf': `Conf. min.`,
-        'faceMatch.minConfTitle': `Confidenza minima: {percent}%`,
         'faceMatch.detected': `Rilevato`,
         'faceMatch.detectedFaceAlt': `Volto rilevato`,
         'faceMatch.vs': `vs`,
         'faceMatch.supportPatreon': `Supporta su Patreon`,
         'faceMatch.ofSelected': `{selected} di {total} selezionati`,
-        'faceMatch.allInScene': `{total} volti trovati · tutti nella scena`,
-        'faceMatch.clickToSelect': `{total} volti trovati · fai clic per selezionare`,
+        'faceMatch.clickToSelect': `Clicca su una corrispondenza per selezionarla`,
         'faceMatch.kbSwitch': `Cambia volti`,
         'faceMatch.kbSelect': `Seleziona performer`,
         'faceMatch.kbToggle': `Attiva/disattiva selezione`,
         'faceMatch.kbAddInstant': `Maiusc+clic per aggiungere all'istante`,
-        'faceMatch.selectBest': `Seleziona migliori corrispondenze`,
-        'faceMatch.adding': `Aggiunta...`,
-        'faceMatch.done': `Fatto ({count})`,
-        'faceMatch.toast.added': `Performer aggiunto alla {target}.`,
         'faceMatch.toast.addError': `Impossibile aggiungere il performer: {error}`,
         'faceMatch.toast.noStashbox': `Nessuno stash-box configurato. Aggiungi un provider stash-box in Impostazioni → Provider di metadati per attivare l'importazione dei performer. Vedi {url}`,
         'faceMatch.toast.noProvider': `Nessun provider chiamato "StashDB" trovato. Rinomina il tuo provider in "StashDB" in Impostazioni → Provider di metadati per attivare l'importazione dei performer.`,
         'faceMatch.toast.configureProvider': `Configura un provider stash-box in Impostazioni → Provider di metadati per attivare l'importazione dei performer.`,
-        'faceMatch.toast.addedMultiple': `{count} performer{s} aggiunti alla {target}.`,
         'faceMatch.toast.linked': `Collegato {count} stash ID{s} a questo performer.`,
         // ---- SpriteResultModal.tsx ----
-        'sprite.title': `PERFORMER DELLA SCENA`,
+        'sprite.title': `Chi c’è in questa scena?`,
         'sprite.close': `Chiudi`,
-        'sprite.foundConfirmed': `{found} trovati · {confirmed} confermati`,
-        'sprite.confidence': `confidenza`,
-        'sprite.name': `nome`,
-        'sprite.hits': `corrispondenze`,
-        'sprite.minConf': `Conf. min.`,
-        'sprite.minConfTitle': `Confidenza minima: {percent}%`,
         'sprite.scanning': `Scansione Visage…`,
         'sprite.cancel': `Annulla`,
         'sprite.empty': `Nessun performer identificato in questo sprite.`,
         'sprite.detectedFaceAlt': `Volto rilevato`,
-        'sprite.spriteLabel': `SPRITE`,
-        'sprite.stashLabel': `STASH`,
-        'sprite.vs': `vs`,
-        'sprite.inScene': `Nella scena`,
         'sprite.hitsCount': `{count} corrispondenza{s}`,
         'sprite.totalTime': `{time} in totale`,
-        'sprite.alreadyInScene': `Già nella scena`,
-        'sprite.clickToConfirm': `Fai clic per confermare`,
-        'sprite.confirmed': `Confermato`,
         'sprite.supportPatreon': `Supporta su Patreon`,
         'sprite.confirmedCount': `{confirmed} di {total} confermati`,
-        'sprite.shownHint': `{shown} mostrati ({total} in totale) · fai clic per confermare · ←→ naviga · Invio conferma`,
         'sprite.confirmHint': `Fai clic per confermare · ←→ naviga · Invio conferma`,
         'sprite.adding': `Aggiunta...`,
-        'sprite.done': `Fatto ({count})`,
         // ---- PerformerCard.tsx ----
         'gender.male': `Maschio`,
         'gender.female': `Femmina`,
@@ -16532,10 +17108,9 @@
         'card.deselect': `Deseleziona {name}`,
         'card.openOn': `Apri su {source}`,
         // ---- FaceSearchButton.tsx ----
-        'search.overlayHint': `Trascina per selezionare un volto — Invio per scansionare l'intera immagine — Esc per annullare`,
+        'search.overlayHint': `Trascina intorno a un volto. Clicca o premi Invio per l’intero fotogramma. Esc per annullare.`,
         'search.noFaces': `Nessun volto trovato in questa selezione. Prova con un ritaglio più stretto oppure premi Invio per scansionare l'intera immagine.`,
         'search.captureMediaFail': `Impossibile acquisire il media. Assicurati che la scena/l'immagine sia completamente caricata.`,
-        'search.healthBanner': `L'API di riconoscimento facciale non è raggiungibile. Avvia il backend e riprova.`,
         'search.failed': `Ricerca volto non riuscita: {error}`,
         'search.fetchImageFail': `Impossibile recuperare l'immagine da Stash.`,
         'search.captureFail': `Impossibile acquisire l'immagine: {error}`,
@@ -16543,23 +17118,31 @@
         'search.captureFrameFail': `Impossibile acquisire il fotogramma corrente.`,
         'search.captureFrameFail2': `Impossibile acquisire il fotogramma corrente.`,
         'search.selectFaceVideo': `Seleziona un volto all'interno dell'area del lettore video.`,
-        'search.menuItemTitle': `Trascina una casella attorno a un volto oppure premi Invio per scansionare l'intera immagine, per cercare corrispondenze in StashDB`,
-        'search.currentFrame': `Visage: Fotogramma corrente`,
-        'search.identifyFromImage': `Visage: Identifica dall'immagine`,
-        'search.identifyMenuTitle': `Cerca l'immagine di questo performer su StashDB e collega un stash ID corrispondente`,
+        'search.menuItemTitle': `Scopri chi c’è in questo fotogramma. Trascina un riquadro intorno a un volto, o clicca per l’intero fotogramma.`,
+        'search.currentFrame': `Visage: identifica fotogramma`,
+        'search.identifyFromImage': `Visage: identifica`,
+        'search.identifyMenuTitle': `Confronta l’immagine di questo performer con le tue stash-box e collega lo stash ID`,
         'search.noPerformerImage': `Nessuna immagine del performer trovata in questa pagina.`,
         // ---- SceneScanButton.tsx ----
         'scene.noSprite': `Nessuno sprite sheet o video di anteprima trovato per questa scena. Generali nelle impostazioni della scena, poi riprova.`,
         'scene.noFaces': `Nessun volto o performer trovato nello sprite sheet o nel video di anteprima di questa scena.`,
-        'scene.healthBanner': `L'API di riconoscimento facciale non è raggiungibile. Avvia il backend e riprova.`,
         'scene.failed': `Scansione della scena non riuscita: {error}`,
-        'scene.menuItemTitle': `Identifica ogni performer nella scena (richiede uno sprite sheet o un video di anteprima generati)`,
-        'scene.wholeScene': `Visage: Intera scena`,
+        'scene.menuItemTitle': `Trova tutti in questa scena. Richiede uno sprite sheet o un video di anteprima generato.`,
+        'scene.wholeScene': `Visage: identifica scena`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Cambia backend`,
         'banner.dismiss': `Ignora`,
         // ---- ErrorDialog.tsx ----
         'error.dismiss': `Ignora`,
+        'error.retry': `Riprova`,
+        'error.undo': `Annulla`,
+        'error.undone': `Modifica annullata.`,
+        'error.undoFailed': `Impossibile annullare: {error}`,
+        'backend.busy': `Il servizio di riconoscimento facciale è occupato o in avvio. Riprova tra un momento.`,
+        'backend.serverError': `Il servizio di riconoscimento facciale ha avuto un problema con questa richiesta. Riprova.`,
+        'backend.unreachableCloud': `Impossibile raggiungere il servizio di riconoscimento facciale nel cloud. Controlla la connessione e riprova.`,
+        'backend.notBackend': `Il server all’indirizzo {url} non è un backend Visage. Controlla l’indirizzo nelle impostazioni di Visage.`,
+        'backend.unreachableLocal': `Impossibile raggiungere il tuo server di riconoscimento facciale all’indirizzo {url}. Avvialo e riprova.`,
         // ---- FirstRunDialog.tsx ----
         'firstRun.title': `Configura il tuo backend Visage`,
         'firstRun.subtitle': `Visage invia immagini di volti a un backend per il riconoscimento. Scegli dove eseguirlo.`,
@@ -16579,6 +17162,35 @@
         'frame.close': `Chiudi selettore fotogramma`,
         'frame.seekFail': `Impossibile cercare nel lettore video.`,
         'frame.selectAt': `Seleziona il volto a {time}s`,
+        'card.existing.scenes': `Nella scena`,
+        'card.existing.images': `Nell’immagine`,
+        'card.existing.performers': `Collegato`,
+        'faceMatch.title.scenes': `Chi c’è in questo fotogramma?`,
+        'faceMatch.title.images': `Chi c’è in questa immagine?`,
+        'faceMatch.title.performers': `Abbina questo performer`,
+        'faceMatch.showMore': `Mostra altri {count}`,
+        'faceMatch.showFewer': `Mostra meno`,
+        'faceMatch.allExisting.scenes': `Tutti i trovati sono già in questa scena`,
+        'faceMatch.allExisting.images': `Tutti i trovati sono già in questa immagine`,
+        'faceMatch.allExisting.performers': `Questo performer è già collegato`,
+        'faceMatch.confirm.scenes': `Aggiungi alla scena ({count})`,
+        'faceMatch.confirm.images': `Aggiungi all’immagine ({count})`,
+        'faceMatch.confirm.performers': `Collega ({count})`,
+        'faceMatch.adding.scenes': `Aggiunta…`,
+        'faceMatch.adding.performers': `Collegamento…`,
+        'faceMatch.toast.added.scenes': `{name} aggiunto a questa scena.`,
+        'faceMatch.toast.added.images': `{name} aggiunto a questa immagine.`,
+        'faceMatch.toast.addedMany.scenes': `{count} performer aggiunti a questa scena.`,
+        'faceMatch.toast.addedMany.images': `{count} performer aggiunti a questa immagine.`,
+        'sprite.showMore': `Mostra {count} corrispondenze meno probabili`,
+        'sprite.showFewer': `Nascondi corrispondenze meno probabili`,
+        'search.overlayHintImage': `Trascina intorno a un volto. Clicca o premi Invio per l’intera immagine. Esc per annullare.`,
+        'search.noFacesPerformer': `Nessun volto trovato nell’immagine di questo performer.`,
+        'search.selectAgain': `Seleziona di nuovo`,
+        'search.identifyImage': `Visage: identifica immagine`,
+        'search.imageMenuTitle': `Scopri chi c’è in questa immagine. Trascina un riquadro intorno a un volto, o clicca per l’intera immagine.`,
+        'faceMatch.adding.images': `Aggiunta…`,
+        'sprite.confirm': `Aggiungi alla scena ({count})`,
     };
 
     registerLocale('en', en);
@@ -16627,101 +17239,35 @@
         const match = window.location.pathname.match(/\/(scenes|images|performers)\/(\d+)/);
         return match ? match[2] : null;
     }
-    function useMenuPortal(renderContent) {
+    // Portal `content` into a host element that Stash renders lazily. `findAnchor`
+    // returns the anchor once its host exists (creating it on first sight), else
+    // null. A MutationObserver retries on every DOM change until it succeeds.
+    function useInjectedPortal(findAnchor, content) {
         const [anchor, setAnchor] = React.useState(null);
         React.useEffect(() => {
-            function tryInject() {
-                for (const menu of document.querySelectorAll('.dropdown-menu')) {
-                    if (!isOpsMenu(menu))
-                        continue;
-                    if (menu.querySelector('.visage-menu-root'))
-                        continue;
-                    const div = injectMenu(menu);
-                    div.className = 'visage-menu-root';
-                    setAnchor(div);
-                    return true;
-                }
-                return false;
-            }
+            const tryInject = () => {
+                const found = findAnchor();
+                if (found)
+                    setAnchor(found);
+                return !!found;
+            };
             if (tryInject())
                 return;
-            const poll = setInterval(() => {
-                if (tryInject()) {
-                    clearInterval(poll);
-                    obs.disconnect();
-                }
-            }, 300);
-            const obs = new MutationObserver(() => {
-                if (tryInject()) {
-                    clearInterval(poll);
-                    obs.disconnect();
-                }
-            });
+            const obs = new MutationObserver(() => { if (tryInject())
+                obs.disconnect(); });
             obs.observe(document.body, { childList: true, subtree: true });
-            return () => { clearInterval(poll); obs.disconnect(); };
+            return () => obs.disconnect();
         }, []);
-        if (!anchor)
-            return null;
-        return ReactDOM.createPortal(renderContent(anchor), anchor);
+        return anchor ? ReactDOM.createPortal(content(), anchor) : null;
     }
     function OperationsMenuPortal() {
-        return useMenuPortal((anchor) => React.createElement(React.Fragment, null, React.createElement(FaceSearchButton, { menuItem: true }), React.createElement(SceneScanButton, { menuItem: true })));
+        return useInjectedPortal(findOpsMenuAnchor, () => React.createElement(React.Fragment, null, React.createElement(FaceSearchButton, { menuItem: true }), React.createElement(SceneScanButton, { menuItem: true })));
     }
     function ImageOperationsMenuPortal() {
-        return useMenuPortal((anchor) => React.createElement(FaceSearchButton, { menuItem: true }));
+        return useInjectedPortal(findOpsMenuAnchor, () => React.createElement(FaceSearchButton, { menuItem: true }));
     }
-    // The performer page has no #operation-menu dropdown; its actions (Edit,
-    // Merge, Delete…) render inline in .details-edit. Inject next to them by CSS
-    // class, never by button text, so locale changes cannot break placement.
     function PerformerActionsPortal() {
-        const [anchor, setAnchor] = React.useState(null);
-        React.useEffect(() => {
-            function tryInject() {
-                const row = document.querySelector('.details-edit');
-                if (!row)
-                    return false;
-                const existing = row.querySelector('.visage-performer-actions');
-                if (existing) {
-                    setAnchor(existing);
-                    return true;
-                }
-                const div = document.createElement('div');
-                div.className = 'visage-performer-actions';
-                div.style.cssText = 'display:contents';
-                // After the last .btn-secondary in the row (Merge in stock Stash) so the
-                // button sits in the action cluster regardless of label language.
-                const secondary = row.querySelectorAll('button.btn-secondary');
-                const mergeBtn = secondary[secondary.length - 1];
-                const deleteBtn = row.querySelector('button.delete');
-                if (mergeBtn)
-                    row.insertBefore(div, mergeBtn.nextSibling);
-                else if (deleteBtn)
-                    row.insertBefore(div, deleteBtn);
-                else
-                    row.appendChild(div);
-                setAnchor(div);
-                return true;
-            }
-            if (tryInject())
-                return;
-            const poll = setInterval(() => {
-                if (tryInject()) {
-                    clearInterval(poll);
-                    obs.disconnect();
-                }
-            }, 300);
-            const obs = new MutationObserver(() => {
-                if (tryInject()) {
-                    clearInterval(poll);
-                    obs.disconnect();
-                }
-            });
-            obs.observe(document.body, { childList: true, subtree: true });
-            return () => { clearInterval(poll); obs.disconnect(); };
-        }, []);
-        if (!anchor)
-            return null;
-        return ReactDOM.createPortal(React.createElement(IdentifyPerformerButton, null), anchor);
+        return useInjectedPortal(findPerformerActionsAnchor, () => React.createElement(IdentifyPerformerButton, null));
     }
     function ModalRoot() {
         const { state, openSettings, closeSettings } = useVisage();
@@ -16752,32 +17298,14 @@
             return null;
         return ReactDOM.createPortal(React.createElement(FirstRunDialog, { onComplete: () => { markOnboarded(); setShow(false); } }), document.body);
     }
+    // Keeps Visage in step with the Stash theme. Theme CSS can load after the
+    // plugin, so this re-applies whenever stylesheets in <head> change.
     function ThemeDetector() {
         React.useEffect(() => {
-            function poll() {
-                const root = getComputedStyle(document.documentElement);
-                const dim = root.getPropertyValue('--color-dim').trim();
-                if (dim) {
-                    const themeVars = detectTheme();
-                    for (const [key, value] of Object.entries(themeVars)) {
-                        document.documentElement.style.setProperty(key, value);
-                    }
-                    return true;
-                }
-                return false;
-            }
-            // Delay initial check slightly to let external theme CSS load
-            const initialCheck = setTimeout(poll, 200);
-            const interval = setInterval(() => {
-                if (poll())
-                    clearInterval(interval);
-            }, 600);
-            const safety = setTimeout(() => clearInterval(interval), 15000);
-            return () => {
-                clearTimeout(initialCheck);
-                clearInterval(interval);
-                clearTimeout(safety);
-            };
+            applyStashTheme();
+            const observer = new MutationObserver(() => applyStashTheme());
+            observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+            return () => observer.disconnect();
         }, []);
         return null;
     }
