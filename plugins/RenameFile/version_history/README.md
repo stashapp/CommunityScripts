@@ -21,3 +21,5 @@
 ### 1.0.3
 - Fixed OSError "File name too long" (macOS) caused by the long-filename truncation logic appending the file extension twice and not reserving space for the hash suffix.
 - Rename/move failures now log a single clear error message instead of also dumping a raw Python traceback to the log.
+### 1.0.5
+- Hardened detached process spawn (executeProcess) with start_new_session=True, so a detached child survives the launching task process exiting on macOS.
