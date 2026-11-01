@@ -390,7 +390,7 @@ def rename_scene(scene_id):
     max_filename_length = int(config["max_filename_length"])
     extension_length = len(Path(original_file_path).suffix)
     if len(new_filename) + extension_length > max_filename_length:
-        hash_suffix = hashlib.md5(new_filename.encode()).hexdigest()
+        hash_suffix = hashlib.sha256(new_filename.encode()).hexdigest()[:32]
         max_base_filename_length = max_filename_length - extension_length - len(hash_suffix) - 1
         truncated_filename = new_filename[:max_base_filename_length]
         new_filename = truncated_filename + '_' + hash_suffix
