@@ -1,8 +1,8 @@
 (function () {
     'use strict';
 
-    const React$i = window.PluginApi.React;
-    const { createContext, useContext, useReducer, useCallback: useCallback$8 } = React$i;
+    const React$k = window.PluginApi.React;
+    const { createContext, useContext, useReducer, useCallback: useCallback$8 } = React$k;
     const initialState = {
         scenario: null,
         scenarioId: null,
@@ -137,8 +137,8 @@
         const showError = useCallback$8((message, action) => {
             dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'error', action });
         }, []);
-        const showWarning = useCallback$8((message) => {
-            dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'warning' });
+        const showWarning = useCallback$8((message, action) => {
+            dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'warning', action });
         }, []);
         const showSuccess = useCallback$8((message, action) => {
             dispatch({ type: 'SHOW_ERROR_DIALOG', message, variant: 'success', action });
@@ -190,7 +190,7 @@
             closeSettings,
             showEmptyResult,
         };
-        return React$i.createElement(VisageContext.Provider, { value }, children);
+        return React$k.createElement(VisageContext.Provider, { value }, children);
     }
     function useVisage() {
         const context = useContext(VisageContext);
@@ -8202,6 +8202,45 @@
         'firstRun.local': 'Use my own server',
         'firstRun.localNote': 'Run the private binary on your own machine or network.',
         'firstRun.skip': 'Skip for now',
+        // ---- SceneBatchModal.tsx ----
+        'batch.menuItem': 'Identify with Visage',
+        'batch.selectFirst': 'Select one or more scenes first.',
+        'batch.serverOnly': 'Visage Server not found. Check Visage settings.',
+        'batch.upsellTitle': 'Identify {count} scene{s} with Visage Server',
+        'batch.upsellBody': 'Batches run on your own machine, not the shared Cloud. Scan as many scenes as you like. Your images stay private. Comes with Patreon support.',
+        'batch.upsellCta': 'Get Visage Server on Patreon',
+        'batch.upsellHaveServer': 'I have a server',
+        'batch.upsellClose': 'Not now',
+        'batch.title': 'Identifying {count} scene{s}',
+        'batch.titleFound': 'Found {performers} performer{s} in {scenes} of {total} scene{ss}',
+        'batch.titleNone': 'Nothing new to add',
+        'batch.progress': '{done} of {total}',
+        'batch.stop': 'Stop',
+        'batch.stopping': 'Stopping…',
+        'batch.close': 'Close',
+        'batch.done': 'Done',
+        'batch.inScene': 'In scene: {names}',
+        'batch.noPerformers': 'No performers',
+        'batch.showMore': 'Show {count} more',
+        'batch.showFewer': 'Show fewer',
+        'batch.sumMissing': '{count} without sprites',
+        'batch.sumNoMatch': '{count} no match',
+        'batch.sumTagged': '{count} already tagged',
+        'batch.sumFailed': '{count} could not scan',
+        'batch.sumSkipped': '{count} skipped',
+        'batch.emptyMissing': 'Scenes without sprites stay selected, so you can run Generate from this menu.',
+        'batch.selectedCount': '{performers} performer{s} in {scenes} scene{ss}',
+        'batch.selectHint': 'Select performers to add',
+        'batch.apply': 'Add to scenes',
+        'batch.applying': 'Adding…',
+        'batch.discard': 'Discard {count} pick{s}?',
+        'batch.keepReviewing': 'Keep reviewing',
+        'batch.discardConfirm': 'Discard',
+        'batch.applied': 'Added {performers} performer{s} to {scenes} scene{ss}.',
+        'batch.partial': 'Could not update {scenes} scene{s}. Picks kept.',
+        'batch.skipped': 'Not on stash-box: {names}',
+        'batch.nothingApplied': 'Nothing added. Check your stash-box setup in Stash settings.',
+        'batch.undoPartial': 'Could not undo {scenes} scene{s}.',
         // ---- BackendBadge.tsx ----
         'badge.local': 'Local',
         'badge.cloud': 'Cloud (Hugging Face)',
@@ -8275,11 +8314,21 @@
             return (_a = dicts[prefixDict]) === null || _a === void 0 ? void 0 : _a[key];
         return undefined;
     }
+    // Pluralization helper: returns the singular when count === 1, else plural.
+    // Falls back to singular for languages where the plural form is not supplied.
+    function pluralize(count, singular, plural) {
+        return count === 1 ? singular : (plural !== null && plural !== void 0 ? plural : singular);
+    }
 
-    let _cancelled = false;
-    function cancelDetection() { _cancelled = true; }
-    function resetCancelled() { _cancelled = false; }
-    function isCancelled() { return _cancelled; }
+    let run = { cancelled: false };
+    function cancelDetection() { run.cancelled = true; }
+    function isCancelled() { return run.cancelled; }
+    // Starts a new run and returns its token. A long loop checks its own token, so
+    // a later run cannot revive a loop that was already cancelled.
+    function resetCancelled() {
+        run = { cancelled: false };
+        return run;
+    }
 
     let MAX_RESULTS = 20;
     const SEARCH_THRESHOLD = 20;
@@ -8323,6 +8372,27 @@
         catch (_a) {
             return null;
         }
+    }
+    // The shared Hugging Face service. Checks the host, not VISAGE_API_URL, because
+    // the build replaces that constant with the configured endpoint.
+    function isHostedEndpoint(endpoint) {
+        try {
+            return new URL(endpoint).hostname.toLowerCase().endsWith('.hf.space');
+        }
+        catch (_a) {
+            return false;
+        }
+    }
+    /**
+     * True only when Visage Server answers at the endpoint: its `/health` reports
+     * an index size. Cloud has no `/health`, so checkHealth gives it a null count.
+     * Bulk work must check this first, because it would overload the shared service.
+     */
+    async function isVisageServer(endpoint = getApiEndpoint()) {
+        if (isHostedEndpoint(endpoint))
+            return false;
+        const health = await checkHealth(endpoint);
+        return typeof (health === null || health === void 0 ? void 0 : health.index_docs) === 'number';
     }
     function setApiEndpoint(endpoint) {
         try {
@@ -8929,12 +8999,32 @@
         });
         return result.data.findPerformers.performers;
     }
+    // Live from the server: callers write this list back, and a cached copy would
+    // drop performers added since it was read.
     async function getPerformersForScene(scene_id) {
         const result = await getClient().query({
             query: GQL.FindSceneDocument,
-            variables: { id: scene_id }
+            variables: { id: scene_id },
+            fetchPolicy: 'network-only',
         });
         return result.data.findScene.performers.map((p) => p.id);
+    }
+    // Live from the server: performers may have changed since the list page loaded.
+    async function getScene(scene_id) {
+        var _a, _b, _c, _d;
+        const result = await getClient().query({
+            query: GQL.FindSceneDocument,
+            variables: { id: scene_id },
+            fetchPolicy: 'network-only',
+        });
+        const scene = result.data.findScene;
+        const file = (_a = scene.files) === null || _a === void 0 ? void 0 : _a[0];
+        return {
+            title: scene.title || ((_b = file === null || file === void 0 ? void 0 : file.path) === null || _b === void 0 ? void 0 : _b.split(/[\\/]/).pop()) || scene.id,
+            screenshot: (_d = (_c = scene.paths) === null || _c === void 0 ? void 0 : _c.screenshot) !== null && _d !== void 0 ? _d : null,
+            performerNames: scene.performers.map((p) => p.name),
+            stashIds: scene.performers.flatMap((p) => { var _a; return ((_a = p.stash_ids) !== null && _a !== void 0 ? _a : []).map(s => s.stash_id); }),
+        };
     }
     async function getPerformersForImage(image_id) {
         const result = await getClient().query({
@@ -9092,14 +9182,14 @@
     async function getSpritePath(scene_id) {
         return getScenePath(scene_id, 'sprite');
     }
-    // Sprite URL only if the file exists. Downloads the full sprite (Stash rejects
-    // HEAD with 400), so prefer getSpritePath when the sprite is fetched anyway.
+    // Whether a generated file exists. One byte, because Stash rejects HEAD with 400.
+    async function fileExists(url) {
+        return (await fetch(url, { headers: { Range: 'bytes=0-0' } })).ok;
+    }
+    // Sprite URL only if the file exists.
     async function getUrlSprite(scene_id) {
         const url = await getSpritePath(scene_id);
-        if (!url)
-            return null;
-        const response = await fetch(url);
-        return response.ok ? url : null;
+        return url && (await fileExists(url)) ? url : null;
     }
     async function getImagePath(image_id, pathKey = 'image') {
         var _a, _b;
@@ -9251,6 +9341,31 @@
         if (toggle)
             toggle.setAttribute('aria-expanded', 'false');
     }
+    // Ids of the scenes ticked on the scene list, in page order. Cards and table
+    // rows both hold a checkbox and a link to the scene.
+    function getSelectedSceneIds() {
+        const ids = [];
+        for (const box of document.querySelectorAll('input[type="checkbox"]:checked')) {
+            const id = sceneIdOfCheckbox(box);
+            if (id && !ids.includes(id))
+                ids.push(id);
+        }
+        return ids;
+    }
+    function sceneIdOfCheckbox(box) {
+        var _a, _b, _c;
+        const row = box.closest('.scene-card, tr');
+        const href = (_b = (_a = row === null || row === void 0 ? void 0 : row.querySelector('a[href*="/scenes/"]')) === null || _a === void 0 ? void 0 : _a.getAttribute('href')) !== null && _b !== void 0 ? _b : '';
+        return (_c = href.match(/\/scenes\/(\d+)/)) === null || _c === void 0 ? void 0 : _c[1];
+    }
+    // Unticks the given scenes through their own checkboxes, so Stash's selection stays correct.
+    function clearSelectedScenes(ids) {
+        for (const box of document.querySelectorAll('input[type="checkbox"]:checked')) {
+            const id = sceneIdOfCheckbox(box);
+            if (id && ids.includes(id))
+                box.click();
+        }
+    }
     function isOpsMenu(menu) {
         var _a;
         return menu.getAttribute('aria-labelledby') === 'operation-menu'
@@ -9276,6 +9391,16 @@
             return div;
         }
         return null;
+    }
+    // The "more" dropdown of the scene list. Stash renders it only while scenes are
+    // selected, and it is new each time the selection starts again.
+    function findSceneListMenuAnchor() {
+        const menu = document.querySelector('[aria-labelledby="more-menu"].scene-list-operations-dropdown');
+        if (!menu || menu.querySelector('.visage-menu-root'))
+            return null;
+        const div = injectMenu(menu);
+        div.className = 'visage-menu-root';
+        return div;
     }
     // The performer page has no #operation-menu dropdown; its actions (Edit,
     // Merge, Delete…) render inline in .details-edit. Inject next to them by CSS
@@ -9310,15 +9435,15 @@
 
     // React via Stash PluginApi, matching the pattern used across the plugin.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const React$h = window.PluginApi.React;
+    const React$j = window.PluginApi.React;
     // Re-renders the component when the active locale changes. Stash does not sync
     // the <html lang> attribute to the UI locale, so the real locale is resolved
     // from the GraphQL configuration (configuration.interface.language) and applied
     // via setActiveLocale. Stash reloads the page when the language changes, so a
     // mount-time fetch is sufficient.
     function useLocale() {
-        const [locale, setLocale] = React$h.useState(() => getLocale());
-        React$h.useEffect(() => {
+        const [locale, setLocale] = React$j.useState(() => getLocale());
+        React$j.useEffect(() => {
             let cancelled = false;
             (async () => {
                 const lang = await getStashLanguage();
@@ -9340,8 +9465,8 @@
         return locale;
     }
 
-    const React$g = window.PluginApi.React;
-    const { useCallback: useCallback$7, useRef: useRef$5 } = React$g;
+    const React$i = window.PluginApi.React;
+    const { useCallback: useCallback$7, useRef: useRef$6 } = React$i;
     let overlayDiv = null;
     let selectionDiv = null;
     let keyHandler = null;
@@ -9561,7 +9686,7 @@
         const loadingKey = 'face-search';
         const isLoading = state.loading[loadingKey] || false;
         // "Select again" in the empty result reopens the overlay via the latest recognize.
-        const recognizeRef = useRef$5(() => { });
+        const recognizeRef = useRef$6(() => { });
         const reselect = () => recognizeRef.current();
         const recognize = useCallback$7(async () => {
             if (isLoading)
@@ -9637,7 +9762,7 @@
         const onImage = getPageScenario() === 'images';
         const label = t(onImage ? 'search.identifyImage' : 'search.currentFrame');
         if (menuItem) {
-            return React$g.createElement('a', {
+            return React$i.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
@@ -9645,22 +9770,22 @@
                 onClick: (e) => { e.preventDefault(); closeDropdown(); recognize(); },
             }, label);
         }
-        return React$g.createElement('button', {
+        return React$i.createElement('button', {
             id: 'visage-frame-search',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: recognize,
             disabled: isLoading,
             title: label,
-        }, React$g.createElement('svg', {
+        }, React$i.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
-        }, React$g.createElement('path', {
+        }, React$i.createElement('path', {
             d: 'M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z',
         })));
     }
 
-    const React$f = window.PluginApi.React;
-    const { useCallback: useCallback$6 } = React$f;
+    const React$h = window.PluginApi.React;
+    const { useCallback: useCallback$6 } = React$h;
     // The performer page's main image, resolved server-side first, with a DOM
     // fallback for Stash versions that do not expose it via FindPerformer.
     async function fetchPerformerBlob(performerId) {
@@ -9702,7 +9827,7 @@
                 setLoading(loadingKey, false);
             }
         }, [visage, isLoading]);
-        return React$f.createElement('button', {
+        return React$h.createElement('button', {
             id: 'visage-performer-identify',
             className: `btn btn-secondary visage-performer-identify${isLoading ? ' visage-scanning' : ''}`,
             onClick: identify,
@@ -9828,8 +9953,8 @@
         return hasPerformers(data) ? data : null;
     }
 
-    const React$e = window.PluginApi.React;
-    const { useCallback: useCallback$5 } = React$e;
+    const React$g = window.PluginApi.React;
+    const { useCallback: useCallback$5 } = React$g;
     function SceneScanButton({ menuItem }) {
         useLocale();
         const { state, setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showHealthBanner } = useVisage();
@@ -9884,7 +10009,7 @@
             }
         }, [setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showHealthBanner]);
         if (menuItem) {
-            return React$e.createElement('a', {
+            return React$g.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
@@ -9892,22 +10017,22 @@
                 onClick: (e) => { e.preventDefault(); closeDropdown(); scanScene(); },
             }, t('scene.wholeScene'));
         }
-        return React$e.createElement('button', {
+        return React$g.createElement('button', {
             id: 'visage-scene-scan',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: scanScene,
             disabled: isLoading,
             title: t('scene.wholeScene'),
-        }, React$e.createElement('svg', {
+        }, React$g.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
-        }, React$e.createElement('path', {
+        }, React$g.createElement('path', {
             d: 'M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z',
         })));
     }
 
-    const React$d = window.PluginApi.React;
-    const { useState: useState$4, useEffect: useEffect$6, useCallback: useCallback$4 } = React$d;
+    const React$f = window.PluginApi.React;
+    const { useState: useState$5, useEffect: useEffect$7, useCallback: useCallback$4 } = React$f;
     // Grid navigation must not steal keys a focused control handles itself:
     // Enter/Space must click a focused button, arrows must move a focused slider.
     // Performer cards are role=button but keep arrow navigation.
@@ -9921,9 +10046,9 @@
         return target.closest(selector) !== null;
     }
     function useKeyboardNav({ faceCount, getPerformerCount, onAssign, enabled }) {
-        const [selectedFaceIndex, setSelectedFaceIndex] = useState$4(0);
-        const [selectedCardIndex, setSelectedCardIndex] = useState$4(0);
-        const [hasNavigated, setHasNavigated] = useState$4(false);
+        const [selectedFaceIndex, setSelectedFaceIndex] = useState$5(0);
+        const [selectedCardIndex, setSelectedCardIndex] = useState$5(0);
+        const [hasNavigated, setHasNavigated] = useState$5(false);
         const handleKeydown = useCallback$4((event) => {
             if (!enabled || event.defaultPrevented || isOwnedByControl(event))
                 return;
@@ -9979,7 +10104,7 @@
                     break;
             }
         }, [enabled, faceCount, selectedFaceIndex, selectedCardIndex, getPerformerCount, onAssign]);
-        useEffect$6(() => {
+        useEffect$7(() => {
             if (!enabled)
                 return;
             document.addEventListener('keydown', handleKeydown);
@@ -10018,12 +10143,17 @@
         };
     }
 
-    const React$c = window.PluginApi.React;
-    const { useEffect: useEffect$5 } = React$c;
+    const React$e = window.PluginApi.React;
+    const { useEffect: useEffect$6 } = React$e;
     const FOCUSABLE_SELECTOR = 'a, button, input, [tabindex]:not([tabindex="-1"])';
-    function useModalShell(onClose, active = true) {
-        const ref = React$c.useRef(null);
-        useEffect$5(() => {
+    // Traps focus and handles Escape. onClose may change on every render. With
+    // focusShell the dialog itself takes focus, for a modal whose first control
+    // must not catch a stray key.
+    function useModalShell(onClose, active = true, focusShell = false) {
+        const ref = React$e.useRef(null);
+        const closeRef = React$e.useRef(onClose);
+        closeRef.current = onClose;
+        useEffect$6(() => {
             if (!active)
                 return;
             const container = ref.current;
@@ -10032,7 +10162,7 @@
             const previouslyFocused = document.activeElement;
             const focusFirst = () => {
                 const focusables = container.querySelectorAll(FOCUSABLE_SELECTOR);
-                if (focusables.length > 0) {
+                if (focusables.length > 0 && !focusShell) {
                     focusables[0].focus();
                 }
                 else {
@@ -10048,7 +10178,7 @@
                     return;
                 if (e.key === 'Escape') {
                     e.preventDefault();
-                    onClose();
+                    closeRef.current();
                     return;
                 }
                 if (e.key === 'Tab') {
@@ -10081,12 +10211,12 @@
                     previouslyFocused.focus();
                 }
             };
-        }, [active, onClose]);
+        }, [active]);
         return ref;
     }
 
-    const React$b = window.PluginApi.React;
-    const { useCallback: useCallback$3 } = React$b;
+    const React$d = window.PluginApi.React;
+    const { useCallback: useCallback$3 } = React$d;
     function useSmoothLoad(duration = 400) {
         return useCallback$3((node) => {
             if (!node)
@@ -10106,15 +10236,18 @@
         }, [duration]);
     }
 
+    // Matches below LIKELY_MIN stay folded. Matches at PRESELECT_MIN start selected.
+    const LIKELY_MIN = 70;
+    const PRESELECT_MIN = 90;
     function getConfidenceClass(confidence) {
-        return confidence >= 90
+        return confidence >= PRESELECT_MIN
             ? 'visage-confidence-excellent'
-            : confidence >= 70
+            : confidence >= LIKELY_MIN
                 ? 'visage-confidence-good'
                 : 'visage-confidence-uncertain';
     }
 
-    const React$a = window.PluginApi.React;
+    const React$c = window.PluginApi.React;
     const TIER_LABEL = {
         'visage-confidence-excellent': 'card.excellent',
         'visage-confidence-good': 'card.good',
@@ -10122,7 +10255,7 @@
     };
     // "96%" with a quieter percent sign. Tabular digits keep widths steady.
     function ConfidenceNumber({ value }) {
-        return React$a.createElement('span', { className: 'visage-conf-num' }, String(value), React$a.createElement('span', { className: 'visage-conf-unit' }, '%'));
+        return React$c.createElement('span', { className: 'visage-conf-num' }, String(value), React$c.createElement('span', { className: 'visage-conf-unit' }, '%'));
     }
     // Activity-ring style arc: rounded caps on a track tinted in the tier color.
     // The arc draws in on mount (see .visage-conf-arc in visage.css).
@@ -10135,18 +10268,18 @@
         const offset = circumference * (1 - value / 100);
         const center = size / 2;
         const tierLabel = `${t(TIER_LABEL[tier])}, ${value}%`;
-        return React$a.createElement('span', {
+        return React$c.createElement('span', {
             className: `visage-conf-ring ${tier}`,
             style: { width: size, height: size },
             role: label ? 'img' : undefined,
             'aria-label': label ? tierLabel : undefined,
             'aria-hidden': label ? undefined : true,
             title: label ? tierLabel : undefined,
-        }, React$a.createElement('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, React$a.createElement('circle', {
+        }, React$c.createElement('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, React$c.createElement('circle', {
             className: 'visage-conf-track',
             cx: center, cy: center, r,
             fill: 'none', strokeWidth: stroke,
-        }), React$a.createElement('circle', {
+        }), React$c.createElement('circle', {
             className: 'visage-conf-arc',
             cx: center, cy: center, r,
             fill: 'none', strokeWidth: stroke,
@@ -10155,22 +10288,22 @@
             strokeDashoffset: offset,
             transform: `rotate(-90 ${center} ${center})`,
             style: { '--visage-arc-length': `${circumference}px` },
-        })), label && React$a.createElement(ConfidenceNumber, { value }));
+        })), label && React$c.createElement(ConfidenceNumber, { value }));
     }
     // Frosted capsule for photo overlays: a small ring plus the number.
     function ConfidenceBadge({ confidence }) {
         const value = Math.max(0, Math.min(100, Math.round(confidence)));
         const tier = getConfidenceClass(value);
         const tierLabel = `${t(TIER_LABEL[tier])}, ${value}%`;
-        return React$a.createElement('span', {
+        return React$c.createElement('span', {
             className: `visage-conf-badge ${tier}`,
             role: 'img',
             'aria-label': tierLabel,
             title: tierLabel,
-        }, React$a.createElement(ConfidenceRing, { confidence: value, size: 16, stroke: 2.5, label: false }), React$a.createElement(ConfidenceNumber, { value }));
+        }, React$c.createElement(ConfidenceRing, { confidence: value, size: 16, stroke: 2.5, label: false }), React$c.createElement(ConfidenceNumber, { value }));
     }
 
-    const React$9 = window.PluginApi.React;
+    const React$b = window.PluginApi.React;
     const SOURCE_BASE_URLS = {
         stashdb: 'https://stashdb.org',
         javstash: 'https://javstash.org',
@@ -10202,7 +10335,7 @@
         if (!cfg)
             return null;
         const label = t(cfg.label);
-        return React$9.createElement('span', {
+        return React$b.createElement('span', {
             className: `visage-gender-badge ${cfg.className}`,
             title: label,
             'aria-label': label,
@@ -10237,7 +10370,7 @@
                 handleClick(e);
             }
         }
-        return React$9.createElement('div', {
+        return React$b.createElement('div', {
             className: cardClasses,
             'data-performer-id': performer.id,
             onClick: handleClick,
@@ -10251,43 +10384,45 @@
                 : t(isSelected ? 'card.deselect' : 'card.select', { name: performer.name }),
         }, 
         // Portrait image area
-        React$9.createElement('div', { className: 'visage-card-portrait' }, React$9.createElement('img', {
+        React$b.createElement('div', { className: 'visage-card-portrait' }, React$b.createElement('img', {
             ref: imgRef,
             className: 'visage-portrait-img',
             alt: performer.name,
             src: imgSrc$1(performer.image),
         }), 
         // Gradient overlay
-        React$9.createElement('div', { className: 'visage-card-img-overlay' }), 
+        React$b.createElement('div', { className: 'visage-card-img-overlay' }), 
         // Country flag
-        performer.country && React$9.createElement('span', {
+        performer.country && React$b.createElement('span', {
             className: `visage-country-flag fi fi-${performer.country.toLowerCase()}`,
         }), 
         // Source badge
-        performer.source && React$9.createElement('span', {
+        performer.source && React$b.createElement('span', {
             className: `visage-source-badge visage-source-${performer.source}`,
             title: performer.source,
         }, performer.source[0].toUpperCase()), 
         // Gender badge
         genderBadge(performer.gender), 
         // Selected check badge
-        isSelected && React$9.createElement('div', { className: 'visage-card-check-badge' }, React$9.createElement('svg', {
+        isSelected && React$b.createElement('div', { className: 'visage-card-check-badge' }, React$b.createElement('svg', {
             width: 16, height: 16, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 3,
-        }, React$9.createElement('polyline', { points: '20 6 9 17 4 12' }))), 
+        }, React$b.createElement('polyline', { points: '20 6 9 17 4 12' }))), 
         // Text overlay: name + confidence
-        React$9.createElement('div', { className: 'visage-card-meta' }, React$9.createElement('a', {
+        React$b.createElement('div', { className: 'visage-card-meta' }, React$b.createElement('a', {
             href: performerUrl(performer.id, performer.source),
             title: t('card.openOn', { source: (performer.source || 'stashdb').toLowerCase() }),
             target: '_blank',
             rel: 'noopener noreferrer',
             className: 'visage-performer-name',
             onClick: (e) => e.stopPropagation(),
-        }, performer.name), React$9.createElement('div', { className: 'visage-card-stats' }, React$9.createElement(ConfidenceBadge, { confidence }), existingLabel && React$9.createElement('span', { className: 'visage-card-existing-tag' }, existingLabel)))));
+        }, performer.name), React$b.createElement('div', { className: 'visage-card-stats' }, React$b.createElement(ConfidenceBadge, { confidence }), existingLabel && React$b.createElement('span', { className: 'visage-card-existing-tag' }, existingLabel)))));
     }
 
-    const React$8 = window.PluginApi.React;
-    const { useEffect: useEffect$4, useRef: useRef$4, useState: useState$3 } = React$8;
+    const PATREON_URL = 'https://www.patreon.com/cw/cc12340';
+
+    const React$a = window.PluginApi.React;
+    const { useEffect: useEffect$5, useRef: useRef$5, useState: useState$4 } = React$a;
     const CLOUD_URL = VISAGE_API_URL;
     const LOCAL_DEFAULT = 'http://localhost:7860';
     function hostOf(url) {
@@ -10309,25 +10444,25 @@
     };
     function SettingsCloseButton({ onClick }) {
         useLocale();
-        return React$8.createElement('button', {
+        return React$a.createElement('button', {
             className: 'visage-backend-settings-close',
             onClick,
             'aria-label': t('backendSettings.closeAria'),
-        }, React$8.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$8.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$8.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })));
+        }, React$a.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$a.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$a.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 })));
     }
     function SettingsButton({ onClick }) {
         useLocale();
-        return React$8.createElement('button', {
+        return React$a.createElement('button', {
             className: 'visage-modal-settings',
             onClick,
             'aria-label': t('backendSettings.backendAria'),
             title: t('backendSettings.changeBackend'),
-        }, React$8.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$8.createElement('path', { d: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' }), React$8.createElement('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' })));
+        }, React$a.createElement('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$a.createElement('path', { d: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' }), React$a.createElement('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' })));
     }
     function BackendSettings({ onClose, initialMode }) {
         useLocale();
         const current = getApiEndpoint();
-        const [mode, setMode] = useState$3(() => {
+        const [mode, setMode] = useState$4(() => {
             if (initialMode)
                 return initialMode;
             try {
@@ -10337,19 +10472,19 @@
                 return 'cloud';
             }
         });
-        const [url, setUrl] = useState$3(() => {
+        const [url, setUrl] = useState$4(() => {
             if (initialMode === 'local')
                 return isLocalEndpoint(current) ? current : LOCAL_DEFAULT;
             return current || LOCAL_DEFAULT;
         });
-        const [testStatus, setTestStatus] = useState$3(null);
-        const [stashStatus, setStashStatus] = useState$3(null);
-        const [syncStatus, setSyncStatus] = useState$3('idle');
+        const [testStatus, setTestStatus] = useState$4(null);
+        const [stashStatus, setStashStatus] = useState$4(null);
+        const [syncStatus, setSyncStatus] = useState$4('idle');
         // Open sync progress stream. Closed on unmount so it does not outlive the dialog.
-        const syncStreamRef = useRef$4(null);
-        useEffect$4(() => () => { var _a; return (_a = syncStreamRef.current) === null || _a === void 0 ? void 0 : _a.close(); }, []);
-        const [syncError, setSyncError] = useState$3('');
-        useEffect$4(() => {
+        const syncStreamRef = useRef$5(null);
+        useEffect$5(() => () => { var _a; return (_a = syncStreamRef.current) === null || _a === void 0 ? void 0 : _a.close(); }, []);
+        const [syncError, setSyncError] = useState$4('');
+        useEffect$5(() => {
             function onKey(e) {
                 if (e.key === 'Escape') {
                     e.preventDefault();
@@ -10360,7 +10495,7 @@
             document.addEventListener('keydown', onKey, true);
             return () => document.removeEventListener('keydown', onKey, true);
         }, [onClose]);
-        useEffect$4(() => {
+        useEffect$5(() => {
             if (mode !== 'local') {
                 setStashStatus(null);
                 return;
@@ -10478,28 +10613,28 @@
             ? t('backendSettings.testing')
             : (testStatus ? t(TEST_FEEDBACK[testStatus]) : '');
         const showNonLocalhostWarn = mode === 'local' && url.trim() !== '' && !isLocalHost(url.trim());
-        return React$8.createElement('div', {
+        return React$a.createElement('div', {
             className: 'visage-backend-settings-backdrop',
             onClick: (e) => { if (e.target === e.currentTarget)
                 onClose(); },
-        }, React$8.createElement('div', {
+        }, React$a.createElement('div', {
             className: 'visage-backend-settings',
             role: 'dialog',
             'aria-modal': 'true',
             'aria-label': t('backendSettings.backendAria'),
-        }, React$8.createElement('div', { className: 'visage-backend-settings-header' }, React$8.createElement('h2', { className: 'visage-backend-settings-title' }, t('backendSettings.title')), React$8.createElement(SettingsCloseButton, { onClick: onClose })), React$8.createElement('div', { className: 'visage-backend-settings-body' }, React$8.createElement('div', { className: 'visage-backend-settings-field' }, React$8.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.backendLabel')), React$8.createElement('div', { className: 'visage-backend-settings-seg' }, React$8.createElement('button', {
+        }, React$a.createElement('div', { className: 'visage-backend-settings-header' }, React$a.createElement('h2', { className: 'visage-backend-settings-title' }, t('backendSettings.title')), React$a.createElement(SettingsCloseButton, { onClick: onClose })), React$a.createElement('div', { className: 'visage-backend-settings-body' }, React$a.createElement('div', { className: 'visage-backend-settings-field' }, React$a.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.backendLabel')), React$a.createElement('div', { className: 'visage-backend-settings-seg' }, React$a.createElement('button', {
             className: `visage-backend-seg-opt${mode === 'local' ? ' visage-backend-seg-active' : ''}`,
             onClick: () => selectMode('local'),
-        }, t('backendSettings.local')), React$8.createElement('button', {
+        }, t('backendSettings.local')), React$a.createElement('button', {
             className: `visage-backend-seg-opt${mode === 'cloud' ? ' visage-backend-seg-active' : ''}`,
             onClick: () => selectMode('cloud'),
-        }, t('backendSettings.cloud')))), mode === 'cloud' && React$8.createElement('div', { className: 'visage-backend-settings-note' }, t('backendSettings.cloudNote')), mode === 'cloud' && React$8.createElement('p', { className: 'visage-backend-settings-hint' }, t('backendSettings.hintPrefix'), React$8.createElement('a', {
+        }, t('backendSettings.cloud')))), mode === 'cloud' && React$a.createElement('div', { className: 'visage-backend-settings-note' }, t('backendSettings.cloudNote')), mode === 'cloud' && React$a.createElement('p', { className: 'visage-backend-settings-hint' }, t('backendSettings.hintPrefix'), React$a.createElement('a', {
             className: 'visage-backend-settings-hint-link',
-            href: 'https://www.patreon.com/cw/cc12340',
+            href: PATREON_URL,
             target: '_blank',
             rel: 'noopener noreferrer',
-        }, t('backendSettings.hintLink')), '.'), React$8.createElement('div', { className: 'visage-backend-settings-field' }, React$8.createElement('label', { className: 'visage-backend-settings-label', htmlFor: 'visage-backend-url' }, t('backendSettings.urlLabel')), mode === 'local'
-            ? React$8.createElement('input', {
+        }, t('backendSettings.hintLink')), '.'), React$a.createElement('div', { className: 'visage-backend-settings-field' }, React$a.createElement('label', { className: 'visage-backend-settings-label', htmlFor: 'visage-backend-url' }, t('backendSettings.urlLabel')), mode === 'local'
+            ? React$a.createElement('input', {
                 id: 'visage-backend-url',
                 className: 'visage-backend-settings-input',
                 type: 'text',
@@ -10507,12 +10642,12 @@
                 onChange: (e) => { setUrl(e.target.value); setTestStatus(null); },
                 placeholder: LOCAL_DEFAULT,
             })
-            : React$8.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), showNonLocalhostWarn && React$8.createElement('div', { className: 'visage-backend-settings-warn' }, t('backendSettings.csp1'), React$8.createElement('code', null, 'http://localhost:7860'), t('backendSettings.csp2'), React$8.createElement('code', null, 'connect-src'), t('backendSettings.csp3'), React$8.createElement('code', null, 'visage.yml'), t('backendSettings.csp4'), React$8.createElement('code', null, 'visage.yml'), t('backendSettings.csp5')), React$8.createElement('div', {
+            : React$a.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), showNonLocalhostWarn && React$a.createElement('div', { className: 'visage-backend-settings-warn' }, t('backendSettings.csp1'), React$a.createElement('code', null, 'http://localhost:7860'), t('backendSettings.csp2'), React$a.createElement('code', null, 'connect-src'), t('backendSettings.csp3'), React$a.createElement('code', null, 'visage.yml'), t('backendSettings.csp4'), React$a.createElement('code', null, 'visage.yml'), t('backendSettings.csp5')), React$a.createElement('div', {
             className: `visage-backend-settings-status${testStatus ? ` visage-backend-${testStatus}` : ''}`,
             role: 'status',
-        }, statusText), (stashStatus === null || stashStatus === void 0 ? void 0 : stashStatus.configured) && React$8.createElement('div', { className: 'visage-backend-settings-sync' }, React$8.createElement('div', { className: 'visage-backend-settings-field' }, React$8.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.sync.title')), React$8.createElement('div', { className: 'visage-sync-info' }, React$8.createElement('div', { className: 'visage-sync-last' }, stashStatus.lastSyncAt
+        }, statusText), (stashStatus === null || stashStatus === void 0 ? void 0 : stashStatus.configured) && React$a.createElement('div', { className: 'visage-backend-settings-sync' }, React$a.createElement('div', { className: 'visage-backend-settings-field' }, React$a.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.sync.title')), React$a.createElement('div', { className: 'visage-sync-info' }, React$a.createElement('div', { className: 'visage-sync-last' }, stashStatus.lastSyncAt
             ? t('backendSettings.sync.lastSynced', { time: new Date(stashStatus.lastSyncAt).toLocaleString() })
-            : t('backendSettings.sync.neverSynced')), React$8.createElement('div', { className: 'visage-sync-count' }, t('backendSettings.sync.performers', { count: String(stashStatus.performerCount) }))), React$8.createElement('div', { className: 'visage-sync-actions' }, React$8.createElement('button', {
+            : t('backendSettings.sync.neverSynced')), React$a.createElement('div', { className: 'visage-sync-count' }, t('backendSettings.sync.performers', { count: String(stashStatus.performerCount) }))), React$a.createElement('div', { className: 'visage-sync-actions' }, React$a.createElement('button', {
             className: `visage-btn visage-btn-secondary${syncStatus === 'syncing' ? ' visage-syncing' : ''}`,
             onClick: handleSync,
             disabled: syncStatus === 'syncing',
@@ -10520,20 +10655,20 @@
             ? t('backendSettings.sync.syncing')
             : syncStatus === 'done'
                 ? t('backendSettings.sync.done')
-                : t('backendSettings.sync.button')), syncStatus === 'already_running' && React$8.createElement('span', { className: 'visage-sync-note' }, t('backendSettings.sync.alreadyRunning')), syncStatus === 'error' && React$8.createElement('span', { className: 'visage-sync-error' }, syncError))))), React$8.createElement('div', { className: 'visage-backend-settings-actions' }, React$8.createElement('button', {
+                : t('backendSettings.sync.button')), syncStatus === 'already_running' && React$a.createElement('span', { className: 'visage-sync-note' }, t('backendSettings.sync.alreadyRunning')), syncStatus === 'error' && React$a.createElement('span', { className: 'visage-sync-error' }, syncError))))), React$a.createElement('div', { className: 'visage-backend-settings-actions' }, React$a.createElement('button', {
             className: 'visage-btn visage-btn-secondary',
             onClick: handleTest,
             disabled: testStatus === 'testing',
-        }, testStatus === 'testing' ? t('backendSettings.testingShort') : t('backendSettings.testConnection')), React$8.createElement('button', {
+        }, testStatus === 'testing' ? t('backendSettings.testingShort') : t('backendSettings.testConnection')), React$a.createElement('button', {
             className: 'visage-btn visage-btn-secondary',
             onClick: onClose,
-        }, t('backendSettings.cancel')), React$8.createElement('button', {
+        }, t('backendSettings.cancel')), React$a.createElement('button', {
             className: 'visage-btn visage-btn-primary',
             onClick: handleSave,
         }, t('backendSettings.save')))));
     }
 
-    const React$7 = window.PluginApi.React;
+    const React$9 = window.PluginApi.React;
     /**
      * Passive indicator of the resolved active backend, shown in the result modal
      * header next to the settings gear. Never guesses Local: on any error it falls
@@ -10552,15 +10687,15 @@
         const label = isLocal ? t('badge.local') : t('badge.cloud');
         const variant = isLocal ? 'local' : 'cloud';
         const title = t('badge.title', { label });
-        return React$7.createElement('span', {
+        return React$9.createElement('span', {
             className: `visage-backend-badge visage-backend-${variant}`,
             'aria-label': title,
             title,
         }, label);
     }
 
-    const React$6 = window.PluginApi.React;
-    const { useCallback: useCallback$2, useEffect: useEffect$3, useRef: useRef$3, useState: useState$2 } = React$6;
+    const React$8 = window.PluginApi.React;
+    const { useCallback: useCallback$2, useEffect: useEffect$4, useRef: useRef$4, useState: useState$3 } = React$8;
     const imgSrc = (value, fallback = '') => {
         if (!value)
             return fallback;
@@ -10570,7 +10705,7 @@
     };
     // Best match of 90% or more for each face, skipping performers already in the
     // scene. Pre-selected so the common case is one click on the confirm button.
-    function preselect(matches, existing) {
+    function preselect$1(matches, existing) {
         const picks = new Map();
         matches.forEach((face, i) => {
             const best = face.performers
@@ -10590,25 +10725,25 @@
         const { matches: rawMatches, loading: loadingState } = state;
         const snapshotForUndo = useUndoSnapshot();
         const matches = Array.isArray(rawMatches) ? rawMatches : [];
-        const [selectedPerformer, setSelectedPerformer] = useState$2(() => preselect(matches, new Set()));
-        const [adding, setAdding] = useState$2(false);
-        const [visible, setVisible] = useState$2(false);
-        const [sceneStashIds, setSceneStashIds] = useState$2(new Set());
-        const [stashboxStatus, setStashboxStatus] = useState$2(null);
+        const [selectedPerformer, setSelectedPerformer] = useState$3(() => preselect$1(matches, new Set()));
+        const [adding, setAdding] = useState$3(false);
+        const [visible, setVisible] = useState$3(false);
+        const [sceneStashIds, setSceneStashIds] = useState$3(new Set());
+        const [stashboxStatus, setStashboxStatus] = useState$3(null);
         // "Show more" lifts the auto threshold for the current result set only.
-        const [showAll, setShowAll] = useState$2(false);
+        const [showAll, setShowAll] = useState$3(false);
         // Each new result set resets "Show more" and pre-selects confident matches.
         // Derived during render (not in an effect) because the modal opens before
         // the search returns, when `matches` is still empty.
-        const [resultsFor, setResultsFor] = useState$2(rawMatches);
+        const [resultsFor, setResultsFor] = useState$3(rawMatches);
         if (resultsFor !== rawMatches) {
             setResultsFor(rawMatches);
             setShowAll(false);
-            setSelectedPerformer(preselect(matches, sceneStashIds));
+            setSelectedPerformer(preselect$1(matches, sceneStashIds));
         }
         // Threshold low enough that every face keeps at least three performers:
         // take each face's 3rd-best score and use the smallest of those.
-        const autoConfidence = React$6.useMemo(() => {
+        const autoConfidence = React$8.useMemo(() => {
             let threshold = Infinity;
             for (const face of matches) {
                 const scores = face.performers
@@ -10627,8 +10762,8 @@
             setTimeout(() => showMatchModal(false), 300);
         }, []);
         const modalRef = useModalShell(close, state.showMatchModal);
-        const abortRef = useRef$3(false);
-        useEffect$3(() => {
+        const abortRef = useRef$4(false);
+        useEffect$4(() => {
             requestAnimationFrame(() => setVisible(true));
             const [scenario, id] = getScenarioAndID();
             if (scenario === 'scenes') {
@@ -10680,7 +10815,7 @@
         }, []);
         // Existing ids load after the results can arrive. Drop any pre-selection
         // that turns out to be in the scene already.
-        useEffect$3(() => {
+        useEffect$4(() => {
             setSelectedPerformer(prev => {
                 const next = new Map([...prev].filter(([, e]) => !sceneStashIds.has(e.id)));
                 return next.size === prev.size ? prev : next;
@@ -10852,65 +10987,65 @@
             : selectedId
                 ? (_e = (_d = activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers) === null || _d === void 0 ? void 0 : _d.findIndex((p) => p.id === selectedId)) !== null && _e !== void 0 ? _e : 0
                 : inSceneIdx >= 0 ? inSceneIdx : 0;
-        return React$6.createElement('div', {
+        return React$8.createElement('div', {
             className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 close(); },
-        }, React$6.createElement('div', {
+        }, React$8.createElement('div', {
             ref: modalRef,
             className: `visage-modal ${visible ? 'visage-visible' : ''}`,
             role: 'dialog',
             'aria-modal': 'true',
             tabIndex: -1,
-        }, React$6.createElement('div', { className: 'visage-modal-header' }, React$6.createElement('div', { className: 'visage-modal-title' }, React$6.createElement('h2', null, t(`faceMatch.title.${scenario}`))), React$6.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$6.createElement(BackendBadge, null), React$6.createElement(SettingsButton, { onClick: openSettings }), React$6.createElement('button', {
+        }, React$8.createElement('div', { className: 'visage-modal-header' }, React$8.createElement('div', { className: 'visage-modal-title' }, React$8.createElement('h2', null, t(`faceMatch.title.${scenario}`))), React$8.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$8.createElement(BackendBadge, null), React$8.createElement(SettingsButton, { onClick: openSettings }), React$8.createElement('button', {
             className: 'visage-modal-close',
             onClick: close,
             'aria-label': t('faceMatch.close'),
-        }, React$6.createElement('svg', {
+        }, React$8.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-        }, React$6.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$6.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$6.createElement('div', { className: 'visage-stashbox-banner' }, React$6.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$6.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$6.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$6.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$6.createElement('span', { className: 'visage-stashbox-banner-text' }, React$6.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
+        }, React$8.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$8.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$8.createElement('div', { className: 'visage-stashbox-banner' }, React$8.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$8.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$8.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$8.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$8.createElement('span', { className: 'visage-stashbox-banner-text' }, React$8.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
             ? t('faceMatch.stashboxMissingBody')
-            : t('faceMatch.stashboxWrongNameBody'), React$6.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, t('faceMatch.learnMore')))), emptyResult
-            ? React$6.createElement('div', { className: 'visage-empty-result' }, React$6.createElement('p', null, emptyResult.message), React$6.createElement('div', { className: 'visage-button-group' }, React$6.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: close }, t('faceMatch.close')), emptyResult.action && React$6.createElement('button', {
+            : t('faceMatch.stashboxWrongNameBody'), React$8.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, t('faceMatch.learnMore')))), emptyResult
+            ? React$8.createElement('div', { className: 'visage-empty-result' }, React$8.createElement('p', null, emptyResult.message), React$8.createElement('div', { className: 'visage-button-group' }, React$8.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: close }, t('faceMatch.close')), emptyResult.action && React$8.createElement('button', {
                 className: 'visage-btn visage-btn-primary',
                 onClick: () => { showMatchModal(false); emptyResult.action.run(); },
             }, emptyResult.action.label)))
             : isSearching
-                ? React$6.createElement('div', { className: 'visage-modal-loading' }, React$6.createElement('div', { className: 'visage-face-scan' }, React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('span', { className: 'visage-face-scan-corner' }), React$6.createElement('svg', {
+                ? React$8.createElement('div', { className: 'visage-modal-loading' }, React$8.createElement('div', { className: 'visage-face-scan' }, React$8.createElement('span', { className: 'visage-face-scan-corner' }), React$8.createElement('span', { className: 'visage-face-scan-corner' }), React$8.createElement('span', { className: 'visage-face-scan-corner' }), React$8.createElement('span', { className: 'visage-face-scan-corner' }), React$8.createElement('svg', {
                     viewBox: '0 0 100 120',
                     fill: 'none',
                     stroke: 'currentColor',
                     strokeWidth: 1.5,
                     strokeLinecap: 'round',
-                }, React$6.createElement('path', { d: 'M50 7 C29 7 15 22 16 45 C16.5 57 20 65 24 71' }), React$6.createElement('path', { d: 'M50 7 C71 7 85 22 84 45 C83.5 57 80 65 76 71' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C37 15 27 26 27 42' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C63 15 73 26 73 42' }), React$6.createElement('path', { d: 'M27 42 C27 61 34 77 43 85 C46 88 54 88 57 85 C66 77 73 61 73 42' }), React$6.createElement('path', { d: 'M33 52 C36.5 55 42.5 55 46 52' }), React$6.createElement('path', { d: 'M54 52 C57.5 55 63.5 55 67 52' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M35 54.6 L33.8 57 M39.5 55.6 L39 58.2 M44 54.6 L45 57' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M56 54.6 L55 57 M60.5 55.6 L61 58.2 M65 54.6 L66.2 57' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M32 46 C36 43.6 43 43.6 47 46' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M53 46 C57 43.6 64 43.6 68 46' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M50 54 C50 60 49.4 63 48.8 65.2 C49.6 66.4 50.4 66.4 51.2 65.2' }), React$6.createElement('path', { d: 'M42 75 C45 72.5 48 73.8 50 74.8 C52 73.8 55 72.5 58 75 C55 79.5 45 79.5 42 75 Z' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M44.5 80.5 C47 82.5 53 82.5 55.5 80.5' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M42 87.5 C42 94 40.5 99 38 104' }), React$6.createElement('path', { strokeWidth: 1.2, d: 'M58 87.5 C58 94 59.5 99 62 104' }), ...([
+                }, React$8.createElement('path', { d: 'M50 7 C29 7 15 22 16 45 C16.5 57 20 65 24 71' }), React$8.createElement('path', { d: 'M50 7 C71 7 85 22 84 45 C83.5 57 80 65 76 71' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C37 15 27 26 27 42' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M50 15 C63 15 73 26 73 42' }), React$8.createElement('path', { d: 'M27 42 C27 61 34 77 43 85 C46 88 54 88 57 85 C66 77 73 61 73 42' }), React$8.createElement('path', { d: 'M33 52 C36.5 55 42.5 55 46 52' }), React$8.createElement('path', { d: 'M54 52 C57.5 55 63.5 55 67 52' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M35 54.6 L33.8 57 M39.5 55.6 L39 58.2 M44 54.6 L45 57' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M56 54.6 L55 57 M60.5 55.6 L61 58.2 M65 54.6 L66.2 57' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M32 46 C36 43.6 43 43.6 47 46' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M53 46 C57 43.6 64 43.6 68 46' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M50 54 C50 60 49.4 63 48.8 65.2 C49.6 66.4 50.4 66.4 51.2 65.2' }), React$8.createElement('path', { d: 'M42 75 C45 72.5 48 73.8 50 74.8 C52 73.8 55 72.5 58 75 C55 79.5 45 79.5 42 75 Z' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M44.5 80.5 C47 82.5 53 82.5 55.5 80.5' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M42 87.5 C42 94 40.5 99 38 104' }), React$8.createElement('path', { strokeWidth: 1.2, d: 'M58 87.5 C58 94 59.5 99 62 104' }), ...([
                     [25, 52], [75, 52], [35, 68], [65, 68], [60.5, 82],
-                ].map(([cx, cy], i) => React$6.createElement('circle', {
+                ].map(([cx, cy], i) => React$8.createElement('circle', {
                     key: i, className: 'visage-face-scan-dot', cx, cy, r: i === 4 ? 1.5 : 1.8, stroke: 'none',
-                })))), React$6.createElement('div', { className: 'visage-face-scan-beam' })), React$6.createElement('span', { className: 'visage-loading-label' }, t('faceMatch.scanning')))
-                : React$6.createElement(React$6.Fragment, null, visibleFaceCount > 1 && React$6.createElement('div', { className: 'visage-face-tabs' }, matches.map((face, idx) => {
+                })))), React$8.createElement('div', { className: 'visage-face-scan-beam' })), React$8.createElement('span', { className: 'visage-loading-label' }, t('faceMatch.scanning')))
+                : React$8.createElement(React$8.Fragment, null, visibleFaceCount > 1 && React$8.createElement('div', { className: 'visage-face-tabs' }, matches.map((face, idx) => {
                     if (getPerformerCount(idx) === 0)
                         return null;
-                    return React$6.createElement('button', {
+                    return React$8.createElement('button', {
                         key: idx,
                         className: `visage-face-tab ${idx === activeFaceIndex ? 'visage-face-tab-active' : ''}`,
                         onClick: () => { setSelectedFaceIndex(idx); setSelectedCardIndex(0); },
-                    }, React$6.createElement('img', {
+                    }, React$8.createElement('img', {
                         src: `data:image/jpg;base64,${face.image}`,
                         alt: t('faceMatch.faceAlt', { index: idx + 1 }),
                         className: 'visage-face-tab-image',
                     }));
-                })), React$6.createElement('div', { className: 'visage-modal-body' }, React$6.createElement('div', { className: 'visage-left-panel' }, activeFace && React$6.createElement(React$6.Fragment, null, React$6.createElement('div', null, React$6.createElement('span', { className: 'visage-section-label' }, t('faceMatch.detected')), React$6.createElement('div', { className: 'visage-detect-frame' }, React$6.createElement('img', {
+                })), React$8.createElement('div', { className: 'visage-modal-body' }, React$8.createElement('div', { className: 'visage-left-panel' }, activeFace && React$8.createElement(React$8.Fragment, null, React$8.createElement('div', null, React$8.createElement('span', { className: 'visage-section-label' }, t('faceMatch.detected')), React$8.createElement('div', { className: 'visage-detect-frame' }, React$8.createElement('img', {
                     src: `data:image/jpg;base64,${activeFace.image}`,
                     alt: t('faceMatch.detectedFaceAlt'),
                     className: 'visage-detect-image',
-                }))), activeFace.performers[previewIdx] && React$6.createElement(React$6.Fragment, null, React$6.createElement('div', { className: 'visage-vs-divider' }, t('faceMatch.vs')), React$6.createElement('div', null, React$6.createElement('span', { className: 'visage-section-label-name' }, activeFace.performers[previewIdx].name), React$6.createElement('div', { className: 'visage-match-frame' }, React$6.createElement('img', {
+                }))), activeFace.performers[previewIdx] && React$8.createElement(React$8.Fragment, null, React$8.createElement('div', { className: 'visage-vs-divider' }, t('faceMatch.vs')), React$8.createElement('div', null, React$8.createElement('span', { className: 'visage-section-label-name' }, activeFace.performers[previewIdx].name), React$8.createElement('div', { className: 'visage-match-frame' }, React$8.createElement('img', {
                     src: imgSrc(activeFace.performers[previewIdx].image),
                     alt: activeFace.performers[previewIdx].name,
                     className: 'visage-match-image',
-                })))))), React$6.createElement('div', { className: 'visage-right-panel' }, React$6.createElement('div', { className: 'visage-performer-grid' }, activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers.filter((p) => (p.confidence || 0) >= minConfidence).map((performer, cardIdx) => {
+                })))))), React$8.createElement('div', { className: 'visage-right-panel' }, React$8.createElement('div', { className: 'visage-performer-grid' }, activeFace === null || activeFace === void 0 ? void 0 : activeFace.performers.filter((p) => (p.confidence || 0) >= minConfidence).map((performer, cardIdx) => {
                     var _a;
-                    return React$6.createElement(PerformerCard, {
+                    return React$8.createElement(PerformerCard, {
                         key: performer.id,
                         performer,
                         isLoading: loadingState[`add-performer-${performer.id}`] || false,
@@ -10920,21 +11055,21 @@
                         onToggle: (stashId) => selectPerformer(activeFaceIndex, stashId),
                         onQuickAdd: handleQuickAddCard,
                     });
-                })), (hiddenCount > 0 || showAll) && React$6.createElement('button', {
+                })), (hiddenCount > 0 || showAll) && React$8.createElement('button', {
                     className: 'visage-show-more',
                     onClick: () => setShowAll(v => !v),
-                }, showAll ? t('faceMatch.showFewer') : t('faceMatch.showMore', { count: hiddenCount })))), React$6.createElement('div', { className: 'visage-modal-footer' }, React$6.createElement('div', { className: 'visage-footer-main' }, React$6.createElement('a', {
+                }, showAll ? t('faceMatch.showFewer') : t('faceMatch.showMore', { count: hiddenCount })))), React$8.createElement('div', { className: 'visage-modal-footer' }, React$8.createElement('div', { className: 'visage-footer-main' }, React$8.createElement('a', {
                     className: 'visage-ext-patreon-btn',
-                    href: 'https://www.patreon.com/cw/cc12340',
+                    href: PATREON_URL,
                     target: '_blank',
                     rel: 'noopener noreferrer',
-                }, React$6.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$6.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$6.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), t('faceMatch.supportPatreon')), React$6.createElement('div', { className: 'visage-progress-info' }, React$6.createElement('span', { className: 'visage-matches-assigned' }, selectedPerformer.size > 0
+                }, React$8.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$8.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$8.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), t('faceMatch.supportPatreon')), React$8.createElement('div', { className: 'visage-progress-info' }, React$8.createElement('span', { className: 'visage-matches-assigned' }, selectedPerformer.size > 0
                     ? t('faceMatch.ofSelected', { selected: selectedPerformer.size, total: matches.length })
                     : allExisting
                         ? t(`faceMatch.allExisting.${scenario}`)
                         : t('faceMatch.clickToSelect')), 
                 // Shown once the user starts using the keyboard, to keep the footer calm.
-                hasNavigated && React$6.createElement('div', { className: 'visage-keyboard-hints' }, React$6.createElement('kbd', null, '\u2191\u2193'), ' ' + t('faceMatch.kbSwitch') + ' \u2022 ', React$6.createElement('kbd', null, '\u2190\u2192'), ' ' + t('faceMatch.kbSelect') + ' \u2022 ', React$6.createElement('kbd', null, 'Enter'), ' ' + t('faceMatch.kbToggle') + ' \u2022 ', t('faceMatch.kbAddInstant'))), React$6.createElement('div', { className: 'visage-button-group' }, React$6.createElement('button', {
+                hasNavigated && React$8.createElement('div', { className: 'visage-keyboard-hints' }, React$8.createElement('kbd', null, '\u2191\u2193'), ' ' + t('faceMatch.kbSwitch') + ' \u2022 ', React$8.createElement('kbd', null, '\u2190\u2192'), ' ' + t('faceMatch.kbSelect') + ' \u2022 ', React$8.createElement('kbd', null, 'Enter'), ' ' + t('faceMatch.kbToggle') + ' \u2022 ', t('faceMatch.kbAddInstant'))), React$8.createElement('div', { className: 'visage-button-group' }, React$8.createElement('button', {
                     className: 'visage-btn visage-btn-primary',
                     onClick: addConfirmed,
                     disabled: selectedPerformer.size === 0 || adding,
@@ -10949,20 +11084,25 @@
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    const React$5 = window.PluginApi.React;
-    const { useEffect: useEffect$2, useMemo: useMemo$1, useState: useState$1, useRef: useRef$2, useCallback: useCallback$1 } = React$5;
+    const React$7 = window.PluginApi.React;
+    function ScanConveyor() {
+        return React$7.createElement('div', { className: 'visage-conveyor' }, React$7.createElement('div', { className: 'visage-conveyor-track' }, Array.from({ length: 14 }, (_, i) => React$7.createElement('div', { key: i, className: 'visage-conveyor-frame' }))), React$7.createElement('div', { className: 'visage-conveyor-beam' }), React$7.createElement('div', { className: 'visage-conveyor-rail' }));
+    }
+
+    const React$6 = window.PluginApi.React;
+    const { useEffect: useEffect$3, useMemo: useMemo$2, useState: useState$2, useRef: useRef$3, useCallback: useCallback$1 } = React$6;
     function useSpriteModalData(spriteResult, onError) {
-        const [performerCache, setPerformerCache] = useState$1({});
-        const [loadingPerformers, setLoadingPerformers] = useState$1(new Set());
-        const [sceneStashIds, setSceneStashIds] = useState$1(new Set());
-        const [stashboxStatus, setStashboxStatus] = useState$1(null);
-        const abortRef = useRef$2(false);
-        const performers = useMemo$1(() => {
+        const [performerCache, setPerformerCache] = useState$2({});
+        const [loadingPerformers, setLoadingPerformers] = useState$2(new Set());
+        const [sceneStashIds, setSceneStashIds] = useState$2(new Set());
+        const [stashboxStatus, setStashboxStatus] = useState$2(null);
+        const abortRef = useRef$3(false);
+        const performers = useMemo$2(() => {
             if (!(spriteResult === null || spriteResult === void 0 ? void 0 : spriteResult.performers))
                 return [];
             return Object.values(spriteResult.performers).sort((a, b) => b.confidence - a.confidence);
         }, [spriteResult]);
-        const maxEndTime = useMemo$1(() => {
+        const maxEndTime = useMemo$2(() => {
             var _a, _b, _c;
             let max = 0;
             for (const p of performers) {
@@ -11011,7 +11151,7 @@
                 }
             }
         }, []);
-        useEffect$2(() => {
+        useEffect$3(() => {
             const [scenario, id] = getScenarioAndID();
             if (scenario === 'scenes') {
                 (async () => {
@@ -11049,7 +11189,7 @@
             })();
             return () => { abortRef.current = true; };
         }, []);
-        useEffect$2(() => {
+        useEffect$3(() => {
             for (const p of performers) {
                 if (p.id in performerCache || loadingPerformers.has(p.id))
                     continue;
@@ -11067,8 +11207,8 @@
         };
     }
 
-    const React$4 = window.PluginApi.React;
-    const { useEffect: useEffect$1, useMemo, useState, useRef: useRef$1, useCallback } = React$4;
+    const React$5 = window.PluginApi.React;
+    const { useEffect: useEffect$2, useMemo: useMemo$1, useState: useState$1, useRef: useRef$2, useCallback } = React$5;
     const GENDER_SYMBOLS = {
         MALE: '\u2642',
         FEMALE: '\u2640',
@@ -11085,8 +11225,6 @@
         NON_BINARY: 'gender.nonBinary',
         INTERSEX: 'gender.intersex',
     };
-    const LIKELY_MIN = 70;
-    const PRESELECT_MIN = 90;
     // Confident matches not yet in the scene, selected for the user up front.
     function preselectIds(result, existing) {
         var _a;
@@ -11101,45 +11239,45 @@
         const emptyMessage = (_a = state.emptyResult) === null || _a === void 0 ? void 0 : _a.message;
         const { spriteResult, loading: loadingState, scanProgress, scanProgressDesc } = state;
         const snapshotForUndo = useUndoSnapshot();
-        const [visible, setVisible] = useState(false);
-        const [confirmedIds, setConfirmedIds] = useState(() => preselectIds(spriteResult, new Set()));
-        const [adding, setAdding] = useState(false);
+        const [visible, setVisible] = useState$1(false);
+        const [confirmedIds, setConfirmedIds] = useState$1(() => preselectIds(spriteResult, new Set()));
+        const [adding, setAdding] = useState$1(false);
         // Matches under LIKELY_MIN stay folded until the user asks for them.
-        const [showUnlikely, setShowUnlikely] = useState(false);
-        const [focusedIndex, setFocusedIndex] = useState(0);
+        const [showUnlikely, setShowUnlikely] = useState$1(false);
+        const [focusedIndex, setFocusedIndex] = useState$1(0);
         const isProcessing = loadingState['face-detection'] && spriteResult === null;
-        const abortRef = useRef$1(false);
+        const abortRef = useRef$2(false);
         const { performers, maxEndTime, performerCache, loadingPerformers, sceneStashIds, stashboxStatus, } = useSpriteModalData(spriteResult);
-        useEffect$1(() => {
+        useEffect$2(() => {
             requestAnimationFrame(() => setVisible(true));
             return () => { abortRef.current = true; };
         }, []);
         // New matches first, by confidence. Performers already in the scene go last.
-        const sortedPerformers = useMemo(() => {
+        const sortedPerformers = useMemo$1(() => {
             var _a;
             const list = Object.values((_a = spriteResult === null || spriteResult === void 0 ? void 0 : spriteResult.performers) !== null && _a !== void 0 ? _a : {});
             const rank = (p) => (sceneStashIds.has(p.id) ? 1 : 0);
             return list.sort((a, b) => rank(a) - rank(b) || b.confidence - a.confidence);
         }, [spriteResult, sceneStashIds]);
         const unlikelyCount = sortedPerformers.filter(p => p.confidence < LIKELY_MIN).length;
-        const visiblePerformers = useMemo(() => (showUnlikely
+        const visiblePerformers = useMemo$1(() => (showUnlikely
             ? sortedPerformers
             : sortedPerformers.filter(p => p.confidence >= LIKELY_MIN)), [sortedPerformers, showUnlikely]);
         // Pre-select confident new matches once per result, so Add is one click.
         // Ids that load later as already in the scene are dropped.
-        const [resultFor, setResultFor] = useState(spriteResult);
+        const [resultFor, setResultFor] = useState$1(spriteResult);
         if (resultFor !== spriteResult) {
             setResultFor(spriteResult);
             setShowUnlikely(false);
             setConfirmedIds(preselectIds(spriteResult, sceneStashIds));
         }
-        useEffect$1(() => {
+        useEffect$2(() => {
             setConfirmedIds(prev => {
                 const next = new Set([...prev].filter(id => !sceneStashIds.has(id)));
                 return next.size === prev.size ? prev : next;
             });
         }, [sceneStashIds]);
-        useEffect$1(() => {
+        useEffect$2(() => {
             if (!visible)
                 return;
             const count = visiblePerformers.length;
@@ -11328,29 +11466,29 @@
             const entries = Array.isArray(timeRanges) ? timeRanges : Object.values(timeRanges !== null && timeRanges !== void 0 ? timeRanges : {});
             return [...entries].sort((a, b) => { var _a, _b, _c, _d; return Number((_b = (_a = a === null || a === void 0 ? void 0 : a[0]) !== null && _a !== void 0 ? _a : a === null || a === void 0 ? void 0 : a.start) !== null && _b !== void 0 ? _b : 0) - Number((_d = (_c = b === null || b === void 0 ? void 0 : b[0]) !== null && _c !== void 0 ? _c : b === null || b === void 0 ? void 0 : b.start) !== null && _d !== void 0 ? _d : 0); });
         }
-        return React$4.createElement('div', {
+        return React$5.createElement('div', {
             className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 close(); },
-        }, React$4.createElement('div', {
+        }, React$5.createElement('div', {
             ref: shellRef,
             className: `visage-modal visage-sprite-modal ${visible ? 'visage-visible' : ''}`,
             role: 'dialog',
             'aria-modal': 'true',
-        }, React$4.createElement('div', { className: 'visage-modal-header' }, React$4.createElement('div', { className: 'visage-modal-title' }, React$4.createElement('h2', null, t('sprite.title'))), React$4.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$4.createElement(BackendBadge, null), React$4.createElement(SettingsButton, { onClick: openSettings }), React$4.createElement('button', {
+        }, React$5.createElement('div', { className: 'visage-modal-header' }, React$5.createElement('div', { className: 'visage-modal-title' }, React$5.createElement('h2', null, t('sprite.title'))), React$5.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } }, React$5.createElement(BackendBadge, null), React$5.createElement(SettingsButton, { onClick: openSettings }), React$5.createElement('button', {
             className: 'visage-modal-close',
             onClick: close,
             'aria-label': t('sprite.close'),
-        }, React$4.createElement('svg', {
+        }, React$5.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'none', stroke: 'currentColor', strokeWidth: 2,
-        }, React$4.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$4.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$4.createElement('div', { className: 'visage-stashbox-banner' }, React$4.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$4.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$4.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$4.createElement('span', { className: 'visage-stashbox-banner-text' }, React$4.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
+        }, React$5.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$5.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))))), stashboxStatus !== null && stashboxStatus !== 'configured' && React$5.createElement('div', { className: 'visage-stashbox-banner' }, React$5.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$5.createElement('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }), React$5.createElement('line', { x1: 12, y1: 9, x2: 12, y2: 13 }), React$5.createElement('line', { x1: 12, y1: 17, x2: 12.01, y2: 17 })), React$5.createElement('span', { className: 'visage-stashbox-banner-text' }, React$5.createElement('strong', null, stashboxStatus === 'empty' ? t('faceMatch.stashboxMissing') : t('faceMatch.stashboxWrongName')), stashboxStatus === 'empty'
             ? t('faceMatch.stashboxMissingBody')
-            : t('faceMatch.stashboxWrongNameBody'), React$4.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, t('faceMatch.learnMore')))), isProcessing
-            ? React$4.createElement('div', { className: 'visage-modal-loading' }, React$4.createElement('div', { className: 'visage-conveyor' }, React$4.createElement('div', { className: 'visage-conveyor-track' }, Array.from({ length: 14 }, (_, i) => React$4.createElement('div', { key: i, className: 'visage-conveyor-frame' }))), React$4.createElement('div', { className: 'visage-conveyor-beam' }), React$4.createElement('div', { className: 'visage-conveyor-rail' })), (scanProgress > 0 || scanProgressDesc) && React$4.createElement('div', { className: 'visage-scan-progress' }, React$4.createElement('div', { className: 'visage-scan-progress-bar' }, React$4.createElement('div', {
+            : t('faceMatch.stashboxWrongNameBody'), React$5.createElement('a', { href: STASHBOX_DOCS_URL, target: '_blank', rel: 'noopener noreferrer' }, t('faceMatch.learnMore')))), isProcessing
+            ? React$5.createElement('div', { className: 'visage-modal-loading' }, React$5.createElement(ScanConveyor, null), (scanProgress > 0 || scanProgressDesc) && React$5.createElement('div', { className: 'visage-scan-progress' }, React$5.createElement('div', { className: 'visage-scan-progress-bar' }, React$5.createElement('div', {
                 className: 'visage-scan-progress-fill',
                 style: { width: `${Math.round(scanProgress * 100)}%` },
-            }))), React$4.createElement('span', { className: 'visage-loading-label' }, scanProgressDesc || t('sprite.scanning')), React$4.createElement('button', {
+            }))), React$5.createElement('span', { className: 'visage-loading-label' }, scanProgressDesc || t('sprite.scanning')), React$5.createElement('button', {
                 className: 'visage-btn visage-btn-secondary',
                 onClick: () => {
                     cancelDetection();
@@ -11359,9 +11497,9 @@
                 },
                 style: { marginTop: 12 },
             }, t('sprite.cancel')))
-            : React$4.createElement(React$4.Fragment, null, React$4.createElement('div', { className: 'visage-sprite-body' }, performers.length === 0
-                ? React$4.createElement('div', { className: 'visage-empty-result' }, React$4.createElement('p', null, emptyMessage !== null && emptyMessage !== void 0 ? emptyMessage : t('sprite.empty')), React$4.createElement('div', { className: 'visage-button-group' }, React$4.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: close }, t('sprite.close'))))
-                : React$4.createElement(React$4.Fragment, null, React$4.createElement('div', { className: 'visage-sprite-grid' }, visiblePerformers.map((p, idx) => {
+            : React$5.createElement(React$5.Fragment, null, React$5.createElement('div', { className: 'visage-sprite-body' }, performers.length === 0
+                ? React$5.createElement('div', { className: 'visage-empty-result' }, React$5.createElement('p', null, emptyMessage !== null && emptyMessage !== void 0 ? emptyMessage : t('sprite.empty')), React$5.createElement('div', { className: 'visage-button-group' }, React$5.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: close }, t('sprite.close'))))
+                : React$5.createElement(React$5.Fragment, null, React$5.createElement('div', { className: 'visage-sprite-grid' }, visiblePerformers.map((p, idx) => {
                     const alreadyInScene = sceneStashIds.has(p.id);
                     const isConfirmed = confirmedIds.has(p.id);
                     const isFocused = idx === focusedIndex;
@@ -11388,7 +11526,7 @@
                             toggleConfirm(p.id);
                         }
                     }
-                    return React$4.createElement('div', {
+                    return React$5.createElement('div', {
                         key: p.id,
                         className: cardClass,
                         onClick: onSpriteCardClick,
@@ -11396,39 +11534,39 @@
                         tabIndex: 0,
                         'aria-pressed': isConfirmed,
                         'aria-disabled': alreadyInScene || undefined,
-                    }, React$4.createElement('div', { className: 'visage-sprite-compare' }, React$4.createElement('div', { className: 'visage-sprite-face' }, React$4.createElement('img', {
+                    }, React$5.createElement('div', { className: 'visage-sprite-compare' }, React$5.createElement('div', { className: 'visage-sprite-face' }, React$5.createElement('img', {
                         src: `data:image/jpeg;base64,${p.thumbnail}`,
                         alt: t('sprite.detectedFaceAlt'),
                         className: 'visage-sprite-face-img',
-                    })), React$4.createElement('div', { className: 'visage-sprite-performer-img' }, React$4.createElement('div', { className: 'visage-sprite-img-placeholder' }, React$4.createElement('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }), React$4.createElement('circle', { cx: 12, cy: 7, r: 4 }))), isLoadingImg && React$4.createElement('div', { className: 'visage-sprite-img-loading' }), stashImg && React$4.createElement('img', {
+                    })), React$5.createElement('div', { className: 'visage-sprite-performer-img' }, React$5.createElement('div', { className: 'visage-sprite-img-placeholder' }, React$5.createElement('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$5.createElement('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }), React$5.createElement('circle', { cx: 12, cy: 7, r: 4 }))), isLoadingImg && React$5.createElement('div', { className: 'visage-sprite-img-loading' }), stashImg && React$5.createElement('img', {
                         src: stashImg,
                         alt: p.name,
                         className: 'visage-sprite-performer-img-src',
                         onError: (e) => { e.target.remove(); },
-                    }), (cached === null || cached === void 0 ? void 0 : cached.gender) && React$4.createElement('span', {
+                    }), (cached === null || cached === void 0 ? void 0 : cached.gender) && React$5.createElement('span', {
                         className: 'visage-sprite-gender-badge visage-gender-badge visage-gender-' + cached.gender.toLowerCase().replace(/_/g, '-'),
                         title: GENDER_NAME_KEY[cached.gender]
                             ? t(GENDER_NAME_KEY[cached.gender])
                             : cached.gender.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()),
-                    }, GENDER_SYMBOLS[cached.gender] || '?'), (cached === null || cached === void 0 ? void 0 : cached.country) && React$4.createElement('span', {
+                    }, GENDER_SYMBOLS[cached.gender] || '?'), (cached === null || cached === void 0 ? void 0 : cached.country) && React$5.createElement('span', {
                         className: 'visage-sprite-country-flag fi fi-' + cached.country.toLowerCase(),
-                    })), alreadyInScene && React$4.createElement('div', { className: 'visage-sprite-in-scene' }, t('card.existing.scenes')), isConfirmed && React$4.createElement('div', { className: 'visage-sprite-check-badge' }, React$4.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$4.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$4.createElement('div', { className: 'visage-sprite-info' }, React$4.createElement('div', { className: 'visage-sprite-summary' }, React$4.createElement(ConfidenceRing, { confidence: p.confidence }), React$4.createElement('div', { className: 'visage-sprite-summary-text' }, React$4.createElement('a', {
+                    })), alreadyInScene && React$5.createElement('div', { className: 'visage-sprite-in-scene' }, t('card.existing.scenes')), isConfirmed && React$5.createElement('div', { className: 'visage-sprite-check-badge' }, React$5.createElement('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 3 }, React$5.createElement('polyline', { points: '20 6 9 17 4 12' })))), React$5.createElement('div', { className: 'visage-sprite-info' }, React$5.createElement('div', { className: 'visage-sprite-summary' }, React$5.createElement(ConfidenceRing, { confidence: p.confidence }), React$5.createElement('div', { className: 'visage-sprite-summary-text' }, React$5.createElement('a', {
                         href: p.performer_url,
                         target: '_blank',
                         rel: 'noopener noreferrer',
                         className: 'visage-sprite-performer-link',
                         onClick: (e) => e.stopPropagation(),
-                    }, p.name), React$4.createElement('div', { className: 'visage-sprite-stats-row' }, React$4.createElement('span', { className: 'visage-sprite-stat' }, t('sprite.hitsCount', { count: p.hit_count, s: p.hit_count !== 1 ? 's' : '' })), React$4.createElement('span', { className: 'visage-sprite-stat-sep' }, '\u00B7'), React$4.createElement('span', { className: 'visage-sprite-stat' }, t('sprite.totalTime', { time: formatTime(sortedRanges.reduce((sum, r) => {
+                    }, p.name), React$5.createElement('div', { className: 'visage-sprite-stats-row' }, React$5.createElement('span', { className: 'visage-sprite-stat' }, t('sprite.hitsCount', { count: p.hit_count, s: p.hit_count !== 1 ? 's' : '' })), React$5.createElement('span', { className: 'visage-sprite-stat-sep' }, '\u00B7'), React$5.createElement('span', { className: 'visage-sprite-stat' }, t('sprite.totalTime', { time: formatTime(sortedRanges.reduce((sum, r) => {
                             var _a, _b, _c, _d;
                             const end = Number((_b = (_a = r === null || r === void 0 ? void 0 : r[1]) !== null && _a !== void 0 ? _a : r === null || r === void 0 ? void 0 : r.end) !== null && _b !== void 0 ? _b : 0);
                             const start = Number((_d = (_c = r === null || r === void 0 ? void 0 : r[0]) !== null && _c !== void 0 ? _c : r === null || r === void 0 ? void 0 : r.start) !== null && _d !== void 0 ? _d : 0);
                             return sum + (end - start);
-                        }, 0)) }))))), React$4.createElement('div', { className: 'visage-sprite-timeline-wrap' }, React$4.createElement('div', { className: 'visage-sprite-timeline' }, segments.map((seg, i) => {
+                        }, 0)) }))))), React$5.createElement('div', { className: 'visage-sprite-timeline-wrap' }, React$5.createElement('div', { className: 'visage-sprite-timeline' }, segments.map((seg, i) => {
                         var _a, _b, _c, _d;
                         const range = sortedRanges[i];
                         const start = Number((_b = (_a = range === null || range === void 0 ? void 0 : range[0]) !== null && _a !== void 0 ? _a : range === null || range === void 0 ? void 0 : range.start) !== null && _b !== void 0 ? _b : 0);
                         const end = Number((_d = (_c = range === null || range === void 0 ? void 0 : range[1]) !== null && _c !== void 0 ? _c : range === null || range === void 0 ? void 0 : range.end) !== null && _d !== void 0 ? _d : 0);
-                        return React$4.createElement('div', {
+                        return React$5.createElement('div', {
                             key: i,
                             className: `visage-sprite-timeline-seg ${confClass}`,
                             style: { left: `${seg.left}%`, width: `${seg.width}%` },
@@ -11436,25 +11574,25 @@
                             title: `${formatTime(start)}\u2013${formatTime(end)}`,
                         });
                     })))));
-                })), unlikelyCount > 0 && React$4.createElement('button', {
+                })), unlikelyCount > 0 && React$5.createElement('button', {
                     className: 'visage-show-more',
                     onClick: () => { setShowUnlikely(v => !v); setFocusedIndex(0); },
-                }, showUnlikely ? t('sprite.showFewer') : t('sprite.showMore', { count: unlikelyCount })))), React$4.createElement('div', { className: 'visage-modal-footer' }, React$4.createElement('div', { className: 'visage-footer-main' }, React$4.createElement('a', {
+                }, showUnlikely ? t('sprite.showFewer') : t('sprite.showMore', { count: unlikelyCount })))), React$5.createElement('div', { className: 'visage-modal-footer' }, React$5.createElement('div', { className: 'visage-footer-main' }, React$5.createElement('a', {
                 className: 'visage-ext-patreon-btn',
-                href: 'https://www.patreon.com/cw/cc12340',
+                href: PATREON_URL,
                 target: '_blank',
                 rel: 'noopener noreferrer',
-            }, React$4.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$4.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$4.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), t('sprite.supportPatreon')), React$4.createElement('div', { className: 'visage-progress-info' }, confirmedIds.size > 0
-                ? React$4.createElement('span', { className: 'visage-matches-assigned' }, t('sprite.confirmedCount', { confirmed: confirmedIds.size, total: performers.length }))
-                : React$4.createElement('span', { className: 'visage-matches-assigned' }, t('sprite.confirmHint'))), React$4.createElement('div', { className: 'visage-button-group' }, React$4.createElement('button', {
+            }, React$5.createElement('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, React$5.createElement('circle', { cx: 15, cy: 9, r: 7 }), React$5.createElement('rect', { x: 2, y: 2, width: 4, height: 20, rx: 1 })), t('sprite.supportPatreon')), React$5.createElement('div', { className: 'visage-progress-info' }, confirmedIds.size > 0
+                ? React$5.createElement('span', { className: 'visage-matches-assigned' }, t('sprite.confirmedCount', { confirmed: confirmedIds.size, total: performers.length }))
+                : React$5.createElement('span', { className: 'visage-matches-assigned' }, t('sprite.confirmHint'))), React$5.createElement('div', { className: 'visage-button-group' }, React$5.createElement('button', {
                 className: 'visage-btn visage-btn-primary',
                 onClick: addConfirmed,
                 disabled: confirmedIds.size === 0 || adding,
             }, adding ? t('sprite.adding') : t('sprite.confirm', { count: confirmedIds.size }))))))));
     }
 
-    const React$3 = window.PluginApi.React;
-    const { useEffect, useRef } = React$3;
+    const React$4 = window.PluginApi.React;
+    const { useEffect: useEffect$1, useRef: useRef$1 } = React$4;
     const ICONS = {
         error: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z',
         warning: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2V8h2v6z',
@@ -11470,13 +11608,13 @@
         var _a;
         useLocale();
         const { state, hideErrorDialog } = useVisage();
-        const dialogRef = useRef(null);
-        const actionRef = useRef(null);
-        const timerRef = useRef(null);
+        const dialogRef = useRef$1(null);
+        const actionRef = useRef$1(null);
+        const timerRef = useRef$1(null);
         const variant = (_a = state.errorDialog) === null || _a === void 0 ? void 0 : _a.variant;
         const isToast = variant === 'success';
         const autoDismiss = variant === 'warning' || variant === 'success';
-        useEffect(() => {
+        useEffect$1(() => {
             var _a, _b;
             if (!state.errorDialog)
                 return;
@@ -11491,7 +11629,7 @@
                     clearTimeout(timerRef.current);
             };
         }, [state.errorDialog]);
-        useEffect(() => {
+        useEffect$1(() => {
             if (!state.errorDialog || isToast)
                 return;
             function onKey(e) {
@@ -11510,25 +11648,519 @@
         if (!state.errorDialog)
             return null;
         const { message, action } = state.errorDialog;
-        return React$3.createElement('div', {
+        return React$4.createElement('div', {
             className: `visage-error-backdrop${isToast ? ' visage-error-backdrop-toast' : ''}`,
             onClick: (e) => { if (e.target === e.currentTarget)
                 hideErrorDialog(); },
-        }, React$3.createElement('div', {
+        }, React$4.createElement('div', {
             ref: dialogRef,
             className: `visage-error-dialog visage-error-${variant}`,
             ...(isToast
                 ? { role: 'status', 'aria-live': 'polite' }
                 : { role: 'alertdialog', 'aria-modal': 'true', tabIndex: -1 }),
-        }, React$3.createElement('div', { className: 'visage-error-icon' }, React$3.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'currentColor' }, React$3.createElement('path', { d: ICONS[variant] }))), React$3.createElement('div', { className: 'visage-error-message' }, message), action && React$3.createElement('button', {
+        }, React$4.createElement('div', { className: 'visage-error-icon' }, React$4.createElement('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'currentColor' }, React$4.createElement('path', { d: ICONS[variant] }))), React$4.createElement('div', { className: 'visage-error-message' }, message), action && React$4.createElement('button', {
             ref: actionRef,
             className: 'visage-error-action',
             onClick: () => { hideErrorDialog(); action.run(); },
-        }, action.label), React$3.createElement('button', {
+        }, action.label), React$4.createElement('button', {
             className: 'visage-error-close',
             onClick: hideErrorDialog,
             'aria-label': t('error.dismiss'),
-        }, React$3.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$3.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$3.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))), autoDismiss && React$3.createElement('div', { className: 'visage-error-timer' })));
+        }, React$4.createElement('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, React$4.createElement('line', { x1: 18, y1: 6, x2: 6, y2: 18 }), React$4.createElement('line', { x1: 6, y1: 6, x2: 18, y2: 18 }))), autoDismiss && React$4.createElement('div', { className: 'visage-error-timer' })));
+    }
+
+    // Matches the user can still act on, best first. Performers already in the
+    // scene are left out: the review lists them with the scene.
+    function newMatches({ scene, result }) {
+        var _a, _b;
+        const existing = new Set((_a = scene === null || scene === void 0 ? void 0 : scene.stashIds) !== null && _a !== void 0 ? _a : []);
+        return Object.values((_b = result === null || result === void 0 ? void 0 : result.performers) !== null && _b !== void 0 ? _b : {})
+            .filter(m => !existing.has(m.id))
+            .sort((a, b) => b.confidence - a.confidence);
+    }
+    function isReviewable(entry) {
+        return newMatches(entry).some(m => m.confidence >= LIKELY_MIN);
+    }
+    // The confident new matches, selected for the user up front.
+    function preselect(entry) {
+        return newMatches(entry).filter(m => m.confidence >= PRESELECT_MIN).map(m => m.id);
+    }
+    // Sprite first, then the preview video, as on the scene page. Null means no
+    // faces. 'missing' means the scene has neither file to scan.
+    async function scanScene(sceneId) {
+        const sprite = await trySprite(sceneId);
+        if (sprite || isCancelled())
+            return sprite;
+        const previewUrl = await getUrlPreview(sceneId);
+        // Stash returns these URLs even when the files were never generated.
+        if (previewUrl && (await fileExists(previewUrl)))
+            return tryPreview(sceneId);
+        return (await getUrlSprite(sceneId)) ? null : 'missing';
+    }
+    // Scans scenes one at a time and reports each change through onChange. Stops
+    // on cancel. If the backend is unreachable, the remaining scenes fail with that
+    // message, because each would wait for the same failure. Batches run only on
+    // Visage Server: without one, every scene fails before any upload.
+    async function runBatch(sceneIds, onChange) {
+        var _a;
+        const run = resetCancelled();
+        if (!(await isVisageServer())) {
+            for (const id of sceneIds)
+                onChange(id, { status: 'failed', error: t('batch.serverOnly') });
+            return { unreachable: null };
+        }
+        for (let i = 0; i < sceneIds.length; i++) {
+            const id = sceneIds[i];
+            if (run.cancelled)
+                break;
+            try {
+                const scene = await getScene(id);
+                const result = await scanScene(id);
+                if (run.cancelled)
+                    break;
+                if (result === 'missing')
+                    onChange(id, { status: 'missing' });
+                else
+                    onChange(id, { status: 'done', scene, result });
+            }
+            catch (error) {
+                console.error('[Visage] batch scan error:', id, error);
+                const backend = describeBackendError(error);
+                onChange(id, { status: 'failed', error: (_a = backend === null || backend === void 0 ? void 0 : backend.message) !== null && _a !== void 0 ? _a : getErrorMessage(error) });
+                if (backend === null || backend === void 0 ? void 0 : backend.unreachable) {
+                    for (const rest of sceneIds.slice(i + 1))
+                        onChange(rest, { status: 'failed', error: backend.message });
+                    return { unreachable: backend.message };
+                }
+            }
+        }
+        return { unreachable: null };
+    }
+    // Finds the Stash performer for a match, importing it from the stash-box when
+    // needed. Null when the stash-box has no such performer.
+    async function resolvePerformer(p) {
+        const existing = await getPerformers(p.id);
+        if (existing.length > 0)
+            return existing[0].id;
+        const scraped = await getPerformerDataFromStashID(p.id, p.source);
+        if (!scraped)
+            return null;
+        return (await createOrGetPerformer(scraped, p.id, p.source)).performerId;
+    }
+    // Writes each scene once. A performer found in several scenes resolves once, so
+    // a new import is never created twice. One failed scene does not stop the rest.
+    async function applyBatch(plan) {
+        const outcome = { applied: {}, addedCount: 0, failedScenes: [], skippedPerformers: [] };
+        const resolved = new Map();
+        for (const { sceneId, performers } of plan) {
+            try {
+                const ids = [];
+                for (const p of performers) {
+                    if (!resolved.has(p.id))
+                        resolved.set(p.id, resolvePerformer(p));
+                    const pid = await resolved.get(p.id);
+                    if (pid) {
+                        ids.push(pid);
+                    }
+                    else if (!outcome.skippedPerformers.includes(p.name)) {
+                        outcome.skippedPerformers.push(p.name);
+                    }
+                }
+                if (ids.length === 0)
+                    continue;
+                const before = await getContentPerformers('scenes', sceneId);
+                await setContentPerformers('scenes', sceneId, [...new Set([...before, ...ids])]);
+                outcome.applied[sceneId] = before;
+                outcome.addedCount += ids.length;
+            }
+            catch (error) {
+                console.error('[Visage] batch apply error:', sceneId, error);
+                outcome.failedScenes.push(sceneId);
+            }
+        }
+        return outcome;
+    }
+    // Restores the performer lists saved by applyBatch and returns the scenes it
+    // could not restore. Imported performers stay.
+    async function undoBatch(applied) {
+        const failed = [];
+        for (const [sceneId, before] of Object.entries(applied)) {
+            try {
+                await setContentPerformers('scenes', sceneId, before);
+            }
+            catch (error) {
+                console.error('[Visage] batch undo error:', sceneId, error);
+                failed.push(sceneId);
+            }
+        }
+        return failed;
+    }
+    const imageCache = new Map();
+    // Stash image for a match, or the stash-box image if not imported yet. Cached
+    // because the same performer often shows up in many scenes of a batch.
+    function getMatchImage(stashId, source) {
+        let image = imageCache.get(stashId);
+        if (!image) {
+            image = (async () => {
+                var _a, _b;
+                const existing = await getPerformers(stashId);
+                if (existing.length > 0)
+                    return `/performer/${existing[0].id}/image`;
+                const scraped = await getPerformerDataFromStashID(stashId, source);
+                return (_b = (_a = scraped === null || scraped === void 0 ? void 0 : scraped.images) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : null;
+            })().catch(() => null);
+            imageCache.set(stashId, image);
+        }
+        return image;
+    }
+
+    const React$3 = window.PluginApi.React;
+    const { useEffect, useMemo, useRef, useState } = React$3;
+    const plural = (count) => pluralize(count, '', 's');
+    // One line for every scene that needs no decision, so those scenes take no rows.
+    function summarize(entries) {
+        const rest = entries.filter(e => !isReviewable(e));
+        const tagged = rest.filter(e => { var _a, _b; return e.status === 'done' && Object.keys((_b = (_a = e.result) === null || _a === void 0 ? void 0 : _a.performers) !== null && _b !== void 0 ? _b : {}).length > newMatches(e).length; }).length;
+        const parts = [
+            [rest.filter(e => e.status === 'missing').length, 'batch.sumMissing'],
+            [rest.filter(e => e.status === 'done').length - tagged, 'batch.sumNoMatch'],
+            [tagged, 'batch.sumTagged'],
+            [rest.filter(e => e.status === 'failed').length, 'batch.sumFailed'],
+            [rest.filter(e => e.status === 'stopped').length, 'batch.sumSkipped'],
+        ];
+        return parts.filter(([count]) => count > 0).map(([count, key]) => t(key, { count }));
+    }
+    // Visible on every backend. On Cloud it opens the upsell instead of a scan.
+    function SceneBatchMenuItem({ onStart, onUpsell }) {
+        useLocale();
+        const { showWarning } = useVisage();
+        return React$3.createElement('a', {
+            href: '#',
+            className: 'bg-secondary text-white dropdown-item',
+            role: 'button',
+            onClick: (e) => {
+                var _a;
+                e.preventDefault();
+                const ids = getSelectedSceneIds();
+                // Through the toggle, so Stash's own open state stays correct.
+                (_a = document.getElementById('more-menu')) === null || _a === void 0 ? void 0 : _a.click();
+                if (ids.length === 0)
+                    showWarning(t('batch.selectFirst'));
+                else if (isHostedEndpoint(getApiEndpoint()))
+                    onUpsell(ids.length);
+                else
+                    onStart(ids);
+            },
+        }, t('batch.menuItem'));
+    }
+    // Shown to Cloud users who try a batch. Batches stay off Cloud to protect the
+    // shared service, so this offers Visage Server, or settings for existing owners.
+    function SceneBatchUpsell({ sceneCount, onClose }) {
+        useLocale();
+        const { openSettings } = useVisage();
+        const [visible, setVisible] = useState(false);
+        const shellRef = useModalShell(onClose, true);
+        useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
+        return React$3.createElement('div', {
+            className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
+            onClick: (e) => { if (e.target === e.currentTarget)
+                onClose(); },
+        }, React$3.createElement('div', {
+            ref: shellRef,
+            className: `visage-modal visage-batch-upsell ${visible ? 'visage-visible' : ''}`,
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'visage-batch-upsell-title',
+        }, React$3.createElement('h2', { id: 'visage-batch-upsell-title' }, t('batch.upsellTitle', { count: sceneCount, s: plural(sceneCount) })), React$3.createElement('p', null, t('batch.upsellBody')), React$3.createElement('a', {
+            className: 'visage-ext-patreon-btn',
+            href: PATREON_URL,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+        }, t('batch.upsellCta')), React$3.createElement('div', { className: 'visage-button-group' }, React$3.createElement('button', {
+            className: 'visage-btn visage-btn-secondary',
+            onClick: () => { onClose(); openSettings(); },
+        }, t('batch.upsellHaveServer')), React$3.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: onClose }, t('batch.upsellClose')))));
+    }
+    function MatchImage({ match }) {
+        const [src, setSrc] = useState(null);
+        useEffect(() => {
+            let live = true;
+            getMatchImage(match.id, match.source).then(image => { if (live)
+                setSrc(image); });
+            return () => { live = false; };
+        }, [match.id, match.source]);
+        return src
+            ? React$3.createElement('img', { src, alt: '', className: 'visage-batch-img', onError: () => setSrc(null) })
+            : React$3.createElement('span', { className: 'visage-batch-img visage-batch-img-empty' });
+    }
+    function MatchTile({ match, selected, disabled, onToggle }) {
+        const hits = t('sprite.hitsCount', { count: match.hit_count, s: plural(match.hit_count) });
+        return React$3.createElement('button', {
+            type: 'button',
+            className: `visage-batch-tile${selected ? ' visage-batch-selected' : ''}`,
+            onClick: onToggle,
+            disabled,
+            title: hits,
+            'aria-pressed': selected,
+            'aria-label': `${match.name}, ${match.confidence}%, ${hits}`,
+        }, React$3.createElement('span', { className: 'visage-batch-pair' }, React$3.createElement('img', {
+            src: `data:image/jpeg;base64,${match.thumbnail}`,
+            alt: '',
+            className: 'visage-batch-img',
+        }), React$3.createElement(MatchImage, { match }), React$3.createElement(ConfidenceBadge, { confidence: match.confidence })), React$3.createElement('span', { className: 'visage-batch-name' }, match.name));
+    }
+    function SceneRow({ entry, selected, disabled, onToggle }) {
+        const [showUnlikely, setShowUnlikely] = useState(false);
+        const scene = entry.scene;
+        const matches = useMemo(() => newMatches(entry), [entry]);
+        // A picked tile never hides, so the screen always shows what will be written.
+        const shown = matches.filter(m => showUnlikely || m.confidence >= LIKELY_MIN || selected.has(m.id));
+        const unlikely = matches.filter(m => m.confidence < LIKELY_MIN && !selected.has(m.id)).length;
+        const names = scene.performerNames;
+        return React$3.createElement('section', { className: 'visage-batch-row' }, React$3.createElement('div', { className: 'visage-batch-scene' }, scene.screenshot
+            ? React$3.createElement('img', { src: scene.screenshot, alt: '', className: 'visage-batch-shot' })
+            : React$3.createElement('div', { className: 'visage-batch-shot' }), React$3.createElement('a', {
+            href: `/scenes/${entry.id}`,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            className: 'visage-batch-title',
+            title: scene.title,
+        }, scene.title), React$3.createElement('span', { className: 'visage-batch-meta' }, names.length > 0 ? t('batch.inScene', { names: names.join(', ') }) : t('batch.noPerformers'))), React$3.createElement('div', { className: 'visage-batch-matches' }, React$3.createElement('div', { className: 'visage-batch-tiles' }, shown.map(m => React$3.createElement(MatchTile, {
+            key: m.id,
+            match: m,
+            selected: selected.has(m.id),
+            disabled,
+            onToggle: () => onToggle(m.id),
+        }))), (unlikely > 0 || showUnlikely) && React$3.createElement('button', {
+            type: 'button',
+            className: 'visage-show-more',
+            onClick: () => setShowUnlikely(v => !v),
+        }, showUnlikely ? t('batch.showFewer') : t('batch.showMore', { count: unlikely }))));
+    }
+    // Left and Right walk the tiles, Up and Down jump between scenes. Space toggles
+    // natively, because tiles are buttons.
+    function moveTileFocus(e, body) {
+        var _a, _b, _c, _d, _e;
+        const tile = (_b = (_a = e.target).closest) === null || _b === void 0 ? void 0 : _b.call(_a, '.visage-batch-tile');
+        if (!tile || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key))
+            return;
+        e.preventDefault();
+        const tiles = Array.from(body.querySelectorAll('.visage-batch-tile:not(:disabled)'));
+        const index = tiles.indexOf(tile);
+        if (e.key === 'ArrowLeft')
+            (_c = tiles[index - 1]) === null || _c === void 0 ? void 0 : _c.focus();
+        else if (e.key === 'ArrowRight')
+            (_d = tiles[index + 1]) === null || _d === void 0 ? void 0 : _d.focus();
+        else {
+            const rows = Array.from(body.querySelectorAll('.visage-batch-row'));
+            const row = rows[rows.indexOf(tile.closest('.visage-batch-row')) + (e.key === 'ArrowDown' ? 1 : -1)];
+            (_e = row === null || row === void 0 ? void 0 : row.querySelector('.visage-batch-tile:not(:disabled)')) === null || _e === void 0 ? void 0 : _e.focus();
+        }
+    }
+    // Two phases. While scanning, scenes with new matches appear as they finish.
+    // After the scan the user reviews and adds. Adding waits for the end of the
+    // scan, so a late preselected match can never be written unseen. Nothing is
+    // written until the user presses the apply button.
+    function SceneBatchModal({ sceneIds, onClose }) {
+        useLocale();
+        const { showSuccess, showError, showWarning, showHealthBanner } = useVisage();
+        const [entries, setEntries] = useState(() => sceneIds.map(id => ({ id, status: 'queued', scene: null, result: null })));
+        const [selection, setSelection] = useState({});
+        const [stopping, setStopping] = useState(false);
+        const [applying, setApplying] = useState(false);
+        const [confirmingClose, setConfirmingClose] = useState(false);
+        const [visible, setVisible] = useState(false);
+        const unmounted = useRef(false);
+        const bodyRef = useRef(null);
+        const done = entries.filter(e => e.status !== 'queued').length;
+        const running = done < entries.length;
+        const reviewable = entries.filter(e => e.status === 'done' && isReviewable(e));
+        const plan = reviewable.flatMap(e => {
+            const performers = newMatches(e).filter(m => { var _a; return (_a = selection[e.id]) === null || _a === void 0 ? void 0 : _a.has(m.id); });
+            return performers.length > 0 ? [{ sceneId: e.id, performers }] : [];
+        });
+        const pickCount = plan.reduce((sum, item) => sum + item.performers.length, 0);
+        const canApply = !running && pickCount > 0 && !applying;
+        function requestClose() {
+            if (applying)
+                return;
+            if (confirmingClose)
+                setConfirmingClose(false);
+            else if (pickCount > 0)
+                setConfirmingClose(true);
+            else
+                onClose();
+        }
+        // Esc asks the same question as Close. The dialog takes focus, not its first
+        // control. That control is Stop, and the next Space or Enter would end the scan.
+        const shellRef = useModalShell(requestClose, true, true);
+        useEffect(() => {
+            requestAnimationFrame(() => setVisible(true));
+            const update = (id, patch) => {
+                if (unmounted.current)
+                    return;
+                setEntries(prev => prev.map(e => (e.id === id ? { ...e, ...patch } : e)));
+                if (patch.status === 'done') {
+                    setSelection(s => ({ ...s, [id]: new Set(preselect({ scene: patch.scene, result: patch.result })) }));
+                }
+            };
+            runBatch(sceneIds, update).then(({ unreachable }) => {
+                if (unreachable)
+                    showHealthBanner(unreachable);
+                if (unmounted.current)
+                    return;
+                setEntries(prev => prev.map(e => (e.status === 'queued' ? { ...e, status: 'stopped' } : e)));
+            });
+            return () => {
+                unmounted.current = true;
+                cancelDetection();
+            };
+        }, []);
+        // Review starts on the first tile, unless the user already moved focus.
+        useEffect(() => {
+            var _a, _b;
+            if (running || document.activeElement !== shellRef.current)
+                return;
+            (_b = (_a = bodyRef.current) === null || _a === void 0 ? void 0 : _a.querySelector('.visage-batch-tile')) === null || _b === void 0 ? void 0 : _b.focus();
+        }, [running]);
+        const failures = entries.filter(e => e.status === 'failed');
+        const summary = summarize(entries);
+        const empty = !running && reviewable.length === 0;
+        const foundCount = reviewable.reduce((sum, e) => sum + newMatches(e).filter(m => m.confidence >= LIKELY_MIN).length, 0);
+        function toggle(sceneId, stashId) {
+            setSelection(prev => {
+                var _a;
+                const next = new Set((_a = prev[sceneId]) !== null && _a !== void 0 ? _a : []);
+                if (next.has(stashId))
+                    next.delete(stashId);
+                else
+                    next.add(stashId);
+                return { ...prev, [sceneId]: next };
+            });
+        }
+        function stop() {
+            cancelDetection();
+            setStopping(true);
+        }
+        async function apply() {
+            setApplying(true);
+            try {
+                const outcome = await applyBatch(plan);
+                const scenes = Object.keys(outcome.applied);
+                const total = outcome.addedCount;
+                const notes = [];
+                if (outcome.skippedPerformers.length > 0)
+                    notes.push(t('batch.skipped', { names: outcome.skippedPerformers.join(', ') }));
+                if (outcome.failedScenes.length > 0) {
+                    notes.push(t('batch.partial', { scenes: outcome.failedScenes.length, s: plural(outcome.failedScenes.length) }));
+                }
+                if (scenes.length === 0) {
+                    showWarning([t('batch.nothingApplied'), ...notes].join(' '));
+                    return;
+                }
+                const undo = {
+                    label: t('error.undo'),
+                    run: async () => {
+                        const failed = await undoBatch(outcome.applied);
+                        if (failed.length === 0)
+                            showSuccess(t('error.undone'));
+                        else
+                            showError(t('batch.undoPartial', { scenes: failed.length, s: plural(failed.length) }));
+                    },
+                };
+                const message = t('batch.applied', { performers: total, s: plural(total), scenes: scenes.length, ss: plural(scenes.length) });
+                if (notes.length > 0)
+                    showWarning([message, ...notes].join(' '), undo);
+                else
+                    showSuccess(message, undo);
+                // Scenes with no sprites stay ticked, ready for Generate.
+                clearSelectedScenes(entries.filter(e => e.status === 'done' && !outcome.failedScenes.includes(e.id)).map(e => e.id));
+                if (outcome.failedScenes.length === 0) {
+                    onClose();
+                    return;
+                }
+                // Only the scenes that failed stay, with their picks, to try again.
+                setEntries(prev => prev.filter(e => !scenes.includes(e.id)));
+            }
+            catch (error) {
+                console.error('[Visage] batch apply error:', error);
+                showError(t('faceMatch.toast.addError', { error: getErrorMessage(error) }));
+            }
+            finally {
+                if (!unmounted.current)
+                    setApplying(false);
+            }
+        }
+        const title = running
+            ? t('batch.title', { count: entries.length, s: plural(entries.length) })
+            : empty
+                ? t('batch.titleNone')
+                : t('batch.titleFound', {
+                    performers: foundCount,
+                    s: plural(foundCount),
+                    scenes: reviewable.length,
+                    total: entries.length,
+                    ss: plural(entries.length),
+                });
+        const summaryLine = summary.length > 0 && React$3.createElement('p', { className: 'visage-batch-summary' }, summary.join(' \u00B7 '));
+        const onlyFailures = failures.length === entries.length;
+        return React$3.createElement('div', {
+            className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
+            // Keeps Stash's list shortcuts from acting on the page behind the modal.
+            onKeyDown: (e) => e.stopPropagation(),
+        }, React$3.createElement('div', {
+            ref: shellRef,
+            className: `visage-modal visage-batch-modal ${visible ? 'visage-visible' : ''}`,
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'visage-batch-title',
+            tabIndex: -1,
+            onKeyDown: (e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && canApply) {
+                    e.preventDefault();
+                    apply();
+                }
+            },
+        }, React$3.createElement('div', { className: 'visage-modal-header' }, React$3.createElement('div', { className: 'visage-modal-title' }, React$3.createElement('h2', { id: 'visage-batch-title', role: 'status' }, title)), React$3.createElement('div', { className: 'visage-batch-actions' }, running && React$3.createElement('span', { className: 'visage-batch-progress' }, stopping ? t('batch.stopping') : t('batch.progress', { done, total: entries.length })), running && !stopping && React$3.createElement('button', {
+            type: 'button',
+            className: 'visage-show-more',
+            onClick: stop,
+        }, t('batch.stop')), React$3.createElement(BackendBadge, null)), React$3.createElement('div', {
+            className: `visage-scan-progress-bar${running ? '' : ' visage-batch-bar-done'}`,
+        }, React$3.createElement('div', {
+            className: 'visage-scan-progress-fill',
+            style: { width: `${Math.round((done / entries.length) * 100)}%` },
+        }))), React$3.createElement('div', {
+            ref: bodyRef,
+            className: 'visage-sprite-body',
+            onKeyDown: (e) => moveTileFocus(e, bodyRef.current),
+        }, empty
+            ? React$3.createElement('div', { className: 'visage-batch-empty' }, onlyFailures && React$3.createElement('p', null, failures[0].error), !onlyFailures && summaryLine, entries.some(e => e.status === 'missing') && React$3.createElement('p', null, t('batch.emptyMissing')))
+            : React$3.createElement(React$3.Fragment, null, reviewable.map(entry => {
+                var _a;
+                return React$3.createElement(SceneRow, {
+                    key: entry.id,
+                    entry,
+                    selected: (_a = selection[entry.id]) !== null && _a !== void 0 ? _a : new Set(),
+                    disabled: applying,
+                    onToggle: (stashId) => toggle(entry.id, stashId),
+                });
+            }), running && reviewable.length === 0 && React$3.createElement('div', { className: 'visage-batch-scan-wait' }, React$3.createElement(ScanConveyor, null)), summaryLine)), React$3.createElement('div', { className: 'visage-modal-footer' }, confirmingClose
+            ? React$3.createElement('div', { className: 'visage-footer-main' }, React$3.createElement('span', { className: 'visage-matches-assigned' }, t('batch.discard', { count: pickCount, s: plural(pickCount) })), React$3.createElement('div', { className: 'visage-button-group' }, React$3.createElement('button', {
+                className: 'visage-btn visage-btn-secondary',
+                onClick: () => setConfirmingClose(false),
+            }, t('batch.keepReviewing')), React$3.createElement('button', { className: 'visage-btn visage-btn-primary', onClick: onClose }, t('batch.discardConfirm'))))
+            : React$3.createElement('div', { className: 'visage-footer-main' }, React$3.createElement('span', { className: 'visage-matches-assigned' }, pickCount > 0
+                ? t('batch.selectedCount', { performers: pickCount, s: plural(pickCount), scenes: plan.length, ss: plural(plan.length) })
+                : !running && !empty && t('batch.selectHint')), React$3.createElement('div', { className: 'visage-button-group' }, React$3.createElement('button', {
+                className: `visage-btn ${empty ? 'visage-btn-primary' : 'visage-btn-secondary'}`,
+                onClick: requestClose,
+                disabled: applying,
+            }, t(empty ? 'batch.done' : 'batch.close')), !empty && React$3.createElement('button', {
+                className: 'visage-btn visage-btn-primary',
+                onClick: apply,
+                disabled: !canApply,
+            }, t(applying ? 'batch.applying' : 'batch.apply')))))));
     }
 
     const { React: React$2 } = PluginApi;
@@ -17241,20 +17873,23 @@
     }
     // Portal `content` into a host element that Stash renders lazily. `findAnchor`
     // returns the anchor once its host exists (creating it on first sight), else
-    // null. A MutationObserver retries on every DOM change until it succeeds.
+    // null. A MutationObserver retries on every DOM change, and again if Stash
+    // removes the host, so a re-rendered host gets the content back.
     function useInjectedPortal(findAnchor, content) {
         const [anchor, setAnchor] = React.useState(null);
         React.useEffect(() => {
+            let current = null;
             const tryInject = () => {
+                if (current === null || current === void 0 ? void 0 : current.isConnected)
+                    return;
                 const found = findAnchor();
-                if (found)
+                if (found !== current) {
+                    current = found;
                     setAnchor(found);
-                return !!found;
+                }
             };
-            if (tryInject())
-                return;
-            const obs = new MutationObserver(() => { if (tryInject())
-                obs.disconnect(); });
+            tryInject();
+            const obs = new MutationObserver(tryInject);
             obs.observe(document.body, { childList: true, subtree: true });
             return () => obs.disconnect();
         }, []);
@@ -17268,6 +17903,12 @@
     }
     function PerformerActionsPortal() {
         return useInjectedPortal(findPerformerActionsAnchor, () => React.createElement(IdentifyPerformerButton, null));
+    }
+    function SceneBatchRoot() {
+        const [sceneIds, setSceneIds] = React.useState(null);
+        const [upsellCount, setUpsellCount] = React.useState(0);
+        const menuItem = useInjectedPortal(findSceneListMenuAnchor, () => React.createElement(SceneBatchMenuItem, { onStart: setSceneIds, onUpsell: setUpsellCount }));
+        return React.createElement(React.Fragment, null, menuItem, upsellCount > 0 && ReactDOM.createPortal(React.createElement(SceneBatchUpsell, { sceneCount: upsellCount, onClose: () => setUpsellCount(0) }), document.body), sceneIds && ReactDOM.createPortal(React.createElement(SceneBatchModal, { sceneIds, onClose: () => setSceneIds(null) }), document.body));
     }
     function ModalRoot() {
         const { state, openSettings, closeSettings } = useVisage();
@@ -17315,8 +17956,22 @@
     function PerformerVisageWrapper({ scenarioId }) {
         return React.createElement(VisageProvider, { scenario: 'performers', scenarioId }, React.createElement(ThemeDetector, null), React.createElement(PerformerActionsPortal, null), React.createElement(ModalRoot, null));
     }
+    function SceneListVisageWrapper() {
+        return React.createElement(VisageProvider, { scenario: 'scenes' }, React.createElement(ThemeDetector, null), React.createElement(SceneBatchRoot, null), React.createElement(ModalRoot, null));
+    }
     let pageContainer = null;
+    let mountedKey = null;
+    const WRAPPERS = {
+        images: ImageVisageWrapper,
+        performers: PerformerVisageWrapper,
+        sceneList: SceneListVisageWrapper,
+    };
     function mountPage(scenario, scenarioId) {
+        // The list URL changes with every filter and page. An open batch must survive that.
+        const key = `${scenario}:${scenarioId}`;
+        if (key === mountedKey)
+            return;
+        mountedKey = key;
         if (pageContainer) {
             ReactDOM.unmountComponentAtNode(pageContainer);
             pageContainer.remove();
@@ -17325,10 +17980,10 @@
         pageContainer.id = 'visage-page-root';
         pageContainer.style.display = 'contents';
         document.body.appendChild(pageContainer);
-        const Wrapper = scenario === 'performers' ? PerformerVisageWrapper : ImageVisageWrapper;
-        ReactDOM.render(React.createElement(Wrapper, { scenarioId }), pageContainer);
+        ReactDOM.render(React.createElement(WRAPPERS[scenario], { scenarioId }), pageContainer);
     }
     function cleanup() {
+        mountedKey = null;
         if (pageContainer) {
             ReactDOM.unmountComponentAtNode(pageContainer);
             pageContainer.remove();
@@ -17349,24 +18004,24 @@
             requestAnimationFrame(() => mountPage('images', match[1]));
         }
     });
-    PluginApi.Event.addEventListener('stash:location', (e) => {
-        var _a, _b, _c;
-        const pathname = ((_c = (_b = (_a = e.detail) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.location) === null || _c === void 0 ? void 0 : _c.pathname) || '';
+    function mountForPath(pathname) {
         const match = pathname.match(/\/(images|performers)\/(\d+)/);
         if (match) {
             const scenario = match[1];
             requestAnimationFrame(() => mountPage(scenario, match[2]));
         }
+        else if (/^\/scenes\/?$/.test(pathname)) {
+            requestAnimationFrame(() => mountPage('sceneList', ''));
+        }
         else {
             cleanup();
         }
-    });
-    const initialPath = window.location.pathname;
-    const initialMatch = initialPath.match(/\/(images|performers)\/(\d+)/);
-    if (initialMatch) {
-        const scenario = initialMatch[1];
-        requestAnimationFrame(() => mountPage(scenario, initialMatch[2]));
     }
+    PluginApi.Event.addEventListener('stash:location', (e) => {
+        var _a, _b, _c;
+        mountForPath(((_c = (_b = (_a = e.detail) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.location) === null || _c === void 0 ? void 0 : _c.pathname) || '');
+    });
+    mountForPath(window.location.pathname);
     const firstRunRoot = document.createElement('div');
     firstRunRoot.id = 'visage-firstrun-root';
     firstRunRoot.style.display = 'contents';
