@@ -17954,7 +17954,9 @@
         return React.createElement(VisageProvider, { scenario: 'images', scenarioId }, React.createElement(ThemeDetector, null), React.createElement(ImageOperationsMenuPortal, null), React.createElement(ModalRoot, null));
     }
     function PerformerVisageWrapper({ scenarioId }) {
-        return React.createElement(VisageProvider, { scenario: 'performers', scenarioId }, React.createElement(ThemeDetector, null), React.createElement(PerformerActionsPortal, null), React.createElement(ModalRoot, null));
+        return React.createElement(VisageProvider, { scenario: 'performers', scenarioId }, React.createElement(ThemeDetector, null), React.createElement(PerformerActionsPortal, null), 
+        // The performer Scenes tab is a scene list too.
+        React.createElement(SceneBatchRoot, null), React.createElement(ModalRoot, null));
     }
     function SceneListVisageWrapper() {
         return React.createElement(VisageProvider, { scenario: 'scenes' }, React.createElement(ThemeDetector, null), React.createElement(SceneBatchRoot, null), React.createElement(ModalRoot, null));
@@ -18004,13 +18006,18 @@
             requestAnimationFrame(() => mountPage('images', match[1]));
         }
     });
+    // Pages with a Stash scene list: the scenes page and the detail pages of
+    // studios, tags and groups (movies on older Stash). Their Scenes tab can be the
+    // default tab with no /scenes in the URL, so match the whole detail page and
+    // let findSceneListMenuAnchor gate on the menu in the DOM.
+    const SCENE_LIST_PATH = /^\/(scenes\/?$|(studios|tags|groups|movies)\/\d+)/;
     function mountForPath(pathname) {
         const match = pathname.match(/\/(images|performers)\/(\d+)/);
         if (match) {
             const scenario = match[1];
             requestAnimationFrame(() => mountPage(scenario, match[2]));
         }
-        else if (/^\/scenes\/?$/.test(pathname)) {
+        else if (SCENE_LIST_PATH.test(pathname)) {
             requestAnimationFrame(() => mountPage('sceneList', ''));
         }
         else {
