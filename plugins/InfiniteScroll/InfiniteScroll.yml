@@ -1,0 +1,49 @@
+name: Infinite Scroll
+description: Replaces pagination with infinite scrolling in every list (grid, list, wall and tagger views), including the lists on performer, studio, tag, group and gallery pages.
+version: 1.1.0
+ui:
+  javascript:
+    - infiniteScroll.js
+  css:
+    - infiniteScroll.css
+settings:
+  disableGrid:
+    displayName: Disable in Grid view
+    description: Use normal pages in Grid view.
+    type: BOOLEAN
+  disableList:
+    displayName: Disable in List view
+    description: Use normal pages in List view.
+    type: BOOLEAN
+  disableWall:
+    displayName: Disable in Wall view
+    description: Use normal pages in Wall view.
+    type: BOOLEAN
+  disableTagger:
+    displayName: Disable in Tagger view
+    description: Use normal pages in Tagger view.
+    type: BOOLEAN
+  disableOnDetailPages:
+    displayName: Disable on detail pages
+    description: Use normal pages for the lists inside performer, studio, tag, group and gallery pages.
+    type: BOOLEAN
+  hidePageJumper:
+    displayName: Hide the page jumper
+    description: Hide the page buttons above the list. By default they stay, so you can jump to a page; they follow the page you're looking at.
+    type: BOOLEAN
+  disableWindowing:
+    displayName: Keep every card mounted
+    description: By default, Grid cards far off-screen are swapped for empty boxes of the same size to keep long lists fast. Turn this on to keep every card rendered.
+    type: BOOLEAN
+  disablePinnedHeader:
+    displayName: Don't pin the list header
+    description: By default the toolbar, filter tags, page buttons and count stay at the top while the list scrolls under them.
+    type: BOOLEAN
+  prefetchScreens:
+    displayName: Load-ahead distance (screens)
+    description: How many screen heights before the bottom the next batch starts loading. Default 1.5. When you scroll fast it loads further ahead on its own.
+    type: NUMBER
+  taggerConfirmThreshold:
+    displayName: Tagger confirmation threshold
+    description: In the scene tagger, "Scrape All" asks for confirmation when more than this many scenes are loaded. Default (0) is 40.
+    type: NUMBER

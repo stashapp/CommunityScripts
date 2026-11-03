@@ -1,0 +1,179 @@
+/* Infinite Scroll for Stash */
+
+/* the footer pagination is replaced by scrolling */
+.isc-active .pagination-footer-container {
+  display: none !important;
+}
+
+/* items load in fixed-size batches, so there's no page size to choose */
+.isc-active .page-size-selector {
+  display: none !important;
+}
+
+.isc-sentinel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 1px;
+  padding: 1.25rem 0 2rem;
+  color: var(--text-muted, #8a9ba8);
+  font-size: 0.875rem;
+}
+
+.isc-sentinel:empty {
+  padding: 0;
+}
+
+.isc-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.isc-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: isc-spin 0.75s linear infinite;
+}
+
+@keyframes isc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.isc-top {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 1rem;
+}
+
+/* Pinned list header: sticky in place, so at rest nothing moves. The
+   background is see-through and lets clicks through to the cards; only the
+   controls themselves are opaque and clickable. */
+.isc-pin {
+  position: sticky;
+  /* outranks Stash's own sticky "top" for a toolbar with a selection, which
+     would otherwise move the toolbar off the spot the rows below allow for */
+  top: var(--isc-pin-top) !important;
+  z-index: 30;
+  background: transparent !important;
+  pointer-events: none;
+}
+
+/* earlier rows stack above later ones, so a toolbar dropdown opens over the
+   rows below it */
+.isc-pin.filtered-list-toolbar {
+  z-index: 32;
+}
+
+.isc-pin.filter-tags {
+  z-index: 31;
+}
+
+.isc-pin .btn,
+.isc-pin input,
+.isc-pin select,
+.isc-pin a,
+.isc-pin .badge,
+.isc-pin .dropdown-menu,
+.isc-pin .isc-count {
+  pointer-events: auto;
+}
+
+/* "x 3 [select all]": the selection indicator in the toolbar. It has no
+   background of its own, which is unreadable over cards. A solid pill in
+   Stash's primary blue, the colour of selected checkboxes; only colours
+   change, so its size and position stay the same. */
+.isc-pin .selected-items-info {
+  border-color: #0d5683;
+  border-radius: 3.5px;
+  background-color: #137cbd;
+  color: #fff;
+}
+
+.isc-pin .selected-items-info button.minimal {
+  color: #fff;
+}
+
+.isc-pin .selected-items-info button.minimal:hover:not(:disabled) {
+  background: #10659a;
+}
+
+.isc-pin .selected-items-info button.minimal:active:not(:disabled) {
+  background: #0d5683;
+}
+
+/* the result count, styled like the filter tags */
+.isc-count {
+  padding: 0 8px;
+  border-radius: 3.5px;
+  background-color: #bfccd6;
+  color: #182026;
+}
+
+/* the duration / size byline after it */
+.isc-count * {
+  color: inherit;
+}
+
+/* Stash's sidebar toggle is half-transparent at z-index 10, so hovered cards
+   that a card plugin raises (z-index 25) and Wall checkboxes (z-index 10)
+   could cover it, and a click meant for it opened a scene. Opaque, and at
+   Bootstrap's sticky level: above any card, below the navbar and dialogs. */
+.sidebar-toggle-button-container button.sidebar-toggle-button {
+  opacity: 1;
+  background: #394b59;
+  z-index: 1020;
+}
+
+/* Stash's button.minimal rules give hover and pressed a see-through tint;
+   these outrank them with solid colours */
+.sidebar-toggle-button-container button.sidebar-toggle-button:hover:not(:disabled) {
+  background: #4a6273;
+}
+
+.sidebar-toggle-button-container button.sidebar-toggle-button:active:not(:disabled),
+.sidebar-toggle-button-container button.sidebar-toggle-button.active:not(.disabled) {
+  background: #2e3d48;
+}
+
+/* back to top */
+.isc-to-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid #5c7080;
+  border-radius: 50%;
+  background-color: #394b59;
+  color: #f5f8fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+
+.isc-to-top:hover {
+  background-color: #48606f;
+}
+
+.isc-to-top.isc-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* stand-in for an off-screen card; sized from the card it replaced */
+.isc-ph {
+  flex: none;
+  border-radius: 0.25rem;
+  background: rgba(127, 127, 127, 0.06);
+}
