@@ -9846,16 +9846,12 @@
         const ms = Math.round((seconds - Math.floor(seconds)) * 1000);
         return `${pad(h)}:${pad(m)}:${pad(s)}.${pad(ms, 3)}`;
     }
-    async function extractFramesFromPreview(previewUrl, frameCount = 12, tileWidth = 640, tileHeight = 360) {
-        const video = document.createElement('video');
-        video.crossOrigin = 'anonymous';
-        video.preload = 'auto';
-        video.muted = true;
-        video.playsInline = true;
-        video.src = previewUrl;
-        await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Preview video load timed out')), 15000);
-            video.onloadedmetadata = () => {
+    // Resolves when the video fires the event set by `on`, rejects on error or
+    // after timeoutMs. Uses on* handlers so each wait replaces the last one.
+    function waitForVideo(video, on, timeoutMs, message) {
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+            video[on] = () => {
                 clearTimeout(timeout);
                 resolve();
             };
@@ -9863,49 +9859,65 @@
                 clearTimeout(timeout);
                 reject(new Error('Failed to load preview video'));
             };
+        });
+    }
+    // Draws frameCount evenly spaced frames of the preview into one sprite with a
+    // matching VTT. The video stays off the page and paused: seeking alone decodes
+    // frames, and play() on a detached video can abort in Chrome.
+    async function extractFramesFromPreview(previewUrl, frameCount = 12, tileWidth = 640, tileHeight = 360) {
+        const video = document.createElement('video');
+        video.crossOrigin = 'anonymous';
+        video.preload = 'auto';
+        video.muted = true;
+        video.playsInline = true;
+        video.src = previewUrl;
+        try {
+            const loaded = waitForVideo(video, 'onloadeddata', 15000, 'Preview video load timed out');
             video.load();
-        });
-        await video.play();
-        video.pause();
-        const duration = video.duration;
-        if (!duration || duration <= 0)
-            throw new Error('Invalid preview video duration');
-        const interval = duration / frameCount;
-        const extractCanvas = document.createElement('canvas');
-        extractCanvas.width = tileWidth;
-        extractCanvas.height = tileHeight;
-        const extractCtx = extractCanvas.getContext('2d');
-        const cols = 4;
-        const rows = Math.ceil(frameCount / cols);
-        const spriteCanvas = document.createElement('canvas');
-        spriteCanvas.width = cols * tileWidth;
-        spriteCanvas.height = rows * tileHeight;
-        const spriteCtx = spriteCanvas.getContext('2d');
-        const cues = [];
-        const halfStep = interval / 2;
-        for (let i = 0; i < frameCount; i++) {
-            if (isCancelled())
-                break;
-            const time = Math.min(i * interval + halfStep, duration - 0.001);
-            video.currentTime = time;
-            await new Promise((resolve) => {
-                video.onseeked = () => resolve();
+            await loaded;
+            const duration = video.duration;
+            if (!duration || duration <= 0)
+                throw new Error('Invalid preview video duration');
+            const interval = duration / frameCount;
+            const extractCanvas = document.createElement('canvas');
+            extractCanvas.width = tileWidth;
+            extractCanvas.height = tileHeight;
+            const extractCtx = extractCanvas.getContext('2d');
+            const cols = 4;
+            const rows = Math.ceil(frameCount / cols);
+            const spriteCanvas = document.createElement('canvas');
+            spriteCanvas.width = cols * tileWidth;
+            spriteCanvas.height = rows * tileHeight;
+            const spriteCtx = spriteCanvas.getContext('2d');
+            const cues = [];
+            const halfStep = interval / 2;
+            for (let i = 0; i < frameCount; i++) {
+                if (isCancelled())
+                    break;
+                const time = Math.min(i * interval + halfStep, duration - 0.001);
+                const seeked = waitForVideo(video, 'onseeked', 10000, 'Preview video seek timed out');
+                video.currentTime = time;
+                await seeked;
+                extractCtx.drawImage(video, 0, 0, tileWidth, tileHeight);
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                spriteCtx.drawImage(extractCanvas, col * tileWidth, row * tileHeight);
+                cues.push(`${formatVttTime(time)} --> ${formatVttTime(Math.min(time + interval, duration))}\n` +
+                    `sprite.jpg#xywh=${col * tileWidth},${row * tileHeight},${tileWidth},${tileHeight}`);
+            }
+            const spriteBlob = await new Promise((resolve, reject) => {
+                spriteCanvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.85);
             });
-            extractCtx.drawImage(video, 0, 0, tileWidth, tileHeight);
-            const col = i % cols;
-            const row = Math.floor(i / cols);
-            spriteCtx.drawImage(extractCanvas, col * tileWidth, row * tileHeight);
-            cues.push(`${formatVttTime(time)} --> ${formatVttTime(Math.min(time + interval, duration))}\n` +
-                `sprite.jpg#xywh=${col * tileWidth},${row * tileHeight},${tileWidth},${tileHeight}`);
+            const vtt = 'WEBVTT\n\n' + cues.map((c, i) => `${i + 1}\n${c}`).join('\n\n');
+            return { sprite: spriteBlob, vtt };
         }
-        const spriteBlob = await new Promise((resolve, reject) => {
-            spriteCanvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/jpeg', 0.85);
-        });
-        const vtt = 'WEBVTT\n\n' + cues.map((c, i) => `${i + 1}\n${c}`).join('\n\n');
-        video.remove();
-        extractCanvas.remove();
-        spriteCanvas.remove();
-        return { sprite: spriteBlob, vtt };
+        finally {
+            // Frees the media player. Chrome caps players per page, so a batch that
+            // leaks one per scene starts to fail.
+            video.onloadeddata = video.onseeked = video.onerror = null;
+            video.removeAttribute('src');
+            video.load();
+        }
     }
 
     function hasPerformers(data) {
