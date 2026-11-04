@@ -1,13 +1,22 @@
-/* Modern Dark Theme by cj13 v1.2 */
+/* Modern Dark Theme by cj13 v1.2, refreshed for Stash v0.31 (v2.0) */
 :root {
-  --nav-color: #212121;
-  --body-color: #191919;
+  --nav-color: #1c1c1c;
+  --body-color: #1c1c1c;
   --card-color: #2a2a2a;
-  --plex-yelow: #e5a00d;
-  --tag-color: #555555;
+  --raised-color: #2a2a2a;
+  --plex-yelow: #e69a1a;      /* fills: amber buttons take dark text (AA) */
+  --amber-text: #f3b23a;      /* amber used as text on grey */
+  --amber-ink: #1c1c1c;
+  --tag-color: #3a3a3a;       /* hairlines and control borders */
+  --text-1: #f2f2f2;
+  --text-2: #b5b5b5;          /* meta greys lifted to pass AA on the card grey */
+  --text-3: #909090;
+  --radius-in: 4px;
+  --radius-ctl: 6px;
+  --radius-card: 8px;
 }
 #scrubber-position-indicator {
-  background-color: #e5a00d;
+  background-color: var(--plex-yelow);
 }
 .scrubber-tags-background {
   background-color: #e5a00d;
@@ -38,11 +47,9 @@ div.dropdown-menu {
   background-color: var(--nav-color) !important;
 }
 .card {
-  border-radius: 3px;
-  box-shadow:
-    0 0 0 1px rgba(16, 22, 26, 0.4),
-    0 0 0 rgba(16, 22, 26, 0),
-    0 0 0 rgba(16, 22, 26, 0);
+  border: 0;
+  border-radius: var(--radius-card);
+  box-shadow: none; /* the tonal step already separates cards */
   padding: 20px;
   background-color: var(--card-color);
 }
@@ -52,13 +59,12 @@ div.dropdown-menu {
 .text-input:disabled {
   background-color: var(--card-color);
 }
+.scrubber-button,
 #scrubber-forward {
-  background-color: transparent;
-  border: 1px solid #555;
-}
-.scrubber-button {
-  background-color: transparent;
-  border: 1px solid #555;
+  background-color: var(--plex-yelow) !important;
+  border: 0 !important;
+  border-radius: var(--radius-in) !important;
+  color: var(--amber-ink) !important;
 }
 .bg-secondary {
   background-color: var(--card-color) !important;
@@ -74,8 +80,9 @@ div.dropdown-menu {
 }
 .btn-secondary {
   color: #eee;
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: var(--raised-color);
   border-color: var(--tag-color);
+  border-radius: var(--radius-ctl);
 }
 .pagination .btn:last-child {
   border-right: 1px solid var(--tag-color);
@@ -95,15 +102,16 @@ minimal.w-100.active.btn.btn-primary {
   color: #f5f8fa;
 }
 .btn-primary {
-  color: #fff;
-  background-color: #cc7b19;
-  border-color: #cc7b19;
+  color: var(--amber-ink);
+  background-color: var(--plex-yelow);
+  border-color: var(--plex-yelow);
+  border-radius: var(--radius-ctl);
   font-weight: bold;
 }
 .btn-primary:hover {
-  color: #fff;
-  background-color: #e59029;
-  border-color: #e59029;
+  color: var(--amber-ink);
+  background-color: var(--amber-text);
+  border-color: var(--amber-text);
   font-weight: bold;
 }
 .nav-tabs .nav-link.active {
@@ -157,6 +165,16 @@ input[type="range"]::-moz-range-track {
 }
 input[type="range"]::-moz-range-thumb {
   background: #bcbcbc;
+}
+input[type="range"],
+input[type="checkbox"] {
+  accent-color: var(--plex-yelow);
+}
+input[type="range"].zoom-slider::-webkit-slider-thumb {
+  background-color: var(--text-1);
+}
+input[type="range"].zoom-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(var(--plex-yelow), var(--plex-yelow)) 0 / 30% 100% no-repeat, var(--tag-color);
 }
 div.react-select__control {
   background-color: hsla(0, 0%, 39.2%, 0.4);
@@ -236,29 +254,11 @@ option {
 .job-table.card {
   background-color: var(--card-color);
 }
-.modal-header,
-.modal-body,
-.modal-footer {
-  background-color: #2d3744;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
-  /* background-position: center;
-     */
-}
+
 .folder-list .btn-link {
   color: #fff;
 }
-.modal-header,
-.modal-body,
-.modal-footer {
-  background-color: --var(--card-color);
-  color: #f5f8fa;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
-}
+
 @media (max-width: 575.98px) and (orientation: portrait) {
   .scene-card-preview-image {
     height: calc(100vw * (9 / 16));
@@ -471,27 +471,30 @@ button.minimal {
 }
 .btn-primary.disabled,
 .btn-primary:disabled {
-  color: #fff;
-  background-color: #e59029;
-  border-color: #e59029;
+  color: var(--amber-ink);
+  background-color: var(--plex-yelow);
+  border-color: var(--plex-yelow);
   font-weight: bold;
+  opacity: 0.5;
 }
 .btn-primary:focus,
 .btn-primary.focus {
-  background-color: #cc7b19;
-  border-color: #cc7b19;
+  color: var(--amber-ink);
+  background-color: var(--plex-yelow);
+  border-color: var(--plex-yelow);
   font-weight: bold;
 }
 .btn-danger {
-  color: hsla(0, 0%, 100%, 0.75);
-  background-color: #b32;
-  border-color: #b32;
+  color: #fff;
+  background-color: #c9302c;
+  border-color: #c9302c;
+  border-radius: var(--radius-ctl);
   font-weight: bold;
 }
 .btn-danger:hover {
   color: white;
-  background-color: #b32;
-  border-color: #b32;
+  background-color: #d9443f;
+  border-color: #d9443f;
 }
 .brand-link {
   background-color: var(--nav-color) !important;
@@ -504,10 +507,22 @@ button.minimal {
 .progress-bar {
   background-color: var(--plex-yelow);
 }
+/* dialogs and menus use the card tone without borders */
+.modal-content,
 .modal-header,
 .modal-body,
 .modal-footer {
-  background-color: var(--body-color);
+  background-color: var(--card-color);
+  color: var(--text-1);
+  border: 0;
+}
+.modal-content {
+  border-radius: var(--radius-card);
+}
+div.react-select__menu,
+div.dropdown-menu {
+  border: 0;
+  border-radius: var(--radius-card);
 }
 .btn-secondary.disabled,
 .btn-secondary:disabled {
@@ -531,25 +546,36 @@ button.minimal {
   z-index: 2;
 }
 .video-js .vjs-play-progress {
-  background-color: #e5a00d;
+  background-color: var(--plex-yelow);
 }
 .filtered-list-toolbar {
   background-color: var(--body-color);
 }
+.sidebar-pane .sidebar,
+.sidebar .sidebar-footer,
+.sidebar-toolbar {
+  background-color: var(--card-color);
+}
 .sidebar-pane .sidebar {
-  background-color: var(--body-color);
-  border-right: 1px solid var(--nav-color);
+  border-right: 1px solid var(--tag-color);
 }
 .sidebar-section {
-  border-bottom: 1px solid var(--nav-color);
+  border-bottom: 0;
 }
 .sidebar-toggle-button-container .sidebar-toggle-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  margin-left: 0 !important;
   border: 1px solid var(--tag-color);
-  border-left: none;
+  border-radius: var(--radius-ctl);
+  background-color: var(--raised-color);
+  opacity: 1;
 }
 .clearable-text-field, .clearable-text-field:active, .clearable-text-field:focus {
-  background-color: var(--nav-color);
+  background-color: var(--raised-color);
   border-color: var(--tag-color);
+  border-radius: var(--radius-ctl);
 }
 .form-control:focus {
   box-shadow: 0 0 0 .2rem rgba(68, 68, 68, .25);
@@ -559,4 +585,938 @@ button.minimal {
 }
 a.bg-secondary:hover, a.bg-secondary:focus, button.bg-secondary:hover, button.bg-secondary:focus {
   background-color: var(--nav-color) !important;
+}
+
+/* TOP NAV: bold words, amber underline under the active page */
+.top-nav {
+  border-bottom: 1px solid var(--tag-color);
+  box-shadow: inset 0 -1px 0 var(--tag-color); /* also under the menu items */
+}
+.top-nav .navbar-collapse {
+  box-shadow: inset 0 -1px 0 var(--tag-color);
+}
+.top-nav .navbar-brand .brand-link {
+  font-size: 17px;
+  font-weight: 500;
+  text-transform: none;
+}
+@media (min-width: 1200px) {
+  .top-nav {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .top-nav .navbar-nav .nav-link > a.btn {
+    height: 48px; /* stays inside the bar so its bottom border shows */
+    padding: 0 12px !important;
+    border: 0 !important;
+    border-bottom: 3px solid transparent !important;
+    border-radius: 0 !important;
+    background: none !important;
+    color: var(--text-2) !important;
+    font-size: 13px;
+    font-weight: 600;
+    display: block !important;
+    line-height: 49px; /* optically centred in the 45px above the 3px underline */
+  }
+  .top-nav .navbar-nav .nav-link > a.btn .nav-menu-icon {
+    display: none !important;
+  }
+  .top-nav .navbar-nav .nav-link > a.btn.active {
+    color: var(--amber-text) !important;
+    border-bottom-color: var(--plex-yelow) !important;
+  }
+  .top-nav .navbar-nav .nav-link > a.btn:hover {
+    color: var(--text-1) !important;
+  }
+}
+
+/* LIST TOOLBAR: bordered 34px segments; the active view gets an amber underline */
+.filtered-list-toolbar {
+  gap: 8px;
+}
+.filtered-list-toolbar .btn-group,
+.filtered-list-toolbar .sort-by-select {
+  height: 34px;
+  border: 1px solid var(--tag-color);
+  border-radius: var(--radius-ctl);
+  background-color: var(--raised-color);
+  padding: 2px;
+  gap: 2px;
+  align-items: center;
+}
+.filtered-list-toolbar .btn-group .btn-group {
+  border: 0;
+  padding: 0;
+  height: auto;
+}
+.filtered-list-toolbar .btn-group .btn,
+.filtered-list-toolbar .sort-by-select .btn {
+  height: 28px;
+  padding: 0 9px;
+  border: 0 !important;
+  border-radius: var(--radius-in) !important;
+  background: none !important;
+  color: var(--text-2);
+}
+.filtered-list-toolbar .btn-group .btn.active {
+  color: var(--amber-text) !important;
+  background-color: var(--card-color) !important;
+  border-bottom: 2px solid var(--plex-yelow) !important;
+}
+.filtered-list-toolbar .btn-group .btn-danger {
+  background-color: #c9302c !important;
+  color: #fff !important;
+}
+.filtered-list-toolbar .search-term-input .form-control,
+.filtered-list-toolbar .page-size-selector select {
+  height: 34px;
+}
+.filtered-list-toolbar.has-selection .selected-items-info span {
+  color: var(--amber-text);
+  font-weight: 600;
+}
+.item-list-container .filtered-list-toolbar.has-selection {
+  background-color: var(--body-color);
+  border-bottom: 1px solid var(--tag-color);
+}
+
+/* PAGINATION: centred, with the result count on the same row */
+.pagination-index-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 0 16px;
+}
+.pagination-index-container > .pagination {
+  grid-column: 2;
+  margin: 0 !important;
+}
+.pagination-index-container > .paginationIndex {
+  grid-column: 3;
+  justify-self: end;
+  margin: 0 !important;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.pagination-index-container > .paginationIndex:only-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+.pagination.btn-group {
+  border: 1px solid var(--tag-color);
+  border-radius: var(--radius-ctl);
+  background-color: var(--raised-color);
+  padding: 2px;
+}
+.pagination .btn,
+.pagination .btn:first-child,
+.pagination .btn:last-child {
+  border: 0 !important;
+  border-radius: var(--radius-in) !important;
+  background: none;
+}
+/* the floating pagination at the bottom of long lists, in the toolbar style */
+.pagination-footer-container .pagination.btn-group {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+@media (max-width: 575.98px) {
+  .pagination-index-container {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .pagination-index-container > .pagination,
+  .pagination-index-container > .paginationIndex {
+    grid-column: 1;
+    justify-self: center;
+  }
+}
+
+/* CARDS: one step lighter than the page, cover fading into the card,
+   centred bold counts under a hairline */
+.grid-card {
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.2s;
+}
+.grid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px var(--plex-yelow), 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.grid-card:has(.card-check:checked) {
+  box-shadow: 0 0 0 2px var(--plex-yelow);
+}
+.grid-card hr {
+  display: none;
+}
+.grid-card .thumbnail-section {
+  position: relative;
+  overflow: hidden;
+}
+.scene-card .thumbnail-section::after,
+.performer-card .thumbnail-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 45%, var(--card-color) 100%);
+}
+.scene-card .scene-card-preview,
+.scene-card .scene-card-preview-image,
+.scene-card .scene-card-preview-video {
+  border-radius: 0 !important;
+}
+.grid-card .thumbnail-section .scene-specs-overlay,
+.grid-card .thumbnail-section .studio-overlay,
+.grid-card .thumbnail-section .performer-card__country-flag,
+.grid-card .thumbnail-section .favorite-button {
+  z-index: 2;
+}
+.scene-card .scene-specs-overlay {
+  font-size: 12px !important;
+  font-weight: 600;
+  color: var(--text-1) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+.scene-card .scene-specs-overlay span {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+.scene-card .scene-specs-overlay .overlay-resolution + .overlay-duration::before {
+  content: "\00a0·\00a0";
+}
+.scene-card .extra-scene-info,
+.scene-card .overlay-filesize {
+  display: none !important;
+}
+.scene-card .studio-overlay {
+  top: 8px;
+  left: 8px;
+  right: auto;
+  padding: 3px 7px;
+  border-radius: var(--radius-in);
+  background-color: rgba(0, 0, 0, 0.45);
+  opacity: 1;
+  height: auto !important;
+  line-height: 0;
+}
+.scene-card .studio-overlay a {
+  display: block;
+  height: auto !important;
+  line-height: 0;
+}
+.scene-card .studio-overlay {
+  max-width: 60%;
+}
+.scene-card .studio-overlay .image-thumbnail {
+  height: 18px !important;
+  max-height: 18px !important;
+  width: auto;
+  max-width: 100% !important;
+  object-fit: contain;
+}
+.scene-card .card-controls {
+  left: auto !important;
+  right: 8px;
+}
+.grid-card .rating-banner {
+  display: none; /* the rating lives on the scene page */
+}
+.grid-card .card-section {
+  padding: 12px 14px !important; /* same 12px above the counts' hairline on every card */
+  background: transparent;
+}
+.grid-card .scene-card__details,
+.grid-card .studio-card__details {
+  margin-bottom: 0 !important; /* stock adds 14px on top of the section padding */
+}
+.grid-card .card-section-title {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.25;
+}
+.grid-card .scene-card__date,
+.grid-card .performer-card__age,
+.grid-card .studio-card__details,
+.grid-card .scene-card__description {
+  font-size: 12px !important;
+  color: var(--text-2) !important;
+}
+.grid-card .card-popovers {
+  margin: auto 0 0 !important;
+  padding: 12px !important;
+  justify-content: center !important;
+  gap: 24px;
+  border-top: 1px solid var(--tag-color);
+}
+.grid-card .card-popovers .btn {
+  padding: 0 !important;
+  font-weight: 600;
+  color: var(--text-1) !important;
+  background: none !important;
+}
+.performer-card .performer-card-image {
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  object-position: top;
+}
+.studio-card .studio-card-header,
+.tag-card .tag-card-header {
+  display: block !important;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+  background-color: var(--raised-color);
+}
+.studio-card .studio-card-image,
+.tag-card .tag-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain;
+  padding: 10% 12%;
+}
+.recommendation-row .grid-card {
+  width: 320px !important;
+}
+
+/* DETAIL PAGES: page tone (stock is blue-grey); the performer portrait fills
+   the left edge and fades into the header */
+.detail-header {
+  background-color: var(--body-color) !important;
+}
+.detail-header:has(.performer-head) {
+  padding: 0 !important;
+  margin: -15px -15px 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  background-color: var(--card-color) !important;
+}
+.detail-header:has(.performer-head) .detail-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+}
+.detail-header:has(.performer-head) .detail-header-image {
+  position: relative;
+  flex: 0 0 420px;
+  width: 420px;
+  height: 400px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.detail-header:has(.performer-head) .detail-header-image .btn-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+.detail-header:has(.performer-head) img.performer {
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  max-height: none;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: none !important;
+}
+.detail-header:has(.performer-head) .detail-header-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 55%, var(--card-color));
+}
+.detail-header:has(.performer-head) > .detail-container > .row {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 24px 36px 0;
+}
+.detail-header:has(.performer-head) .performer-head .col,
+.detail-header:has(.performer-head) .performer-head .row {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.detail-header .performer-name {
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1;
+}
+.detail-header .detail-item {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.detail-header .detail-group {
+  row-gap: 5px;
+}
+.detail-header .detail-item-title {
+  width: 130px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+.details-edit {
+  gap: 8px;
+  margin-top: 10px !important;
+}
+.details-edit .btn {
+  margin: 0 !important;
+}
+.details-edit .btn-primary:not(.edit):not(.save) {
+  background-color: var(--tag-color);
+  border-color: transparent;
+  color: var(--text-1);
+}
+@media (max-width: 767.98px) {
+  .detail-header:has(.performer-head) .detail-container {
+    flex-direction: column;
+  }
+  .detail-header:has(.performer-head) .detail-header-image {
+    flex-basis: auto;
+    width: 100%;
+    height: 430px;
+  }
+  .detail-header:has(.performer-head) .detail-header-image::after {
+    background: linear-gradient(180deg, transparent 55%, var(--card-color));
+  }
+  .detail-header:has(.performer-head) > .detail-container > .row {
+    padding: 14px;
+  }
+}
+
+/* SCENE PAGE */
+.scene-tabs .scene-header,
+.scene-tabs .scene-header .TruncatedText {
+  font-size: 32px !important;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.nav-tabs .nav-link.active {
+  border-bottom: 2px solid var(--plex-yelow) !important;
+  color: var(--amber-text);
+}
+.scrubber-wrapper {
+  border: 0;
+  background: none;
+}
+
+/* SETTINGS: cards in the card tone, titles at page size, amber left bar */
+.setting-section .card,
+#settings-container .card,
+.job-table.card {
+  border: 0 !important;
+  border-radius: var(--radius-card);
+}
+#settings-container h1,
+#tasks-panel h1 {
+  font-size: 28px;
+  font-weight: 500;
+}
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  border-left: 3px solid var(--plex-yelow);
+  color: var(--amber-text);
+}
+
+/* EMPTY LISTS */
+.item-list-container .sidebar-pane-content:not(:has(.grid-card, .table-list, .scene-wall, .wall, .tagger-container, .card)) > .pagination-index-container::after {
+  content: "Nothing here yet";
+  grid-column: 1 / -1;
+  margin-top: 18vh;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+/* BIG PLAY BUTTON: a soft translucent circle, icon optically centred */
+.video-js .vjs-big-play-button {
+  width: 72px !important;
+  height: 72px !important;
+  margin-left: -36px !important;
+  margin-top: -36px !important;
+  font-size: 36px !important;
+  line-height: 72px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(6px);
+}
+.video-js:hover .vjs-big-play-button,
+.video-js .vjs-big-play-button:focus {
+  background-color: rgba(230, 154, 26, 0.45) !important;
+}
+.video-js .vjs-big-play-button .vjs-icon-placeholder::before {
+  font-size: 36px !important;
+  line-height: 72px !important;
+  width: 100% !important;
+  height: 100% !important;
+  text-indent: 3px;
+}
+
+/* ---------- Review fixes ---------- */
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}
+
+/* Card heart: the same size as the select checkbox, mirrored in the
+   opposite corner */
+.grid-card .favorite-button {
+  top: 10px !important;
+  right: 7px !important;
+  padding: 0 !important;
+  line-height: 1;
+}
+.grid-card .favorite-button svg {
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 17px !important;
+  margin: 0 !important;
+}
+
+/* Home carousels: slides pulled in so the arrows sit inside the page (stock
+   pushes the next arrow off a phone screen), arrows centred on the cards
+   rather than the cards plus the dots, every card in a row one height */
+.recommendation-row .slick-slider {
+  margin: 0 30px 30px;
+}
+.recommendation-row .slick-prev {
+  left: -28px;
+}
+.recommendation-row .slick-next {
+  right: -28px;
+}
+.recommendation-row .slick-dots {
+  position: absolute;
+  top: 100%;
+}
+.recommendation-row .slick-track {
+  display: flex !important;
+  margin-bottom: 0;
+}
+.recommendation-row .slick-arrow {
+  top: 0;
+  height: 100%;
+  transform: none;
+}
+.recommendation-row .slick-slide {
+  height: auto !important;
+}
+.recommendation-row .slick-slide > div {
+  height: 100%;
+}
+.recommendation-row .slick-slide .grid-card {
+  height: calc(100% - 10px);
+}
+
+/* Scene page: two performers side by side in the details panel */
+.scene-performers .performer-card {
+  width: calc(50% - 10px) !important;
+  margin: 5px !important;
+}
+
+/* Scene-page panel toggle: amber, not the stock blue */
+.scene-divider .btn {
+  color: var(--amber-text);
+  background: none;
+  border: 0;
+}
+
+/* Home carousels: whole cards only. The number of cards that fits at about
+   320px, sized to fill the row exactly, so none is cut off at the edge */
+.recommendation-row .slick-list {
+  container-type: inline-size;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: calc(100cqw / max(1, round(100cqw / 330px, 1)) - 10px) !important;
+  max-width: none !important;
+}
+
+/* Detail-page tab bars: Stash pads them below, which lifts the active
+   underline off the bar's line */
+.nav-tabs {
+  padding-bottom: 0 !important;
+}
+
+/* The slim header Stash pins when a detail page scrolls slides down only as
+   the full header's bottom edge passes under the top bar, instead of
+   appearing as soon as the page moves. It follows the scroll position, so
+   scrolling back up reverses it; browsers without scroll-driven animations
+   show it as Stash does. */
+@supports (animation-timeline: view()) {
+  .main {
+    timeline-scope: --detail-header;
+  }
+  .detail-header:not(.sticky) {
+    view-timeline: --detail-header block;
+  }
+  .detail-header.sticky {
+    animation: detail-header-sticky-in linear both;
+    animation-timeline: --detail-header;
+    animation-range: exit calc(100% - 130px) exit calc(100% - 50px);
+  }
+  @keyframes detail-header-sticky-in {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+      visibility: hidden;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+/* Filter sidebar on small screens. Stash slides it over the page below 768px,
+   covering the button that closes it. Phones get a full-screen sheet whose
+   "Show N results" button is the way out; small tablets get the desktop
+   layout, the content pushed aside to a single column. */
+@media (max-width: 575.98px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    z-index: 1020; /* above the performer header, which is its own layer */
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100dvh - 46px) !important; /* down to the bottom bar */
+    max-height: none !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 12px 15px 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    z-index: 1020;
+    background-color: var(--card-color) !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer {
+    margin-top: auto;
+    bottom: 0;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 12px 0 15px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer .btn {
+    width: 100%;
+    height: 44px;
+  }
+}
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .sidebar-pane:not(.hide-sidebar) > .sidebar-pane-content {
+    margin-left: 235px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+    left: 257px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .grid-card {
+    width: calc(100% - 30px) !important; /* one column beside the filters */
+  }
+}
+
+/* Detail fields on phones: the label above its value, so long values like a
+   Stash ID get the full width; an ID that still doesn't fit ends in an
+   ellipsis (the link opens the full ID) */
+@media (max-width: 575.98px) {
+  .detail-header .detail-item {
+    display: block !important;
+  }
+  .detail-header .detail-item-title {
+    display: block;
+    width: auto !important;
+    margin-bottom: 1px;
+  }
+  .detail-header > .detail-container > .row {
+    align-self: stretch;
+    max-width: 100%;
+  }
+  .detail-header .performer-head,
+  .detail-header .detail-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+.stash-id-pill {
+  display: inline-flex !important;
+  max-width: 100%;
+  min-width: 0;
+}
+.stash-id-pill span {
+  flex: none;
+}
+.stash-id-pill a {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-item-value.stash-ids,
+.detail-item-value.stash-ids ul,
+.detail-item-value.stash-ids li {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.detail-item-value.stash-ids {
+  overflow: hidden;
+}
+
+/* Phones: the full-bleed performer header is exactly the screen's width, not
+   its widest content's */
+@media (max-width: 767.98px) {
+  .detail-header:has(.performer-head) {
+    flex: none !important;
+    width: 100% !important; /* the page row already reaches the screen edges here */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    min-width: 0;
+  }
+  .detail-header:has(.performer-head) .detail-container {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+/* Phones: dialogs (Edit filter and the rest) fill the screen down to the
+   bottom bar; the body scrolls and the buttons stay at the foot */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: calc(100dvh - 46px);
+  }
+  .modal-content {
+    height: 100%;
+    border-radius: 0 !important;
+    border: 0 !important;
+    background-color: var(--card-color) !important;
+  }
+  .modal-body {
+    flex: 1;
+    max-height: none !important; /* Stash caps it at a fixed height */
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Phone and tablet menu (the ☰ button): an even grid of tiles, small icon
+   above its label, the current page on a soft tile, utility icons in a row
+   beneath a hairline (stock crams large icons beside the words) */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.show,
+  .navbar-collapse.collapsing {
+    background-color: var(--nav-color) !important;
+    border-top: 1px solid var(--tag-color);
+    padding: 10px 24px 6px !important;
+    margin: 0 -14px; /* edge to edge across the bar's padding */
+  }
+  .navbar-collapse > .navbar-nav:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 3 across on phones */
+    gap: 6px;
+  }
+  .navbar-collapse > .navbar-nav:first-child > div {
+    max-width: none !important;
+    flex: none !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px;
+    height: 64px !important;
+    padding: 6px !important;
+    color: var(--text-1) !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+    color: var(--text-2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active {
+    color: var(--amber-text) !important;
+    background-color: rgba(230, 154, 26, 0.14) !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--amber-text);
+  }
+  .navbar-collapse > .navbar-nav:not(:first-child) {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--tag-color);
+  }
+  .navbar-collapse .nav-utility svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Phones: the list toolbar on two rows. The space for the filter button is
+   kept on the first row only (search stretches beside it, then the
+   saved-filter and filter buttons); the rest slims down to share row two. */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important; /* stock keeps 40px each side */
+    justify-content: flex-start !important;
+    gap: 8px 6px !important;
+  }
+  .filtered-list-toolbar > .search-term-input {
+    margin-left: 40px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+  .filtered-list-toolbar > .search-term-input .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .sort-by-select .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .page-size-selector,
+  .filtered-list-toolbar > .page-size-selector select {
+    width: 56px !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .btn-group:not(.pagination) .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .btn-group:last-of-type {
+    margin-left: auto; /* the view buttons close the second row on the right */
+  }
+  /* row 1: search + the filter buttons; a zero-height break; row 2: the rest */
+  .filtered-list-toolbar > * {
+    order: 3;
+  }
+  .filtered-list-toolbar > .search-term-input,
+  .filtered-list-toolbar > .search-term-input + .btn-group {
+    order: 1;
+  }
+  .filtered-list-toolbar::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
+/* The phone menu button wears the same colour as the nav icons beside it */
+.top-nav .nav-menu-toggle,
+.top-nav .nav-menu-toggle:hover,
+.top-nav .nav-menu-toggle:focus {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Theme Switch menu: solid, on the theme's menu colours (stock leaves its
+   sections on Bootstrap's slate, and see-through over the cards) */
+.theme-plugin-menu.dropdown-menu {
+  padding: 6px !important;
+  color: var(--text-1);
+  background: var(--card-color) !important;
+  border: 1px solid var(--tag-color) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.theme-plugin-menu .accordion {
+  max-width: none !important;
+}
+.theme-plugin-menu .modal-header {
+  margin: 0 0 6px;
+  padding: 6px 8px 10px !important;
+  color: var(--text-1) !important;
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--tag-color) !important;
+  border-radius: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: none;
+}
+.theme-plugin-menu .accordion > .card {
+  margin: 0 0 4px !important;
+  color: var(--text-1) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid var(--tag-color) !important;
+  border-radius: var(--radius-ctl) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .card-body {
+  color: var(--text-1) !important;
+  background: none !important;
+  border: 0 !important;
+  text-shadow: none;
+}
+.theme-plugin-menu .card-header {
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header svg {
+  color: var(--text-2);
+}
+.theme-plugin-menu legend {
+  color: var(--text-1) !important;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  color: var(--text-2) !important;
+  background: color-mix(in srgb, var(--text-2) 30%, transparent) !important;
+  border-color: transparent !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  color: #fff !important;
+  background: var(--plex-yelow) !important;
+  border-color: var(--plex-yelow) !important;
+}
+/* A blurred bar turns everything drawn inside it see-through, the open
+   menu included: while the menu is open the bar drops its blur */
+.top-nav:has(.theme-plugin-menu.show) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
