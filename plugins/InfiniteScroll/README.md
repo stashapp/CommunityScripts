@@ -1,4 +1,5 @@
 # Infinite Scroll
+https://discourse.stashapp.cc/t/infinite-scroll/20379
 
 Replaces page buttons with infinite scrolling in every list: scenes, images, galleries, performers, studios, tags, groups and markers, in Grid, List, Wall and Tagger views, including the lists on performer, studio, tag, group and gallery pages.
 
