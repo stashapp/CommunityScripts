@@ -177,7 +177,10 @@ def getGalleries(scene, title):
 def getTags(scene, title):
     title = title.lower()
     results = ""
+    tags_added = 0
     for tag in scene['tags']:
+        if max_tag_keys == -1 or (max_tag_keys is not None and tags_added >= int(max_tag_keys)):
+            break
         name = tag['name']
         stash.Trace(f"tag = {name}")
         if excludeIgnoreAutoTags == True and tag['ignore_auto_tag'] == True:
@@ -188,6 +191,7 @@ def getTags(scene, title):
                 stash.Trace(f"Skipping tag name '{name}' because already in title: '{title}'")
                 continue
         results += f"{name}, "
+        tags_added += 1
     return results.strip(", ")
 
 # Function to form the new filename based on scene details and user settings
@@ -402,7 +406,24 @@ def rename_scene(scene_id):
     if original_file_name == newFilenameWithExt or original_file_name == new_filename:
         stash.Log(f"Nothing to do, because new file name matches original file name: (newFilenameWithExt={newFilenameWithExt})")
         return None
-    targetDidExist = True if os.path.isfile(new_file_path) else False
+    # Never overwrite: rename()/move() silently replace an existing file, so pick a free name with a sequential number
+    def target_taken(stem):
+        for ext in [Path(original_file_path).suffix] + (list(associated_files_to_rename) if rename_associated_files_enable else []):
+            candidate = f"{original_parent_directory}{os.sep}{stem}{ext}"
+            if os.path.lexists(candidate) and not (os.path.exists(original_file_path) and os.path.exists(candidate) and os.path.samefile(original_file_path, candidate)):
+                return True
+        return False
+    if target_taken(new_filename):
+        base_filename = new_filename
+        counter = 2
+        while target_taken(f"{base_filename} ({counter})"):
+            counter += 1
+        new_filename = f"{base_filename} ({counter})"
+        stash.Warn(f"Target name '{base_filename}' is already taken, using '{new_filename}' instead.")
+        newFilenameWithExt = new_filename + Path(original_file_path).suffix
+        new_file_path      = f"{original_parent_directory}{os.sep}{new_filename}{Path(original_file_name).suffix}"
+        new_file_root_stem = f"{original_parent_directory}{os.sep}{new_filename}"
+    targetDidExist = False
     try:
         if openedfile != None:
             results = openedfile.closeFile(original_file_path)
@@ -443,15 +464,8 @@ def rename_scene(scene_id):
         if not taskqueue.tooManyScanOnTaskQueue(maxScanCountDefault):
             stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
             stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
-        if targetDidExist:
-            return None
-        if os.path.isfile(new_file_path):
-            if os.path.isfile(original_file_path):
-                os.remove(original_file_path)
-            pass
-        else:
-            # ToDo: Add delay rename here
-            return None
+        # Never delete files here, the original is left in place
+        return None
 
     if dry_run:
         stash.Log("Dry-Run, so skipping DB renaming")
@@ -471,18 +485,7 @@ def rename_scene(scene_id):
                 if not os.path.isfile(new_file_path):
                     stash.Error(f"Failed to rename file from {scene_details['files'][0]['path']} to {new_file_path}.")
                 elif os.path.isfile(scene_details['files'][0]['path']):
-                    stash.Warn(f"Failed to rename file from {scene_details['files'][0]['path']} to {new_file_path}. Old file still exist. Will attempt delay deletion.")
-                    for i in range(1, 5*60):
-                        time.sleep(60)
-                        if not os.path.isfile(new_file_path):
-                            stash.Error(f"Not deleting old file name {original_file_path} because new file name (new_file_path) does NOT exist.")
-                            break
-                        os.remove(original_file_path)
-                        if not os.path.isfile(original_file_path):
-                            stash.Log(f"Deleted {original_file_path} in delay deletion after {i} minutes.")
-                            stash.Trace(f"Calling [metadata_scan] for path {original_parent_directory.resolve().as_posix()}")
-                            stash.metadata_scan(paths=[original_parent_directory.resolve().as_posix()])
-                            break
+                    stash.Warn(f"Failed to rename file from {scene_details['files'][0]['path']} to {new_file_path}. Old file still exist and was left untouched.")
                 else:
                     org_stem = Path(scene_details['files'][0]['path']).stem
                     new_stem = Path(new_file_path).stem
