@@ -8331,6 +8331,327 @@
         return run;
     }
 
+    const GQL = window.PluginApi.GQL;
+    const getClient = () => window.PluginApi.utils.StashService.getClient();
+    async function getPerformers(performer_id) {
+        const result = await getClient().query({
+            query: GQL.FindPerformersDocument,
+            variables: {
+                performer_filter: {
+                    stash_id_endpoint: {
+                        endpoint: "",
+                        stash_id: performer_id,
+                        modifier: "EQUALS"
+                    }
+                }
+            }
+        });
+        return result.data.findPerformers.performers;
+    }
+    // Live from the server: callers write this list back, and a cached copy would
+    // drop performers added since it was read.
+    async function getPerformersForScene(scene_id) {
+        const result = await getClient().query({
+            query: GQL.FindSceneDocument,
+            variables: { id: scene_id },
+            fetchPolicy: 'network-only',
+        });
+        return result.data.findScene.performers.map((p) => p.id);
+    }
+    // Live from the server: performers may have changed since the list page loaded.
+    async function getScene(scene_id) {
+        var _a, _b, _c, _d;
+        const result = await getClient().query({
+            query: GQL.FindSceneDocument,
+            variables: { id: scene_id },
+            fetchPolicy: 'network-only',
+        });
+        const scene = result.data.findScene;
+        const file = (_a = scene.files) === null || _a === void 0 ? void 0 : _a[0];
+        return {
+            title: scene.title || ((_b = file === null || file === void 0 ? void 0 : file.path) === null || _b === void 0 ? void 0 : _b.split(/[\\/]/).pop()) || scene.id,
+            screenshot: (_d = (_c = scene.paths) === null || _c === void 0 ? void 0 : _c.screenshot) !== null && _d !== void 0 ? _d : null,
+            performerNames: scene.performers.map((p) => p.name),
+            stashIds: scene.performers.flatMap((p) => { var _a; return ((_a = p.stash_ids) !== null && _a !== void 0 ? _a : []).map(s => s.stash_id); }),
+        };
+    }
+    async function getPerformersForImage(image_id) {
+        const result = await getClient().query({
+            query: GQL.FindImageDocument,
+            variables: { id: image_id }
+        });
+        return result.data.findImage.performers.map((p) => p.id);
+    }
+    async function updateScene(scene_id, performer_ids) {
+        return getClient().mutate({
+            mutation: GQL.SceneUpdateDocument,
+            variables: { input: { id: scene_id, performer_ids: performer_ids } }
+        });
+    }
+    async function updateImage(image_id, performer_ids) {
+        return getClient().mutate({
+            mutation: GQL.ImageUpdateDocument,
+            variables: { input: { id: image_id, performer_ids: performer_ids } }
+        });
+    }
+    const STASHBOX_DOCS_URL = 'https://docs.stashapp.cc/metadata-sources/stash-box-instances/';
+    // Finds the stash-box for a match source ("stashdb", "fansdb", "javstash") by
+    // box name or endpoint URL. With a source and no matching box, returns -1:
+    // an ID from one stash-box must never be scraped or saved under another.
+    // Without a source, prefers StashDB, else the first box.
+    function getStashBoxIndex(boxes, sourceName) {
+        const find = (key) => boxes.findIndex(b => { var _a, _b; return ((_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(key)) || ((_b = b.endpoint) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(key)); });
+        if (sourceName)
+            return find(sourceName.toLowerCase());
+        const idx = find('stashdb');
+        return idx >= 0 ? idx : 0;
+    }
+    async function getStashboxEndpoint(sourceName) {
+        var _a, _b, _c, _d, _e;
+        const result = await getClient().query({
+            query: GQL.ConfigurationDocument
+        });
+        const boxes = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes;
+        if (!(boxes === null || boxes === void 0 ? void 0 : boxes.length))
+            return null;
+        return (_e = (_d = boxes[getStashBoxIndex(boxes, sourceName)]) === null || _d === void 0 ? void 0 : _d.endpoint) !== null && _e !== void 0 ? _e : null;
+    }
+    // The active Stash UI locale, read from the server-side configuration the same
+    // way the Stash frontend does (App.tsx reads configuration.interface.language).
+    // Falls back to 'en'. Note: Stash does not reflect the locale in <html lang>.
+    async function getStashLanguage() {
+        var _a, _b, _c;
+        try {
+            const result = await getClient().query({
+                query: GQL.ConfigurationDocument,
+            });
+            const lang = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.interface) === null || _c === void 0 ? void 0 : _c.language;
+            return typeof lang === 'string' && lang ? lang : 'en';
+        }
+        catch (err) {
+            console.warn('[Visage] Failed to read Stash language:', err);
+            return 'en';
+        }
+    }
+    // Visage settings stored by Stash under plugin id 'visage' (the yml file name).
+    // Server wide, so they survive cleared browser storage. Keys match `settings`
+    // in plugins/visage/visage.yml, which also shows them in Stash > Settings > Plugins.
+    const PLUGIN_ID = 'visage';
+    async function getPluginSettings() {
+        var _a, _b, _c, _d;
+        const result = await getClient().query({
+            query: GQL.ConfigurationDocument,
+            fetchPolicy: 'network-only',
+        });
+        return ((_d = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.plugins) === null || _c === void 0 ? void 0 : _c[PLUGIN_ID]) !== null && _d !== void 0 ? _d : {});
+    }
+    // configurePlugin replaces the whole map, so merge with the stored settings.
+    async function setPluginSettings(patch) {
+        const current = await getPluginSettings();
+        await getClient().mutate({
+            mutation: GQL.ConfigurePluginDocument,
+            variables: { plugin_id: PLUGIN_ID, input: { ...current, ...patch } },
+        });
+    }
+    async function getStashboxStatus() {
+        var _a, _b, _c;
+        const result = await getClient().query({
+            query: GQL.ConfigurationDocument
+        });
+        const boxes = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes;
+        if (!(boxes === null || boxes === void 0 ? void 0 : boxes.length))
+            return 'empty';
+        const hasStashdb = boxes.some(b => { var _a; return (_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes('stashdb'); });
+        return hasStashdb ? 'configured' : 'mismatch';
+    }
+    async function getPerformerDataFromStashID(stash_id, sourceName) {
+        var _a, _b, _c, _d;
+        const endpointResult = await getClient().query({
+            query: GQL.ConfigurationDocument
+        });
+        const boxes = ((_c = (_b = (_a = endpointResult.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes) || [];
+        const boxIdx = getStashBoxIndex(boxes, sourceName);
+        if (boxIdx < 0) {
+            console.warn(`[Visage] No stash-box configured for source "${sourceName}"`);
+            return undefined;
+        }
+        try {
+            const result = await getClient().query({
+                query: GQL.ScrapeSinglePerformerDocument,
+                variables: {
+                    source: {
+                        stash_box_index: boxIdx
+                    },
+                    input: {
+                        query: stash_id
+                    }
+                }
+            });
+            if (result.errors) {
+                console.warn('[Visage] GraphQL errors in scrapeSinglePerformer:', result.errors);
+            }
+            if (!((_d = result.data) === null || _d === void 0 ? void 0 : _d.scrapeSinglePerformer)) {
+                return undefined;
+            }
+            return result.data.scrapeSinglePerformer.filter((p) => p.remote_site_id === stash_id)[0];
+        }
+        catch (error) {
+            console.warn('[Visage] Exception in scrapeSinglePerformer:', error);
+            return undefined;
+        }
+    }
+    async function createPerformer(performer) {
+        return getClient().mutate({
+            mutation: GQL.PerformerCreateDocument,
+            variables: { input: performer }
+        });
+    }
+    async function findPerformerByName(name, disambiguation) {
+        var _a;
+        if (!name)
+            return undefined;
+        const result = await getClient().query({
+            query: GQL.FindPerformersDocument,
+            variables: {
+                performer_filter: {
+                    name: { value: name, modifier: "EQUALS" },
+                    ...(disambiguation ? { disambiguation: { value: disambiguation, modifier: "EQUALS" } } : {}),
+                },
+            },
+        });
+        return (_a = result.data.findPerformers.performers) === null || _a === void 0 ? void 0 : _a[0];
+    }
+    async function createOrGetPerformer(scraped, stashId, sourceName) {
+        var _a;
+        const performerData = await scrapedPerformerToInput(scraped, stashId, sourceName);
+        const result = await createPerformer(performerData);
+        if (result.errors) {
+            const msg = ((_a = result.errors[0]) === null || _a === void 0 ? void 0 : _a.message) || '';
+            if (!msg.toLowerCase().includes('already exists')) {
+                throw new Error(msg);
+            }
+            const existing = await findPerformerByName(performerData.name, performerData.disambiguation);
+            if (existing) {
+                return { performerId: existing.id, created: false };
+            }
+            throw new Error(msg);
+        }
+        return { performerId: result.data.performerCreate.id, created: true };
+    }
+    async function getScenePath(scene_id, pathKey) {
+        var _a;
+        const result = await getClient().query({
+            query: GQL.FindSceneDocument,
+            variables: { id: scene_id }
+        });
+        return (_a = result.data.findScene.paths[pathKey]) !== null && _a !== void 0 ? _a : null;
+    }
+    // Sprite URL from scene paths, unprobed. Stash returns a path even when the
+    // sprite was never generated, so callers must check the fetch response.
+    async function getSpritePath(scene_id) {
+        return getScenePath(scene_id, 'sprite');
+    }
+    // Whether a generated file exists. One byte, because Stash rejects HEAD with 400.
+    async function fileExists(url) {
+        return (await fetch(url, { headers: { Range: 'bytes=0-0' } })).ok;
+    }
+    // Sprite URL only if the file exists.
+    async function getUrlSprite(scene_id) {
+        const url = await getSpritePath(scene_id);
+        return url && (await fileExists(url)) ? url : null;
+    }
+    async function getImagePath(image_id, pathKey = 'image') {
+        var _a, _b;
+        const result = await getClient().query({
+            query: GQL.FindImageDocument,
+            variables: { id: image_id }
+        });
+        const path = (_b = (_a = result.data.findImage.paths) === null || _a === void 0 ? void 0 : _a[pathKey]) !== null && _b !== void 0 ? _b : null;
+        if (!path)
+            return null;
+        if (typeof path === 'string' && path.startsWith('/')) {
+            return `${window.location.origin}${path}`;
+        }
+        return path;
+    }
+    async function getImageUrl(image_id) {
+        return getImagePath(image_id, 'image');
+    }
+    async function getUrlPreview(scene_id) {
+        return getScenePath(scene_id, 'preview');
+    }
+    async function scrapedPerformerToInput(scraped, stashId, sourceName) {
+        const { images, height, aliases, remote_site_id, stored_id, __typename, tags, ...rest } = scraped;
+        const endpoint = await getStashboxEndpoint(sourceName);
+        return {
+            ...rest,
+            image: images === null || images === void 0 ? void 0 : images[0],
+            height_cm: height,
+            alias_list: aliases,
+            stash_ids: endpoint ? [{ endpoint, stash_id: stashId }] : undefined,
+        };
+    }
+    async function addPerformerToContent(scenario, contentId, performerId) {
+        const currentIds = await getContentPerformers(scenario, contentId);
+        if (!currentIds.includes(performerId)) {
+            await setContentPerformers(scenario, contentId, [...currentIds, performerId]);
+        }
+    }
+    async function getContentPerformers(scenario, contentId) {
+        return scenario === 'scenes' ? getPerformersForScene(contentId) : getPerformersForImage(contentId);
+    }
+    async function setContentPerformers(scenario, contentId, performerIds) {
+        const update = scenario === 'scenes' ? updateScene : updateImage;
+        await update(contentId, performerIds);
+    }
+    async function findPerformer(performerId) {
+        var _a;
+        const result = await getClient().query({
+            query: GQL.FindPerformerDocument,
+            variables: { id: performerId },
+        });
+        return (_a = result.data) === null || _a === void 0 ? void 0 : _a.findPerformer;
+    }
+    async function getPerformerStashIds(performerId) {
+        var _a, _b;
+        return (_b = (_a = (await findPerformer(performerId))) === null || _a === void 0 ? void 0 : _a.stash_ids) !== null && _b !== void 0 ? _b : [];
+    }
+    // image_path carries Stash's cache-busting token, so it always points at the
+    // current image.
+    async function getPerformerImageUrl(performerId) {
+        var _a, _b;
+        return (_b = (_a = (await findPerformer(performerId))) === null || _a === void 0 ? void 0 : _a.image_path) !== null && _b !== void 0 ? _b : null;
+    }
+    /**
+     * Append candidate stash IDs onto a performer's stash_ids list. Preserves
+     * existing entries and skips stash_ids already present (repeat confirms are
+     * no-ops). Endpoint comes from Stash config via the candidate's source name;
+     * the Gradio response does not carry endpoints.
+     */
+    async function linkCandidatesToPerformer(performerId, entries) {
+        var _a;
+        const existing = await getPerformerStashIds(performerId);
+        const next = [...existing];
+        const seen = new Set(existing.map(s => s.stash_id));
+        for (const { id, source } of entries) {
+            if (seen.has(id))
+                continue;
+            const endpoint = await getStashboxEndpoint(source);
+            if (!endpoint)
+                throw new Error(`No stash-box configured for ${source !== null && source !== void 0 ? source : 'StashDB'}`);
+            next.push({ endpoint, stash_id: id });
+            seen.add(id);
+        }
+        if (next.length === existing.length)
+            return;
+        const res = await getClient().mutate({
+            mutation: GQL.PerformerUpdateDocument,
+            variables: { input: { id: performerId, stash_ids: next } },
+        });
+        if ((_a = res.errors) === null || _a === void 0 ? void 0 : _a.length)
+            throw new Error(res.errors[0].message);
+    }
+
     let MAX_RESULTS = 20;
     const SEARCH_THRESHOLD = 20;
     const STORAGE_KEY = 'visage_api_endpoint';
@@ -8395,13 +8716,48 @@
         const health = await checkHealth(endpoint);
         return typeof (health === null || health === void 0 ? void 0 : health.index_docs) === 'number';
     }
-    function setApiEndpoint(endpoint) {
+    function storeLocally(endpoint) {
         try {
             localStorage.setItem(STORAGE_KEY, endpoint);
         }
         catch (e) {
             console.warn('Could not save API endpoint to localStorage:', e);
         }
+    }
+    // Saves the endpoint in this browser and in the Stash plugin settings, so other
+    // browsers and a cleared browser storage get it back on the next load.
+    function setApiEndpoint(endpoint) {
+        storeLocally(endpoint);
+        setPluginSettings({ apiEndpoint: endpoint }).catch((e) => {
+            console.warn('[Visage] Could not save API endpoint to Stash settings:', e);
+        });
+    }
+    /**
+     * Call once at startup. The Stash setting wins and is copied to localStorage,
+     * so getApiEndpoint stays sync. A browser that has an endpoint the server lacks
+     * (set before this setting existed) pushes it up. Returns true when an endpoint
+     * is now set, so the caller can skip first run onboarding.
+     */
+    async function syncApiEndpointFromStash() {
+        var _a;
+        let local = null;
+        try {
+            local = localStorage.getItem(STORAGE_KEY);
+        }
+        catch ( /* ignore */_b) { /* ignore */ }
+        try {
+            const server = (_a = (await getPluginSettings()).apiEndpoint) === null || _a === void 0 ? void 0 : _a.trim();
+            if (server) {
+                storeLocally(server);
+                return true;
+            }
+            if (local)
+                await setPluginSettings({ apiEndpoint: local });
+        }
+        catch (e) {
+            console.warn('[Visage] Could not read API endpoint from Stash settings:', e);
+        }
+        return !!local;
     }
     function isPrivateIPv4(octets) {
         const [a, b, c] = octets.map(Number);
@@ -8981,307 +9337,6 @@
             console.warn('[Visage] Direct capture threw, falling back:', err);
             return fallbackCapture(bounds);
         }
-    }
-
-    const GQL = window.PluginApi.GQL;
-    const getClient = () => window.PluginApi.utils.StashService.getClient();
-    async function getPerformers(performer_id) {
-        const result = await getClient().query({
-            query: GQL.FindPerformersDocument,
-            variables: {
-                performer_filter: {
-                    stash_id_endpoint: {
-                        endpoint: "",
-                        stash_id: performer_id,
-                        modifier: "EQUALS"
-                    }
-                }
-            }
-        });
-        return result.data.findPerformers.performers;
-    }
-    // Live from the server: callers write this list back, and a cached copy would
-    // drop performers added since it was read.
-    async function getPerformersForScene(scene_id) {
-        const result = await getClient().query({
-            query: GQL.FindSceneDocument,
-            variables: { id: scene_id },
-            fetchPolicy: 'network-only',
-        });
-        return result.data.findScene.performers.map((p) => p.id);
-    }
-    // Live from the server: performers may have changed since the list page loaded.
-    async function getScene(scene_id) {
-        var _a, _b, _c, _d;
-        const result = await getClient().query({
-            query: GQL.FindSceneDocument,
-            variables: { id: scene_id },
-            fetchPolicy: 'network-only',
-        });
-        const scene = result.data.findScene;
-        const file = (_a = scene.files) === null || _a === void 0 ? void 0 : _a[0];
-        return {
-            title: scene.title || ((_b = file === null || file === void 0 ? void 0 : file.path) === null || _b === void 0 ? void 0 : _b.split(/[\\/]/).pop()) || scene.id,
-            screenshot: (_d = (_c = scene.paths) === null || _c === void 0 ? void 0 : _c.screenshot) !== null && _d !== void 0 ? _d : null,
-            performerNames: scene.performers.map((p) => p.name),
-            stashIds: scene.performers.flatMap((p) => { var _a; return ((_a = p.stash_ids) !== null && _a !== void 0 ? _a : []).map(s => s.stash_id); }),
-        };
-    }
-    async function getPerformersForImage(image_id) {
-        const result = await getClient().query({
-            query: GQL.FindImageDocument,
-            variables: { id: image_id }
-        });
-        return result.data.findImage.performers.map((p) => p.id);
-    }
-    async function updateScene(scene_id, performer_ids) {
-        return getClient().mutate({
-            mutation: GQL.SceneUpdateDocument,
-            variables: { input: { id: scene_id, performer_ids: performer_ids } }
-        });
-    }
-    async function updateImage(image_id, performer_ids) {
-        return getClient().mutate({
-            mutation: GQL.ImageUpdateDocument,
-            variables: { input: { id: image_id, performer_ids: performer_ids } }
-        });
-    }
-    const STASHBOX_DOCS_URL = 'https://docs.stashapp.cc/metadata-sources/stash-box-instances/';
-    // Finds the stash-box for a match source ("stashdb", "fansdb", "javstash") by
-    // box name or endpoint URL. With a source and no matching box, returns -1:
-    // an ID from one stash-box must never be scraped or saved under another.
-    // Without a source, prefers StashDB, else the first box.
-    function getStashBoxIndex(boxes, sourceName) {
-        const find = (key) => boxes.findIndex(b => { var _a, _b; return ((_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(key)) || ((_b = b.endpoint) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(key)); });
-        if (sourceName)
-            return find(sourceName.toLowerCase());
-        const idx = find('stashdb');
-        return idx >= 0 ? idx : 0;
-    }
-    async function getStashboxEndpoint(sourceName) {
-        var _a, _b, _c, _d, _e;
-        const result = await getClient().query({
-            query: GQL.ConfigurationDocument
-        });
-        const boxes = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes;
-        if (!(boxes === null || boxes === void 0 ? void 0 : boxes.length))
-            return null;
-        return (_e = (_d = boxes[getStashBoxIndex(boxes, sourceName)]) === null || _d === void 0 ? void 0 : _d.endpoint) !== null && _e !== void 0 ? _e : null;
-    }
-    // The active Stash UI locale, read from the server-side configuration the same
-    // way the Stash frontend does (App.tsx reads configuration.interface.language).
-    // Falls back to 'en'. Note: Stash does not reflect the locale in <html lang>.
-    async function getStashLanguage() {
-        var _a, _b, _c;
-        try {
-            const result = await getClient().query({
-                query: GQL.ConfigurationDocument,
-            });
-            const lang = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.interface) === null || _c === void 0 ? void 0 : _c.language;
-            return typeof lang === 'string' && lang ? lang : 'en';
-        }
-        catch (err) {
-            console.warn('[Visage] Failed to read Stash language:', err);
-            return 'en';
-        }
-    }
-    async function getStashboxStatus() {
-        var _a, _b, _c;
-        const result = await getClient().query({
-            query: GQL.ConfigurationDocument
-        });
-        const boxes = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes;
-        if (!(boxes === null || boxes === void 0 ? void 0 : boxes.length))
-            return 'empty';
-        const hasStashdb = boxes.some(b => { var _a; return (_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes('stashdb'); });
-        return hasStashdb ? 'configured' : 'mismatch';
-    }
-    async function getPerformerDataFromStashID(stash_id, sourceName) {
-        var _a, _b, _c, _d;
-        const endpointResult = await getClient().query({
-            query: GQL.ConfigurationDocument
-        });
-        const boxes = ((_c = (_b = (_a = endpointResult.data) === null || _a === void 0 ? void 0 : _a.configuration) === null || _b === void 0 ? void 0 : _b.general) === null || _c === void 0 ? void 0 : _c.stashBoxes) || [];
-        const boxIdx = getStashBoxIndex(boxes, sourceName);
-        if (boxIdx < 0) {
-            console.warn(`[Visage] No stash-box configured for source "${sourceName}"`);
-            return undefined;
-        }
-        try {
-            const result = await getClient().query({
-                query: GQL.ScrapeSinglePerformerDocument,
-                variables: {
-                    source: {
-                        stash_box_index: boxIdx
-                    },
-                    input: {
-                        query: stash_id
-                    }
-                }
-            });
-            if (result.errors) {
-                console.warn('[Visage] GraphQL errors in scrapeSinglePerformer:', result.errors);
-            }
-            if (!((_d = result.data) === null || _d === void 0 ? void 0 : _d.scrapeSinglePerformer)) {
-                return undefined;
-            }
-            return result.data.scrapeSinglePerformer.filter((p) => p.remote_site_id === stash_id)[0];
-        }
-        catch (error) {
-            console.warn('[Visage] Exception in scrapeSinglePerformer:', error);
-            return undefined;
-        }
-    }
-    async function createPerformer(performer) {
-        return getClient().mutate({
-            mutation: GQL.PerformerCreateDocument,
-            variables: { input: performer }
-        });
-    }
-    async function findPerformerByName(name, disambiguation) {
-        var _a;
-        if (!name)
-            return undefined;
-        const result = await getClient().query({
-            query: GQL.FindPerformersDocument,
-            variables: {
-                performer_filter: {
-                    name: { value: name, modifier: "EQUALS" },
-                    ...(disambiguation ? { disambiguation: { value: disambiguation, modifier: "EQUALS" } } : {}),
-                },
-            },
-        });
-        return (_a = result.data.findPerformers.performers) === null || _a === void 0 ? void 0 : _a[0];
-    }
-    async function createOrGetPerformer(scraped, stashId, sourceName) {
-        var _a;
-        const performerData = await scrapedPerformerToInput(scraped, stashId, sourceName);
-        const result = await createPerformer(performerData);
-        if (result.errors) {
-            const msg = ((_a = result.errors[0]) === null || _a === void 0 ? void 0 : _a.message) || '';
-            if (!msg.toLowerCase().includes('already exists')) {
-                throw new Error(msg);
-            }
-            const existing = await findPerformerByName(performerData.name, performerData.disambiguation);
-            if (existing) {
-                return { performerId: existing.id, created: false };
-            }
-            throw new Error(msg);
-        }
-        return { performerId: result.data.performerCreate.id, created: true };
-    }
-    async function getScenePath(scene_id, pathKey) {
-        var _a;
-        const result = await getClient().query({
-            query: GQL.FindSceneDocument,
-            variables: { id: scene_id }
-        });
-        return (_a = result.data.findScene.paths[pathKey]) !== null && _a !== void 0 ? _a : null;
-    }
-    // Sprite URL from scene paths, unprobed. Stash returns a path even when the
-    // sprite was never generated, so callers must check the fetch response.
-    async function getSpritePath(scene_id) {
-        return getScenePath(scene_id, 'sprite');
-    }
-    // Whether a generated file exists. One byte, because Stash rejects HEAD with 400.
-    async function fileExists(url) {
-        return (await fetch(url, { headers: { Range: 'bytes=0-0' } })).ok;
-    }
-    // Sprite URL only if the file exists.
-    async function getUrlSprite(scene_id) {
-        const url = await getSpritePath(scene_id);
-        return url && (await fileExists(url)) ? url : null;
-    }
-    async function getImagePath(image_id, pathKey = 'image') {
-        var _a, _b;
-        const result = await getClient().query({
-            query: GQL.FindImageDocument,
-            variables: { id: image_id }
-        });
-        const path = (_b = (_a = result.data.findImage.paths) === null || _a === void 0 ? void 0 : _a[pathKey]) !== null && _b !== void 0 ? _b : null;
-        if (!path)
-            return null;
-        if (typeof path === 'string' && path.startsWith('/')) {
-            return `${window.location.origin}${path}`;
-        }
-        return path;
-    }
-    async function getImageUrl(image_id) {
-        return getImagePath(image_id, 'image');
-    }
-    async function getUrlPreview(scene_id) {
-        return getScenePath(scene_id, 'preview');
-    }
-    async function scrapedPerformerToInput(scraped, stashId, sourceName) {
-        const { images, height, aliases, remote_site_id, stored_id, __typename, tags, ...rest } = scraped;
-        const endpoint = await getStashboxEndpoint(sourceName);
-        return {
-            ...rest,
-            image: images === null || images === void 0 ? void 0 : images[0],
-            height_cm: height,
-            alias_list: aliases,
-            stash_ids: endpoint ? [{ endpoint, stash_id: stashId }] : undefined,
-        };
-    }
-    async function addPerformerToContent(scenario, contentId, performerId) {
-        const currentIds = await getContentPerformers(scenario, contentId);
-        if (!currentIds.includes(performerId)) {
-            await setContentPerformers(scenario, contentId, [...currentIds, performerId]);
-        }
-    }
-    async function getContentPerformers(scenario, contentId) {
-        return scenario === 'scenes' ? getPerformersForScene(contentId) : getPerformersForImage(contentId);
-    }
-    async function setContentPerformers(scenario, contentId, performerIds) {
-        const update = scenario === 'scenes' ? updateScene : updateImage;
-        await update(contentId, performerIds);
-    }
-    async function findPerformer(performerId) {
-        var _a;
-        const result = await getClient().query({
-            query: GQL.FindPerformerDocument,
-            variables: { id: performerId },
-        });
-        return (_a = result.data) === null || _a === void 0 ? void 0 : _a.findPerformer;
-    }
-    async function getPerformerStashIds(performerId) {
-        var _a, _b;
-        return (_b = (_a = (await findPerformer(performerId))) === null || _a === void 0 ? void 0 : _a.stash_ids) !== null && _b !== void 0 ? _b : [];
-    }
-    // image_path carries Stash's cache-busting token, so it always points at the
-    // current image.
-    async function getPerformerImageUrl(performerId) {
-        var _a, _b;
-        return (_b = (_a = (await findPerformer(performerId))) === null || _a === void 0 ? void 0 : _a.image_path) !== null && _b !== void 0 ? _b : null;
-    }
-    /**
-     * Append candidate stash IDs onto a performer's stash_ids list. Preserves
-     * existing entries and skips stash_ids already present (repeat confirms are
-     * no-ops). Endpoint comes from Stash config via the candidate's source name;
-     * the Gradio response does not carry endpoints.
-     */
-    async function linkCandidatesToPerformer(performerId, entries) {
-        var _a;
-        const existing = await getPerformerStashIds(performerId);
-        const next = [...existing];
-        const seen = new Set(existing.map(s => s.stash_id));
-        for (const { id, source } of entries) {
-            if (seen.has(id))
-                continue;
-            const endpoint = await getStashboxEndpoint(source);
-            if (!endpoint)
-                throw new Error(`No stash-box configured for ${source !== null && source !== void 0 ? source : 'StashDB'}`);
-            next.push({ endpoint, stash_id: id });
-            seen.add(id);
-        }
-        if (next.length === existing.length)
-            return;
-        const res = await getClient().mutate({
-            mutation: GQL.PerformerUpdateDocument,
-            variables: { input: { id: performerId, stash_ids: next } },
-        });
-        if ((_a = res.errors) === null || _a === void 0 ? void 0 : _a.length)
-            throw new Error(res.errors[0].message);
     }
 
     function getScenarioAndID() {
@@ -10479,16 +10534,11 @@
         const [mode, setMode] = useState$4(() => {
             if (initialMode)
                 return initialMode;
-            try {
-                return isLocalEndpoint(current) ? 'local' : 'cloud';
-            }
-            catch (_a) {
-                return 'cloud';
-            }
+            return isHostedEndpoint(current) ? 'cloud' : 'local';
         });
         const [url, setUrl] = useState$4(() => {
             if (initialMode === 'local')
-                return isLocalEndpoint(current) ? current : LOCAL_DEFAULT;
+                return isHostedEndpoint(current) ? LOCAL_DEFAULT : current;
             return current || LOCAL_DEFAULT;
         });
         const [testStatus, setTestStatus] = useState$4(null);
@@ -10550,7 +10600,7 @@
                 catch (_a) {
                     cur = LOCAL_DEFAULT;
                 }
-                setUrl(isLocalEndpoint(cur) ? cur : LOCAL_DEFAULT);
+                setUrl(isHostedEndpoint(cur) ? LOCAL_DEFAULT : cur);
             }
             setTestStatus(null);
         }
@@ -10688,19 +10738,14 @@
     const React$9 = window.PluginApi.React;
     /**
      * Passive indicator of the resolved active backend, shown in the result modal
-     * header next to the settings gear. Never guesses Local: on any error it falls
-     * back to showing Cloud (Hugging Face). Not interactive - the adjacent gear
+     * header next to the settings gear. Cloud only for the *.hf.space host. Not interactive - the adjacent gear
      * button opens the backend settings.
      */
     function BackendBadge() {
         useLocale();
-        let isLocal;
-        try {
-            isLocal = isLocalEndpoint(getApiEndpoint());
-        }
-        catch (_a) {
-            isLocal = false;
-        }
+        // Any endpoint that is not the Hugging Face cloud is a self hosted server,
+        // including LAN hostnames and HTTPS reverse proxies.
+        const isLocal = !isHostedEndpoint(getApiEndpoint());
         const label = isLocal ? t('badge.local') : t('badge.cloud');
         const variant = isLocal ? 'local' : 'cloud';
         const title = t('badge.title', { label });
@@ -18084,8 +18129,14 @@
     firstRunRoot.id = 'visage-firstrun-root';
     firstRunRoot.style.display = 'contents';
     document.body.appendChild(firstRunRoot);
-    if (typeof (ReactDOM === null || ReactDOM === void 0 ? void 0 : ReactDOM.render) === 'function') {
-        ReactDOM.render(React.createElement(FirstRunDialogRoot, null), firstRunRoot);
-    }
+    // Load the server wide endpoint first: an endpoint saved in Stash means this
+    // Stash is set up, so a browser with cleared storage skips onboarding.
+    syncApiEndpointFromStash().then((hasEndpoint) => {
+        if (hasEndpoint)
+            markOnboarded();
+        if (typeof (ReactDOM === null || ReactDOM === void 0 ? void 0 : ReactDOM.render) === 'function') {
+            ReactDOM.render(React.createElement(FirstRunDialogRoot, null), firstRunRoot);
+        }
+    });
 
 })();

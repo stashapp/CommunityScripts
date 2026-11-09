@@ -1,7 +1,13 @@
 name: Visage
 description: Use facial recognition to lookup performers from scene sprites
-version: 2.11.0
+version: 2.12.0
 url: https://discourse.stashapp.cc/t/visage/11785
+# Read and written by src/services/stash.ts (getPluginSettings). Server wide.
+settings:
+  apiEndpoint:
+    displayName: Visage Server URL
+    description: Face recognition endpoint for all browsers. Leave empty for the Hugging Face cloud. The Visage settings dialog writes this value.
+    type: STRING
 ui:
   javascript:
   - visage.js
