@@ -1,0 +1,7 @@
+name: Play Next
+description: Queue hovered scenes as ordered one-shot overrides in Stash's active web player, then resume the original queue.
+version: 1.1.1
+url: https://github.com/MrX-Builds/Play-Next
+ui:
+  javascript:
+    - PlayNext.js
