@@ -8066,6 +8066,7 @@
         'backendSettings.cancel': 'Cancel',
         'backendSettings.save': 'Save',
         'backendSettings.feedback.reachable': 'Connection successful. Backend is ready.',
+        'backendSettings.feedback.restart': 'Connection successful. New data was downloaded. Restart Visage Server to use it.',
         'backendSettings.feedback.degraded': 'Backend reachable but degraded (models or index not loaded).',
         'backendSettings.feedback.unreachable': 'Backend unreachable. Check the URL and that the backend is running.',
         'backendSettings.sync.title': 'Stash Sync',
@@ -10451,6 +10452,7 @@
     }
     const TEST_FEEDBACK = {
         reachable: 'backendSettings.feedback.reachable',
+        restart: 'backendSettings.feedback.restart',
         degraded: 'backendSettings.feedback.degraded',
         unreachable: 'backendSettings.feedback.unreachable',
     };
@@ -10562,6 +10564,9 @@
                 }
                 else if (health.models_loaded === false || health.status !== 'ready') {
                     status = 'degraded';
+                }
+                else if (health.restart_required === true) {
+                    status = 'restart';
                 }
                 else {
                     status = 'reachable';
@@ -12300,6 +12305,7 @@
         'backendSettings.cancel': `Annuleren`,
         'backendSettings.save': `Opslaan`,
         'backendSettings.feedback.reachable': `Verbinding geslaagd. De backend is klaar.`,
+        'backendSettings.feedback.restart': `Verbinding geslaagd. Er zijn nieuwe gegevens gedownload. Herstart Visage Server om ze te gebruiken.`,
         'backendSettings.feedback.degraded': `Backend bereikbaar maar gedegradeerd (modellen of index niet geladen).`,
         'backendSettings.feedback.unreachable': `Backend niet bereikbaar. Controleer de URL en of de backend actief is.`,
         // ---- Stash Sync ----
@@ -12472,6 +12478,7 @@
         'backendSettings.cancel': `ביטול`,
         'backendSettings.save': `שמירה`,
         'backendSettings.feedback.reachable': `החיבור הצליח. צד-השרת מוכן.`,
+        'backendSettings.feedback.restart': `החיבור הצליח. הורדו נתונים חדשים. הפעל מחדש את Visage Server כדי להשתמש בהם.`,
         'backendSettings.feedback.degraded': `צד-השרת נגיש אך מוגבל (המודלים או המדד אינם נטענים).`,
         'backendSettings.feedback.unreachable': `צד-השרת אינו נגיש. בדוק את ה-URL וודא שצד-השרת פועל.`,
         // ---- Stash Sync ----
@@ -12633,6 +12640,7 @@
         'backendSettings.cancel': `Atšaukti`,
         'backendSettings.save': `Išsaugoti`,
         'backendSettings.feedback.reachable': `Ryšys sėkmingas. Pamatinė sistema paruošta.`,
+        'backendSettings.feedback.restart': `Prisijungta sėkmingai. Atsisiųsti nauji duomenys. Kad juos naudotumėte, iš naujo paleiskite Visage Server.`,
         'backendSettings.feedback.degraded': `Pamatinė sistema pasiekiama, bet sumažintu režimu (modeliai arba indeksas neįkelti).`,
         'backendSettings.feedback.unreachable': `Pamatinė sistema nepasiekiama. Patikrinkite URL ir įsitikinkite, kad sistema veikia.`,
         // ---- Stash Sync ----
@@ -12796,6 +12804,7 @@
         'backendSettings.cancel': `Cancelar`,
         'backendSettings.save': `Guardar`,
         'backendSettings.feedback.reachable': `Conexión exitosa. El backend está listo.`,
+        'backendSettings.feedback.restart': `Conexión correcta. Se descargaron datos nuevos. Reinicia Visage Server para usarlos.`,
         'backendSettings.feedback.degraded': `Backend accesible pero degradado (modelos o índice no cargados).`,
         'backendSettings.feedback.unreachable': `Backend inaccesible. Comprueba la URL y que el backend esté en ejecución.`,
         // ---- Stash Sync ----
@@ -12968,6 +12977,7 @@
         'backendSettings.cancel': `إلغاء`,
         'backendSettings.save': `حفظ`,
         'backendSettings.feedback.reachable': `تم الاتصال بنجاح. الواجهة الخلفية جاهزة.`,
+        'backendSettings.feedback.restart': `تم الاتصال بنجاح. تم تنزيل بيانات جديدة. أعد تشغيل Visage Server لاستخدامها.`,
         'backendSettings.feedback.degraded': `الواجهة الخلفية قابلة للوصول لكنها متدهورة (النماذج أو الفهرس غير محمّل).`,
         'backendSettings.feedback.unreachable': `الواجهة الخلفية غير قابلة للوصول. تحقق من URL وتأكد من أن الواجهة الخلفية تعمل.`,
         // ---- Stash Sync ----
@@ -13131,6 +13141,7 @@
         'backendSettings.cancel': `Annuler`,
         'backendSettings.save': `Enregistrer`,
         'backendSettings.feedback.reachable': `Connexion réussie. Le backend est prêt.`,
+        'backendSettings.feedback.restart': `Connexion réussie. De nouvelles données ont été téléchargées. Redémarrez Visage Server pour les utiliser.`,
         'backendSettings.feedback.degraded': `Backend joignable mais dégradé (modèles ou index non chargés).`,
         'backendSettings.feedback.unreachable': `Backend injoignable. Vérifiez l'URL et que le backend est en cours d'exécution.`,
         // ---- Stash Sync ----
@@ -13304,6 +13315,7 @@
         'backendSettings.cancel': `Avbryt`,
         'backendSettings.save': `Lagre`,
         'backendSettings.feedback.reachable': `Tilkopling vellukka. Backend er klar.`,
+        'backendSettings.feedback.restart': `Tilkoplinga var vellukka. Nye data er lasta ned. Start Visage Server på nytt for å bruke dei.`,
         'backendSettings.feedback.degraded': `Backend er tilgjengeleg, men redusert (modellar eller indeks er ikkje lasta inn).`,
         'backendSettings.feedback.unreachable': `Backend er utilgjengeleg. Sjekk URL-en og at backend køyrer.`,
         // ---- Stash Sync ----
@@ -13465,6 +13477,7 @@
         'backendSettings.cancel': `취소`,
         'backendSettings.save': `저장`,
         'backendSettings.feedback.reachable': `연결에 성공했습니다. 백엔드가 준비되었습니다.`,
+        'backendSettings.feedback.restart': `연결에 성공했습니다. 새 데이터를 다운로드했습니다. 사용하려면 Visage Server를 다시 시작하세요.`,
         'backendSettings.feedback.degraded': `백엔드에 연결할 수 있지만 성능이 저하되었습니다(모델 또는 인덱스가 로드되지 않음).`,
         'backendSettings.feedback.unreachable': `백엔드에 연결할 수 없습니다. URL을 확인하고 백엔드가 실행 중인지 확인하세요.`,
         // ---- Stash Sync ----
@@ -13626,6 +13639,7 @@
         'backendSettings.cancel': `取消`,
         'backendSettings.save': `保存`,
         'backendSettings.feedback.reachable': `连接成功。后端已就绪。`,
+        'backendSettings.feedback.restart': `连接成功。已下载新数据。请重启 Visage Server 以使用这些数据。`,
         'backendSettings.feedback.degraded': `后端可访问但已降级（模型或索引未加载）。`,
         'backendSettings.feedback.unreachable': `后端不可访问。请检查 URL 并确认后端正在运行。`,
         // ---- Stash Sync ----
@@ -13787,6 +13801,7 @@
         'backendSettings.cancel': `Отказ`,
         'backendSettings.save': `Запазване`,
         'backendSettings.feedback.reachable': `Връзката е успешна. Бекендът е готов.`,
+        'backendSettings.feedback.restart': `Връзката е успешна. Изтеглени са нови данни. Рестартирайте Visage Server, за да ги използвате.`,
         'backendSettings.feedback.degraded': `Бекендът е достъпен, но деградиран (моделите или индексът не са заредени).`,
         'backendSettings.feedback.unreachable': `Бекендът е недостъпен. Проверете URL адреса и се уверете, че бекендът работи.`,
         // ---- Stash Sync ----
@@ -13948,6 +13963,7 @@
         'backendSettings.cancel': `Отмена`,
         'backendSettings.save': `Сохранить`,
         'backendSettings.feedback.reachable': `Подключение успешно. Бэкенд готов.`,
+        'backendSettings.feedback.restart': `Подключение успешно. Загружены новые данные. Перезапустите Visage Server, чтобы их использовать.`,
         'backendSettings.feedback.degraded': `Бэкенд доступен, но работает с ограничениями (модели или индекс не загружены).`,
         'backendSettings.feedback.unreachable': `Бэкенд недоступен. Проверьте URL и убедитесь, что бэкенд запущен.`,
         // ---- Stash Sync ----
@@ -14109,6 +14125,7 @@
         'backendSettings.cancel': `Batal`,
         'backendSettings.save': `Simpan`,
         'backendSettings.feedback.reachable': `Koneksi berhasil. Backend siap.`,
+        'backendSettings.feedback.restart': `Koneksi berhasil. Data baru telah diunduh. Mulai ulang Visage Server untuk menggunakannya.`,
         'backendSettings.feedback.degraded': `Backend terjangkau tetapi menurun (model atau indeks tidak dimuat).`,
         'backendSettings.feedback.unreachable': `Backend tidak terjangkau. Periksa URL dan pastikan backend berjalan.`,
         // ---- Stash Sync ----
@@ -14270,6 +14287,7 @@
         'backendSettings.cancel': `Zrušit`,
         'backendSettings.save': `Uložit`,
         'backendSettings.feedback.reachable': `Připojení úspěšné. Backend je připraven.`,
+        'backendSettings.feedback.restart': `Připojení bylo úspěšné. Byla stažena nová data. Restartujte Visage Server, aby je začal používat.`,
         'backendSettings.feedback.degraded': `Backend dosažitelný, ale degradovaný (modely nebo index nejsou načteny).`,
         'backendSettings.feedback.unreachable': `Backend je nedosažitelný. Zkontrolujte URL a ujistěte se, že backend běží.`,
         // ---- Stash Sync ----
@@ -14431,6 +14449,7 @@
         'backendSettings.cancel': `Odustani`,
         'backendSettings.save': `Spremi`,
         'backendSettings.feedback.reachable': `Veza uspješna. Pozadinski poslužitelj je spreman.`,
+        'backendSettings.feedback.restart': `Veza je uspješna. Preuzeti su novi podaci. Ponovno pokrenite Visage Server da biste ih koristili.`,
         'backendSettings.feedback.degraded': `Pozadinski poslužitelj je dostupan, ali smanjenih performansi (modeli ili indeks nisu učitani).`,
         'backendSettings.feedback.unreachable': `Pozadinski poslužitelj je nedostupan. Provjerite URL i uvjerite se da poslužitelj radi.`,
         // ---- Stash Sync ----
@@ -14592,6 +14611,7 @@
         'backendSettings.cancel': `ยกเลิก`,
         'backendSettings.save': `บันทึก`,
         'backendSettings.feedback.reachable': `เชื่อมต่อสำเร็จ แบ็กเอนด์พร้อมใช้งานแล้ว`,
+        'backendSettings.feedback.restart': `เชื่อมต่อสำเร็จ ดาวน์โหลดข้อมูลใหม่แล้ว รีสตาร์ต Visage Server เพื่อใช้งาน`,
         'backendSettings.feedback.degraded': `เข้าถึงแบ็กเอนด์ได้แต่ประสิทธิภาพลดลง (โมเดลหรือดัชนียังไม่โหลด)`,
         'backendSettings.feedback.unreachable': `ไม่สามารถเข้าถึงแบ็กเอนด์ได้ ตรวจสอบ URL และยืนยันว่าแบ็กเอนด์กำลังทำงาน`,
         // ---- Stash Sync ----
@@ -14755,6 +14775,7 @@
         'backendSettings.cancel': `Cancelar`,
         'backendSettings.save': `Salvar`,
         'backendSettings.feedback.reachable': `Conexão bem-sucedida. O backend está pronto.`,
+        'backendSettings.feedback.restart': `Conexão bem-sucedida. Novos dados foram baixados. Reinicie o Visage Server para usá-los.`,
         'backendSettings.feedback.degraded': `Backend acessível, mas degradado (modelos ou índice não carregados).`,
         'backendSettings.feedback.unreachable': `Backend inacessível. Verifique a URL e se o backend está em execução.`,
         // ---- Stash Sync ----
@@ -14928,6 +14949,7 @@
         'backendSettings.cancel': `Annullér`,
         'backendSettings.save': `Gem`,
         'backendSettings.feedback.reachable': `Forbindelsen lykkedes. Backend er klar.`,
+        'backendSettings.feedback.restart': `Forbindelse oprettet. Nye data er downloadet. Genstart Visage Server for at bruge dem.`,
         'backendSettings.feedback.degraded': `Backend er tilgængelig, men forringet (modeller eller indeks er ikke indlæst).`,
         'backendSettings.feedback.unreachable': `Backend er utilgængelig. Tjek URL'en, og at backend kører.`,
         // ---- Stash Sync ----
@@ -15090,6 +15112,7 @@
         'backendSettings.cancel': `Mégse`,
         'backendSettings.save': `Mentés`,
         'backendSettings.feedback.reachable': `A kapcsolat sikeres. A backend készen áll.`,
+        'backendSettings.feedback.restart': `Sikeres kapcsolat. Új adatok töltődtek le. Indítsa újra a Visage Servert a használatukhoz.`,
         'backendSettings.feedback.degraded': `A backend elérhető, de korlátozott (a modellek vagy az index nincs betöltve).`,
         'backendSettings.feedback.unreachable': `A backend nem érhető el. Ellenőrizd az URL-t, és hogy a backend fut-e.`,
         // ---- Stash Sync ----
@@ -15251,6 +15274,7 @@
         'backendSettings.cancel': `Скасувати`,
         'backendSettings.save': `Зберегти`,
         'backendSettings.feedback.reachable': `Підключення успішне. Бекенд готовий.`,
+        'backendSettings.feedback.restart': `Підключення успішне. Завантажено нові дані. Перезапустіть Visage Server, щоб їх використовувати.`,
         'backendSettings.feedback.degraded': `Бекенд доступний, але працює з обмеженнями (моделі або індекс не завантажені).`,
         'backendSettings.feedback.unreachable': `Бекенд недоступний. Перевірте URL і переконайтеся, що бекенд запущено.`,
         // ---- Stash Sync ----
@@ -15414,6 +15438,7 @@
         'backendSettings.cancel': `Abbrechen`,
         'backendSettings.save': `Speichern`,
         'backendSettings.feedback.reachable': `Verbindung erfolgreich. Das Backend ist bereit.`,
+        'backendSettings.feedback.restart': `Verbindung erfolgreich. Neue Daten wurden heruntergeladen. Starte Visage Server neu, um sie zu nutzen.`,
         'backendSettings.feedback.degraded': `Backend erreichbar, aber eingeschränkt (Modelle oder Index nicht geladen).`,
         'backendSettings.feedback.unreachable': `Backend nicht erreichbar. Prüfe die URL und ob das Backend läuft.`,
         // ---- Stash Sync ----
@@ -15587,6 +15612,7 @@
         'backendSettings.cancel': `Peruuta`,
         'backendSettings.save': `Tallenna`,
         'backendSettings.feedback.reachable': `Yhteys onnistui. Backend on valmis.`,
+        'backendSettings.feedback.restart': `Yhteys onnistui. Uudet tiedot on ladattu. Käynnistä Visage Server uudelleen, jotta voit käyttää niitä.`,
         'backendSettings.feedback.degraded': `Backend on tavoitettavissa mutta heikentynyt (mallit tai indeksi ei ole ladattu).`,
         'backendSettings.feedback.unreachable': `Backend ei ole tavoitettavissa. Tarkista URL ja että backend on käynnissä.`,
         // ---- Stash Sync ----
@@ -15748,6 +15774,7 @@
         'backendSettings.cancel': `Atcelt`,
         'backendSettings.save': `Saglabāt`,
         'backendSettings.feedback.reachable': `Savienojums izdevies. Pamata pakalpojums ir gatavs.`,
+        'backendSettings.feedback.restart': `Savienojums izdevās. Lejupielādēti jauni dati. Restartējiet Visage Server, lai tos izmantotu.`,
         'backendSettings.feedback.degraded': `Pamata pakalpojums sasniedzams, bet samazinātā režīmā (modeļi vai indekss nav ielādēti).`,
         'backendSettings.feedback.unreachable': `Pamata pakalpojums nesasniedzams. Pārbaudiet URL un pārliecinieties, ka pakalpojums darbojas.`,
         // ---- Stash Sync ----
@@ -15909,6 +15936,7 @@
         'backendSettings.cancel': `Hủy`,
         'backendSettings.save': `Lưu`,
         'backendSettings.feedback.reachable': `Kết nối thành công. Backend đã sẵn sàng.`,
+        'backendSettings.feedback.restart': `Kết nối thành công. Đã tải xuống dữ liệu mới. Khởi động lại Visage Server để sử dụng.`,
         'backendSettings.feedback.degraded': `Backend truy cập được nhưng bị suy giảm (mô hình hoặc chỉ mục chưa được tải).`,
         'backendSettings.feedback.unreachable': `Không thể truy cập backend. Kiểm tra URL và đảm bảo backend đang chạy.`,
         // ---- Stash Sync ----
@@ -16071,6 +16099,7 @@
         'backendSettings.cancel': `Tühista`,
         'backendSettings.save': `Salvesta`,
         'backendSettings.feedback.reachable': `Ühendus õnnestus. Backend on valmis.`,
+        'backendSettings.feedback.restart': `Ühendus õnnestus. Uued andmed on alla laaditud. Nende kasutamiseks taaskäivita Visage Server.`,
         'backendSettings.feedback.degraded': `Backend on kättesaadav, kuid halvendatud (mudelid või indeks pole laaditud).`,
         'backendSettings.feedback.unreachable': `Backend ei ole kättesaadav. Kontrolli URL-i ja et backend töötab.`,
         // ---- Stash Sync ----
@@ -16233,6 +16262,7 @@
         'backendSettings.cancel': `Avbryt`,
         'backendSettings.save': `Lagre`,
         'backendSettings.feedback.reachable': `Tilkobling vellykket. Backend er klar.`,
+        'backendSettings.feedback.restart': `Tilkoblingen var vellykket. Nye data er lastet ned. Start Visage Server på nytt for å bruke dem.`,
         'backendSettings.feedback.degraded': `Backend er tilgjengelig, men redusert (modeller eller indeks er ikke lastet inn).`,
         'backendSettings.feedback.unreachable': `Backend er utilgjengelig. Sjekk URL-en og at backend kjører.`,
         // ---- Stash Sync ----
@@ -16395,6 +16425,7 @@
         'backendSettings.cancel': `İptal`,
         'backendSettings.save': `Kaydet`,
         'backendSettings.feedback.reachable': `Bağlantı başarılı. Backend hazır.`,
+        'backendSettings.feedback.restart': `Bağlantı başarılı. Yeni veriler indirildi. Kullanmak için Visage Server'ı yeniden başlatın.`,
         'backendSettings.feedback.degraded': `Backend erişilebilir ancak düşük performanslı (modeller veya dizin yüklenmemiş).`,
         'backendSettings.feedback.unreachable': `Backend\u2019e ulaşılamıyor. URL'yi ve backend\u2019in çalıştığını kontrol edin.`,
         // ---- Stash Sync ----
@@ -16556,6 +16587,7 @@
         'backendSettings.cancel': `取消`,
         'backendSettings.save': `儲存`,
         'backendSettings.feedback.reachable': `連線成功。後端已就緒。`,
+        'backendSettings.feedback.restart': `連線成功。已下載新資料。請重新啟動 Visage Server 以使用這些資料。`,
         'backendSettings.feedback.degraded': `後端可連線但已降級（模型或索引未載入）。`,
         'backendSettings.feedback.unreachable': `後端無法連線。請檢查 URL 並確認後端正在執行。`,
         // ---- Stash Sync ----
@@ -16718,6 +16750,7 @@
         'backendSettings.cancel': `Anulează`,
         'backendSettings.save': `Salvează`,
         'backendSettings.feedback.reachable': `Conexiune reușită. Backend-ul este pregătit.`,
+        'backendSettings.feedback.restart': `Conexiune reușită. Au fost descărcate date noi. Reporniți Visage Server pentru a le folosi.`,
         'backendSettings.feedback.degraded': `Backend-ul este accesibil, dar degradat (modelele sau indexul nu sunt încărcate).`,
         'backendSettings.feedback.unreachable': `Backend-ul este inaccesibil. Verifică URL-ul și că backend-ul rulează.`,
         // ---- Stash Sync ----
@@ -16879,6 +16912,7 @@
         'backendSettings.cancel': `Zrušiť`,
         'backendSettings.save': `Uložiť`,
         'backendSettings.feedback.reachable': `Pripojenie úspešné. Backend je pripravený.`,
+        'backendSettings.feedback.restart': `Pripojenie bolo úspešné. Boli stiahnuté nové údaje. Reštartujte Visage Server, aby ich začal používať.`,
         'backendSettings.feedback.degraded': `Backend dosiahnuteľný, ale degradovaný (modely alebo index nie sú načítané).`,
         'backendSettings.feedback.unreachable': `Backend je nedosiahnuteľný. Skontrolujte URL a uistite sa, že backend beží.`,
         // ---- Stash Sync ----
@@ -17040,6 +17074,7 @@
         'backendSettings.cancel': `Anuluj`,
         'backendSettings.save': `Zapisz`,
         'backendSettings.feedback.reachable': `Połączenie udane. Backend jest gotowy.`,
+        'backendSettings.feedback.restart': `Połączenie udane. Pobrano nowe dane. Uruchom ponownie Visage Server, aby ich użyć.`,
         'backendSettings.feedback.degraded': `Backend osiągalny, ale zdegradowany (modele lub indeks nie zostały załadowane).`,
         'backendSettings.feedback.unreachable': `Backend nieosiągalny. Sprawdź URL i upewnij się, że backend działa.`,
         // ---- Stash Sync ----
@@ -17202,6 +17237,7 @@
         'backendSettings.cancel': `Ακύρωση`,
         'backendSettings.save': `Αποθήκευση`,
         'backendSettings.feedback.reachable': `Η σύνδεση ήταν επιτυχής. Το backend είναι έτοιμο.`,
+        'backendSettings.feedback.restart': `Η σύνδεση ήταν επιτυχής. Λήφθηκαν νέα δεδομένα. Επανεκκινήστε το Visage Server για να τα χρησιμοποιήσετε.`,
         'backendSettings.feedback.degraded': `Το backend είναι προσβάσιμο αλλά υποβαθμισμένο (τα μοντέλα ή το ευρετήριο δεν έχουν φορτωθεί).`,
         'backendSettings.feedback.unreachable': `Το backend δεν είναι προσβάσιμο. Ελέγξτε το URL και ότι το backend εκτελείται.`,
         // ---- Stash Sync ----
@@ -17363,6 +17399,7 @@
         'backendSettings.cancel': `キャンセル`,
         'backendSettings.save': `保存`,
         'backendSettings.feedback.reachable': `接続に成功しました。バックエンドは利用可能です。`,
+        'backendSettings.feedback.restart': `接続に成功しました。新しいデータをダウンロードしました。使用するには Visage Server を再起動してください。`,
         'backendSettings.feedback.degraded': `バックエンドには接続できますが、機能が制限されています（モデルまたはインデックスが読み込まれていません）。`,
         'backendSettings.feedback.unreachable': `バックエンドに接続できません。URL を確認し、バックエンドが実行中であることを確認してください。`,
         // ---- Stash Sync ----
@@ -17525,6 +17562,7 @@
         'backendSettings.cancel': `Avbryt`,
         'backendSettings.save': `Spara`,
         'backendSettings.feedback.reachable': `Anslutningen lyckades. Backend är redo.`,
+        'backendSettings.feedback.restart': `Anslutningen lyckades. Nya data har laddats ned. Starta om Visage Server för att använda dem.`,
         'backendSettings.feedback.degraded': `Backend är nåbar men försämrad (modeller eller index är inte inlästa).`,
         'backendSettings.feedback.unreachable': `Backend är onåbar. Kontrollera URL:en och att backend körs.`,
         // ---- Stash Sync ----
@@ -17688,6 +17726,7 @@
         'backendSettings.cancel': `Annulla`,
         'backendSettings.save': `Salva`,
         'backendSettings.feedback.reachable': `Connessione riuscita. Il backend è pronto.`,
+        'backendSettings.feedback.restart': `Connessione riuscita. Sono stati scaricati nuovi dati. Riavvia Visage Server per usarli.`,
         'backendSettings.feedback.degraded': `Backend raggiungibile ma degradato (modelli o indice non caricati).`,
         'backendSettings.feedback.unreachable': `Backend non raggiungibile. Controlla l'URL e che il backend sia in esecuzione.`,
         // ---- Stash Sync ----
