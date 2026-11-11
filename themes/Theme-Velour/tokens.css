@@ -1,0 +1,140 @@
+/* Velour: a velvet lounge. Deep plum that reads as black until lit; dusty
+   rose for actions, champagne for flourishes; italic serif titles over a
+   quiet sans. Framed 16:9 cards.
+
+   Fonts are self-hosted (assets/fonts, OFL) so pages make no external
+   requests. The yml maps the plugin's assets/ folder to
+   /plugin/Theme-Velour/assets/; font URLs are relative to the stylesheet. */
+
+@font-face {
+  font-family: "Outfit";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("assets/fonts/Outfit-var.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/InstrumentSerif-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/InstrumentSerif-400i.woff2") format("woff2");
+}
+
+:root {
+  /* Surfaces, darkest to lightest */
+  --vel-bg0: #17121a;
+  --vel-bg1: #1f1922;
+  --vel-bg2: #28212c;
+  --vel-bg3: #352b3a;
+  --vel-bg4: #413546;
+  --vel-line: rgba(255, 255, 255, 0.07);
+  --vel-line-strong: rgba(255, 255, 255, 0.12);
+
+  /* Text */
+  --vel-t1: #f6eef0;
+  --vel-t2: #b9a9b1;
+  --vel-t3: #7f707a;
+
+  /* Accent: dusty rose for actions, champagne for flourishes */
+  --vel-acc2: #d9b36b;
+  --vel-acc: #d97a8c;
+  --vel-acc-hover: #e48d9d;
+  --vel-acc-ink: #2a0d14;
+  --vel-acc-soft: rgba(217, 122, 140, 0.16);
+  --vel-danger: #c9574f;
+  --vel-rating: #d97a8c;
+
+  /* Type */
+  --vel-font-body: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --vel-font-title: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --vel-title-style: italic;
+  --vel-title-card: 19px;
+  --vel-title-page: 34px;
+  --vel-title-lh: 1.1;
+
+  /* Shape */
+  --vel-r-ctl: 10px;    /* buttons, inputs, control groups */
+  --vel-r-in: 7px;      /* segments inside a control group */
+  --vel-r-card: 14px;
+  --vel-r-panel: 14px;
+  --vel-r-chip: 6px;
+  --vel-ctl-h: 34px;
+
+  /* Depth and motion */
+  --vel-shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --vel-glow: 0 10px 28px rgba(217, 122, 140, 0.16);
+  --vel-ring: 0 0 0 2px var(--vel-acc);
+  --vel-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --vel-media: repeating-linear-gradient(135deg, #2c242f 0 8px, #261f29 8px 16px);
+}
+
+html,
+body {
+  background-color: var(--vel-bg0) !important;
+  color: var(--vel-t1);
+  font-family: var(--vel-font-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+a {
+  color: var(--vel-t1);
+}
+a:hover {
+  color: #fff;
+}
+
+h1, h2, h3, h4,
+.card-section-title,
+.modal-title {
+  font-family: var(--vel-font-title);
+  font-style: var(--vel-title-style);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+::selection {
+  background: var(--vel-acc-soft);
+}
+
+/* Quiet scrollbars */
+* {
+  scrollbar-color: var(--vel-bg3) transparent;
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vel-bg3);
+  border: 3px solid var(--vel-bg0);
+  border-radius: 999px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--vel-acc) !important;
+  outline-offset: 2px;
+}
+
+.text-muted {
+  color: var(--vel-t3) !important;
+}
+hr {
+  border-color: var(--vel-line);
+}

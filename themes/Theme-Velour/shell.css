@@ -1,0 +1,698 @@
+/* Top bar, list toolbar, pagination, result count, filter sidebar. */
+
+/* ---------- Top bar ---------- */
+.top-nav,
+.top-nav.bg-dark,
+.top-nav .bg-dark {
+  background-color: var(--vel-bg1) !important;
+}
+.top-nav {
+  border-bottom: 1px solid var(--vel-line);
+  box-shadow: none !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+.top-nav .navbar-brand .brand-link {
+  font-family: var(--vel-font-title);
+  font-style: var(--vel-title-style);
+  font-size: 22px !important;
+  line-height: 1;
+  color: var(--vel-t1) !important;
+  background: transparent !important;
+  padding: 0 18px 0 0 !important;
+  letter-spacing: 0;
+}
+.top-nav .navbar-brand .brand-link:hover {
+  background: transparent !important;
+}
+
+@media (min-width: 1200px) {
+  .top-nav .navbar-nav .nav-link {
+    padding: 0 1px !important;
+  }
+  .top-nav .navbar-nav .nav-link > a.btn {
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--vel-t2) !important;
+  }
+  .top-nav .navbar-nav .nav-link > a.btn:hover {
+    background-color: var(--vel-bg2) !important;
+    color: var(--vel-t1) !important;
+  }
+  .top-nav .navbar-nav .nav-link > a.btn.active {
+    background-color: var(--vel-bg3) !important;
+    color: var(--vel-t1) !important;
+  }
+  /* Words, not icons, in the desktop bar */
+  .top-nav .navbar-nav .nav-link > a.btn .nav-menu-icon {
+    display: none !important;
+  }
+}
+
+.top-nav .nav-utility .btn,
+.top-nav .navbar-buttons .btn.minimal,
+.top-nav .logout-button {
+  color: var(--vel-t2) !important;
+  border-radius: 999px !important;
+}
+.top-nav .navbar-buttons a[href$="/new"] .btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px !important;
+}
+
+/* Theme Switch's own menu */
+.theme-plugin-menu .card,
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .modal-header {
+  background-color: transparent !important;
+  color: var(--vel-t1) !important;
+  border-color: var(--vel-line) !important;
+  font-family: var(--vel-font-body);
+  font-size: 13px;
+}
+
+/* ---------- Page container ---------- */
+.main.container-fluid {
+  background: transparent;
+}
+
+/* ---------- List toolbar ---------- */
+.filtered-list-toolbar {
+  background-color: transparent !important;
+  padding-top: 12px !important;
+  padding-bottom: 0 !important;
+  gap: 8px !important;
+}
+.filtered-list-toolbar > * {
+  margin: 0 !important;
+}
+
+/* Grouped controls become one pill with segments inside */
+.filtered-list-toolbar .btn-group,
+.filtered-list-toolbar .sort-by-select {
+  background-color: var(--vel-bg2);
+  border-radius: var(--vel-r-ctl);
+  padding: 3px;
+  gap: 2px;
+  height: var(--vel-ctl-h);
+  align-items: center;
+  border: 0 !important;
+}
+.filtered-list-toolbar .btn-group .btn-group,
+.filtered-list-toolbar .list-operations .btn-group .btn-group {
+  padding: 0;
+  background: transparent;
+  height: auto;
+}
+.filtered-list-toolbar .btn-group > .btn,
+.filtered-list-toolbar .btn-group > .btn-group > .btn,
+.filtered-list-toolbar .btn-group > .dropdown > .btn,
+.filtered-list-toolbar .sort-by-select .btn {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: var(--vel-r-in) !important;
+  color: var(--vel-t2) !important;
+  height: 28px;
+  min-width: 30px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+}
+.filtered-list-toolbar .btn-group .btn:hover,
+.filtered-list-toolbar .sort-by-select .btn:hover {
+  color: var(--vel-t1) !important;
+  background-color: var(--vel-bg3) !important;
+}
+.filtered-list-toolbar .btn-group .btn.active {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-acc) !important;
+}
+
+/* Sort: label, hairline, direction */
+.filtered-list-toolbar .sort-by-select .input-group-prepend .btn {
+  color: var(--vel-t1) !important;
+  font-weight: 500;
+  padding: 0 12px;
+}
+.filtered-list-toolbar .sort-by-select .input-group-prepend {
+  margin: 0;
+  border-right: 1px solid var(--vel-line);
+}
+.filtered-list-toolbar .sort-by-select .dropdown-toggle::after {
+  display: none;
+}
+
+/* Search */
+.filtered-list-toolbar .search-term-input .form-control,
+.filtered-list-toolbar .search-term-input input {
+  height: var(--vel-ctl-h);
+  width: 220px;
+  padding-left: 34px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236f6a66' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: 13px center !important;
+}
+
+/* Page size */
+.filtered-list-toolbar .page-size-selector select {
+  height: var(--vel-ctl-h);
+  font-weight: 500;
+  border: 0 !important;
+}
+
+/* Zoom slider: hairline track, light knob */
+.filtered-list-toolbar .zoom-slider-container {
+  margin-left: 4px !important;
+}
+input[type="range"].zoom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent !important;
+  width: 70px;
+  max-width: 70px;
+}
+input[type="range"].zoom-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--vel-bg3) !important;
+}
+input[type="range"].zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--vel-t1) !important;
+  border: 0;
+}
+input[type="range"].zoom-slider::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--vel-bg3) !important;
+}
+input[type="range"].zoom-slider::-moz-range-progress {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--vel-acc);
+}
+input[type="range"].zoom-slider::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--vel-t1) !important;
+  border: 0;
+}
+
+/* Filter-sidebar toggle */
+.sidebar-toggle-button-container .sidebar-toggle-button {
+  width: var(--vel-ctl-h);
+  height: var(--vel-ctl-h);
+  padding: 0 !important;
+  margin-left: 0 !important;
+  border: 0 !important;
+  border-radius: var(--vel-r-ctl) !important;
+  background-color: var(--vel-bg2) !important;
+  color: var(--vel-t2) !important;
+  opacity: 1 !important;
+  top: calc(48.75px + 12px) !important;
+  display: grid;
+  place-items: center;
+}
+.sidebar-toggle-button-container .sidebar-toggle-button:hover {
+  color: var(--vel-t1) !important;
+  background-color: var(--vel-bg3) !important;
+}
+
+/* Selection toolbar: sticky over the grid, so it needs a solid backing */
+.item-list-container .filtered-list-toolbar.has-selection {
+  background-color: var(--vel-bg0) !important;
+  border: 1px solid var(--vel-line);
+  border-radius: var(--vel-r-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  padding: 6px 8px !important;
+}
+.filtered-list-toolbar.has-selection .selected-items-info,
+.filtered-list-toolbar.has-selection .selected-items-info span {
+  color: var(--vel-acc) !important;
+  font-weight: 600;
+}
+.filtered-list-toolbar .btn.btn-danger,
+.filtered-list-toolbar .btn-group > .btn.btn-danger {
+  background-color: var(--vel-danger) !important;
+  color: #fff !important;
+}
+
+/* ---------- Pagination ---------- */
+.pagination-index-container {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pagination.btn-group {
+  width: auto !important;
+  flex: none !important;
+  background-color: var(--vel-bg2);
+  border-radius: var(--vel-r-ctl);
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+}
+.pagination .btn,
+.pagination .page-count-container .btn {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: var(--vel-r-in) !important;
+  color: var(--vel-t2) !important;
+  height: 26px;
+  min-width: 28px;
+  padding: 0 8px !important;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pagination .btn:hover:not(:disabled) {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-t1) !important;
+}
+.pagination .btn:disabled {
+  color: var(--vel-t3) !important;
+  opacity: 1;
+}
+.pagination .page-count {
+  color: var(--vel-t1) !important;
+  padding: 0 4px 0 10px !important;
+}
+.pagination .btn.active,
+.pagination .btn-secondary.active {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-t1) !important;
+}
+.pagination-footer .pagination.btn-group {
+  box-shadow: var(--vel-shadow-pop) !important;
+  border: 1px solid var(--vel-line);
+}
+
+/* "1–40 of 6,715 · 3M 1W 3D · 7.9 TiB" */
+.paginationIndex {
+  display: block !important;
+  text-align: center;
+  margin: 8px 0 0 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vel-t3) !important;
+}
+.paginationIndex br {
+  display: none;
+}
+.paginationIndex .scenes-stats,
+.paginationIndex .images-stats {
+  font-size: 0;
+  color: var(--vel-t3);
+}
+.paginationIndex .scenes-stats > span,
+.paginationIndex .images-stats > span {
+  font-size: 11px;
+}
+.paginationIndex .scenes-stats > span::before,
+.paginationIndex .images-stats > span::before {
+  content: " · ";
+}
+
+/* ---------- Filter sidebar ---------- */
+.sidebar-pane .sidebar,
+.sidebar .sidebar-footer,
+.sidebar-toolbar {
+  background-color: var(--vel-bg1) !important;
+}
+.sidebar-pane .sidebar {
+  border-right: 1px solid var(--vel-line);
+  padding: 12px 12px 0 !important;
+}
+.sidebar .sidebar-section,
+.sidebar .sidebar-list-filter {
+  border: 0 !important;
+}
+.sidebar .collapse-button,
+.sidebar .sidebar-section-header,
+.sidebar .btn.minimal {
+  color: var(--vel-t1) !important;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px !important;
+}
+.sidebar .collapse-button:hover {
+  background-color: var(--vel-bg2) !important;
+}
+.sidebar .collapse-button svg {
+  color: var(--vel-t3);
+}
+
+/* Tables (list view, package manager) */
+.table-list table thead,
+.package-manager table thead {
+  background-color: var(--vel-bg0) !important;
+}
+#tasks-panel .tasks-panel-queue {
+  background-color: var(--vel-bg0) !important;
+}
+
+/* ---------- Rows under the toolbar: filter chips, pagination, count ----------
+   One 10px rhythm between toolbar, chips, pagination and grid. On wide
+   screens the result count leaves its own line and sits right-aligned on the
+   first row under the toolbar (the filter chips if any, else pagination). */
+.sidebar-pane-content > .filter-tags {
+  margin: 10px 0 0 !important;
+  padding: 0 16px;
+  justify-content: center;
+}
+.sidebar-pane-content > .pagination-index-container {
+  margin-top: 10px !important;
+}
+.sidebar-pane-content > .pagination-index-container:not(:has(.pagination)) {
+  margin-top: 0 !important;
+}
+.row.justify-content-center:has(> .grid-card) {
+  padding-top: 10px !important;
+}
+@media (min-width: 1200px) {
+  .sidebar-pane-content {
+    position: relative;
+  }
+  .sidebar-pane-content > .pagination-index-container > .paginationIndex {
+    position: absolute;
+    right: 16px;
+    top: 49px;              /* toolbar bottom (39px) + the 10px gap */
+    height: 32px;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center;
+    white-space: nowrap;
+  }
+  /* keep centred chips clear of the count on the right */
+  .sidebar-pane-content > .filter-tags {
+    padding: 0 190px;
+  }
+  /* nothing else on the row: hold the space so the grid doesn't slide under the count */
+  .sidebar-pane-content:not(:has(> .filter-tags)) > .pagination-index-container:not(:has(.pagination)) {
+    min-height: 32px;
+    margin-top: 10px !important;
+  }
+}
+@media (min-width: 1200px) {
+  /* on the chip row, match the chips' height so the text centres on them */
+  .sidebar-pane-content:has(> .filter-tags) > .pagination-index-container > .paginationIndex {
+    height: 24px;
+  }
+}
+/* flex grids (studios, tags, performers) carry a 6px card margin; trim the
+   row padding so every grid starts 10px below the row above */
+.row.justify-content-center:has(> .grid-card:not(.scene-card)) {
+  padding-top: 4px !important;
+}
+
+/* Filter sidebar on small screens. Stash slides it over the page below 768px,
+   covering the button that closes it. Phones get a full-screen sheet whose
+   "Show N results" button is the way out; small tablets get the desktop
+   layout, the content pushed aside to a single column. */
+@media (max-width: 575.98px) {
+  .sidebar-pane:not(.hide-sidebar) {
+    z-index: 1020; /* above the performer header, which is its own layer */
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100dvh - 46px) !important; /* down to the bottom bar */
+    max-height: none !important;
+    flex: none !important;
+    margin: 0 !important;
+    padding: 12px 15px 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    z-index: 1020;
+    background-color: var(--vel-bg1) !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer {
+    margin-top: auto;
+    bottom: 0;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 12px 0 15px !important;
+    background: none !important;
+    border-top: 0 !important;
+  }
+  .sidebar-pane:not(.hide-sidebar) > .sidebar .sidebar-footer .btn {
+    width: 100%;
+    height: 44px;
+  }
+}
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .sidebar-pane:not(.hide-sidebar) > .sidebar-pane-content {
+    margin-left: 235px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .sidebar-toggle-button-container {
+    left: 257px;
+  }
+  .sidebar-pane:not(.hide-sidebar) .grid-card {
+    width: calc(100% - 30px) !important; /* one column beside the filters */
+  }
+}
+
+/* Phones: dialogs (Edit filter and the rest) fill the screen down to the
+   bottom bar; the body scrolls and the buttons stay at the foot */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    height: calc(100dvh - 46px);
+  }
+  .modal-content {
+    height: 100%;
+    border-radius: 0 !important;
+    border: 0 !important;
+    background-color: var(--vel-bg1) !important;
+  }
+  .modal-body {
+    flex: 1;
+    max-height: none !important; /* Stash caps it at a fixed height */
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-wrap: nowrap;
+  }
+}
+
+/* Phone and tablet menu (the ☰ button): an even grid of tiles, small icon
+   above its label, the current page on a soft tile, utility icons in a row
+   beneath a hairline (stock crams large icons beside the words) */
+@media (max-width: 1199.98px) {
+  .navbar-collapse.show,
+  .navbar-collapse.collapsing {
+    background-color: var(--vel-bg1) !important;
+    border-top: 1px solid var(--vel-line);
+    padding: 10px 24px 6px !important;
+    margin: 0 -14px; /* edge to edge across the bar's padding */
+  }
+  .navbar-collapse > .navbar-nav:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* 3 across on phones */
+    gap: 6px;
+  }
+  .navbar-collapse > .navbar-nav:first-child > div {
+    max-width: none !important;
+    flex: none !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px;
+    height: 64px !important;
+    padding: 6px !important;
+    color: var(--vel-t1) !important;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: none;
+  }
+  .navbar-collapse > .navbar-nav > div > a svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+    color: var(--vel-t2);
+  }
+  .navbar-collapse > .navbar-nav > div > a.active {
+    color: var(--vel-acc) !important;
+    background-color: var(--vel-acc-soft) !important;
+  }
+  .navbar-collapse > .navbar-nav > div > a.active svg {
+    color: var(--vel-acc);
+  }
+  .navbar-collapse > .navbar-nav:not(:first-child) {
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--vel-line);
+  }
+  .navbar-collapse .nav-utility svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Phones: the list toolbar on two rows. The space for the filter button is
+   kept on the first row only (search stretches beside it, then the
+   saved-filter and filter buttons); the rest slims down to share row two. */
+@media (max-width: 575.98px) {
+  .filtered-list-toolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important; /* stock keeps 40px each side */
+    justify-content: flex-start !important;
+    gap: 8px 6px !important;
+  }
+  .filtered-list-toolbar > .search-term-input {
+    margin-left: 40px !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+  }
+  .filtered-list-toolbar > .search-term-input .form-control {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .sort-by-select .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .page-size-selector,
+  .filtered-list-toolbar > .page-size-selector select {
+    width: 56px !important;
+    min-width: 0 !important;
+  }
+  .filtered-list-toolbar .btn-group:not(.pagination) .btn {
+    padding: 0 6px !important;
+  }
+  .filtered-list-toolbar > .btn-group:last-of-type {
+    margin-left: auto; /* the view buttons close the second row on the right */
+  }
+  /* row 1: search + the filter buttons; a zero-height break; row 2: the rest */
+  .filtered-list-toolbar > * {
+    order: 3;
+  }
+  .filtered-list-toolbar > .search-term-input,
+  .filtered-list-toolbar > .search-term-input + .btn-group {
+    order: 1;
+  }
+  .filtered-list-toolbar::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+@media (max-width: 575.98px) {
+  /* the toolbar's first row starts 12px down; on phones the top bar is at the
+     foot of the screen, so the desktop sticky offset would drop the filter
+     button onto the second row */
+  .sidebar-toggle-button-container .sidebar-toggle-button {
+    top: 12px !important;
+  }
+}
+
+/* The phone menu button wears the same colour as the nav icons beside it */
+.top-nav .nav-menu-toggle,
+.top-nav .nav-menu-toggle:hover,
+.top-nav .nav-menu-toggle:focus {
+  color: rgb(185, 169, 177);
+}
+
+/* Theme Switch menu: solid, on the theme's menu colours (stock leaves its
+   sections on Bootstrap's slate, and see-through over the cards) */
+.theme-plugin-menu.dropdown-menu {
+  padding: 6px !important;
+  color: var(--vel-t1);
+  background: var(--vel-bg2) !important;
+  border: 1px solid var(--vel-line-strong) !important;
+  border-radius: var(--vel-r-panel) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+}
+.theme-plugin-menu .accordion {
+  max-width: none !important;
+}
+.theme-plugin-menu .modal-header {
+  margin: 0 0 6px;
+  padding: 6px 8px 10px !important;
+  color: var(--vel-t1) !important;
+  background: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--vel-line-strong) !important;
+  border-radius: 0 !important;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: none;
+}
+.theme-plugin-menu .accordion > .card {
+  margin: 0 0 4px !important;
+  color: var(--vel-t1) !important;
+  background: var(--vel-bg3) !important;
+  border: 1px solid var(--vel-line-strong) !important;
+  border-radius: var(--vel-r-chip) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.theme-plugin-menu .card-header,
+.theme-plugin-menu .card-body {
+  color: var(--vel-t1) !important;
+  background: none !important;
+  border: 0 !important;
+  text-shadow: none;
+}
+.theme-plugin-menu .card-header {
+  cursor: pointer;
+}
+.theme-plugin-menu .card-header svg {
+  color: var(--vel-t2);
+}
+.theme-plugin-menu legend {
+  color: var(--vel-t1) !important;
+}
+.theme-plugin-menu .checkbox-switch input + label::before {
+  color: var(--vel-t2) !important;
+  background: color-mix(in srgb, var(--vel-t2) 30%, transparent) !important;
+  border-color: transparent !important;
+}
+.theme-plugin-menu .checkbox-switch input:checked + label::before {
+  color: #fff !important;
+  background: var(--vel-acc) !important;
+  border-color: var(--vel-acc) !important;
+}
+/* A blurred bar turns everything drawn inside it see-through, the open
+   menu included: while the menu is open the bar drops its blur */
+.top-nav:has(.theme-plugin-menu.show) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}

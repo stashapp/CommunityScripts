@@ -1,0 +1,12 @@
+name: Theme - Velour
+description: A velvet lounge. Deep plum, dusty rose actions, champagne flourishes, italic serif titles, framed cards. Self-hosted fonts; no external requests.
+version: 0.1.0
+ui:
+  css:
+    - tokens.css
+    - base.css
+    - shell.css
+    - cards.css
+    - detail.css
+  assets:
+    /: assets
