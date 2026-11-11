@@ -1379,18 +1379,28 @@
 
   function Sentinel({ st, run, total, onRetry, sentinelRef, itemCount }) {
     useEntryUpdates(st);
+    // Each state has its own key, and text never sits beside other elements,
+    // so React swaps whole elements here instead of removing individual text
+    // nodes. Page translation (Chrome's Translate) replaces text nodes with
+    // its own, and React removing one of ours that's gone throws, which
+    // crashed the page ("removeChild ... not a child of this node").
     let content = null;
     if (st.error) {
       content = h(
         "span",
-        null,
-        "Couldn't load more results. ",
+        { key: "error" },
+        h("span", null, "Couldn't load more results. "),
         h("button", { type: "button", className: "btn btn-link btn-sm p-0", onClick: onRetry }, "Retry")
       );
     } else if (st.inflight.size > 0 || st.refreshing) {
-      content = h("span", { className: "isc-loading" }, h("span", { className: "isc-spinner" }), "Loading more…");
+      content = h(
+        "span",
+        { key: "loading", className: "isc-loading" },
+        h("span", { className: "isc-spinner" }),
+        h("span", null, "Loading more…")
+      );
     } else if (run.last >= total && st.count !== undefined && itemCount > st.perPage) {
-      content = h("span", null, `End of results · ${itemCount.toLocaleString()} loaded`);
+      content = h("span", { key: "end" }, `End of results · ${itemCount.toLocaleString()} loaded`);
     }
     return h("div", { className: "isc-sentinel", ref: sentinelRef }, content);
   }
@@ -2064,7 +2074,13 @@
       { className: "filter-container text-muted paginationIndex center-text" },
       // a pill like the filter tags, so it stays readable over the cards when
       // the header is pinned
-      h("span", { className: "isc-count" }, intl.formatNumber(props.totalItems), props.metadataByline)
+      h(
+        "span",
+        { className: "isc-count" },
+        // in its own element, so a translated page can't trip React up
+        h("span", null, intl.formatNumber(props.totalItems)),
+        props.metadataByline
+      )
     );
   }
 
