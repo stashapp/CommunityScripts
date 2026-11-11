@@ -1,0 +1,145 @@
+/* Reel: a boutique streaming service. Neutral charcoal with no colour cast,
+   wine on actions only, Libre Caslon titles over Hanken Grotesk, pill
+   controls, soft 12px corners, 4:5 poster covers.
+
+   Fonts are self-hosted (assets/fonts, OFL) so pages make no external
+   requests. The yml maps the plugin's assets/ folder to
+   /plugin/Theme-Reel/assets/; font URLs are relative to the stylesheet. */
+
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("assets/fonts/HankenGrotesk-var.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Libre Caslon Text";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/LibreCaslonText-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Libre Caslon Text";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/LibreCaslonText-400i.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Libre Caslon Text";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/fonts/LibreCaslonText-700.woff2") format("woff2");
+}
+
+:root {
+  /* Surfaces, darkest to lightest */
+  --reel-bg0: #161616;
+  --reel-bg1: #1e1e1e;
+  --reel-bg2: #272727;
+  --reel-bg3: #323232;
+  --reel-bg4: #3c3c3c;
+  --reel-line: rgba(255, 255, 255, 0.07);
+  --reel-line-strong: rgba(255, 255, 255, 0.12);
+
+  /* Text */
+  --reel-t1: #f3f0ee;
+  --reel-t2: #a8a29e;
+  --reel-t3: #6f6a66;
+
+  /* Accent: wine, for actions only */
+  --reel-acc: #d94f6b;
+  --reel-acc-hover: #e2637d;
+  --reel-acc-ink: #ffffff;
+  --reel-acc-soft: rgba(217, 79, 107, 0.16);
+  --reel-danger: #c9463f;
+  --reel-rating: #f3f0ee;
+
+  /* Type */
+  --reel-font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --reel-font-title: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+  --reel-title-card: 16px;
+  --reel-title-page: 30px;
+  --reel-title-lh: 1.2;
+
+  /* Shape */
+  --reel-r-ctl: 999px;   /* buttons, inputs, pills */
+  --reel-r-in: 999px;    /* segments inside a pill group */
+  --reel-r-card: 12px;
+  --reel-r-panel: 12px;
+  --reel-r-chip: 6px;
+  --reel-ctl-h: 34px;
+
+  /* Depth and motion */
+  --reel-shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --reel-glow: 0 14px 36px rgba(0, 0, 0, 0.5);
+  --reel-ring: 0 0 0 2px var(--reel-acc);
+  --reel-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --reel-media: repeating-linear-gradient(135deg, #2a2a2a 0 8px, #242424 8px 16px);
+}
+
+html,
+body {
+  background-color: var(--reel-bg0) !important;
+  color: var(--reel-t1);
+  font-family: var(--reel-font-body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+a {
+  color: var(--reel-t1);
+}
+a:hover {
+  color: #fff;
+}
+
+h1, h2, h3, h4,
+.card-section-title,
+.modal-title {
+  font-family: var(--reel-font-title);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+::selection {
+  background: var(--reel-acc-soft);
+}
+
+/* Quiet scrollbars */
+* {
+  scrollbar-color: var(--reel-bg3) transparent;
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--reel-bg3);
+  border: 3px solid var(--reel-bg0);
+  border-radius: 999px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--reel-acc) !important;
+  outline-offset: 2px;
+}
+
+.text-muted {
+  color: var(--reel-t3) !important;
+}
+hr {
+  border-color: var(--reel-line);
+}
