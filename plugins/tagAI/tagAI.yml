@@ -1,0 +1,125 @@
+name: TagAI
+version: 1.8
+exec:
+  - python
+  - "{pluginDir}/tagAI.py"
+description: Tag images and videos with locally hosted AI models
+interface: raw
+tasks:
+  - name: "Tag All Untagged Images"
+    description: "Tag all untagged images (WD tagger)"
+    defaultArgs:
+      target: images
+      model: wd-v1-4-moat-tagger-v2
+      mode: TagAll
+      flag_tag: "AI_TagMe"
+      add_tag: "AI_Tagged"
+      tag_prefix: "AI: "
+      debug_log: ""
+      debug_floor: "0.05"
+      debug_top: "10"
+      tag_whitelist: ""
+      tag_blacklist: ""
+  - name: "Tag All Images -- Force"
+    description: "Tag all images, ignoring AI tag (WD tagger)"
+    defaultArgs:
+      target: images
+      model: wd-v1-4-moat-tagger-v2
+      mode: ForceTag
+      flag_tag: "AI_TagMe"
+      add_tag: "AI_Tagged"
+      tag_prefix: "AI: "
+      debug_log: ""
+      debug_floor: "0.05"
+      debug_top: "10"
+      tag_whitelist: ""
+      tag_blacklist: ""
+  - name: "Tag All Flagged Images"
+    description: "Tag all images flagged with AI_TagMe (WD tagger)"
+    defaultArgs:
+      target: images
+      model: wd-v1-4-moat-tagger-v2
+      mode: Tagged
+      flag_tag: "AI_TagMe"
+      add_tag: "AI_Tagged"
+      tag_prefix: "AI: "
+      debug_log: ""
+      debug_floor: "0.05"
+      debug_top: "10"
+      tag_whitelist: ""
+      tag_blacklist: ""
+  - name: "Tag All Untagged Videos"
+    description: "Tag all untagged videos (YOLO classifier)"
+    defaultArgs:
+      target: videos
+      model: "yolo11-nsfw,sex-position,wd-v1-4-moat-tagger-v2"
+      mode: TagAll
+      frame_interval: "5"
+      det_conf: "0.25"
+      tag_threshold: "0.65"
+      yolo_min_votes: "2"
+      sexpos_margin: "0.15"
+      flag_tag: "AI_TagMe"
+      add_tag: "AI_Tagged"
+      tag_prefix: "AI: "
+      debug_log: ""
+      debug_floor: "0.05"
+      debug_top: "10"
+      markers: ""
+      marker_pad: "5"
+      marker_max: "200"
+      marker_gap: "60"
+      marker_whitelist: "anal, blowjob, cowgirl position, doggystyle, fingering, girl on top, group sex, handjob, hardcore, imminent penetration, imminent vaginal, kissing penis, licking, licking penis, oral, pussy-licking, reverse cowgirl position, reverse upright straddle, sex, sex from behind, straddling, threesome, titjob, vaginal"
+      marker_blacklist: ""
+      tag_whitelist: ""
+      tag_blacklist: "age difference, artist name, blurry, blurry background, censored, closed eyes, food, food focus, fruit, loli, mosaic censoring, open pants, open fly, other, plant, realistic, rose, sketch, strawberry, uncensored, yaoi, yuri"
+  - name: "Tag All Videos -- Force"
+    description: "Tag all videos, ignoring AI tag (YOLO classifier)"
+    defaultArgs:
+      target: videos
+      model: "yolo11-nsfw,sex-position,wd-v1-4-moat-tagger-v2"
+      mode: ForceTag
+      frame_interval: "5"
+      det_conf: "0.25"
+      tag_threshold: "0.65"
+      yolo_min_votes: "2"
+      sexpos_margin: "0.15"
+      flag_tag: "AI_TagMe"
+      add_tag: "AI_Tagged"
+      tag_prefix: "AI: "
+      debug_log: ""
+      debug_floor: "0.05"
+      debug_top: "10"
+      markers: ""
+      marker_pad: "5"
+      marker_max: "200"
+      marker_gap: "60"
+      marker_whitelist: "anal, blowjob, cowgirl position, doggystyle, fingering, girl on top, group sex, handjob, hardcore, imminent penetration, imminent vaginal, kissing penis, licking, licking penis, oral, pussy-licking, reverse cowgirl position, reverse upright straddle, sex, sex from behind, straddling, threesome, titjob, vaginal"
+      marker_blacklist: ""
+      tag_whitelist: ""
+      tag_blacklist: "age difference, artist name, blurry, blurry background, censored, closed eyes, food, food focus, fruit, loli, mosaic censoring, open pants, open fly, other, plant, realistic, rose, sketch, strawberry, uncensored, yaoi, yuri"
+  - name: "Tag All Flagged Videos"
+    description: "Tag all videos flagged with AI_TagMe (YOLO classifier)"
+    defaultArgs:
+      target: videos
+      model: "yolo11-nsfw,sex-position,wd-v1-4-moat-tagger-v2"
+      mode: Tagged
+      frame_interval: "5"
+      det_conf: "0.25"
+      tag_threshold: "0.65"
+      yolo_min_votes: "2"
+      sexpos_margin: "0.15"
+      flag_tag: "AI_TagMe"
+      add_tag: "AI_Tagged"
+      tag_prefix: "AI: "
+      debug_log: ""
+      debug_floor: "0.05"
+      debug_top: "10"
+      markers: "ranges"
+      marker_pad: "5"
+      marker_max: "200"
+      marker_gap: "60"
+      marker_whitelist: "anal, blowjob, cowgirl position, doggystyle, fingering, girl on top, group sex, handjob, hardcore, imminent penetration, imminent vaginal, kissing penis, licking, licking penis, oral, pussy-licking, reverse cowgirl position, reverse upright straddle, sex, sex from behind, straddling, threesome, titjob, vaginal"
+      marker_blacklist: ""
+      tag_whitelist: ""
+      tag_blacklist: "age difference, artist name, blurry, blurry background, censored, closed eyes, food, food focus, fruit, loli, mosaic censoring, open pants, open fly, other, plant, realistic, rose, sketch, strawberry, uncensored, yaoi, yuri"
