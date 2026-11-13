@@ -910,6 +910,50 @@
     return ctl;
   }
 
+  // Other plugins sometimes wrap a card in their own element, or move it.
+  // React then can't find the card where it left it when an off-screen card
+  // turns into a placeholder, and removing it throws ("removeChild ... not a
+  // child of this node"), which crashes the whole list. Inside our own card
+  // cells only, removals and insertions are pointed at the element that's
+  // really there: the foreign wrapper, or the card wherever it went.
+  (function guardCardCells() {
+    const proto = Node.prototype;
+    const nativeRemove = proto.removeChild;
+    const nativeInsert = proto.insertBefore;
+    const isCell = (n) => n && n.nodeType === 1 && n.classList.contains("isc-cell");
+    // the direct child of `cell` that holds `node`, if any
+    const holder = (cell, node) => {
+      let n = node;
+      while (n && n.parentNode !== cell) n = n.parentNode;
+      return n || null;
+    };
+    let warned = false;
+    const warn = (node) => {
+      if (warned) return;
+      warned = true;
+      const p = node.parentNode;
+      console.warn(LOG_PREFIX, "another script moved or wrapped a card; working around it",
+        p && p.nodeType === 1 ? p.outerHTML.slice(0, 200) : "(card was removed from the page)");
+    };
+    proto.removeChild = function (child) {
+      if (isCell(this) && child && child.parentNode !== this) {
+        warn(child);
+        const h = holder(this, child);
+        if (h) return nativeRemove.call(this, h), child;
+        if (child.parentNode) nativeRemove.call(child.parentNode, child);
+        return child;
+      }
+      return nativeRemove.apply(this, arguments);
+    };
+    proto.insertBefore = function (node, ref) {
+      if (isCell(this) && ref && ref.parentNode !== this) {
+        warn(ref);
+        return nativeInsert.call(this, node, holder(this, ref));
+      }
+      return nativeInsert.apply(this, arguments);
+    };
+  })();
+
   // renders a component function inline, inside a stable component type
   function Passthrough({ Original, props }) {
     return Original(props);
