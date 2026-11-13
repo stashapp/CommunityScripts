@@ -44,6 +44,10 @@ It is mandatory to enter the Scraper ID of the Scraper you want to use. In this 
 
 > Any image that has one or more of the Tags from this setting will be skipped by the plugin if Tags are specified here. Multiple Tags must be comma separated. If the plugin can't find a tag you specified it will notify you in the logs
 
+- `Delay in seconds between each image scrape`
+
+> Time the plugin waits before scraping each image. Defaults to `0.5` seconds when not set. Increase it (for example to `5`) if the scraper's website rate limits you, or set it to `0` to disable the delay. Fractions such as `1.5` are allowed. Negative values are treated as `0` and invalid values fall back to the default
+
 ## Task
 
 After you adapted the config to your liking and made sure your image scraper of choice works properly simply start the task in `Settings > Tasks`
