@@ -460,7 +460,7 @@
     return function (existing, opts) {
       // register the dependency so that bump() re-runs this read
       versionVar();
-      if (rawReads > 0 || existing === undefined || store.size === 0) return existing;
+      if (rawReads > 0 || existing == null || store.size === 0) return existing;
       const args = opts.args;
       if (!args || !args.filter) return existing;
 
@@ -810,9 +810,12 @@
   const sizeCache = new Map();
   const batchedUpdates = (api.ReactDOM && api.ReactDOM.unstable_batchedUpdates) || ((fn) => fn());
 
-  function rememberSize(id, w, hgt) {
+  // `pw` is the card's width prop when it was measured. The measured element
+  // can be wider than that: another plugin's wrapper around the card includes
+  // the card's margins.
+  function rememberSize(id, w, hgt, pw) {
     sizeCache.delete(id);
-    sizeCache.set(id, { w, h: hgt });
+    sizeCache.set(id, { w, h: hgt, pw });
     if (sizeCache.size > MAX_SIZE_CACHE) sizeCache.delete(sizeCache.keys().next().value);
   }
 
@@ -852,7 +855,7 @@
       margin: undefined,
       // ids currently shown as placeholders
       far: new Set(),
-      // the latest props for each card, which a skipped (memoised)
+      // the latest props and rendered card for each card, which a skipped (memoised)
       // placeholder needs when it turns back into a real card
       latest: new Map(),
       observe(el, fn) {
@@ -954,9 +957,12 @@
     };
   })();
 
-  // renders a component function inline, inside a stable component type
-  function Passthrough({ Original, props }) {
-    return Original(props);
+  // renders a component function inline, inside a stable component type.
+  // `extra` is the rest of what React passed the component. The second slot is
+  // always filled, so a plugin that patches it after us, written as
+  // (props, _, next), still finds its `next` function in the third place.
+  function Passthrough({ Original, props, extra }) {
+    return Original(props, ...(extra && extra.length ? extra : [undefined]));
   }
 
   // the card's entity, e.g. props.scene for SceneCard: "Scene:123"
@@ -968,17 +974,39 @@
     return undefined;
   }
 
-  function WindowedCard({ ctl, id, props: givenProps, Original: givenOriginal }) {
+  // The element in a cell that stands for the card. Usually its only child;
+  // another plugin's patch can put more next to it (a badge), so then the
+  // largest one in the flow.
+  function cardElement(cell) {
+    const kids = cell.children;
+    if (kids.length < 2) return kids[0] || null;
+    let best = null;
+    let area = -1;
+    for (const c of kids) {
+      const pos = window.getComputedStyle(c).position;
+      if (pos === "absolute" || pos === "fixed") continue;
+      const r = c.getBoundingClientRect();
+      if (r.width * r.height > area) {
+        best = c;
+        area = r.width * r.height;
+      }
+    }
+    return best || kids[0];
+  }
+
+  function WindowedCard({ ctl, id, props: givenProps, rendered: givenRendered }) {
     const latest = id && ctl.latest.get(id);
     const props = latest ? latest.props : givenProps;
-    const Original = latest ? latest.Original : givenOriginal;
+    const rendered = latest ? latest.rendered : givenRendered;
     const ref = React.useRef(null);
+    const widthRef = React.useRef(props.width);
+    widthRef.current = props.width;
     const [near, setNear] = React.useState(() => !(ctl.enabled && id && sizeCache.has(id)));
     const show = near || !ctl.enabled || !id || !sizeCache.has(id);
     const enabled = ctl.enabled && !!id;
 
     React.useLayoutEffect(() => {
-      const el = show ? ref.current && ref.current.firstElementChild : ref.current;
+      const el = show ? ref.current && cardElement(ref.current) : ref.current;
       if (!el) return undefined;
       if (show) {
         el.setAttribute("data-isc-item", "");
@@ -997,7 +1025,7 @@
         ctl.cancel(el);
         // a hidden card (e.g. inactive tab) has no size; leave it alone
         if (!rect.width || !rect.height) return;
-        if (show) rememberSize(id, rect.width, rect.height);
+        if (show) rememberSize(id, rect.width, rect.height, widthRef.current);
         setNear(false);
       });
       return () => ctl.unobserve(el);
@@ -1008,12 +1036,13 @@
       return h(
         "div",
         { ref, className: "isc-cell", style: { display: "contents" } },
-        h(Passthrough, { Original, props })
+        rendered
       );
     }
     ctl.far.add(id);
     const s = sizeCache.get(id);
-    const width = props.width || s.w;
+    // follows the card's width prop (zoom), keeping any extra a wrapper adds
+    const width = props.width ? props.width + (s.pw ? s.w - s.pw : 0) : s.w;
     return h("div", {
       ref,
       className: "isc-ph",
@@ -1519,7 +1548,7 @@
     );
   }
 
-  function InfiniteList({ name, cfg, props, Original }) {
+  function InfiniteList({ name, cfg, props, Original, extra }) {
     const history = ReactRouterDOM.useHistory();
     const location = ReactRouterDOM.useLocation();
     trackNavigation(history);
@@ -2049,7 +2078,7 @@
 
     // --- render ---------------------------------------------------------------
 
-    const inner = h(WindowCtx.Provider, { value: ctl }, h(Passthrough, { Original, props: passProps }));
+    const inner = h(WindowCtx.Provider, { value: ctl }, h(Passthrough, { Original, props: passProps, extra }));
     if (!enabled) return h("div", { className: "isc-list", ref: containerRef }, inner);
 
     return h(
@@ -2087,7 +2116,7 @@
   // ---------------------------------------------------------------------------
   // pagination patches
 
-  function PaginationProxy({ props, Original }) {
+  function PaginationProxy({ props, Original, extra }) {
     useRegistry();
     const reg = matchActiveList(props.itemsPerPage, props.totalItems, props.currentPage);
     if (reg) {
@@ -2102,16 +2131,16 @@
           else props.onChangePage(p);
         },
       });
-      return h(Passthrough, { Original, props: jumper });
+      return h(Passthrough, { Original, props: jumper, extra });
     }
-    return h(Passthrough, { Original, props });
+    return h(Passthrough, { Original, props, extra });
   }
 
-  function PaginationIndexProxy({ props, Original }) {
+  function PaginationIndexProxy({ props, Original, extra }) {
     useRegistry();
     const intl = Intl.useIntl();
     const reg = props.loading ? undefined : matchActiveList(props.itemsPerPage, props.totalItems, props.currentPage);
-    if (!reg) return h(Passthrough, { Original, props });
+    if (!reg) return h(Passthrough, { Original, props, extra });
     // with no pages, the count is just the total
     return h(
       "span",
@@ -2213,29 +2242,111 @@
     for (const name of Object.keys(LISTS)) {
       const cfg = LISTS[name];
       api.patch.instead(name, function (props, ...rest) {
-        return h(InfiniteList, { name, cfg, props, Original: lastArg(rest) });
+        return h(InfiniteList, { name, cfg, props, Original: lastArg(rest), extra: rest.slice(0, -1) });
       });
     }
 
-    // Windowing is applied per card type rather than on the shared GridCard,
-    // so that an off-screen card skips its own (fairly heavy) render as well.
+    // Windowing is applied per card type rather than on the shared GridCard.
+    // It's an "after" patch, not "instead": with two "instead" patches on a
+    // card, Stash hands the first one a new function for the rest each render,
+    // and a plugin that renders that as a component (Hover Cards does) makes
+    // React rebuild the card every time, on every page that shows one. As an
+    // "after" patch the card and other plugins' patches render as they would
+    // without this plugin, and outside an infinite list the result is
+    // returned untouched. One consequence: inside a list, hooks that another
+    // plugin calls in its card patch stay mounted while the card's DOM is
+    // swapped for a placeholder, so an effect holding on to that DOM needs to
+    // re-check its ref.
+    //
+    // An "after" patch gets the component's arguments followed by the result,
+    // joined with concat, so an array result arrives spread out (or not at
+    // all, if empty), and other plugins' "before" patches can change how many
+    // arguments there are. A "before" patch of ours notes the arguments, so
+    // the result can be split off exactly. It only sees the final arguments if
+    // it runs last, so whenever another plugin later adds a "before" patch to
+    // a card, another one of ours is added right after it. A plugin that kept
+    // Stash's function from before ours replaced it gets past that, so when
+    // the arguments don't match, or a match leaves something React can't
+    // draw, the result is told apart from them by being something React can
+    // draw, and another recorder is added. A match whose result first comes
+    // in several parts, or in more parts than ever before, also adds one, in case
+    // a kept function added a drawable argument (that render draws it beside
+    // the card; the next one doesn't).
+    const cardArgs = {};
+    const nativeBefore = api.patch.before;
+    const addRecorder = (name) => {
+      nativeBefore.call(api.patch, name, function (...args) {
+        cardArgs[name] = args;
+        return args;
+      });
+    };
+    try {
+      api.patch.before = function (component) {
+        const ret = nativeBefore.apply(this, arguments);
+        if (CARD_COMPONENTS.includes(component)) addRecorder(component);
+        return ret;
+      };
+    } catch (e) {
+      // read-only: the fallback below still applies
+    }
+    // what React can draw. Arguments are props, React's second argument
+    // (legacy context, a plain object, for these plain function components)
+    // and whatever other plugins add; none of those that matter can be drawn
+    const DRAWABLE_TYPES = ["react.element", "react.transitional.element", "react.portal", "react.lazy"].map((k) => Symbol.for(k));
+    const drawable = (v, depth = 0) =>
+      v == null || typeof v === "string" || typeof v === "number" || typeof v === "boolean" ||
+      (typeof v === "object" &&
+        (DRAWABLE_TYPES.includes(v.$$typeof) ||
+          (Array.isArray(v) ? depth < 8 && v.every((x) => drawable(x, depth + 1)) : typeof v[Symbol.iterator] === "function")));
+    // recorders added here, not counting those added for other plugins'
+    // "before" patches, so other plugins can't use up the limit
+    const extraRecorders = {};
+    const mostParts = {};
+    const recordAgain = (name) => {
+      if ((extraRecorders[name] || 0) >= 3) return;
+      extraRecorders[name] = (extraRecorders[name] || 0) + 1;
+      addRecorder(name);
+    };
+    const cardResult = (name, all) => {
+      const args = cardArgs[name];
+      cardArgs[name] = undefined;
+      let parts = args && args.length <= all.length && args.every((a, i) => all[i] === a) ? all.slice(args.length) : null;
+      // a later patch that added an argument still matches at the start
+      if (!parts || !parts.every((v) => drawable(v))) {
+        recordAgain(name);
+        // the result is the drawable run at the end
+        let i = all.length;
+        while (i > 1 && drawable(all[i - 1])) i--;
+        parts = all.slice(i);
+        // the fallback can't tell leading empties from React's own empty
+        // second argument; they draw nothing, so drop them
+        while (parts.length > 1 && (parts[0] == null || typeof parts[0] === "boolean")) parts.shift();
+      } else if (parts.length > 1 && !(parts.length <= mostParts[name])) {
+        // first seen in several parts, or more than ever before
+        mostParts[name] = parts.length;
+        recordAgain(name);
+      }
+      return parts.length === 1 ? parts[0] : parts;
+    };
     for (const name of CARD_COMPONENTS) {
-      api.patch.instead(name, function (props, ...rest) {
-        const Original = lastArg(rest);
+      addRecorder(name);
+      api.patch.after(name, function (...all) {
+        const props = all[0];
+        const rendered = cardResult(name, all);
         const ctl = React.useContext(WindowCtx);
-        if (!ctl) return h(Passthrough, { Original, props });
+        if (!ctl) return rendered;
         const id = cardId(props);
-        if (id) ctl.latest.set(id, { props, Original });
-        return h(MemoWindowedCard, { ctl, id, props, Original });
+        if (id) ctl.latest.set(id, { props, rendered });
+        return h(MemoWindowedCard, { ctl, id, props, rendered });
       });
     }
 
     api.patch.instead("Pagination", function (props, ...rest) {
-      return h(PaginationProxy, { props, Original: lastArg(rest) });
+      return h(PaginationProxy, { props, Original: lastArg(rest), extra: rest.slice(0, -1) });
     });
 
     api.patch.instead("PaginationIndex", function (props, ...rest) {
-      return h(PaginationIndexProxy, { props, Original: lastArg(rest) });
+      return h(PaginationIndexProxy, { props, Original: lastArg(rest), extra: rest.slice(0, -1) });
     });
 
     installTaggerConfirm();
