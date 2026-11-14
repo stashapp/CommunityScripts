@@ -1,0 +1,13 @@
+# TagAI runtime dependencies.
+#
+# ffmpeg is ALSO required for video tagging but is a system dependency, not a
+# pip package. Make sure `ffmpeg` is on your PATH (or pass the ffmpeg_path arg).
+#
+# stashapp-tools provides `stashapi` (structured logging to the Stash UI). The
+# plugin degrades gracefully to stderr logging when it is missing, but Stash
+# itself bundles it, so it is normally available already.
+onnxruntime-gpu
+numpy
+pillow
+requests
+stashapp-tools
