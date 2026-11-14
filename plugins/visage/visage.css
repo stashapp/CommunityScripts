@@ -2061,6 +2061,12 @@
   color: var(--v-uncertain);
 }
 
+/* Deep scan lines under the connection result. */
+.visage-backend-settings-status div + div {
+  margin-top: 0.25rem;
+  color: var(--v-text-2);
+}
+
 .visage-backend-settings-actions {
   display: flex;
   justify-content: flex-end;
@@ -2768,6 +2774,11 @@
   font: 400 var(--v-fs-sm) var(--v-sans);
 }
 
+.visage-batch-summary p { margin: 0; }
+
+/* One line per failure reason, under the counts. */
+.visage-batch-summary .visage-batch-reason { margin-top: 0.25rem; }
+
 .visage-batch-empty {
   display: flex;
   flex-direction: column;
@@ -2791,33 +2802,40 @@
   padding: 2.5rem 0;
 }
 
-.visage-batch-upsell {
+/* Deep scan item on a server without Stash or ffmpeg: shown, but muted. Not
+   Bootstrap's .disabled, whose pointer-events: none would hide the title hint. */
+.dropdown-item.visage-menu-item-off {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.visage-server-upsell {
   width: min(460px, 92vw);
   gap: 1rem;
   align-items: flex-start;
   padding: 1.5rem;
 }
 
-.visage-batch-upsell h2 {
+.visage-server-upsell h2 {
   margin: 0;
   color: var(--v-text);
   font: 600 var(--v-fs-xl) var(--v-sans);
 }
 
-.visage-batch-upsell p {
+.visage-server-upsell p {
   margin: 0;
   color: var(--v-text-2);
   font: 400 var(--v-fs-md) / 1.5 var(--v-sans);
 }
 
-.visage-batch-upsell .visage-ext-patreon-btn {
+.visage-server-upsell .visage-ext-patreon-btn {
   align-self: stretch;
   justify-content: center;
   padding: 10px 16px;
   font-size: var(--v-fs-md);
 }
 
-.visage-batch-upsell .visage-button-group { align-self: flex-end; }
+.visage-server-upsell .visage-button-group { align-self: flex-end; }
 
 @media (prefers-reduced-motion: reduce) {
   .visage-batch-tile:active:not(:disabled) { transform: none; }

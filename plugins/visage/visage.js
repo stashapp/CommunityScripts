@@ -1,8 +1,8 @@
 (function () {
     'use strict';
 
-    const React$k = window.PluginApi.React;
-    const { createContext, useContext, useReducer, useCallback: useCallback$8 } = React$k;
+    const React$m = window.PluginApi.React;
+    const { createContext, useContext, useReducer, useCallback: useCallback$8 } = React$m;
     const initialState = {
         scenario: null,
         scenarioId: null,
@@ -190,7 +190,7 @@
             closeSettings,
             showEmptyResult,
         };
-        return React$k.createElement(VisageContext.Provider, { value }, children);
+        return React$m.createElement(VisageContext.Provider, { value }, children);
     }
     function useVisage() {
         const context = useContext(VisageContext);
@@ -8055,11 +8055,6 @@
         'backendSettings.hintPrefix': 'Want your images to stay on your network?',
         'backendSettings.hintLink': 'Run a private server via Patreon',
         'backendSettings.urlLabel': 'URL',
-        'backendSettings.csp1': "The browser's security policy (CSP) only allows",
-        'backendSettings.csp2': 'by default. To reach a local backend on another address (e.g. your LAN IP), add it to the',
-        'backendSettings.csp3': 'list in the',
-        'backendSettings.csp4': 'file inside your Stash plugins folder, otherwise requests will be blocked. Note: updating Visage reinstalls',
-        'backendSettings.csp5': ', so this must be reapplied after every update.',
         'backendSettings.testing': 'Testing connection…',
         'backendSettings.testConnection': 'Test connection',
         'backendSettings.testingShort': 'Testing…',
@@ -8069,6 +8064,8 @@
         'backendSettings.feedback.restart': 'Connection successful. New data was downloaded. Restart Visage Server to use it.',
         'backendSettings.feedback.degraded': 'Backend reachable but degraded (models or index not loaded).',
         'backendSettings.feedback.unreachable': 'Backend unreachable. Check the URL and that the backend is running.',
+        'backendSettings.feedback.noHealth': 'Nothing at {url}/health. Remove any path after the port, for example http://192.168.1.50:7860.',
+        'backendSettings.saveAnyway': 'Save anyway',
         'backendSettings.sync.title': 'Stash Sync',
         'backendSettings.sync.lastSynced': 'Last synced: {time}',
         'backendSettings.sync.neverSynced': 'Never synced',
@@ -8079,6 +8076,8 @@
         'backendSettings.sync.alreadyRunning': 'Sync already in progress',
         'backendSettings.sync.error': 'Sync failed',
         'backendSettings.sync.connectionLost': 'Connection lost',
+        'backendSettings.sync.off': 'Stash sync is off. Add url to visage.toml in the server data folder, then restart Visage Server.',
+        'backendSettings.sync.lastError': 'Last sync failed: {error}',
         // ---- FaceMatchModal.tsx ----
         'faceMatch.close': 'Close',
         'faceMatch.title.scenes': 'Who is in this frame?',
@@ -8180,6 +8179,27 @@
         'scene.failed': 'Scene scan failed: {error}',
         'scene.menuItemTitle': 'Find everyone in this scene. Needs a generated sprite sheet or preview video.',
         'scene.wholeScene': 'Visage: Identify scene',
+        'scene.deepScan': 'Visage: Deep scan',
+        'scene.deepScanTitle': 'Scan full size video frames on your Visage Server. Slower than the scene scan, finds more performers.',
+        'scene.deepSprite': 'Finding faces in the sprite sheet',
+        'scene.deepFrames': 'Scanning video frames',
+        'scene.deepNoFaces': 'No performers found in the video frames of this scene.',
+        'scene.deepNoFile': 'This scene has no video file to scan.',
+        'scene.deepNoResult': 'The deep scan ended without a result. Try again.',
+        'scene.deepUpsellTitle': 'Deep scan with Visage Server',
+        'scene.deepUpsellBody': 'Deep scan reads full size video frames from your own Stash. It runs only on Visage Server, your private server, not the shared Cloud. Your videos stay on your machine. Comes with Patreon support.',
+        'scene.deepRefusedOrigin': 'Visage Server does not accept a deep scan from {origin}. Add "{origin}" to allowed_origins in visage.toml, then restart Visage Server.',
+        'scene.deepBusy': 'Visage Server is already running a deep scan. Try again when it is done.',
+        'scene.deepUnavailable': 'Deep scan is off on this Visage Server. Set url in visage.toml, install ffmpeg, then restart Visage Server.',
+        'scene.deepReady': 'Deep scan: ready.',
+        'scene.deepOffNoStash': 'Deep scan: off. No Stash url in visage.toml.',
+        'scene.deepOffNoFfmpeg': 'Deep scan: off. ffmpeg not found. Install ffmpeg or start Visage Server with --ffmpeg <path>.',
+        'scene.deepOffStaticFfmpeg': "Deep scan: off. The ffmpeg found is a static build, which fails on https Stash. Install your system's ffmpeg.",
+        'scene.deepUpdateServer': 'Deep scan: update Visage Server to the newest version.',
+        'scene.deepNeedsNewerServer': 'Deep scan needs a newer Visage Server. Update Visage Server, then reload this page.',
+        'scene.deepOriginWillRefuse': 'Deep scan will refuse this page ({origin}). Add it to allowed_origins in visage.toml, then restart Visage Server.',
+        'scene.deepOtherStash': 'Visage Server reads from {stash_url}, not this Stash ({origin}). Point url in visage.toml at this Stash, then restart Visage Server.',
+        'scene.serverScanFailed': 'Visage Server could not scan this scene: {error}',
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': 'Change backend',
         'banner.dismiss': 'Dismiss',
@@ -8195,6 +8215,9 @@
         'backend.unreachableCloud': 'Cannot reach the cloud face recognition service. Check your connection and try again.',
         'backend.notBackend': 'The server at {url} is not a Visage backend. Check the address in Visage settings.',
         'backend.unreachableLocal': 'Cannot reach your face recognition server at {url}. Start it and try again.',
+        'backend.cspBlocked': 'Stash blocks requests to {origin}. Add "{origin}" under ui.csp.connect-src in plugins/visage/visage.yml, then reload Stash. Do this again after each Visage update.',
+        'backend.mixedContent': 'Stash is open over https, so the browser blocks the http address {url}. Serve Visage Server over https (for example through your reverse proxy), or open Stash over http.',
+        'backend.loopbackRemote': "localhost means this device, not your server. In Visage settings, use the server's network address, for example http://192.168.1.50:7860.",
         // ---- FirstRunDialog.tsx ----
         'firstRun.title': 'Set up your Visage backend',
         'firstRun.subtitle': 'Visage sends face images to a backend for recognition. Choose where to run it.',
@@ -8213,6 +8236,8 @@
         'batch.upsellHaveServer': 'I have a server',
         'batch.upsellClose': 'Not now',
         'batch.title': 'Identifying {count} scene{s}',
+        'batch.deepMenuItem': 'Deep scan with Visage',
+        'batch.deepTitle': 'Deep scanning {count} scene{s}',
         'batch.titleFound': 'Found {performers} performer{s} in {scenes} of {total} scene{ss}',
         'batch.titleNone': 'Nothing new to add',
         'batch.progress': '{done} of {total}',
@@ -8228,6 +8253,7 @@
         'batch.sumNoMatch': '{count} no match',
         'batch.sumTagged': '{count} already tagged',
         'batch.sumFailed': '{count} could not scan',
+        'batch.failedReason': '{count} could not scan: {reason}',
         'batch.sumSkipped': '{count} skipped',
         'batch.emptyMissing': 'Scenes without sprites stay selected, so you can run Generate from this menu.',
         'batch.selectedCount': '{performers} performer{s} in {scenes} scene{ss}',
@@ -8321,14 +8347,157 @@
         return count === 1 ? singular : (plural !== null && plural !== void 0 ? plural : singular);
     }
 
-    let run = { cancelled: false };
-    function cancelDetection() { run.cancelled = true; }
-    function isCancelled() { return run.cancelled; }
-    // Starts a new run and returns its token. A long loop checks its own token, so
-    // a later run cannot revive a loop that was already cancelled.
-    function resetCancelled() {
-        run = { cancelled: false };
-        return run;
+    let policies = null;
+    let loading = null;
+    // Origins the browser reported as blocked by connect-src on this page.
+    const violated = new Set();
+    let watching = false;
+    const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1']);
+    function isLoopbackHost(hostname) {
+        return LOOPBACK.has(hostname.toLowerCase());
+    }
+    function parse(url) {
+        try {
+            return new URL(url);
+        }
+        catch (_a) {
+            return null;
+        }
+    }
+    /**
+     * The connect-src source lists of a Content-Security-Policy header. A header
+     * can hold several policies, joined by commas, and a request must pass each.
+     * A policy without connect-src falls back to default-src. A policy with
+     * neither puts no limit on fetches and is left out.
+     */
+    function parseConnectSrc(header) {
+        var _a;
+        const result = [];
+        for (const policy of header.split(',')) {
+            const directives = new Map();
+            for (const directive of policy.split(';')) {
+                const [name, ...sources] = directive.trim().split(/\s+/);
+                if (name && !directives.has(name.toLowerCase()))
+                    directives.set(name.toLowerCase(), sources);
+            }
+            const list = (_a = directives.get('connect-src')) !== null && _a !== void 0 ? _a : directives.get('default-src');
+            if (list)
+                result.push(list);
+        }
+        return result;
+    }
+    const DEFAULT_PORT = { 'http:': '80', 'https:': '443', 'ws:': '80', 'wss:': '443' };
+    const port = (u) => u.port || DEFAULT_PORT[u.protocol] || '';
+    // A scheme matches itself and its secure upgrade (http: also allows https:).
+    function schemeMatches(source, target) {
+        return source === target || (source === 'http:' && target === 'https:') || (source === 'ws:' && target === 'wss:');
+    }
+    // One CSP source expression against a target URL, after CSP level 3. Paths
+    // are ignored: when unsure, allow, so the plugin never blames the CSP wrongly.
+    function sourceMatches(source, target, page) {
+        const s = source.toLowerCase();
+        if (s === "'self'")
+            return target.origin === page.origin;
+        if (s.startsWith("'"))
+            return false;
+        if (s === '*')
+            return ['http:', 'https:', 'ws:', 'wss:'].includes(target.protocol);
+        if (/^[a-z][a-z0-9+.-]*:$/.test(s))
+            return schemeMatches(s, target.protocol);
+        const m = /^(?:([a-z][a-z0-9+.-]*:)\/\/)?(\*|\*\.[^:/]+|[^:/]+|\[[^\]]+\])(?::(\d+|\*))?(?:\/.*)?$/.exec(s);
+        if (!m)
+            return false;
+        const [, scheme, host, sourcePort] = m;
+        if (!schemeMatches(scheme !== null && scheme !== void 0 ? scheme : page.protocol, target.protocol))
+            return false;
+        const targetHost = target.hostname.toLowerCase();
+        if (host === '*') ;
+        else if (host.startsWith('*.')) {
+            if (!targetHost.endsWith(host.slice(1)))
+                return false;
+        }
+        else if (host !== targetHost) {
+            return false;
+        }
+        if (sourcePort === '*')
+            return true;
+        if (sourcePort)
+            return sourcePort === port(target);
+        // No port: the default port of the source scheme, or of its upgrade.
+        return port(target) === DEFAULT_PORT[target.protocol];
+    }
+    /** True when every policy lets this page fetch `target`. */
+    function cspAllows(list, target, pageUrl) {
+        const url = parse(target);
+        const page = parse(pageUrl);
+        if (!url || !page)
+            return true;
+        return list.every(sources => sources.some(s => sourceMatches(s, url, page)));
+    }
+    /**
+     * Reads Stash's CSP once with a same origin HEAD request and caches it. Also
+     * starts listening for CSP violations. Never throws: an unreadable header
+     * resolves null, and then the CSP is never blamed.
+     */
+    function loadStashCsp() {
+        watchCspViolations();
+        if (!loading) {
+            loading = fetch(document.baseURI || '/', { method: 'HEAD', credentials: 'same-origin', cache: 'no-store' })
+                .then((res) => {
+                var _a;
+                policies = parseConnectSrc((_a = res.headers.get('content-security-policy')) !== null && _a !== void 0 ? _a : '');
+                return policies;
+            })
+                .catch(() => null);
+        }
+        return loading;
+    }
+    function watchCspViolations() {
+        if (watching || typeof document === 'undefined')
+            return;
+        watching = true;
+        document.addEventListener('securitypolicyviolation', (e) => {
+            const directive = e.effectiveDirective || e.violatedDirective || '';
+            if (!directive.startsWith('connect-src') && !directive.startsWith('default-src'))
+                return;
+            const blocked = parse(e.blockedURI);
+            if (blocked)
+                violated.add(blocked.origin);
+        });
+    }
+    /**
+     * Whether Stash's CSP lets this page call `endpoint`: true or false once the
+     * header was read (loadStashCsp), else null. A reported violation counts as
+     * false even before then.
+     */
+    function cspAllowsEndpoint(endpoint, pageUrl = window.location.href) {
+        const url = parse(endpoint);
+        if (!url)
+            return null;
+        if (violated.has(url.origin))
+            return false;
+        return policies ? cspAllows(policies, endpoint, pageUrl) : null;
+    }
+    /**
+     * The message for a browser side block of `endpoint` from this page, or null
+     * when nothing in the browser blocks it. Used before a request too, as a
+     * settings hint. Uses the CSP cached by loadStashCsp.
+     */
+    function blockReason(endpoint, pageUrl = window.location.href) {
+        const url = parse(endpoint);
+        const page = parse(pageUrl);
+        if (!url || !page)
+            return null;
+        if (page.protocol === 'https:' && url.protocol === 'http:' && !isLoopbackHost(url.hostname)) {
+            return t('backend.mixedContent', { url: endpoint });
+        }
+        if (isLoopbackHost(url.hostname) && !isLoopbackHost(page.hostname)) {
+            return t('backend.loopbackRemote');
+        }
+        if (cspAllowsEndpoint(endpoint, pageUrl) === false) {
+            return t('backend.cspBlocked', { origin: url.origin });
+        }
+        return null;
     }
 
     const GQL = window.PluginApi.GQL;
@@ -8372,8 +8541,39 @@
             title: scene.title || ((_b = file === null || file === void 0 ? void 0 : file.path) === null || _b === void 0 ? void 0 : _b.split(/[\\/]/).pop()) || scene.id,
             screenshot: (_d = (_c = scene.paths) === null || _c === void 0 ? void 0 : _c.screenshot) !== null && _d !== void 0 ? _d : null,
             performerNames: scene.performers.map((p) => p.name),
-            stashIds: scene.performers.flatMap((p) => { var _a; return ((_a = p.stash_ids) !== null && _a !== void 0 ? _a : []).map(s => s.stash_id); }),
+            matchIds: matchIdsOf(scene.performers),
         };
+    }
+    // A match with `source: "stash"` comes from Visage Server's private store (the
+    // performers it synced from this Stash). Its id is the local Stash performer
+    // id, not a stash-box id: add it by id, never scrape a stash-box with it.
+    const LOCAL_SOURCE = 'stash';
+    function isLocalMatch(source) {
+        return source === LOCAL_SOURCE;
+    }
+    /**
+     * Every id a match can carry for these performers: their stash-box ids and
+     * their local Stash ids (private matches). Local ids are numbers and stash-box
+     * ids are UUIDs, so one set holds both. Used to mark matches "In scene".
+     */
+    function matchIdsOf(performers) {
+        return performers.flatMap(p => { var _a; return [p.id, ...((_a = p.stash_ids) !== null && _a !== void 0 ? _a : []).map(s => s.stash_id)]; }).filter(Boolean);
+    }
+    /**
+     * The Stash performer id for a match: the id itself for a private match, an
+     * existing performer linked to the stash-box id, or a new one imported from
+     * the stash-box. Null when the stash-box has no such performer.
+     */
+    async function resolveMatchPerformer(id, source) {
+        if (isLocalMatch(source))
+            return id;
+        const existing = await getPerformers(id);
+        if (existing.length > 0)
+            return existing[0].id;
+        const scraped = await getPerformerDataFromStashID(id, source);
+        if (!scraped)
+            return null;
+        return (await createOrGetPerformer(scraped, id, source)).performerId;
     }
     async function getPerformersForImage(image_id) {
         const result = await getClient().query({
@@ -8398,9 +8598,12 @@
     // Finds the stash-box for a match source ("stashdb", "fansdb", "javstash") by
     // box name or endpoint URL. With a source and no matching box, returns -1:
     // an ID from one stash-box must never be scraped or saved under another.
-    // Without a source, prefers StashDB, else the first box.
+    // The private source "stash" is no stash-box (it would match "StashDB" by
+    // substring): always -1. Without a source, prefers StashDB, else the first box.
     function getStashBoxIndex(boxes, sourceName) {
         const find = (key) => boxes.findIndex(b => { var _a, _b; return ((_a = b.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(key)) || ((_b = b.endpoint) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(key)); });
+        if (isLocalMatch(sourceName))
+            return -1;
         if (sourceName)
             return find(sourceName.toLowerCase());
         const idx = find('stashdb');
@@ -8551,6 +8754,18 @@
     async function getSpritePath(scene_id) {
         return getScenePath(scene_id, 'sprite');
     }
+    // The oshash of the scene's primary file (files[0]), or null when the scene has
+    // no file or no oshash. A deep scan sends it, not the scene id, so the backend
+    // finds the scene on its own configured Stash.
+    async function getSceneOshash(scene_id) {
+        var _a, _b, _c, _d, _e, _f, _g;
+        const result = await getClient().query({
+            query: GQL.FindSceneDocument,
+            variables: { id: scene_id },
+        });
+        const fingerprints = (_e = (_d = (_c = (_b = (_a = result.data) === null || _a === void 0 ? void 0 : _a.findScene) === null || _b === void 0 ? void 0 : _b.files) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.fingerprints) !== null && _e !== void 0 ? _e : [];
+        return (_g = (_f = fingerprints.find(f => f.type === 'oshash')) === null || _f === void 0 ? void 0 : _f.value) !== null && _g !== void 0 ? _g : null;
+    }
     // Whether a generated file exists. One byte, because Stash rejects HEAD with 400.
     async function fileExists(url) {
         return (await fetch(url, { headers: { Range: 'bytes=0-0' } })).ok;
@@ -8577,8 +8792,11 @@
     async function getImageUrl(image_id) {
         return getImagePath(image_id, 'image');
     }
+    // Preview URL only if the file exists. Stash returns the path even when the
+    // preview was never generated, and a scan of it fails with a load error.
     async function getUrlPreview(scene_id) {
-        return getScenePath(scene_id, 'preview');
+        const url = await getScenePath(scene_id, 'preview');
+        return url && (await fileExists(url)) ? url : null;
     }
     async function scrapedPerformerToInput(scraped, stashId, sourceName) {
         const { images, height, aliases, remote_site_id, stored_id, __typename, tags, ...rest } = scraped;
@@ -8587,7 +8805,9 @@
             ...rest,
             image: images === null || images === void 0 ? void 0 : images[0],
             height_cm: height,
-            alias_list: aliases,
+            alias_list: typeof aliases === 'string'
+                ? aliases.split(',').map(a => a.trim()).filter(Boolean)
+                : aliases,
             stash_ids: endpoint ? [{ endpoint, stash_id: stashId }] : undefined,
         };
     }
@@ -8656,15 +8876,30 @@
     const SEARCH_THRESHOLD = 20;
     const STORAGE_KEY = 'visage_api_endpoint';
     const VISAGE_API_URL = 'https://cc1234-stashface-onnx.hf.space';
+    // Fired on window when the stored endpoint changes, so open UI can re-check
+    // what the new backend supports.
+    const ENDPOINT_CHANGED_EVENT = 'visage:endpoint-changed';
+    // Base URL as typed or pasted, made usable: no surrounding space, `http://`
+    // added when there is no scheme (`localhost:7860` would be a path inside
+    // Stash), and a pasted API path (`/gradio_api/...`, `/health`) or trailing
+    // slash removed, so `${base}/health` is always right. Empty stays empty.
+    function normalizeEndpoint(endpoint) {
+        let url = endpoint.trim();
+        if (!url)
+            return '';
+        if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(url))
+            url = `http://${url}`;
+        return url.replace(/\/+$/, '').replace(/\/(gradio_api(\/.*)?|health)$/i, '').replace(/\/+$/, '');
+    }
     function getApiEndpoint() {
         var _a;
         if (typeof window !== 'undefined' && ((_a = window.visageConfig) === null || _a === void 0 ? void 0 : _a.apiEndpoint)) {
-            return window.visageConfig.apiEndpoint;
+            return normalizeEndpoint(window.visageConfig.apiEndpoint);
         }
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored)
-                return stored;
+                return normalizeEndpoint(stored);
         }
         catch (e) {
             console.warn('Could not read API endpoint from localStorage:', e);
@@ -8672,27 +8907,37 @@
         return VISAGE_API_URL;
     }
     /**
-     * Probe the backend's `/health` endpoint. Resolves the health status when the
-     * backend is up, `null` only when it is genuinely unreachable (network error
-     * or a non-404 error response). Used to surface a "backend offline" state
-     * proactively instead of failing on the first scan. Never throws.
-     *
-     * A `404` on `/health` is treated as reachable-and-healthy: some backends (the
-     * hosted Hugging Face cloud app) don't expose a `/health` route, but a 404
-     * proves the server itself answered, so we must not report it as unreachable.
+     * Why `endpoint` gives no answer, in words that say what to do: a browser
+     * block (mixed content, loopback from another device, Stash's CSP) when one
+     * applies, else the plain unreachable text. Self hosted and Cloud differ.
+     * Sync: uses the CSP read at startup (loadStashCsp), if it is in yet.
      */
-    async function checkHealth(endpoint = getApiEndpoint()) {
+    function unreachableMessage(endpoint) {
+        const blocked = blockReason(endpoint);
+        if (blocked)
+            return blocked;
+        return isHostedEndpoint(endpoint) ? t('backend.unreachableCloud') : t('backend.unreachableLocal', { url: endpoint });
+    }
+    /** GET `/health` once. Never throws. An unreachable result waits for the CSP. */
+    async function probeHealth(endpoint = getApiEndpoint()) {
+        const base = normalizeEndpoint(endpoint);
+        let res;
         try {
-            const res = await fetch(`${endpoint}/health`, { method: 'GET' });
-            if (res.status === 404) {
-                return { status: 'ready', index_docs: null, models_loaded: true };
-            }
-            if (!res.ok)
-                return null;
-            return (await res.json());
+            res = await fetch(`${base}/health`, { method: 'GET' });
         }
         catch (_a) {
-            return null;
+            await loadStashCsp();
+            return { kind: 'unreachable', message: unreachableMessage(base) };
+        }
+        if (res.status === 404)
+            return { kind: 'missing' };
+        if (!res.ok)
+            return { kind: 'error', status: res.status };
+        try {
+            return { kind: 'ok', health: (await res.json()) };
+        }
+        catch (_b) {
+            return { kind: 'notJson' };
         }
     }
     // The shared Hugging Face service. Checks the host, not VISAGE_API_URL, because
@@ -8705,20 +8950,58 @@
             return false;
         }
     }
+    function deepScanState(health) {
+        if (typeof (health === null || health === void 0 ? void 0 : health.index_docs) !== 'number')
+            return null;
+        if (typeof health.deep_scan !== 'boolean')
+            return { ready: false, reason: 'scene.deepNeedsNewerServer' };
+        if (!health.deep_scan)
+            return { ready: false, reason: deepOffReason(health) };
+        if (health.deep_scan_origin === false)
+            return { ready: false, reason: 'scene.deepOriginWillRefuse' };
+        return { ready: true };
+    }
+    function deepOffReason(health) {
+        switch (health.deep_scan_off) {
+            case 'no_stash': return 'scene.deepOffNoStash';
+            case 'no_ffmpeg': return 'scene.deepOffNoFfmpeg';
+            case 'ffmpeg_static': return 'scene.deepOffStaticFfmpeg';
+            // A server from before deep_scan_off: it cannot say which one is missing.
+            default: return 'scene.deepUnavailable';
+        }
+    }
     /**
-     * True only when Visage Server answers at the endpoint: its `/health` reports
-     * an index size. Cloud has no `/health`, so checkHealth gives it a null count.
-     * Bulk work must check this first, because it would overload the shared service.
+     * The deep scan lines of the settings Test, as message keys (translate with
+     * `{ origin }`). None when no Visage Server answered. A refused origin adds
+     * its own line, or replaces "ready".
      */
-    async function isVisageServer(endpoint = getApiEndpoint()) {
+    function deepScanTestLines(health) {
+        if (typeof (health === null || health === void 0 ? void 0 : health.index_docs) !== 'number')
+            return [];
+        if (typeof health.deep_scan !== 'boolean')
+            return ['scene.deepUpdateServer'];
+        const refused = health.deep_scan_origin === false;
+        if (health.deep_scan)
+            return [refused ? 'scene.deepOriginWillRefuse' : 'scene.deepReady'];
+        return refused ? [deepOffReason(health), 'scene.deepOriginWillRefuse'] : [deepOffReason(health)];
+    }
+    /** deepScanState of the endpoint. Always null on Cloud, with no network call. */
+    // Null on Cloud and when something other than Visage Server answers. A server
+    // that does not answer gives a muted item with the cause, not a missing one.
+    async function getDeepScanState(endpoint = getApiEndpoint()) {
         if (isHostedEndpoint(endpoint))
-            return false;
-        const health = await checkHealth(endpoint);
-        return typeof (health === null || health === void 0 ? void 0 : health.index_docs) === 'number';
+            return null;
+        const probe = await probeHealth(endpoint);
+        if (probe.kind === 'unreachable')
+            return { ready: false, text: probe.message };
+        return deepScanState(probe.kind === 'ok' ? probe.health : null);
     }
     function storeLocally(endpoint) {
         try {
+            const changed = localStorage.getItem(STORAGE_KEY) !== endpoint;
             localStorage.setItem(STORAGE_KEY, endpoint);
+            if (changed)
+                window.dispatchEvent(new Event(ENDPOINT_CHANGED_EVENT));
         }
         catch (e) {
             console.warn('Could not save API endpoint to localStorage:', e);
@@ -8726,7 +9009,8 @@
     }
     // Saves the endpoint in this browser and in the Stash plugin settings, so other
     // browsers and a cleared browser storage get it back on the next load.
-    function setApiEndpoint(endpoint) {
+    function setApiEndpoint(raw) {
+        const endpoint = normalizeEndpoint(raw);
         storeLocally(endpoint);
         setPluginSettings({ apiEndpoint: endpoint }).catch((e) => {
             console.warn('[Visage] Could not save API endpoint to Stash settings:', e);
@@ -8746,7 +9030,7 @@
         }
         catch ( /* ignore */_b) { /* ignore */ }
         try {
-            const server = (_a = (await getPluginSettings()).apiEndpoint) === null || _a === void 0 ? void 0 : _a.trim();
+            const server = normalizeEndpoint((_a = (await getPluginSettings()).apiEndpoint) !== null && _a !== void 0 ? _a : '');
             if (server) {
                 storeLocally(server);
                 return true;
@@ -8759,55 +9043,34 @@
         }
         return !!local;
     }
-    function isPrivateIPv4(octets) {
-        const [a, b, c] = octets.map(Number);
-        if (a === 127)
-            return true;
-        if (a === 10)
-            return true;
-        if (a === 192 && b === 168)
-            return true;
-        if (a === 172 && b >= 16 && b <= 31)
-            return true;
-        if (a === 169 && b === 254)
-            return true;
-        return false;
+    async function getStashStatus(endpoint = getApiEndpoint()) {
+        const status = await fetchStashStatus(endpoint);
+        return status === 'unreachable' ? null : status;
     }
-    function isLocalEndpoint(endpoint) {
-        let hostname;
+    /**
+     * Like getStashStatus, but tells "no answer" ('unreachable') apart from an
+     * answer without a usable status (null: an error status or not JSON, e.g. a
+     * server too old for the route). Never throws.
+     */
+    async function fetchStashStatus(endpoint = getApiEndpoint()) {
+        let res;
         try {
-            hostname = new URL(endpoint).hostname;
+            res = await fetch(`${normalizeEndpoint(endpoint)}/api/stash/status`, { method: 'GET' });
         }
         catch (_a) {
-            return false;
+            return 'unreachable';
         }
-        if (!hostname)
-            return false;
-        const lower = hostname.toLowerCase();
-        if (lower === 'localhost')
-            return true;
-        if (lower.endsWith('.local'))
-            return true;
-        const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(lower);
-        if (ipv4)
-            return isPrivateIPv4(ipv4.slice(1));
-        if (!lower.includes('.') && !/[0-9]/.test(lower))
-            return true;
-        return false;
-    }
-    async function getStashStatus(endpoint = getApiEndpoint()) {
+        if (!res.ok)
+            return null;
         try {
-            const res = await fetch(`${endpoint}/api/stash/status`, { method: 'GET' });
-            if (!res.ok)
-                return null;
             return (await res.json());
         }
-        catch (_a) {
+        catch (_b) {
             return null;
         }
     }
     async function triggerStashSync(endpoint = getApiEndpoint()) {
-        const res = await fetch(`${endpoint}/api/stash/sync`, { method: 'POST' });
+        const res = await fetch(`${normalizeEndpoint(endpoint)}/api/stash/sync`, { method: 'POST' });
         if (res.status === 409)
             throw new Error('already_running');
         if (!res.ok)
@@ -8837,12 +9100,14 @@
     }
     const API_PREFIX = '/gradio_api';
     // Non-OK HTTP reply from the backend. Kept unwrapped by callGradioAPI so
-    // describeBackendError can turn the status into a plain message.
+    // describeBackendError can turn the status into a plain message. `detail` is
+    // the backend's own `{"error": "..."}` text, when the reply had one.
     class BackendHttpError extends Error {
-        constructor(stage, status) {
+        constructor(stage, status, detail) {
             super(`${stage} failed: ${status}`);
             this.stage = stage;
             this.status = status;
+            this.detail = detail;
         }
     }
     // The URL answered, but not with JSON (e.g. a web page at a wrong address).
@@ -8852,9 +9117,18 @@
             this.stage = stage;
         }
     }
+    async function errorDetail(res) {
+        try {
+            const body = await res.json();
+            return typeof (body === null || body === void 0 ? void 0 : body.error) === 'string' ? body.error : undefined;
+        }
+        catch (_a) {
+            return undefined;
+        }
+    }
     async function readJson(res, stage) {
         if (!res.ok)
-            throw new BackendHttpError(stage, res.status);
+            throw new BackendHttpError(stage, res.status, await errorDetail(res));
         try {
             return await res.json();
         }
@@ -8873,36 +9147,42 @@
             const busy = error.status === 503 || error.status === 429;
             return { message: t(busy ? 'backend.busy' : 'backend.serverError'), unreachable: false };
         }
-        const raw = error instanceof Error ? error.message : '';
-        if (raw.includes('Failed to fetch') || raw.includes('NetworkError')) {
-            const url = getApiEndpoint();
-            const message = isLocalEndpoint(url) ? t('backend.unreachableLocal', { url }) : t('backend.unreachableCloud');
-            return { message, unreachable: true };
+        // Chrome: "Failed to fetch", or "network error" when a stream drops mid read.
+        // Firefox: "NetworkError when attempting to fetch resource."
+        const raw = error instanceof Error ? error.message.toLowerCase() : '';
+        if (raw.includes('failed to fetch') || raw.includes('networkerror') || raw.includes('network error')) {
+            return { message: unreachableMessage(getApiEndpoint()), unreachable: true };
         }
         return null;
     }
-    async function uploadFile(baseUrl, file, name) {
+    async function uploadFile(baseUrl, file, name, signal) {
         const formData = new FormData();
         formData.append('files', file, name);
         const res = await fetch(`${baseUrl}${API_PREFIX}/upload`, {
             method: 'POST',
             body: formData,
             credentials: 'omit',
+            signal,
         });
         const paths = await readJson(res, 'Upload');
         return paths[0];
     }
-    async function ssePredict(baseUrl, endpoint, data, onProgress) {
+    // Posts a call and reads its SSE stream to the end. An aborted `signal` stops
+    // the fetches at once (the read rejects with an AbortError) and so closes the
+    // stream: the backend then drops the call, a deep scan frees its slot.
+    async function ssePredict(baseUrl, endpoint, data, onProgress, signal) {
         var _a, _b;
         const res = await fetch(`${baseUrl}${API_PREFIX}/call/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data }),
             credentials: 'omit',
+            signal,
         });
         const { event_id } = await readJson(res, 'Predict');
         const events = await fetch(`${baseUrl}${API_PREFIX}/call/${endpoint}/${event_id}`, {
             credentials: 'omit',
+            signal,
         });
         const reader = (_a = events.body) === null || _a === void 0 ? void 0 : _a.getReader();
         if (!reader)
@@ -8911,7 +9191,7 @@
         let buffer = '';
         let result = null;
         while (true) {
-            if (isCancelled()) {
+            if (signal === null || signal === void 0 ? void 0 : signal.aborted) {
                 reader.cancel();
                 break;
             }
@@ -8953,39 +9233,40 @@
         }
         return result;
     }
-    async function identifySpritePerformers(spriteImg, vttFile, onProgress) {
+    async function identifySpritePerformers(spriteImg, vttFile, onProgress, signal) {
         const baseUrl = getApiEndpoint();
         const [spritePath, vttPath] = await Promise.all([
-            uploadFile(baseUrl, spriteImg, 'sprite.jpg'),
-            uploadFile(baseUrl, vttFile, 'thumbs.vtt'),
+            uploadFile(baseUrl, spriteImg, 'sprite.jpg', signal),
+            uploadFile(baseUrl, vttFile, 'thumbs.vtt', signal),
         ]);
         const apiFile = (path) => ({ path, meta: { _type: 'gradio.FileData' } });
         const raw = await ssePredict(baseUrl, 'identify_sprite_performers', [
             apiFile(spritePath),
             apiFile(vttPath),
             SEARCH_THRESHOLD,
-        ], onProgress);
+        ], onProgress, signal);
         // ssePredict unwraps Gradio 5's array wrapping [value] → value.
         // Callers expect result.data[0], so wrap non-array values.
         return { data: Array.isArray(raw) ? raw : [raw] };
     }
-    async function callGradioAPI(endpoint, inputs, onProgress) {
+    async function callGradioAPI(endpoint, inputs, onProgress, signal) {
         var _a;
         try {
             const baseUrl = getApiEndpoint();
             const processed = await Promise.all(inputs.map(async (input) => {
                 if (input instanceof Blob || input instanceof File) {
                     const name = input instanceof File ? input.name : 'file';
-                    const path = await uploadFile(baseUrl, input, name);
+                    const path = await uploadFile(baseUrl, input, name, signal);
                     return { path, meta: { _type: 'gradio.FileData' } };
                 }
                 return input;
             }));
-            const raw = await ssePredict(baseUrl, endpoint, processed, onProgress);
+            const raw = await ssePredict(baseUrl, endpoint, processed, onProgress, signal);
             return { data: Array.isArray(raw) ? raw : [raw] };
         }
         catch (error) {
-            if (error instanceof BackendHttpError || error instanceof NotBackendError)
+            // An abort stays an AbortError, so a cancelled caller can tell it apart.
+            if (error instanceof BackendHttpError || error instanceof NotBackendError || (error === null || error === void 0 ? void 0 : error.name) === 'AbortError')
                 throw error;
             const msg = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : (typeof error === 'string' ? error : JSON.stringify(error));
             throw new Error(`Gradio API call failed: ${msg}`);
@@ -9427,6 +9708,16 @@
         return menu.getAttribute('aria-labelledby') === 'operation-menu'
             || !!((_a = menu.closest('.dropdown')) === null || _a === void 0 ? void 0 : _a.querySelector('[id="operation-menu"]'));
     }
+    // True for a click on the toggle of a scene or image operations dropdown, the
+    // moment it opens or closes.
+    function isOpsMenuToggle(target) {
+        return target instanceof Element && !!target.closest('#operation-menu');
+    }
+    // True for a click on the toggle of the scene list "more" dropdown, which holds
+    // the batch items (findSceneListMenuAnchor).
+    function isSceneListMenuToggle(target) {
+        return target instanceof Element && !!target.closest('#more-menu');
+    }
     function injectMenu(menu) {
         const divider = document.createElement('hr');
         divider.className = 'visage-menu-divider dropdown-divider';
@@ -9491,15 +9782,15 @@
 
     // React via Stash PluginApi, matching the pattern used across the plugin.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const React$j = window.PluginApi.React;
+    const React$l = window.PluginApi.React;
     // Re-renders the component when the active locale changes. Stash does not sync
     // the <html lang> attribute to the UI locale, so the real locale is resolved
     // from the GraphQL configuration (configuration.interface.language) and applied
     // via setActiveLocale. Stash reloads the page when the language changes, so a
     // mount-time fetch is sufficient.
     function useLocale() {
-        const [locale, setLocale] = React$j.useState(() => getLocale());
-        React$j.useEffect(() => {
+        const [locale, setLocale] = React$l.useState(() => getLocale());
+        React$l.useEffect(() => {
             let cancelled = false;
             (async () => {
                 const lang = await getStashLanguage();
@@ -9521,8 +9812,8 @@
         return locale;
     }
 
-    const React$i = window.PluginApi.React;
-    const { useCallback: useCallback$7, useRef: useRef$6 } = React$i;
+    const React$k = window.PluginApi.React;
+    const { useCallback: useCallback$7, useRef: useRef$6 } = React$k;
     let overlayDiv = null;
     let selectionDiv = null;
     let keyHandler = null;
@@ -9818,7 +10109,7 @@
         const onImage = getPageScenario() === 'images';
         const label = t(onImage ? 'search.identifyImage' : 'search.currentFrame');
         if (menuItem) {
-            return React$i.createElement('a', {
+            return React$k.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
@@ -9826,22 +10117,22 @@
                 onClick: (e) => { e.preventDefault(); closeDropdown(); recognize(); },
             }, label);
         }
-        return React$i.createElement('button', {
+        return React$k.createElement('button', {
             id: 'visage-frame-search',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: recognize,
             disabled: isLoading,
             title: label,
-        }, React$i.createElement('svg', {
+        }, React$k.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
-        }, React$i.createElement('path', {
+        }, React$k.createElement('path', {
             d: 'M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z',
         })));
     }
 
-    const React$h = window.PluginApi.React;
-    const { useCallback: useCallback$6 } = React$h;
+    const React$j = window.PluginApi.React;
+    const { useCallback: useCallback$6 } = React$j;
     // The performer page's main image, resolved server-side first, with a DOM
     // fallback for Stash versions that do not expose it via FindPerformer.
     async function fetchPerformerBlob(performerId) {
@@ -9883,7 +10174,7 @@
                 setLoading(loadingKey, false);
             }
         }, [visage, isLoading]);
-        return React$h.createElement('button', {
+        return React$j.createElement('button', {
             id: 'visage-performer-identify',
             className: `btn btn-secondary visage-performer-identify${isLoading ? ' visage-scanning' : ''}`,
             onClick: identify,
@@ -9919,8 +10210,9 @@
     }
     // Draws frameCount evenly spaced frames of the preview into one sprite with a
     // matching VTT. The video stays off the page and paused: seeking alone decodes
-    // frames, and play() on a detached video can abort in Chrome.
-    async function extractFramesFromPreview(previewUrl, frameCount = 12, tileWidth = 640, tileHeight = 360) {
+    // frames, and play() on a detached video can abort in Chrome. An aborted
+    // `signal` stops the frame loop.
+    async function extractFramesFromPreview(previewUrl, signal, frameCount = 12, tileWidth = 640, tileHeight = 360) {
         const video = document.createElement('video');
         video.crossOrigin = 'anonymous';
         video.preload = 'auto';
@@ -9948,7 +10240,7 @@
             const cues = [];
             const halfStep = interval / 2;
             for (let i = 0; i < frameCount; i++) {
-                if (isCancelled())
+                if (signal === null || signal === void 0 ? void 0 : signal.aborted)
                     break;
                 const time = Math.min(i * interval + halfStep, duration - 0.001);
                 const seeked = waitForVideo(video, 'onseeked', 10000, 'Preview video seek timed out');
@@ -9979,88 +10271,412 @@
     function hasPerformers(data) {
         return !!(data === null || data === void 0 ? void 0 : data.performers) && Object.keys(data.performers).length > 0;
     }
-    async function trySprite(sceneId, onProgress) {
+    // A sprite scan that Visage Server could not do. Shown with Retry.
+    class SpriteScanError extends Error {
+    }
+    // The `{error}` texts that mean "no faces" or "no match". Cloud sends these as
+    // errors (sprite_processor.py), and so did Visage Server before 0.13.
+    const NO_FACE_ERRORS = ['no faces', 'no performer could be identified'];
+    // The `{error}` line of a sprite or preview scan. Cloud sends `{error}` for no
+    // faces too, so there every error stays "no faces" (null). Visage Server sends
+    // it only for real failures: those throw SpriteScanError.
+    function spriteError(error, what) {
+        console.warn(`[Visage] ${what} identification error:`, error);
+        const text = String(error);
+        if (isHostedEndpoint(getApiEndpoint()) || NO_FACE_ERRORS.some(e => text.toLowerCase().includes(e)))
+            return null;
+        throw new SpriteScanError(t('scene.serverScanFailed', { error: text }));
+    }
+    // `signal` is the run's cancel signal (RunToken.signal): an abort stops the
+    // fetches at once and rejects with an AbortError. Callers check their own
+    // token after each await and treat an error of a cancelled run as no result.
+    async function trySprite(sceneId, onProgress, signal) {
         var _a;
         const spriteUrl = await getSpritePath(sceneId);
-        if (!spriteUrl)
+        if (!spriteUrl || (signal === null || signal === void 0 ? void 0 : signal.aborted))
             return null;
         const vttUrl = spriteUrl.replace(/_sprite\.jpg$/, '_thumbs.vtt');
-        const [spriteResponse, vttResponse] = await Promise.all([fetch(spriteUrl), fetch(vttUrl)]);
+        const [spriteResponse, vttResponse] = await Promise.all([fetch(spriteUrl, { signal }), fetch(vttUrl, { signal })]);
         if (!spriteResponse.ok || !vttResponse.ok) {
             console.warn('[Visage] sprite/VTT fetch failed', spriteResponse.status, vttResponse.status);
             return null;
         }
         const [imageBlob, vttBlob] = await Promise.all([spriteResponse.blob(), vttResponse.blob()]);
-        const result = await identifySpritePerformers(imageBlob, vttBlob, onProgress);
+        const result = await identifySpritePerformers(imageBlob, vttBlob, onProgress, signal);
         const data = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0];
-        if (data === null || data === void 0 ? void 0 : data.error) {
-            console.warn('[Visage] sprite identification error:', data.error);
-            return null;
-        }
+        if (data === null || data === void 0 ? void 0 : data.error)
+            return spriteError(data.error, 'sprite');
         return hasPerformers(data) ? data : null;
     }
-    async function tryPreview(sceneId, onProgress) {
+    async function tryPreview(sceneId, onProgress, signal) {
         var _a;
-        if (isCancelled())
+        if (signal === null || signal === void 0 ? void 0 : signal.aborted)
             return null;
         const previewUrl = await getUrlPreview(sceneId);
-        if (!previewUrl)
+        if (!previewUrl || (signal === null || signal === void 0 ? void 0 : signal.aborted))
             return null;
-        if (isCancelled())
-            return null;
-        const { sprite, vtt } = await extractFramesFromPreview(previewUrl);
-        if (isCancelled())
+        const { sprite, vtt } = await extractFramesFromPreview(previewUrl, signal);
+        if (signal === null || signal === void 0 ? void 0 : signal.aborted)
             return null;
         const vttBlob = new Blob([vtt], { type: 'text/vtt' });
-        const result = await identifySpritePerformers(sprite, vttBlob, onProgress);
+        const result = await identifySpritePerformers(sprite, vttBlob, onProgress, signal);
         const data = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0];
-        if (data === null || data === void 0 ? void 0 : data.error) {
-            console.warn('[Visage] preview identification error:', data.error);
-            return null;
-        }
+        if (data === null || data === void 0 ? void 0 : data.error)
+            return spriteError(data.error, 'preview');
         return hasPerformers(data) ? data : null;
+    }
+    // A deep scan the backend refused or failed. The message is shown to the user
+    // as is: a translated text for the known cases, else the backend's own text.
+    // `retry` is false when trying again cannot help (a setup error, a refused
+    // origin, a file the scan cannot read). `stopsBatch` is true when every other
+    // scene would fail the same way, so a batch stops.
+    class DeepScanError extends Error {
+        constructor(message, retry = true, stopsBatch = false) {
+            super(message);
+            this.retry = retry;
+            this.stopsBatch = stopsBatch;
+        }
+    }
+    // Fixed lines of the backend stream (visage-private src/http.rs,
+    // start_deep_scan, and stash_error_text in src/stash.rs). One deep scan runs at
+    // a time.
+    const DEEP_BUSY = 'a deep scan is already running';
+    // Server setup errors: every scene fails the same way until the user fixes
+    // visage.toml, ffmpeg or the Stash url. The last two are from older servers.
+    const DEEP_SETUP_ERRORS = [
+        'deep scan off',
+        'deep scan refused for origin',
+        'stash refused the api key',
+        'cannot connect to stash',
+        'cannot reach stash',
+        'stash did not answer like stash',
+        "stash's https certificate is not trusted",
+        'stash does not speak https',
+        'ffmpeg not found',
+        'deep scan needs a stash connection',
+    ];
+    // Errors of this one scene that a retry cannot fix.
+    const DEEP_SCENE_ERRORS = ['container is not supported by deep scan'];
+    const DEEP_SCENE_NOT_FOUND = 'scene not found';
+    // Same Stash, by origin. localhost, 127.0.0.1 and [::1] count as one host.
+    function sameStash(a, b) {
+        try {
+            const [x, y] = [new URL(a), new URL(b)];
+            const host = (u) => (isLoopbackHost(u.hostname) ? 'localhost' : u.hostname.toLowerCase());
+            return x.protocol === y.protocol && host(x) === host(y) && x.port === y.port;
+        }
+        catch (_a) {
+            return true;
+        }
+    }
+    // The backend's `{error}` line as a DeepScanError. A scene the server's Stash
+    // does not have is most often a server that reads another Stash: then say so.
+    async function deepError(error) {
+        var _a;
+        const lower = error.toLowerCase();
+        if (lower === DEEP_BUSY)
+            return new DeepScanError(t('scene.deepBusy'), true, true);
+        if (DEEP_SETUP_ERRORS.some(prefix => lower.startsWith(prefix)))
+            return new DeepScanError(error, false, true);
+        if (DEEP_SCENE_ERRORS.some(part => lower.includes(part)))
+            return new DeepScanError(error, false);
+        if (lower.startsWith(DEEP_SCENE_NOT_FOUND)) {
+            const stashUrl = (_a = (await getStashStatus())) === null || _a === void 0 ? void 0 : _a.stash_url;
+            const origin = window.location.origin;
+            if (stashUrl && !sameStash(stashUrl, origin)) {
+                return new DeepScanError(t('scene.deepOtherStash', { stash_url: stashUrl, origin }), false, true);
+            }
+            return new DeepScanError(error, false);
+        }
+        return new DeepScanError(error);
+    }
+    // Share of the bar for the "sprite" stage (face cues in the sprite sheet). It is
+    // one fast step, the "frames" stage (windows scored over windows planned) is the
+    // long one.
+    const DEEP_SPRITE_SHARE = 0.1;
+    /**
+     * Maps a deep scan progress event to one bar from 0 to 1 and a label. `floor`
+     * is the last value shown: the bar never moves back. A stage this plugin does
+     * not know keeps the bar where it is, with the generic scanning label.
+     */
+    function mapDeepProgress(progress, desc, floor = 0) {
+        const p = Math.min(1, Math.max(0, progress));
+        if (desc === 'sprite') {
+            return { progress: Math.max(floor, p * DEEP_SPRITE_SHARE), label: t('scene.deepSprite') };
+        }
+        if (desc === 'frames') {
+            return { progress: Math.max(floor, DEEP_SPRITE_SHARE + p * (1 - DEEP_SPRITE_SHARE)), label: t('scene.deepFrames') };
+        }
+        return { progress: floor, label: t('sprite.scanning') };
+    }
+    /**
+     * Deep scan on Visage Server: it reads full size frames of the scene from its
+     * own configured Stash. Returns the result (the performers map may be empty),
+     * or null when the scene has no file oshash or the scan was cancelled. Throws
+     * DeepScanError when the backend refuses or fails, and passes a busy or
+     * unreachable backend through for describeBackendError. Aborting `signal`
+     * closes the stream, so the backend stops the scan and frees its slot.
+     */
+    async function tryDeep(sceneId, onProgress, signal) {
+        var _a;
+        const oshash = await getSceneOshash(sceneId);
+        if (!oshash || (signal === null || signal === void 0 ? void 0 : signal.aborted))
+            return null;
+        let shown = 0;
+        let result;
+        try {
+            result = await callGradioAPI('deep_scan', [oshash], (p, d) => {
+                const mapped = mapDeepProgress(p, d, shown);
+                shown = mapped.progress;
+                onProgress === null || onProgress === void 0 ? void 0 : onProgress(mapped.progress, mapped.label);
+            }, signal);
+        }
+        catch (error) {
+            if (error instanceof BackendHttpError) {
+                // The origin check: this Stash page may not start a deep scan.
+                if (error.status === 403) {
+                    throw new DeepScanError(t('scene.deepRefusedOrigin', { origin: window.location.origin }), false, true);
+                }
+                // Busy (429, 503 "too many pending requests") keeps its translated text.
+                if (error.status !== 429 && error.status !== 503 && error.detail)
+                    throw await deepError(error.detail);
+            }
+            throw error;
+        }
+        if (signal === null || signal === void 0 ? void 0 : signal.aborted)
+            return null;
+        const data = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0];
+        if (typeof (data === null || data === void 0 ? void 0 : data.error) === 'string')
+            throw await deepError(data.error);
+        if (!(data === null || data === void 0 ? void 0 : data.performers))
+            throw new DeepScanError(t('scene.deepNoResult'));
+        return data;
+    }
+
+    const React$i = window.PluginApi.React;
+    const { useEffect: useEffect$9, useState: useState$7 } = React$i;
+    // The backend's deep scan state (getDeepScanState) for the current endpoint.
+    // Checks again when the endpoint changes (settings, startup sync) and on each
+    // click that `isMenuToggle` accepts (the dropdown that holds the item opens),
+    // so a server that booted late, changed or lost deep scan shows up without a
+    // reload. One /health GET per check. Always null on Cloud, with no network
+    // call. Used by the scene page item and the scene list batch item.
+    function useDeepScanSupport(isMenuToggle) {
+        const [endpoint, setEndpoint] = useState$7(getApiEndpoint);
+        const [state, setState] = useState$7(null);
+        const hosted = isHostedEndpoint(endpoint);
+        useEffect$9(() => {
+            const onChange = () => setEndpoint(getApiEndpoint());
+            window.addEventListener(ENDPOINT_CHANGED_EVENT, onChange);
+            return () => window.removeEventListener(ENDPOINT_CHANGED_EVENT, onChange);
+        }, []);
+        useEffect$9(() => {
+            setState(null);
+            if (hosted)
+                return;
+            // Only the newest check may set the state: answers can come back out of order.
+            let latest = 0;
+            const check = () => {
+                const mine = ++latest;
+                getDeepScanState(endpoint).then((s) => { if (mine === latest)
+                    setState(s); });
+            };
+            check();
+            const onClick = (e) => { if (isMenuToggle(e.target))
+                check(); };
+            document.addEventListener('click', onClick, true);
+            return () => {
+                latest = -1;
+                document.removeEventListener('click', onClick, true);
+            };
+        }, [endpoint, hosted]);
+        return { hosted, state };
+    }
+    // The hint of a muted deep scan item (why it is off, what to do), or null when
+    // the item works or is hidden.
+    function deepOffHint(state) {
+        if ((state === null || state === void 0 ? void 0 : state.ready) !== false)
+            return null;
+        return 'text' in state ? state.text : t(state.reason, { origin: window.location.origin });
+    }
+
+    function newRun() {
+        const controller = new AbortController();
+        return {
+            get cancelled() { return controller.signal.aborted; },
+            signal: controller.signal,
+            cancel: () => controller.abort(),
+        };
+    }
+    let current = newRun();
+    // Cancels the newest run (the modal Cancel and the batch Stop buttons).
+    function cancelDetection() { current.cancel(); }
+    // Starts a new run and returns its token. Cancels the run before it: one run at
+    // a time drives the shared modal, progress bar and loading state.
+    function resetCancelled() {
+        current.cancel();
+        current = newRun();
+        return current;
+    }
+
+    const PATREON_URL = 'https://www.patreon.com/cw/cc12340';
+
+    const React$h = window.PluginApi.React;
+    const { useEffect: useEffect$8 } = React$h;
+    const FOCUSABLE_SELECTOR = 'a, button, input, [tabindex]:not([tabindex="-1"])';
+    // Traps focus and handles Escape. onClose may change on every render. With
+    // focusShell the dialog itself takes focus, for a modal whose first control
+    // must not catch a stray key.
+    function useModalShell(onClose, active = true, focusShell = false) {
+        const ref = React$h.useRef(null);
+        const closeRef = React$h.useRef(onClose);
+        closeRef.current = onClose;
+        useEffect$8(() => {
+            if (!active)
+                return;
+            const container = ref.current;
+            if (!container)
+                return;
+            const previouslyFocused = document.activeElement;
+            const focusFirst = () => {
+                const focusables = container.querySelectorAll(FOCUSABLE_SELECTOR);
+                if (focusables.length > 0 && !focusShell) {
+                    focusables[0].focus();
+                }
+                else {
+                    if (!container.hasAttribute('tabindex')) {
+                        container.setAttribute('tabindex', '-1');
+                    }
+                    container.focus();
+                }
+            };
+            focusFirst();
+            const handleKeyDown = (e) => {
+                if (!ref.current)
+                    return;
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeRef.current();
+                    return;
+                }
+                if (e.key === 'Tab') {
+                    const focusables = Array.from(ref.current.querySelectorAll(FOCUSABLE_SELECTOR)).filter((el) => !el.hasAttribute('disabled'));
+                    if (focusables.length === 0) {
+                        e.preventDefault();
+                        return;
+                    }
+                    const first = focusables[0];
+                    const last = focusables[focusables.length - 1];
+                    const current = document.activeElement;
+                    if (e.shiftKey) {
+                        if (current === first || !ref.current.contains(current)) {
+                            e.preventDefault();
+                            last.focus();
+                        }
+                    }
+                    else {
+                        if (current === last || !ref.current.contains(current)) {
+                            e.preventDefault();
+                            first.focus();
+                        }
+                    }
+                }
+            };
+            document.addEventListener('keydown', handleKeyDown, true);
+            return () => {
+                document.removeEventListener('keydown', handleKeyDown, true);
+                if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+                    previouslyFocused.focus();
+                }
+            };
+        }, [active]);
+        return ref;
     }
 
     const React$g = window.PluginApi.React;
-    const { useCallback: useCallback$5 } = React$g;
+    const { useEffect: useEffect$7, useState: useState$6 } = React$g;
+    // Shown to Cloud users who try a Visage Server feature (batch, deep scan).
+    // Offers Visage Server on Patreon, or settings for existing owners. Callers pass
+    // translated text and render it in a portal to document.body.
+    function ServerUpsell({ title, body, onClose }) {
+        useLocale();
+        const { openSettings } = useVisage();
+        const [visible, setVisible] = useState$6(false);
+        const shellRef = useModalShell(onClose, true);
+        useEffect$7(() => { requestAnimationFrame(() => setVisible(true)); }, []);
+        return React$g.createElement('div', {
+            className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
+            onClick: (e) => { if (e.target === e.currentTarget)
+                onClose(); },
+        }, React$g.createElement('div', {
+            ref: shellRef,
+            className: `visage-modal visage-server-upsell ${visible ? 'visage-visible' : ''}`,
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'visage-server-upsell-title',
+        }, React$g.createElement('h2', { id: 'visage-server-upsell-title' }, title), React$g.createElement('p', null, body), React$g.createElement('a', {
+            className: 'visage-ext-patreon-btn',
+            href: PATREON_URL,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+        }, t('batch.upsellCta')), React$g.createElement('div', { className: 'visage-button-group' }, React$g.createElement('button', {
+            className: 'visage-btn visage-btn-secondary',
+            onClick: () => { onClose(); openSettings(); },
+        }, t('batch.upsellHaveServer')), React$g.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: onClose }, t('batch.upsellClose')))));
+    }
+
+    const React$f = window.PluginApi.React;
+    const { useCallback: useCallback$5 } = React$f;
+    // Both scans follow one rule: each run checks its own token (resetCancelled),
+    // never a global flag, and a cancelled run writes no state. Its Cancel, a newer
+    // run, or leaving the scene page (OperationsMenuPortal) cancels it. So a late
+    // finishing old run never touches the bar, loading state or result of a newer
+    // run. The result carries its scene id, for the modal's add buttons.
     function SceneScanButton({ menuItem }) {
         useLocale();
         const { state, setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showHealthBanner } = useVisage();
         const loadingKey = 'face-detection';
         const isLoading = state.loading[loadingKey] || false;
         const scanScene = useCallback$5(async () => {
-            var _a;
-            resetCancelled();
+            const run = resetCancelled();
+            const onProgress = (p, d) => { if (!run.cancelled)
+                setScanProgress(p, d); };
             try {
                 setLoading(loadingKey, true);
                 showSpriteModal(true);
+                setScanProgress(0, '');
                 const [scenario, sceneId] = getScenarioAndID();
                 if (scenario !== 'scenes') {
                     showSpriteModal(false);
                     return;
                 }
                 setDetectionMode('sprite');
-                const spriteData = await trySprite(sceneId, (p, d) => setScanProgress(p, d));
-                if (isCancelled())
+                const spriteData = await trySprite(sceneId, onProgress, run.signal);
+                if (run.cancelled)
                     return;
                 if (spriteData) {
-                    setSpriteResult(spriteData);
+                    setSpriteResult({ ...spriteData, sceneId });
                     return;
                 }
                 setDetectionMode('preview');
-                const previewData = await tryPreview(sceneId, (p, d) => setScanProgress(p, d));
-                if (isCancelled())
+                const previewData = await tryPreview(sceneId, onProgress, run.signal);
+                if (run.cancelled)
                     return;
                 if (previewData) {
-                    setSpriteResult(previewData);
+                    setSpriteResult({ ...previewData, sceneId });
                     return;
                 }
                 // Nothing found: the modal stays open and says why.
                 const spriteUrl = await getUrlSprite(sceneId);
                 const previewUrl = await getUrlPreview(sceneId);
+                if (run.cancelled)
+                    return;
                 showEmptyResult(t(!spriteUrl && !previewUrl ? 'scene.noSprite' : 'scene.noFaces'));
             }
             catch (error) {
+                // A cancelled run's fetches reject with an AbortError: not a failure.
+                if (run.cancelled)
+                    return;
                 console.error('[Visage] scene scan error:', error);
                 showSpriteModal(false);
                 const backend = describeBackendError(error);
@@ -10069,15 +10685,18 @@
                 }
                 else {
                     const retry = { label: t('error.retry'), run: () => { scanScene(); } };
-                    showError((_a = backend === null || backend === void 0 ? void 0 : backend.message) !== null && _a !== void 0 ? _a : t('scene.failed', { error: getErrorMessage(error) }), retry);
+                    const message = error instanceof SpriteScanError ? error.message : backend === null || backend === void 0 ? void 0 : backend.message;
+                    showError(message !== null && message !== void 0 ? message : t('scene.failed', { error: getErrorMessage(error) }), retry);
                 }
             }
             finally {
-                setLoading(loadingKey, false);
+                // The modal Cancel clears loading itself, a newer run owns it.
+                if (!run.cancelled)
+                    setLoading(loadingKey, false);
             }
         }, [setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showHealthBanner]);
         if (menuItem) {
-            return React$g.createElement('a', {
+            return React$f.createElement('a', {
                 href: '#',
                 className: 'bg-secondary text-white dropdown-item',
                 role: 'button',
@@ -10085,22 +10704,117 @@
                 onClick: (e) => { e.preventDefault(); closeDropdown(); scanScene(); },
             }, t('scene.wholeScene'));
         }
-        return React$g.createElement('button', {
+        return React$f.createElement('button', {
             id: 'visage-scene-scan',
             className: `visage-toolbar-button${isLoading ? ' visage-scanning' : ''}`,
             onClick: scanScene,
             disabled: isLoading,
             title: t('scene.wholeScene'),
-        }, React$g.createElement('svg', {
+        }, React$f.createElement('svg', {
             width: 20, height: 20, viewBox: '0 0 24 24',
             fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg',
-        }, React$g.createElement('path', {
+        }, React$f.createElement('path', {
             d: 'M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z',
         })));
     }
+    // "Deep scan" menu item next to the scene scan. Visage Server reads full size
+    // frames from its own Stash. On Cloud the item is always shown and calls
+    // onUpsell instead of scanning. On any other backend /health decides
+    // (deepScanState): ready scans, else the item is muted with the reason as its
+    // hint (deep scan off, origin refused, server too old). No Visage Server
+    // answer shows nothing. Checked again on each open of the operations
+    // dropdown. Uses the same modal, loading key and cancel as the sprite scan.
+    function DeepScanButton({ onUpsell }) {
+        useLocale();
+        const { setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showWarning, showHealthBanner } = useVisage();
+        const loadingKey = 'face-detection';
+        const { hosted, state } = useDeepScanSupport(isOpsMenuToggle);
+        const deepScan = useCallback$5(async () => {
+            var _a, _b;
+            const run = resetCancelled();
+            const onProgress = (p, d) => { if (!run.cancelled)
+                setScanProgress(p, d); };
+            try {
+                const [scenario, sceneId] = getScenarioAndID();
+                if (scenario !== 'scenes')
+                    return;
+                setLoading(loadingKey, true);
+                showSpriteModal(true);
+                setDetectionMode('deep');
+                setScanProgress(0, t('scene.deepSprite'));
+                const data = await tryDeep(sceneId, onProgress, run.signal);
+                if (run.cancelled)
+                    return;
+                if (!data) {
+                    showEmptyResult(t('scene.deepNoFile'));
+                    return;
+                }
+                if (Object.keys(data.performers).length === 0) {
+                    showEmptyResult(t('scene.deepNoFaces'));
+                    return;
+                }
+                setSpriteResult({ ...data, sceneId });
+            }
+            catch (error) {
+                // A cancelled run's stream rejects with an AbortError: not a failure.
+                if (run.cancelled)
+                    return;
+                console.error('[Visage] deep scan error:', error);
+                showSpriteModal(false);
+                const deep = error instanceof DeepScanError ? error : null;
+                const backend = deep ? null : describeBackendError(error);
+                if (backend === null || backend === void 0 ? void 0 : backend.unreachable) {
+                    showHealthBanner(backend.message);
+                }
+                else {
+                    // A setup error (key, url, origin, ffmpeg, container) needs a fix
+                    // first: no Retry. The backend's own sentence is shown as it comes.
+                    const retry = deep && !deep.retry ? undefined : { label: t('error.retry'), run: () => { deepScan(); } };
+                    showError((_b = (_a = deep === null || deep === void 0 ? void 0 : deep.message) !== null && _a !== void 0 ? _a : backend === null || backend === void 0 ? void 0 : backend.message) !== null && _b !== void 0 ? _b : t('scene.failed', { error: getErrorMessage(error) }), retry);
+                }
+            }
+            finally {
+                if (!run.cancelled) {
+                    setLoading(loadingKey, false);
+                    // Do not leave deep labels on the shared bar.
+                    setScanProgress(0, '');
+                }
+            }
+        }, [setLoading, setSpriteResult, showSpriteModal, setDetectionMode, setScanProgress, showEmptyResult, showError, showHealthBanner]);
+        if (!hosted && state === null)
+            return null;
+        const offHint = hosted ? null : deepOffHint(state);
+        return React$f.createElement('a', {
+            href: '#',
+            // Not Bootstrap's `disabled`: its pointer-events: none would hide the hint.
+            className: `bg-secondary text-white dropdown-item${offHint ? ' visage-menu-item-off' : ''}`,
+            role: 'button',
+            'aria-disabled': offHint ? 'true' : undefined,
+            title: offHint !== null && offHint !== void 0 ? offHint : t('scene.deepScanTitle'),
+            onClick: (e) => {
+                e.preventDefault();
+                closeDropdown();
+                if (hosted)
+                    onUpsell();
+                else if (offHint)
+                    showWarning(offHint);
+                else
+                    deepScan();
+            },
+        }, t('scene.deepScan'));
+    }
+    // Shown to Cloud users who pick "Deep scan". Render it in a portal to document.body.
+    function DeepScanUpsell({ onClose }) {
+        useLocale();
+        return React$f.createElement(ServerUpsell, {
+            title: t('scene.deepUpsellTitle'),
+            body: t('scene.deepUpsellBody'),
+            onClose,
+        });
+    }
 
-    const React$f = window.PluginApi.React;
-    const { useState: useState$5, useEffect: useEffect$7, useCallback: useCallback$4 } = React$f;
+    const React$e = window.PluginApi.React;
+    const { useState: useState$5, useEffect: useEffect$6, useCallback: useCallback$4 } = React$e;
     // Grid navigation must not steal keys a focused control handles itself:
     // Enter/Space must click a focused button, arrows must move a focused slider.
     // Performer cards are role=button but keep arrow navigation.
@@ -10172,7 +10886,7 @@
                     break;
             }
         }, [enabled, faceCount, selectedFaceIndex, selectedCardIndex, getPerformerCount, onAssign]);
-        useEffect$7(() => {
+        useEffect$6(() => {
             if (!enabled)
                 return;
             document.addEventListener('keydown', handleKeydown);
@@ -10209,78 +10923,6 @@
                 },
             };
         };
-    }
-
-    const React$e = window.PluginApi.React;
-    const { useEffect: useEffect$6 } = React$e;
-    const FOCUSABLE_SELECTOR = 'a, button, input, [tabindex]:not([tabindex="-1"])';
-    // Traps focus and handles Escape. onClose may change on every render. With
-    // focusShell the dialog itself takes focus, for a modal whose first control
-    // must not catch a stray key.
-    function useModalShell(onClose, active = true, focusShell = false) {
-        const ref = React$e.useRef(null);
-        const closeRef = React$e.useRef(onClose);
-        closeRef.current = onClose;
-        useEffect$6(() => {
-            if (!active)
-                return;
-            const container = ref.current;
-            if (!container)
-                return;
-            const previouslyFocused = document.activeElement;
-            const focusFirst = () => {
-                const focusables = container.querySelectorAll(FOCUSABLE_SELECTOR);
-                if (focusables.length > 0 && !focusShell) {
-                    focusables[0].focus();
-                }
-                else {
-                    if (!container.hasAttribute('tabindex')) {
-                        container.setAttribute('tabindex', '-1');
-                    }
-                    container.focus();
-                }
-            };
-            focusFirst();
-            const handleKeyDown = (e) => {
-                if (!ref.current)
-                    return;
-                if (e.key === 'Escape') {
-                    e.preventDefault();
-                    closeRef.current();
-                    return;
-                }
-                if (e.key === 'Tab') {
-                    const focusables = Array.from(ref.current.querySelectorAll(FOCUSABLE_SELECTOR)).filter((el) => !el.hasAttribute('disabled'));
-                    if (focusables.length === 0) {
-                        e.preventDefault();
-                        return;
-                    }
-                    const first = focusables[0];
-                    const last = focusables[focusables.length - 1];
-                    const current = document.activeElement;
-                    if (e.shiftKey) {
-                        if (current === first || !ref.current.contains(current)) {
-                            e.preventDefault();
-                            last.focus();
-                        }
-                    }
-                    else {
-                        if (current === last || !ref.current.contains(current)) {
-                            e.preventDefault();
-                            first.focus();
-                        }
-                    }
-                }
-            };
-            document.addEventListener('keydown', handleKeyDown, true);
-            return () => {
-                document.removeEventListener('keydown', handleKeyDown, true);
-                if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
-                    previouslyFocused.focus();
-                }
-            };
-        }, [active]);
-        return ref;
     }
 
     const React$d = window.PluginApi.React;
@@ -10487,30 +11129,62 @@
         }, performer.name), React$b.createElement('div', { className: 'visage-card-stats' }, React$b.createElement(ConfidenceBadge, { confidence }), existingLabel && React$b.createElement('span', { className: 'visage-card-existing-tag' }, existingLabel)))));
     }
 
-    const PATREON_URL = 'https://www.patreon.com/cw/cc12340';
-
     const React$a = window.PluginApi.React;
     const { useEffect: useEffect$5, useRef: useRef$5, useState: useState$4 } = React$a;
     const CLOUD_URL = VISAGE_API_URL;
     const LOCAL_DEFAULT = 'http://localhost:7860';
-    function hostOf(url) {
-        try {
-            return new URL(url).hostname;
-        }
-        catch (_a) {
-            return '';
-        }
-    }
-    function isLocalHost(url) {
-        const host = hostOf(url);
-        return host === 'localhost' || host === '127.0.0.1' || host === '::1';
-    }
     const TEST_FEEDBACK = {
         reachable: 'backendSettings.feedback.reachable',
         restart: 'backendSettings.feedback.restart',
         degraded: 'backendSettings.feedback.degraded',
-        unreachable: 'backendSettings.feedback.unreachable',
     };
+    /**
+     * Tests a backend address for the settings dialog. Local (self hosted) mode
+     * needs Visage Server: /health must be JSON with an index size. Cloud has no
+     * /health, so there a 404 is fine. A failed request names the likely cause
+     * (CSP, mixed content, loopback from another device). Never throws.
+     */
+    async function testBackend(url, mode) {
+        const probe = await probeHealth(url);
+        const local = mode === 'local';
+        switch (probe.kind) {
+            case 'unreachable':
+                return { status: 'unreachable', lines: [probe.message] };
+            case 'missing':
+                return local
+                    ? { status: 'unreachable', lines: [t('backendSettings.feedback.noHealth', { url })] }
+                    : { status: 'reachable', lines: [t(TEST_FEEDBACK.reachable)] };
+            case 'notJson':
+                return { status: 'unreachable', lines: [t('backend.notBackend', { url })] };
+            case 'error': {
+                const busy = probe.status === 503 || probe.status === 429;
+                return { status: 'unreachable', lines: [t(busy ? 'backend.busy' : 'backend.serverError')] };
+            }
+            case 'ok': {
+                const health = probe.health;
+                if (local && typeof health.index_docs !== 'number') {
+                    return { status: 'unreachable', lines: [t('backend.notBackend', { url })] };
+                }
+                const status = health.models_loaded === false || health.status !== 'ready'
+                    ? 'degraded'
+                    : health.restart_required === true ? 'restart' : 'reachable';
+                const origin = window.location.origin;
+                return { status, lines: [t(TEST_FEEDBACK[status]), ...deepScanTestLines(health).map(key => t(key, { origin }))] };
+            }
+        }
+    }
+    function toStashStatus(status) {
+        var _a;
+        if (!(status === null || status === void 0 ? void 0 : status.stash_url))
+            return { configured: false };
+        return {
+            configured: true,
+            lastSyncAt: status.last_sync_at,
+            performerCount: status.performer_count,
+            linkedCount: status.linked_count,
+            lastError: (_a = status.last_error) !== null && _a !== void 0 ? _a : null,
+        };
+    }
     function SettingsCloseButton({ onClick }) {
         useLocale();
         return React$a.createElement('button', {
@@ -10542,12 +11216,24 @@
             return current || LOCAL_DEFAULT;
         });
         const [testStatus, setTestStatus] = useState$4(null);
+        const [testLines, setTestLines] = useState$4([]);
+        // Save ran the test and it failed: the next Save stores the URL anyway.
+        const [saveAnyway, setSaveAnyway] = useState$4(false);
+        // Bumped when Stash's CSP is read, so the block hint updates.
+        const [, setCspLoaded] = useState$4(false);
+        // 'off': the server answered without a Stash url, or without the route.
         const [stashStatus, setStashStatus] = useState$4(null);
         const [syncStatus, setSyncStatus] = useState$4('idle');
         // Open sync progress stream. Closed on unmount so it does not outlive the dialog.
         const syncStreamRef = useRef$5(null);
         useEffect$5(() => () => { var _a; return (_a = syncStreamRef.current) === null || _a === void 0 ? void 0 : _a.close(); }, []);
         const [syncError, setSyncError] = useState$4('');
+        useEffect$5(() => {
+            let live = true;
+            loadStashCsp().then(() => { if (live)
+                setCspLoaded(true); });
+            return () => { live = false; };
+        }, []);
         useEffect$5(() => {
             function onKey(e) {
                 if (e.key === 'Escape') {
@@ -10566,23 +11252,14 @@
             }
             let cancelled = false;
             const timer = setTimeout(() => {
-                getStashStatus(url.trim()).then((status) => {
+                fetchStashStatus(normalizeEndpoint(url)).then((status) => {
                     if (cancelled)
                         return;
-                    if (status && status.stash_url) {
-                        setStashStatus({
-                            configured: true,
-                            lastSyncAt: status.last_sync_at,
-                            performerCount: status.performer_count,
-                            linkedCount: status.linked_count,
-                        });
-                    }
-                    else {
-                        setStashStatus({ configured: false, lastSyncAt: null, performerCount: 0, linkedCount: 0 });
-                    }
-                }).catch(() => {
-                    if (!cancelled)
+                    // No answer at all: the Test line says why. Nothing to say about sync.
+                    if (status === 'unreachable')
                         setStashStatus(null);
+                    else
+                        setStashStatus(toStashStatus(status));
                 });
             }, 300);
             return () => { cancelled = true; clearTimeout(timer); };
@@ -10602,51 +11279,56 @@
                 }
                 setUrl(isHostedEndpoint(cur) ? LOCAL_DEFAULT : cur);
             }
+            clearTest();
+        }
+        function clearTest() {
             setTestStatus(null);
+            setTestLines([]);
+            setSaveAnyway(false);
+        }
+        // Shows the typed URL as it will be used (scheme added, API path removed).
+        async function runTest() {
+            const target = normalizeEndpoint(url) || (mode === 'cloud' ? CLOUD_URL : LOCAL_DEFAULT);
+            setUrl(target);
+            setTestStatus('testing');
+            setTestLines([]);
+            const result = await testBackend(target, mode);
+            setTestStatus(result.status);
+            setTestLines(result.lines);
+            return result;
         }
         async function handleTest() {
-            setTestStatus('testing');
-            let status = 'unreachable';
-            try {
-                const health = await checkHealth(url.trim());
-                if (health === null) {
-                    status = 'unreachable';
-                }
-                else if (health.models_loaded === false || health.status !== 'ready') {
-                    status = 'degraded';
-                }
-                else if (health.restart_required === true) {
-                    status = 'restart';
-                }
-                else {
-                    status = 'reachable';
-                }
-            }
-            catch (_a) {
-                status = 'unreachable';
-            }
-            setTestStatus(status);
+            await runTest();
         }
-        function handleSave() {
-            setApiEndpoint(url.trim());
+        // Save tests first. A failed test keeps the dialog open with the reason, and
+        // the button becomes "Save anyway" (the server may just be down right now).
+        async function handleSave() {
+            const target = normalizeEndpoint(url) || (mode === 'cloud' ? CLOUD_URL : LOCAL_DEFAULT);
+            if (!saveAnyway) {
+                const result = await runTest();
+                if (result.status === 'unreachable') {
+                    setSaveAnyway(true);
+                    return;
+                }
+            }
+            setApiEndpoint(target);
             onClose();
         }
         async function handleSync() {
             setSyncStatus('syncing');
             setSyncError('');
             try {
-                const eventId = await triggerStashSync(url.trim());
-                const sseUrl = `${url.trim()}/api/stash/sync/${eventId}`;
+                const eventId = await triggerStashSync(normalizeEndpoint(url));
+                const sseUrl = `${normalizeEndpoint(url)}/api/stash/sync/${eventId}`;
                 const evtSource = new EventSource(sseUrl);
                 syncStreamRef.current = evtSource;
                 evtSource.addEventListener('complete', () => {
                     evtSource.close();
                     setSyncStatus('done');
                     // Re-fetch status to update counts
-                    getStashStatus(url.trim()).then((s) => {
-                        if (s && s.stash_url) {
-                            setStashStatus({ configured: true, lastSyncAt: s.last_sync_at, performerCount: s.performer_count, linkedCount: s.linked_count });
-                        }
+                    getStashStatus(normalizeEndpoint(url)).then((s) => {
+                        if (s === null || s === void 0 ? void 0 : s.stash_url)
+                            setStashStatus(toStashStatus(s));
                     });
                     setTimeout(() => setSyncStatus('idle'), 2000);
                 });
@@ -10676,10 +11358,10 @@
                 }
             }
         }
-        const statusText = testStatus === 'testing'
-            ? t('backendSettings.testing')
-            : (testStatus ? t(TEST_FEEDBACK[testStatus]) : '');
-        const showNonLocalhostWarn = mode === 'local' && url.trim() !== '' && !isLocalHost(url.trim());
+        const statusLines = testStatus === 'testing' ? [t('backendSettings.testing')] : testLines;
+        // A browser block for this address (Stash's CSP, mixed content, localhost
+        // from another device), shown before any request.
+        const blockHint = mode === 'local' && url.trim() !== '' ? blockReason(normalizeEndpoint(url)) : null;
         return React$a.createElement('div', {
             className: 'visage-backend-settings-backdrop',
             onClick: (e) => { if (e.target === e.currentTarget)
@@ -10706,15 +11388,15 @@
                 className: 'visage-backend-settings-input',
                 type: 'text',
                 value: url,
-                onChange: (e) => { setUrl(e.target.value); setTestStatus(null); },
+                onChange: (e) => { setUrl(e.target.value); clearTest(); },
                 placeholder: LOCAL_DEFAULT,
             })
-            : React$a.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), showNonLocalhostWarn && React$a.createElement('div', { className: 'visage-backend-settings-warn' }, t('backendSettings.csp1'), React$a.createElement('code', null, 'http://localhost:7860'), t('backendSettings.csp2'), React$a.createElement('code', null, 'connect-src'), t('backendSettings.csp3'), React$a.createElement('code', null, 'visage.yml'), t('backendSettings.csp4'), React$a.createElement('code', null, 'visage.yml'), t('backendSettings.csp5')), React$a.createElement('div', {
+            : React$a.createElement('div', { className: 'visage-backend-settings-cloud-url' }, url)), blockHint && React$a.createElement('div', { className: 'visage-backend-settings-warn' }, blockHint), React$a.createElement('div', {
             className: `visage-backend-settings-status${testStatus ? ` visage-backend-${testStatus}` : ''}`,
             role: 'status',
-        }, statusText), (stashStatus === null || stashStatus === void 0 ? void 0 : stashStatus.configured) && React$a.createElement('div', { className: 'visage-backend-settings-sync' }, React$a.createElement('div', { className: 'visage-backend-settings-field' }, React$a.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.sync.title')), React$a.createElement('div', { className: 'visage-sync-info' }, React$a.createElement('div', { className: 'visage-sync-last' }, stashStatus.lastSyncAt
+        }, statusLines.map((line, i) => React$a.createElement('div', { key: i }, line))), stashStatus && !stashStatus.configured && React$a.createElement('div', { className: 'visage-backend-settings-note visage-sync-off' }, t('backendSettings.sync.off')), (stashStatus === null || stashStatus === void 0 ? void 0 : stashStatus.configured) && React$a.createElement('div', { className: 'visage-backend-settings-sync' }, React$a.createElement('div', { className: 'visage-backend-settings-field' }, React$a.createElement('span', { className: 'visage-backend-settings-label' }, t('backendSettings.sync.title')), React$a.createElement('div', { className: 'visage-sync-info' }, React$a.createElement('div', { className: 'visage-sync-last' }, stashStatus.lastSyncAt
             ? t('backendSettings.sync.lastSynced', { time: new Date(stashStatus.lastSyncAt).toLocaleString() })
-            : t('backendSettings.sync.neverSynced')), React$a.createElement('div', { className: 'visage-sync-count' }, t('backendSettings.sync.performers', { count: String(stashStatus.performerCount) }))), React$a.createElement('div', { className: 'visage-sync-actions' }, React$a.createElement('button', {
+            : t('backendSettings.sync.neverSynced')), React$a.createElement('div', { className: 'visage-sync-count' }, t('backendSettings.sync.performers', { count: String(stashStatus.performerCount) })), stashStatus.lastError && React$a.createElement('div', { className: 'visage-sync-error' }, t('backendSettings.sync.lastError', { error: stashStatus.lastError }))), React$a.createElement('div', { className: 'visage-sync-actions' }, React$a.createElement('button', {
             className: `visage-btn visage-btn-secondary${syncStatus === 'syncing' ? ' visage-syncing' : ''}`,
             onClick: handleSync,
             disabled: syncStatus === 'syncing',
@@ -10732,7 +11414,8 @@
         }, t('backendSettings.cancel')), React$a.createElement('button', {
             className: 'visage-btn visage-btn-primary',
             onClick: handleSave,
-        }, t('backendSettings.save')))));
+            disabled: testStatus === 'testing',
+        }, t(saveAnyway ? 'backendSettings.saveAnyway' : 'backendSettings.save')))));
     }
 
     const React$9 = window.PluginApi.React;
@@ -10823,14 +11506,15 @@
             setVisible(false);
             setTimeout(() => showMatchModal(false), 300);
         }, []);
-        const modalRef = useModalShell(close, state.showMatchModal);
+        // Focus the dialog, not its first button, so Enter reaches keyboard nav.
+        const modalRef = useModalShell(close, state.showMatchModal, true);
         const abortRef = useRef$4(false);
         useEffect$4(() => {
             requestAnimationFrame(() => setVisible(true));
             const [scenario, id] = getScenarioAndID();
             if (scenario === 'scenes') {
                 (async () => {
-                    var _a, _b, _c, _d;
+                    var _a, _b, _c;
                     try {
                         const GQL = window.PluginApi.GQL;
                         const client = window.PluginApi.utils.StashService.getClient();
@@ -10838,17 +11522,12 @@
                             query: GQL.FindSceneDocument,
                             variables: { id },
                         });
-                        const stashIds = new Set();
-                        for (const p of (_c = (_b = (_a = res.data) === null || _a === void 0 ? void 0 : _a.findScene) === null || _b === void 0 ? void 0 : _b.performers) !== null && _c !== void 0 ? _c : []) {
-                            for (const s of (_d = p.stash_ids) !== null && _d !== void 0 ? _d : []) {
-                                if (s.stash_id)
-                                    stashIds.add(s.stash_id);
-                            }
-                        }
+                        // Stash-box ids and local ids, so private matches show "In scene" too.
+                        const ids = new Set(matchIdsOf((_c = (_b = (_a = res.data) === null || _a === void 0 ? void 0 : _a.findScene) === null || _b === void 0 ? void 0 : _b.performers) !== null && _c !== void 0 ? _c : []));
                         if (!abortRef.current)
-                            setSceneStashIds(stashIds);
+                            setSceneStashIds(ids);
                     }
-                    catch (_e) { }
+                    catch (_d) { }
                 })();
             }
             else if (scenario === 'performers') {
@@ -11181,6 +11860,11 @@
         const fetchStashData = useCallback$1(async (stashId, sourceName) => {
             var _a;
             try {
+                // A private match's id is the Stash performer id.
+                if (isLocalMatch(sourceName)) {
+                    setPerformerCache(prev => ({ ...prev, [stashId]: { id: stashId, image: `/performer/${stashId}/image` } }));
+                    return;
+                }
                 const existing = await getPerformers(stashId);
                 if (abortRef.current)
                     return;
@@ -11217,7 +11901,7 @@
             const [scenario, id] = getScenarioAndID();
             if (scenario === 'scenes') {
                 (async () => {
-                    var _a, _b, _c, _d;
+                    var _a, _b, _c;
                     try {
                         const GQL = window.PluginApi.GQL;
                         const client = window.PluginApi.utils.StashService.getClient();
@@ -11225,17 +11909,12 @@
                             query: GQL.FindSceneDocument,
                             variables: { id },
                         });
-                        const stashIds = new Set();
-                        for (const p of (_c = (_b = (_a = res.data) === null || _a === void 0 ? void 0 : _a.findScene) === null || _b === void 0 ? void 0 : _b.performers) !== null && _c !== void 0 ? _c : []) {
-                            for (const s of (_d = p.stash_ids) !== null && _d !== void 0 ? _d : []) {
-                                if (s.stash_id)
-                                    stashIds.add(s.stash_id);
-                            }
-                        }
+                        // Stash-box ids and local ids, so private matches show "In scene" too.
+                        const ids = new Set(matchIdsOf((_c = (_b = (_a = res.data) === null || _a === void 0 ? void 0 : _a.findScene) === null || _b === void 0 ? void 0 : _b.performers) !== null && _c !== void 0 ? _c : []));
                         if (!abortRef.current)
-                            setSceneStashIds(stashIds);
+                            setSceneStashIds(ids);
                     }
-                    catch (_e) { }
+                    catch (_d) { }
                 })();
             }
             (async () => {
@@ -11297,7 +11976,7 @@
     function SpriteResultModal() {
         var _a;
         useLocale();
-        const { state, showSpriteModal, clearSpriteResult, setLoading, showError, showSuccess, showWarning, openSettings } = useVisage();
+        const { state, showSpriteModal, clearSpriteResult, setLoading, setScanProgress, showError, showSuccess, showWarning, openSettings } = useVisage();
         const emptyMessage = (_a = state.emptyResult) === null || _a === void 0 ? void 0 : _a.message;
         const { spriteResult, loading: loadingState, scanProgress, scanProgressDesc } = state;
         const snapshotForUndo = useUndoSnapshot();
@@ -11381,36 +12060,30 @@
                 return next;
             });
         }
+        // The scene the scan ran on, not the current URL: the page may have moved on.
+        function resultScene() {
+            return (spriteResult === null || spriteResult === void 0 ? void 0 : spriteResult.sceneId) ? ['scenes', spriteResult.sceneId] : getScenarioAndID();
+        }
+        // The Stash performer to add for a match: the cached one, else resolved by
+        // resolveMatchPerformer (a private match is added by its own id). Null when
+        // the stash-box has no such performer.
+        async function resolvePid(stashId) {
+            var _a;
+            const cached = performerCache[stashId];
+            if (cached && cached.id !== stashId)
+                return cached.id;
+            return resolveMatchPerformer(stashId, (_a = performers.find(p => p.id === stashId)) === null || _a === void 0 ? void 0 : _a.source);
+        }
         async function spriteQuickAdd(stashId) {
             var _a, _b;
             if (adding || sceneStashIds.has(stashId))
                 return;
             setAdding(true);
-            const [scenario, scenarioId] = getScenarioAndID();
+            const [scenario, scenarioId] = resultScene();
             try {
-                const cached = performerCache[stashId];
-                let pid = cached === null || cached === void 0 ? void 0 : cached.id;
-                if (!pid || pid === stashId) {
-                    if ((cached === null || cached === void 0 ? void 0 : cached.image) && cached.id !== stashId) {
-                        pid = cached.id;
-                    }
-                    else {
-                        const existing = await getPerformers(stashId);
-                        if (existing.length > 0) {
-                            pid = existing[0].id;
-                        }
-                        else {
-                            const sourceName = getSpriteSource(stashId);
-                            const scraped = await getPerformerDataFromStashID(stashId, sourceName);
-                            if (!scraped) {
-                                setAdding(false);
-                                return;
-                            }
-                            const { performerId: pid2 } = await createOrGetPerformer(scraped, stashId, sourceName);
-                            pid = pid2;
-                        }
-                    }
-                }
+                const pid = await resolvePid(stashId);
+                if (!pid)
+                    return;
                 const undo = await snapshotForUndo(scenario, scenarioId);
                 await addPerformerToContent(scenario, scenarioId, pid);
                 showSuccess(t('faceMatch.toast.added.scenes', { name: (_b = (_a = performers.find(p => p.id === stashId)) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : '' }), undo);
@@ -11424,16 +12097,12 @@
                 setAdding(false);
             }
         }
-        function getSpriteSource(stashId) {
-            var _a;
-            return (_a = performers.find(p => p.id === stashId)) === null || _a === void 0 ? void 0 : _a.source;
-        }
         async function addConfirmed() {
             var _a, _b;
             if (confirmedIds.size === 0)
                 return;
             setAdding(true);
-            const [scenario, scenarioId] = getScenarioAndID();
+            const [scenario, scenarioId] = resultScene();
             const ids = Array.from(confirmedIds).filter(id => !sceneStashIds.has(id));
             if (ids.length === 0) {
                 close();
@@ -11447,28 +12116,9 @@
                     const key = `sprite-add-${stashId}`;
                     setLoading(key, true);
                     try {
-                        let cached = performerCache[stashId];
-                        let pid = cached === null || cached === void 0 ? void 0 : cached.id;
-                        if (!pid || pid === stashId) {
-                            if ((cached === null || cached === void 0 ? void 0 : cached.image) && cached.id !== stashId) {
-                                pid = cached.id;
-                            }
-                            else {
-                                const existing = await getPerformers(stashId);
-                                if (existing.length > 0) {
-                                    pid = existing[0].id;
-                                }
-                                else {
-                                    const sourceName = getSpriteSource(stashId);
-                                    const scraped = await getPerformerDataFromStashID(stashId, sourceName);
-                                    if (!scraped) {
-                                        continue;
-                                    }
-                                    const { performerId: pid2 } = await createOrGetPerformer(scraped, stashId, sourceName);
-                                    pid = pid2;
-                                }
-                            }
-                        }
+                        const pid = await resolvePid(stashId);
+                        if (!pid)
+                            continue;
                         await addPerformerToContent(scenario, scenarioId, pid);
                         addedCount++;
                         lastAddedId = stashId;
@@ -11506,7 +12156,15 @@
             seekVideo(seconds);
             close();
         }
+        // X, Esc, the backdrop and Cancel all close here. During a scan, closing
+        // cancels it: a deep scan would hold the server's one slot for minutes and
+        // its result would open the modal again later.
         function close() {
+            if (isProcessing) {
+                cancelDetection();
+                setLoading('face-detection', false);
+                setScanProgress(0, '');
+            }
             setVisible(false);
             setTimeout(() => {
                 clearSpriteResult();
@@ -11552,11 +12210,7 @@
                 style: { width: `${Math.round(scanProgress * 100)}%` },
             }))), React$5.createElement('span', { className: 'visage-loading-label' }, scanProgressDesc || t('sprite.scanning')), React$5.createElement('button', {
                 className: 'visage-btn visage-btn-secondary',
-                onClick: () => {
-                    cancelDetection();
-                    setLoading('face-detection', false);
-                    close();
-                },
+                onClick: close,
                 style: { marginTop: 12 },
             }, t('sprite.cancel')))
             : React$5.createElement(React$5.Fragment, null, React$5.createElement('div', { className: 'visage-sprite-body' }, performers.length === 0
@@ -11735,7 +12389,7 @@
     // scene are left out: the review lists them with the scene.
     function newMatches({ scene, result }) {
         var _a, _b;
-        const existing = new Set((_a = scene === null || scene === void 0 ? void 0 : scene.stashIds) !== null && _a !== void 0 ? _a : []);
+        const existing = new Set((_a = scene === null || scene === void 0 ? void 0 : scene.matchIds) !== null && _a !== void 0 ? _a : []);
         return Object.values((_b = result === null || result === void 0 ? void 0 : result.performers) !== null && _b !== void 0 ? _b : {})
             .filter(m => !existing.has(m.id))
             .sort((a, b) => b.confidence - a.confidence);
@@ -11748,36 +12402,75 @@
         return newMatches(entry).filter(m => m.confidence >= PRESELECT_MIN).map(m => m.id);
     }
     // Sprite first, then the preview video, as on the scene page. Null means no
-    // faces. 'missing' means the scene has neither file to scan.
-    async function scanScene(sceneId) {
-        const sprite = await trySprite(sceneId);
-        if (sprite || isCancelled())
+    // faces. 'missing' means the scene has neither file to scan. Stop aborts the
+    // run's fetches, so the scene in flight ends at once.
+    async function scanScene(sceneId, run) {
+        const sprite = await trySprite(sceneId, undefined, run.signal);
+        if (sprite || run.cancelled)
             return sprite;
-        const previewUrl = await getUrlPreview(sceneId);
-        // Stash returns these URLs even when the files were never generated.
-        if (previewUrl && (await fileExists(previewUrl)))
-            return tryPreview(sceneId);
+        if (await getUrlPreview(sceneId))
+            return tryPreview(sceneId, undefined, run.signal);
         return (await getUrlSprite(sceneId)) ? null : 'missing';
     }
-    // Scans scenes one at a time and reports each change through onChange. Stops
-    // on cancel. If the backend is unreachable, the remaining scenes fail with that
-    // message, because each would wait for the same failure. Batches run only on
-    // Visage Server: without one, every scene fails before any upload.
-    async function runBatch(sceneIds, onChange) {
-        var _a;
+    // Deep scan of one scene. A result with no performers means no faces. The
+    // stream closes at once on Stop, which frees the server's one deep scan slot.
+    async function deepScanScene(sceneId, run, onProgress) {
+        const result = await tryDeep(sceneId, onProgress, run.signal);
+        if (!result && !run.cancelled)
+            throw new DeepScanError(t('scene.deepNoFile'));
+        return result;
+    }
+    // Null when the batch may start, else the message that fails every scene.
+    // Batches need Visage Server (its /health reports an index size), never Cloud:
+    // they would overload the shared service. Deep batches also need its deep
+    // scan. `unreachable` is set when the server did not answer (with the cause).
+    async function batchBlocker(mode) {
+        const endpoint = getApiEndpoint();
+        if (isHostedEndpoint(endpoint))
+            return { message: t('batch.serverOnly'), unreachable: false };
+        const probe = await probeHealth(endpoint);
+        if (probe.kind === 'unreachable')
+            return { message: probe.message, unreachable: true };
+        const deep = deepScanState(probe.kind === 'ok' ? probe.health : null);
+        if (!deep)
+            return { message: t('batch.serverOnly'), unreachable: false };
+        if (mode === 'sprite' || deep.ready === true)
+            return null;
+        if ('text' in deep)
+            return { message: deep.text, unreachable: true };
+        return { message: t(deep.reason, { origin: window.location.origin }), unreachable: false };
+    }
+    /**
+     * Scans scenes one at a time and reports each change through onChange. Stops
+     * on cancel (Stop, closing the modal, leaving the page, or a newer run). When
+     * the next scenes would fail the same way, they fail at once with that message:
+     * an unreachable backend, and in deep mode also a refused origin, a busy deep
+     * scan slot (another tab or the scene page) or a server without ffmpeg or
+     * Stash. `onProgress` gets the stage of the deep scan in flight (0 to 1, a
+     * translated label), reset at the start of each scene. Sprite mode never calls it.
+     */
+    async function runBatch(sceneIds, onChange, { mode = 'sprite', onProgress } = {}) {
+        var _a, _b;
         const run = resetCancelled();
-        if (!(await isVisageServer())) {
-            for (const id of sceneIds)
-                onChange(id, { status: 'failed', error: t('batch.serverOnly') });
+        const progress = (p, label) => { if (!run.cancelled)
+            onProgress === null || onProgress === void 0 ? void 0 : onProgress(p, label); };
+        const blocker = await batchBlocker(mode);
+        if (run.cancelled)
             return { unreachable: null };
+        if (blocker) {
+            for (const id of sceneIds)
+                onChange(id, { status: 'failed', error: blocker.message });
+            return { unreachable: blocker.unreachable ? blocker.message : null };
         }
         for (let i = 0; i < sceneIds.length; i++) {
             const id = sceneIds[i];
             if (run.cancelled)
                 break;
             try {
+                if (mode === 'deep')
+                    progress(0, t('scene.deepSprite'));
                 const scene = await getScene(id);
-                const result = await scanScene(id);
+                const result = mode === 'deep' ? await deepScanScene(id, run, progress) : await scanScene(id, run);
                 if (run.cancelled)
                     break;
                 if (result === 'missing')
@@ -11786,28 +12479,22 @@
                     onChange(id, { status: 'done', scene, result });
             }
             catch (error) {
+                // Stop aborted this scene's fetches: it is stopped, not failed.
+                if (run.cancelled)
+                    break;
                 console.error('[Visage] batch scan error:', id, error);
-                const backend = describeBackendError(error);
-                onChange(id, { status: 'failed', error: (_a = backend === null || backend === void 0 ? void 0 : backend.message) !== null && _a !== void 0 ? _a : getErrorMessage(error) });
-                if (backend === null || backend === void 0 ? void 0 : backend.unreachable) {
+                const deep = error instanceof DeepScanError ? error : null;
+                const backend = deep ? null : describeBackendError(error);
+                const message = (_b = (_a = deep === null || deep === void 0 ? void 0 : deep.message) !== null && _a !== void 0 ? _a : backend === null || backend === void 0 ? void 0 : backend.message) !== null && _b !== void 0 ? _b : getErrorMessage(error);
+                onChange(id, { status: 'failed', error: message });
+                if ((backend === null || backend === void 0 ? void 0 : backend.unreachable) || (deep === null || deep === void 0 ? void 0 : deep.stopsBatch)) {
                     for (const rest of sceneIds.slice(i + 1))
-                        onChange(rest, { status: 'failed', error: backend.message });
-                    return { unreachable: backend.message };
+                        onChange(rest, { status: 'failed', error: message });
+                    return { unreachable: (backend === null || backend === void 0 ? void 0 : backend.unreachable) ? message : null };
                 }
             }
         }
         return { unreachable: null };
-    }
-    // Finds the Stash performer for a match, importing it from the stash-box when
-    // needed. Null when the stash-box has no such performer.
-    async function resolvePerformer(p) {
-        const existing = await getPerformers(p.id);
-        if (existing.length > 0)
-            return existing[0].id;
-        const scraped = await getPerformerDataFromStashID(p.id, p.source);
-        if (!scraped)
-            return null;
-        return (await createOrGetPerformer(scraped, p.id, p.source)).performerId;
     }
     // Writes each scene once. A performer found in several scenes resolves once, so
     // a new import is never created twice. One failed scene does not stop the rest.
@@ -11819,7 +12506,7 @@
                 const ids = [];
                 for (const p of performers) {
                     if (!resolved.has(p.id))
-                        resolved.set(p.id, resolvePerformer(p));
+                        resolved.set(p.id, resolveMatchPerformer(p.id, p.source));
                     const pid = await resolved.get(p.id);
                     if (pid) {
                         ids.push(pid);
@@ -11858,13 +12545,16 @@
         return failed;
     }
     const imageCache = new Map();
-    // Stash image for a match, or the stash-box image if not imported yet. Cached
-    // because the same performer often shows up in many scenes of a batch.
+    // Stash image for a match, or the stash-box image if not imported yet. A
+    // private match's id is the Stash performer id. Cached because the same
+    // performer often shows up in many scenes of a batch.
     function getMatchImage(stashId, source) {
         let image = imageCache.get(stashId);
         if (!image) {
             image = (async () => {
                 var _a, _b;
+                if (isLocalMatch(source))
+                    return `/performer/${stashId}/image`;
                 const existing = await getPerformers(stashId);
                 if (existing.length > 0)
                     return `/performer/${existing[0].id}/image`;
@@ -11880,6 +12570,7 @@
     const { useEffect, useMemo, useRef, useState } = React$3;
     const plural = (count) => pluralize(count, '', 's');
     // One line for every scene that needs no decision, so those scenes take no rows.
+    // Failed scenes are left out: failureReasons lists them with the reason.
     function summarize(entries) {
         const rest = entries.filter(e => !isReviewable(e));
         const tagged = rest.filter(e => { var _a, _b; return e.status === 'done' && Object.keys((_b = (_a = e.result) === null || _a === void 0 ? void 0 : _a.performers) !== null && _b !== void 0 ? _b : {}).length > newMatches(e).length; }).length;
@@ -11887,10 +12578,22 @@
             [rest.filter(e => e.status === 'missing').length, 'batch.sumMissing'],
             [rest.filter(e => e.status === 'done').length - tagged, 'batch.sumNoMatch'],
             [tagged, 'batch.sumTagged'],
-            [rest.filter(e => e.status === 'failed').length, 'batch.sumFailed'],
             [rest.filter(e => e.status === 'stopped').length, 'batch.sumSkipped'],
         ];
         return parts.filter(([count]) => count > 0).map(([count, key]) => t(key, { count }));
+    }
+    // Failed scenes grouped by reason, the most common first, one line each:
+    // "2 could not scan: <reason>".
+    function failureReasons(entries) {
+        var _a, _b, _c;
+        const counts = new Map();
+        for (const e of entries) {
+            if (e.status === 'failed')
+                counts.set((_a = e.error) !== null && _a !== void 0 ? _a : '', ((_c = counts.get((_b = e.error) !== null && _b !== void 0 ? _b : '')) !== null && _c !== void 0 ? _c : 0) + 1);
+        }
+        return [...counts]
+            .sort((a, b) => b[1] - a[1])
+            .map(([reason, count]) => (reason ? t('batch.failedReason', { count, reason }) : t('batch.sumFailed', { count })));
     }
     // Visible on every backend. On Cloud it opens the upsell instead of a scan.
     function SceneBatchMenuItem({ onStart, onUpsell }) {
@@ -11915,33 +12618,50 @@
             },
         }, t('batch.menuItem'));
     }
+    // "Deep scan with Visage", next to the batch item. Same rules as the scene
+    // page deep scan item: on Cloud it calls onUpsell, on any other backend /health
+    // decides. Ready starts a deep batch, else the item is muted with the reason
+    // as its hint. No Visage Server answer shows nothing. Checked again each time
+    // the scene list dropdown opens.
+    function DeepBatchMenuItem({ onStart, onUpsell }) {
+        useLocale();
+        const { showWarning } = useVisage();
+        const { hosted, state } = useDeepScanSupport(isSceneListMenuToggle);
+        if (!hosted && state === null)
+            return null;
+        const offHint = hosted ? null : deepOffHint(state);
+        return React$3.createElement('a', {
+            href: '#',
+            // Not Bootstrap's `disabled`: its pointer-events: none would hide the hint.
+            className: `bg-secondary text-white dropdown-item${offHint ? ' visage-menu-item-off' : ''}`,
+            role: 'button',
+            'aria-disabled': offHint ? 'true' : undefined,
+            title: offHint !== null && offHint !== void 0 ? offHint : t('scene.deepScanTitle'),
+            onClick: (e) => {
+                var _a;
+                e.preventDefault();
+                const ids = getSelectedSceneIds();
+                (_a = document.getElementById('more-menu')) === null || _a === void 0 ? void 0 : _a.click();
+                if (offHint)
+                    showWarning(offHint);
+                else if (ids.length === 0)
+                    showWarning(t('batch.selectFirst'));
+                else if (hosted)
+                    onUpsell();
+                else
+                    onStart(ids);
+            },
+        }, t('batch.deepMenuItem'));
+    }
     // Shown to Cloud users who try a batch. Batches stay off Cloud to protect the
-    // shared service, so this offers Visage Server, or settings for existing owners.
+    // shared service.
     function SceneBatchUpsell({ sceneCount, onClose }) {
         useLocale();
-        const { openSettings } = useVisage();
-        const [visible, setVisible] = useState(false);
-        const shellRef = useModalShell(onClose, true);
-        useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
-        return React$3.createElement('div', {
-            className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
-            onClick: (e) => { if (e.target === e.currentTarget)
-                onClose(); },
-        }, React$3.createElement('div', {
-            ref: shellRef,
-            className: `visage-modal visage-batch-upsell ${visible ? 'visage-visible' : ''}`,
-            role: 'dialog',
-            'aria-modal': 'true',
-            'aria-labelledby': 'visage-batch-upsell-title',
-        }, React$3.createElement('h2', { id: 'visage-batch-upsell-title' }, t('batch.upsellTitle', { count: sceneCount, s: plural(sceneCount) })), React$3.createElement('p', null, t('batch.upsellBody')), React$3.createElement('a', {
-            className: 'visage-ext-patreon-btn',
-            href: PATREON_URL,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-        }, t('batch.upsellCta')), React$3.createElement('div', { className: 'visage-button-group' }, React$3.createElement('button', {
-            className: 'visage-btn visage-btn-secondary',
-            onClick: () => { onClose(); openSettings(); },
-        }, t('batch.upsellHaveServer')), React$3.createElement('button', { className: 'visage-btn visage-btn-secondary', onClick: onClose }, t('batch.upsellClose')))));
+        return React$3.createElement(ServerUpsell, {
+            title: t('batch.upsellTitle', { count: sceneCount, s: plural(sceneCount) }),
+            body: t('batch.upsellBody'),
+            onClose,
+        });
     }
     function MatchImage({ match }) {
         const [src, setSrc] = useState(null);
@@ -12022,8 +12742,11 @@
     // Two phases. While scanning, scenes with new matches appear as they finish.
     // After the scan the user reviews and adds. Adding waits for the end of the
     // scan, so a late preselected match can never be written unseen. Nothing is
-    // written until the user presses the apply button.
-    function SceneBatchModal({ sceneIds, onClose }) {
+    // written until the user presses the apply button. `mode` 'deep' runs the
+    // Visage Server deep scan and shows the stage of the scene in flight. Closing
+    // the modal stops the batch.
+    function SceneBatchModal({ sceneIds, mode = 'sprite', onClose }) {
+        var _a;
         useLocale();
         const { showSuccess, showError, showWarning, showHealthBanner } = useVisage();
         const [entries, setEntries] = useState(() => sceneIds.map(id => ({ id, status: 'queued', scene: null, result: null })));
@@ -12032,6 +12755,8 @@
         const [applying, setApplying] = useState(false);
         const [confirmingClose, setConfirmingClose] = useState(false);
         const [visible, setVisible] = useState(false);
+        // Deep mode: stage of the scene in flight, null between scenes.
+        const [stage, setStage] = useState(null);
         const unmounted = useRef(false);
         const bodyRef = useRef(null);
         const done = entries.filter(e => e.status !== 'queued').length;
@@ -12062,11 +12787,16 @@
                 if (unmounted.current)
                     return;
                 setEntries(prev => prev.map(e => (e.id === id ? { ...e, ...patch } : e)));
+                setStage(null);
                 if (patch.status === 'done') {
                     setSelection(s => ({ ...s, [id]: new Set(preselect({ scene: patch.scene, result: patch.result })) }));
                 }
             };
-            runBatch(sceneIds, update).then(({ unreachable }) => {
+            const onProgress = (progress, label) => {
+                if (!unmounted.current)
+                    setStage({ progress, label });
+            };
+            runBatch(sceneIds, update, { mode, onProgress }).then(({ unreachable }) => {
                 if (unreachable)
                     showHealthBanner(unreachable);
                 if (unmounted.current)
@@ -12154,7 +12884,7 @@
             }
         }
         const title = running
-            ? t('batch.title', { count: entries.length, s: plural(entries.length) })
+            ? t(mode === 'deep' ? 'batch.deepTitle' : 'batch.title', { count: entries.length, s: plural(entries.length) })
             : empty
                 ? t('batch.titleNone')
                 : t('batch.titleFound', {
@@ -12164,8 +12894,10 @@
                     total: entries.length,
                     ss: plural(entries.length),
                 });
-        const summaryLine = summary.length > 0 && React$3.createElement('p', { className: 'visage-batch-summary' }, summary.join(' \u00B7 '));
-        const onlyFailures = failures.length === entries.length;
+        const reasons = failureReasons(entries);
+        // Every scene failed for one reason: that reason alone says it all.
+        const oneReason = failures.length === entries.length && reasons.length === 1;
+        const summaryLine = (summary.length > 0 || reasons.length > 0) && React$3.createElement('div', { className: 'visage-batch-summary' }, summary.length > 0 && React$3.createElement('p', null, summary.join(' \u00B7 ')), reasons.map(line => React$3.createElement('p', { key: line, className: 'visage-batch-reason' }, line)));
         return React$3.createElement('div', {
             className: `visage-modal-backdrop ${visible ? 'visage-visible' : ''}`,
             // Keeps Stash's list shortcuts from acting on the page behind the modal.
@@ -12183,7 +12915,9 @@
                     apply();
                 }
             },
-        }, React$3.createElement('div', { className: 'visage-modal-header' }, React$3.createElement('div', { className: 'visage-modal-title' }, React$3.createElement('h2', { id: 'visage-batch-title', role: 'status' }, title)), React$3.createElement('div', { className: 'visage-batch-actions' }, running && React$3.createElement('span', { className: 'visage-batch-progress' }, stopping ? t('batch.stopping') : t('batch.progress', { done, total: entries.length })), running && !stopping && React$3.createElement('button', {
+        }, React$3.createElement('div', { className: 'visage-modal-header' }, React$3.createElement('div', { className: 'visage-modal-title' }, React$3.createElement('h2', { id: 'visage-batch-title', role: 'status' }, title)), React$3.createElement('div', { className: 'visage-batch-actions' }, running && React$3.createElement('span', { className: 'visage-batch-progress' }, stopping
+            ? t('batch.stopping')
+            : [t('batch.progress', { done, total: entries.length }), stage === null || stage === void 0 ? void 0 : stage.label].filter(Boolean).join(' \u00B7 ')), running && !stopping && React$3.createElement('button', {
             type: 'button',
             className: 'visage-show-more',
             onClick: stop,
@@ -12191,13 +12925,14 @@
             className: `visage-scan-progress-bar${running ? '' : ' visage-batch-bar-done'}`,
         }, React$3.createElement('div', {
             className: 'visage-scan-progress-fill',
-            style: { width: `${Math.round((done / entries.length) * 100)}%` },
+            // The deep stage moves the bar inside the scene in flight.
+            style: { width: `${Math.round((Math.min(entries.length, done + (running ? (_a = stage === null || stage === void 0 ? void 0 : stage.progress) !== null && _a !== void 0 ? _a : 0 : 0)) / entries.length) * 100)}%` },
         }))), React$3.createElement('div', {
             ref: bodyRef,
             className: 'visage-sprite-body',
             onKeyDown: (e) => moveTileFocus(e, bodyRef.current),
         }, empty
-            ? React$3.createElement('div', { className: 'visage-batch-empty' }, onlyFailures && React$3.createElement('p', null, failures[0].error), !onlyFailures && summaryLine, entries.some(e => e.status === 'missing') && React$3.createElement('p', null, t('batch.emptyMissing')))
+            ? React$3.createElement('div', { className: 'visage-batch-empty' }, oneReason && React$3.createElement('p', null, failures[0].error), !oneReason && summaryLine, entries.some(e => e.status === 'missing') && React$3.createElement('p', null, t('batch.emptyMissing')))
             : React$3.createElement(React$3.Fragment, null, reviewable.map(entry => {
                 var _a;
                 return React$3.createElement(SceneRow, {
@@ -12339,11 +13074,6 @@
         'backendSettings.hintPrefix': `Wil je dat je afbeeldingen in jouw netwerk blijven?`,
         'backendSettings.hintLink': `Draai een privéserver via Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Het beveiligingsbeleid (CSP) van de browser staat alleen toe`,
-        'backendSettings.csp2': `standaard. Voeg om een lokale backend op een ander adres (bijv. je LAN-IP) te bereiken dit toe aan de`,
-        'backendSettings.csp3': `lijst in het`,
-        'backendSettings.csp4': `bestand in je Stash-pluginsmap, anders worden verzoeken geblokkeerd. Let op: een update van Visage installeert`,
-        'backendSettings.csp5': `opnieuw, dus dit moet na elke update opnieuw worden toegepast.`,
         'backendSettings.testing': `Verbinding testen…`,
         'backendSettings.testConnection': `Verbinding testen`,
         'backendSettings.testingShort': `Testen…`,
@@ -12436,6 +13166,23 @@
         'scene.failed': `Scènescan mislukt: {error}`,
         'scene.menuItemTitle': `Vind iedereen in deze scène. Vereist een gegenereerde sprite sheet of preview-video.`,
         'scene.wholeScene': `Visage: scène herkennen`,
+        'scene.deepScan': `Visage: diepe scan`,
+        'scene.deepScanTitle': `Scant videobeelden op volle grootte op je Visage Server. Trager dan de scènescan, vindt meer performers.`,
+        'scene.deepSprite': `Gezichten zoeken in het sprite sheet`,
+        'scene.deepFrames': `Videobeelden scannen`,
+        'scene.deepNoFaces': `Geen performers gevonden in de videobeelden van deze scène.`,
+        'scene.deepNoFile': `Deze scène heeft geen videobestand om te scannen.`,
+        'scene.deepNoResult': `De diepe scan eindigde zonder resultaat. Probeer het opnieuw.`,
+        'scene.deepUpsellTitle': `Diepe scan met Visage Server`,
+        'scene.deepUpsellBody': `De diepe scan leest videobeelden op volle grootte uit je eigen Stash. Hij draait alleen op Visage Server, je eigen privéserver, niet in de gedeelde Cloud. Je video's blijven op je eigen machine. Inbegrepen bij Patreon-steun.`,
+        'scene.deepRefusedOrigin': `Visage Server accepteert geen diepe scan vanaf {origin}. Voeg "{origin}" toe aan allowed_origins in visage.toml en herstart daarna Visage Server.`,
+        'scene.deepBusy': `Visage Server voert al een diepe scan uit. Probeer het opnieuw als die klaar is.`,
+        'scene.deepUnavailable': `De diepe scan staat uit op deze Visage Server. Stel url in in visage.toml, installeer ffmpeg en herstart daarna Visage Server.`,
+        'batch.deepMenuItem': `Diepe scan met Visage`,
+        'batch.deepTitle': `Diepe scan van scènes: {count}`,
+        'batch.upsellCta': `Haal Visage Server op Patreon`,
+        'batch.upsellHaveServer': `Ik heb een server`,
+        'batch.upsellClose': `Niet nu`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Backend wijzigen`,
         'banner.dismiss': `Negeren`,
@@ -12498,6 +13245,24 @@
         'search.imageMenuTitle': `Ontdek wie er op deze afbeelding staat. Sleep een kader rond een gezicht, of klik voor de hele afbeelding.`,
         'faceMatch.adding.images': `Toevoegen…`,
         'sprite.confirm': `Toevoegen aan scène ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Niets op {url}/health. Verwijder elk pad na de poort, bijvoorbeeld http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Toch opslaan`,
+        'backendSettings.sync.off': `Stash-synchronisatie staat uit. Voeg url toe aan visage.toml in de datamap van de server en herstart daarna Visage Server.`,
+        'backendSettings.sync.lastError': `Laatste synchronisatie mislukt: {error}`,
+        'scene.deepReady': `Diepe scan: klaar.`,
+        'scene.deepOffNoStash': `Diepe scan: uit. Geen Stash-url in visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Diepe scan: uit. ffmpeg niet gevonden. Installeer ffmpeg of start Visage Server met --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Diepe scan: uit. De gevonden ffmpeg is een statische build, die faalt met Stash via https. Installeer de ffmpeg van je systeem.`,
+        'scene.deepUpdateServer': `Diepe scan: werk Visage Server bij naar de nieuwste versie.`,
+        'scene.deepNeedsNewerServer': `De diepe scan heeft een nieuwere Visage Server nodig. Werk Visage Server bij en laad deze pagina daarna opnieuw.`,
+        'scene.deepOriginWillRefuse': `De diepe scan zal deze pagina ({origin}) weigeren. Voeg hem toe aan allowed_origins in visage.toml en herstart daarna Visage Server.`,
+        'scene.deepOtherStash': `Visage Server leest uit {stash_url}, niet uit deze Stash ({origin}). Laat url in visage.toml naar deze Stash wijzen en herstart daarna Visage Server.`,
+        'scene.serverScanFailed': `Visage Server kon deze scène niet scannen: {error}`,
+        'backend.cspBlocked': `Stash blokkeert verzoeken naar {origin}. Voeg "{origin}" toe onder ui.csp.connect-src in plugins/visage/visage.yml en laad Stash daarna opnieuw. Doe dit opnieuw na elke Visage-update.`,
+        'backend.mixedContent': `Stash is geopend via https, dus de browser blokkeert het http-adres {url}. Bied Visage Server aan via https (bijvoorbeeld via je reverse proxy) of open Stash via http.`,
+        'backend.loopbackRemote': `localhost betekent dit apparaat, niet je server. Gebruik in de Visage-instellingen het netwerkadres van de server, bijvoorbeeld http://192.168.1.50:7860.`,
+        'batch.failedReason': `Niet te scannen ({count}): {reason}`,
     };
 
     const he = {
@@ -12512,11 +13277,6 @@
         'backendSettings.hintPrefix': `רוצה שהתמונות יישארו בתוך הרשת שלך?`,
         'backendSettings.hintLink': `הרץ שרת פרטי דרך Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `מדיניות האבטחה של הדפדפן (CSP) מאפשרת רק`,
-        'backendSettings.csp2': `כברירת מחדל. כדי לגשת לצד-שרת מקומי בכתובת אחרת (למשל IP הרשת המקומית שלך), הוסף אותו אל`,
-        'backendSettings.csp3': `ב`,
-        'backendSettings.csp4': `בתוך תיקיית התוספים של Stash, אחרת הבקשות ייחסמו. הערה: עדכון של Visage מתקין מחדש את`,
-        'backendSettings.csp5': `, ולכן יש ליישם זאת שוב אחרי כל עדכון.`,
         'backendSettings.testing': `בודק חיבור…`,
         'backendSettings.testConnection': `בדיקת חיבור`,
         'backendSettings.testingShort': `בודק…`,
@@ -12604,6 +13364,23 @@
         'scene.failed': `סריקת הסצנה נכשלה: {error}`,
         'scene.menuItemTitle': `מצא את כולם בסצנה הזו. נדרש sprite sheet או סרטון תצוגה מקדימה שנוצר.`,
         'scene.wholeScene': `Visage: זיהוי סצנה`,
+        'scene.deepScan': `Visage: סריקה מעמיקה`,
+        'scene.deepScanTitle': `סורק פריימים של הווידאו בגודל מלא ב-Visage Server שלך. איטי יותר מסריקת הסצנה, מוצא יותר מבצעים.`,
+        'scene.deepSprite': `מחפש פנים בגיליון הספרייט`,
+        'scene.deepFrames': `סורק פריימים של הווידאו`,
+        'scene.deepNoFaces': `לא נמצאו מבצעים בפריימים של הווידאו בסצנה זו.`,
+        'scene.deepNoFile': `לסצנה זו אין קובץ וידאו לסריקה.`,
+        'scene.deepNoResult': `הסריקה המעמיקה הסתיימה ללא תוצאה. נסה שוב.`,
+        'scene.deepUpsellTitle': `סריקה מעמיקה עם Visage Server`,
+        'scene.deepUpsellBody': `סריקה מעמיקה קוראת פריימים של וידאו בגודל מלא מה-Stash שלך. היא פועלת רק ב-Visage Server, השרת הפרטי שלך, ולא ב-Cloud המשותף. הסרטונים שלך נשארים במחשב שלך. כלול בתמיכה ב-Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server לא מקבל סריקה מעמיקה מ-{origin}. הוסף את "{origin}" ל-allowed_origins בקובץ visage.toml, ואז הפעל מחדש את Visage Server.`,
+        'scene.deepBusy': `Visage Server כבר מבצע סריקה מעמיקה. נסה שוב כשהיא תסתיים.`,
+        'scene.deepUnavailable': `הסריקה המעמיקה כבויה ב-Visage Server הזה. הגדר url בקובץ visage.toml, התקן ffmpeg, ואז הפעל מחדש את Visage Server.`,
+        'batch.deepMenuItem': `סריקה מעמיקה עם Visage`,
+        'batch.deepTitle': `סריקה מעמיקה של סצנות: {count}`,
+        'batch.upsellCta': `קבל את Visage Server ב-Patreon`,
+        'batch.upsellHaveServer': `יש לי שרת`,
+        'batch.upsellClose': `לא עכשיו`,
         'banner.changeBackend': `החלפת צד-שרת`,
         'banner.dismiss': `סגירה`,
         'error.dismiss': `סגירה`,
@@ -12660,6 +13437,24 @@
         'search.imageMenuTitle': `גלה מי בתמונה הזו. גרור מסגרת סביב פנים, או לחץ לתמונה כולה.`,
         'faceMatch.adding.images': `מוסיף…`,
         'sprite.confirm': `הוסף לסצנה ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `אין כלום ב-{url}/health. הסר כל נתיב אחרי הפורט, למשל http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `שמור בכל זאת`,
+        'backendSettings.sync.off': `סנכרון Stash כבוי. הוסף url לקובץ visage.toml בתיקיית הנתונים של השרת, ואז הפעל מחדש את Visage Server.`,
+        'backendSettings.sync.lastError': `הסנכרון האחרון נכשל: {error}`,
+        'scene.deepReady': `סריקה מעמיקה: מוכנה.`,
+        'scene.deepOffNoStash': `סריקה מעמיקה: כבויה. אין url של Stash בקובץ visage.toml.`,
+        'scene.deepOffNoFfmpeg': `סריקה מעמיקה: כבויה. ffmpeg לא נמצא. התקן ffmpeg או הפעל את Visage Server עם --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `סריקה מעמיקה: כבויה. ה-ffmpeg שנמצא הוא בנייה סטטית, שנכשלת עם Stash ב-https. התקן את ה-ffmpeg של המערכת שלך.`,
+        'scene.deepUpdateServer': `סריקה מעמיקה: עדכן את Visage Server לגרסה החדשה ביותר.`,
+        'scene.deepNeedsNewerServer': `סריקה מעמיקה דורשת Visage Server חדש יותר. עדכן את Visage Server, ואז טען מחדש את הדף.`,
+        'scene.deepOriginWillRefuse': `הסריקה המעמיקה תדחה את הדף הזה ({origin}). הוסף אותו ל-allowed_origins בקובץ visage.toml, ואז הפעל מחדש את Visage Server.`,
+        'scene.deepOtherStash': `Visage Server קורא מ-{stash_url}, לא מה-Stash הזה ({origin}). כוון את url בקובץ visage.toml ל-Stash הזה, ואז הפעל מחדש את Visage Server.`,
+        'scene.serverScanFailed': `Visage Server לא הצליח לסרוק את הסצנה הזו: {error}`,
+        'backend.cspBlocked': `Stash חוסם בקשות אל {origin}. הוסף "{origin}" תחת ui.csp.connect-src בקובץ plugins/visage/visage.yml, ואז טען מחדש את Stash. חזור על כך אחרי כל עדכון של Visage.`,
+        'backend.mixedContent': `Stash פתוח ב-https, ולכן הדפדפן חוסם את כתובת ה-http {url}. הגש את Visage Server ב-https (למשל דרך ה-reverse proxy שלך), או פתח את Stash ב-http.`,
+        'backend.loopbackRemote': `localhost פירושו המכשיר הזה, לא השרת שלך. בהגדרות Visage, השתמש בכתובת הרשת של השרת, למשל http://192.168.1.50:7860.`,
+        'batch.failedReason': `לא נסרקו ({count}): {reason}`,
     };
 
     const lt = {
@@ -12674,11 +13469,6 @@
         'backendSettings.hintPrefix': `Ar norite, kad jūsų vaizdai liktų jūsų tinkle?`,
         'backendSettings.hintLink': `Paleiskite privatų serverį per Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Naršyklės saugumo politika (CSP) pagal numatytuosius nustatymus leidžia tik`,
-        'backendSettings.csp2': `. Norėdami pasiekti vietinę pamatinę sistemą kitu adresu (pvz., savo LAN IP), pridėkite jį prie`,
-        'backendSettings.csp3': `sąrašo`,
-        'backendSettings.csp4': `faile „Stash“ papildinių aplanke, kitaip užklausos bus užblokuotos. Pastaba: atnaujinus „Visage“ sistema įdiegiama iš naujo`,
-        'backendSettings.csp5': `, todėl tai reikia pakartoti po kiekvieno atnaujinimo.`,
         'backendSettings.testing': `Tikrinamas ryšys…`,
         'backendSettings.testConnection': `Patikrinti ryšį`,
         'backendSettings.testingShort': `Tikrinama…`,
@@ -12766,6 +13556,23 @@
         'scene.failed': `Scenos nuskaitymas nepavyko: {error}`,
         'scene.menuItemTitle': `Raskite visus šioje scenoje. Reikia sugeneruoto sprite sheet arba peržiūros vaizdo įrašo.`,
         'scene.wholeScene': `Visage: atpažinti sceną`,
+        'scene.deepScan': `Visage: gilusis nuskaitymas`,
+        'scene.deepScanTitle': `Nuskaito viso dydžio vaizdo kadrus jūsų Visage Server. Lėtesnis nei scenos nuskaitymas, randa daugiau atlikėjų.`,
+        'scene.deepSprite': `Ieškoma veidų sprite lape`,
+        'scene.deepFrames': `Nuskaitomi vaizdo kadrai`,
+        'scene.deepNoFaces': `Šios scenos vaizdo kadruose atlikėjų nerasta.`,
+        'scene.deepNoFile': `Ši scena neturi vaizdo failo nuskaitymui.`,
+        'scene.deepNoResult': `Gilusis nuskaitymas baigėsi be rezultato. Bandykite dar kartą.`,
+        'scene.deepUpsellTitle': `Gilusis nuskaitymas su Visage Server`,
+        'scene.deepUpsellBody': `Gilusis nuskaitymas skaito viso dydžio vaizdo kadrus iš jūsų paties Stash. Jis veikia tik Visage Server, jūsų privačiame serveryje, o ne bendroje Cloud paslaugoje. Jūsų vaizdo įrašai lieka jūsų kompiuteryje. Pridedamas su Patreon parama.`,
+        'scene.deepRefusedOrigin': `Visage Server nepriima giliojo nuskaitymo iš {origin}. Įtraukite "{origin}" į allowed_origins faile visage.toml, tada paleiskite Visage Server iš naujo.`,
+        'scene.deepBusy': `Visage Server jau atlieka gilųjį nuskaitymą. Bandykite dar kartą, kai jis baigsis.`,
+        'scene.deepUnavailable': `Šiame Visage Server gilusis nuskaitymas išjungtas. Nustatykite url faile visage.toml, įdiekite ffmpeg, tada paleiskite Visage Server iš naujo.`,
+        'batch.deepMenuItem': `Gilusis nuskaitymas su Visage`,
+        'batch.deepTitle': `Gilusis scenų nuskaitymas: {count}`,
+        'batch.upsellCta': `Gaukite Visage Server per Patreon`,
+        'batch.upsellHaveServer': `Turiu serverį`,
+        'batch.upsellClose': `Ne dabar`,
         'banner.changeBackend': `Keisti pamatinę sistemą`,
         'banner.dismiss': `Atmesti`,
         'error.dismiss': `Atmesti`,
@@ -12822,6 +13629,24 @@
         'search.imageMenuTitle': `Sužinokite, kas yra šiame paveikslėlyje. Apveskite veidą rėmeliu arba spustelėkite visam paveikslėliui.`,
         'faceMatch.adding.images': `Pridedama…`,
         'sprite.confirm': `Pridėti prie scenos ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Adresu {url}/health nieko nėra. Pašalinkite kelią po prievado, pavyzdžiui, http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Vis tiek išsaugoti`,
+        'backendSettings.sync.off': `Stash sinchronizacija išjungta. Įtraukite url į visage.toml serverio duomenų aplanke, tada paleiskite Visage Server iš naujo.`,
+        'backendSettings.sync.lastError': `Paskutinė sinchronizacija nepavyko: {error}`,
+        'scene.deepReady': `Gilusis nuskaitymas: paruoštas.`,
+        'scene.deepOffNoStash': `Gilusis nuskaitymas: išjungtas. visage.toml nėra Stash url.`,
+        'scene.deepOffNoFfmpeg': `Gilusis nuskaitymas: išjungtas. ffmpeg nerastas. Įdiekite ffmpeg arba paleiskite Visage Server su --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Gilusis nuskaitymas: išjungtas. Rastas ffmpeg yra statinė versija, kuri neveikia su https Stash. Įdiekite savo sistemos ffmpeg.`,
+        'scene.deepUpdateServer': `Gilusis nuskaitymas: atnaujinkite Visage Server iki naujausios versijos.`,
+        'scene.deepNeedsNewerServer': `Giliajam nuskaitymui reikia naujesnio Visage Server. Atnaujinkite Visage Server, tada iš naujo įkelkite šį puslapį.`,
+        'scene.deepOriginWillRefuse': `Gilusis nuskaitymas atmes šį puslapį ({origin}). Įtraukite jį į allowed_origins faile visage.toml, tada paleiskite Visage Server iš naujo.`,
+        'scene.deepOtherStash': `Visage Server skaito iš {stash_url}, o ne iš šio Stash ({origin}). Nukreipkite url faile visage.toml į šį Stash, tada paleiskite Visage Server iš naujo.`,
+        'scene.serverScanFailed': `Visage Server nepavyko nuskaityti šios scenos: {error}`,
+        'backend.cspBlocked': `Stash blokuoja užklausas į {origin}. Įtraukite "{origin}" į ui.csp.connect-src faile plugins/visage/visage.yml, tada iš naujo įkelkite Stash. Pakartokite tai po kiekvieno Visage atnaujinimo.`,
+        'backend.mixedContent': `Stash atidarytas per https, todėl naršyklė blokuoja http adresą {url}. Teikite Visage Server per https (pavyzdžiui, per atvirkštinį tarpinį serverį) arba atidarykite Stash per http.`,
+        'backend.loopbackRemote': `localhost reiškia šį įrenginį, o ne jūsų serverį. Visage nustatymuose naudokite serverio tinklo adresą, pavyzdžiui, http://192.168.1.50:7860.`,
+        'batch.failedReason': `Nepavyko nuskaityti ({count}): {reason}`,
     };
 
     // Spanish. Missing keys fall back to English automatically.
@@ -12838,11 +13663,6 @@
         'backendSettings.hintPrefix': `¿Quieres que tus imágenes permanezcan en tu red?`,
         'backendSettings.hintLink': `Ejecuta un servidor privado mediante Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `La política de seguridad (CSP) del navegador solo permite`,
-        'backendSettings.csp2': `por defecto. Para alcanzar un backend local en otra dirección (p. ej. tu IP LAN), añádela a la`,
-        'backendSettings.csp3': `lista en el`,
-        'backendSettings.csp4': `archivo dentro de tu carpeta de plugins de Stash; de lo contrario, las solicitudes se bloquearán. Nota: actualizar Visage reinstala`,
-        'backendSettings.csp5': `, por lo que esto debe volver a aplicarse tras cada actualización.`,
         'backendSettings.testing': `Probando la conexión…`,
         'backendSettings.testConnection': `Probar conexión`,
         'backendSettings.testingShort': `Probando…`,
@@ -12935,6 +13755,23 @@
         'scene.failed': `El escaneo de la escena falló: {error}`,
         'scene.menuItemTitle': `Encuentra a todos en esta escena. Necesita un sprite sheet o un vídeo de vista previa generado.`,
         'scene.wholeScene': `Visage: identificar escena`,
+        'scene.deepScan': `Visage: escaneo profundo`,
+        'scene.deepScanTitle': `Escanea fotogramas de vídeo a tamaño completo en tu Visage Server. Más lento que el escaneo de escena, encuentra más intérpretes.`,
+        'scene.deepSprite': `Buscando caras en la hoja de sprites`,
+        'scene.deepFrames': `Escaneando fotogramas de vídeo`,
+        'scene.deepNoFaces': `No se encontraron intérpretes en los fotogramas de vídeo de esta escena.`,
+        'scene.deepNoFile': `Esta escena no tiene un archivo de vídeo para escanear.`,
+        'scene.deepNoResult': `El escaneo profundo terminó sin resultado. Inténtalo de nuevo.`,
+        'scene.deepUpsellTitle': `Escaneo profundo con Visage Server`,
+        'scene.deepUpsellBody': `El escaneo profundo lee fotogramas de vídeo a tamaño completo de tu propio Stash. Solo funciona en Visage Server, tu servidor privado, no en la Cloud compartida. Tus vídeos se quedan en tu equipo. Incluido con el apoyo en Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server no acepta un escaneo profundo desde {origin}. Añade "{origin}" a allowed_origins en visage.toml y reinicia Visage Server.`,
+        'scene.deepBusy': `Visage Server ya está haciendo un escaneo profundo. Inténtalo de nuevo cuando termine.`,
+        'scene.deepUnavailable': `El escaneo profundo está desactivado en este Visage Server. Define url en visage.toml, instala ffmpeg y reinicia Visage Server.`,
+        'batch.deepMenuItem': `Escaneo profundo con Visage`,
+        'batch.deepTitle': `Escaneo profundo de escenas: {count}`,
+        'batch.upsellCta': `Consigue Visage Server en Patreon`,
+        'batch.upsellHaveServer': `Tengo un servidor`,
+        'batch.upsellClose': `Ahora no`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Cambiar backend`,
         'banner.dismiss': `Descartar`,
@@ -12997,6 +13834,24 @@
         'search.imageMenuTitle': `Descubre quién está en esta imagen. Dibuja un recuadro alrededor de una cara, o haz clic para toda la imagen.`,
         'faceMatch.adding.images': `Añadiendo…`,
         'sprite.confirm': `Añadir a la escena ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `No hay nada en {url}/health. Quita cualquier ruta después del puerto, por ejemplo http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Guardar de todos modos`,
+        'backendSettings.sync.off': `La sincronización con Stash está desactivada. Añade url a visage.toml en la carpeta de datos del servidor y reinicia Visage Server.`,
+        'backendSettings.sync.lastError': `La última sincronización falló: {error}`,
+        'scene.deepReady': `Escaneo profundo: listo.`,
+        'scene.deepOffNoStash': `Escaneo profundo: desactivado. No hay url de Stash en visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Escaneo profundo: desactivado. No se encontró ffmpeg. Instala ffmpeg o inicia Visage Server con --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Escaneo profundo: desactivado. El ffmpeg encontrado es una compilación estática, que falla con un Stash en https. Instala el ffmpeg de tu sistema.`,
+        'scene.deepUpdateServer': `Escaneo profundo: actualiza Visage Server a la versión más reciente.`,
+        'scene.deepNeedsNewerServer': `El escaneo profundo necesita un Visage Server más reciente. Actualiza Visage Server y recarga esta página.`,
+        'scene.deepOriginWillRefuse': `El escaneo profundo rechazará esta página ({origin}). Añádela a allowed_origins en visage.toml y reinicia Visage Server.`,
+        'scene.deepOtherStash': `Visage Server lee de {stash_url}, no de este Stash ({origin}). Apunta url en visage.toml a este Stash y reinicia Visage Server.`,
+        'scene.serverScanFailed': `Visage Server no pudo escanear esta escena: {error}`,
+        'backend.cspBlocked': `Stash bloquea las solicitudes a {origin}. Añade "{origin}" en ui.csp.connect-src de plugins/visage/visage.yml y recarga Stash. Repítelo después de cada actualización de Visage.`,
+        'backend.mixedContent': `Stash está abierto por https, así que el navegador bloquea la dirección http {url}. Sirve Visage Server por https (por ejemplo con tu proxy inverso) o abre Stash por http.`,
+        'backend.loopbackRemote': `localhost significa este dispositivo, no tu servidor. En los ajustes de Visage, usa la dirección de red del servidor, por ejemplo http://192.168.1.50:7860.`,
+        'batch.failedReason': `No se pudo escanear ({count}): {reason}`,
     };
 
     const ar = {
@@ -13011,11 +13866,6 @@
         'backendSettings.hintPrefix': `تريد إبقاء صورك داخل شبكتك؟`,
         'backendSettings.hintLink': `شغّل خادمًا خاصًا عبر Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `تسمح سياسة أمان المتصفح (CSP) فقط بـ`,
-        'backendSettings.csp2': `افتراضيًا. للوصول إلى واجهة خلفية محلية على عنوان آخر (مثل IP شبكة LAN الخاصة بك)، أضفها إلى`,
-        'backendSettings.csp3': `في`,
-        'backendSettings.csp4': `داخل مجلد إضافات Stash لديك، وإلا فسيتم حظر الطلبات. ملاحظة: تحديث Visage يعيد تثبيت`,
-        'backendSettings.csp5': `، لذا يجب إعادة تطبيق هذا بعد كل تحديث.`,
         'backendSettings.testing': `جارٍ اختبار الاتصال…`,
         'backendSettings.testConnection': `اختبار الاتصال`,
         'backendSettings.testingShort': `جارٍ الاختبار…`,
@@ -13103,6 +13953,23 @@
         'scene.failed': `فشل مسح المشهد: {error}`,
         'scene.menuItemTitle': `اعثر على الجميع في هذا المشهد. يتطلب sprite sheet أو فيديو معاينة تم إنشاؤه.`,
         'scene.wholeScene': `Visage: التعرف على المشهد`,
+        'scene.deepScan': `Visage: فحص عميق`,
+        'scene.deepScanTitle': `افحص إطارات الفيديو بالحجم الكامل على Visage Server. أبطأ من مسح المشهد، ويجد مؤدين أكثر.`,
+        'scene.deepSprite': `جارٍ البحث عن الوجوه في لوحة اللقطات`,
+        'scene.deepFrames': `جارٍ فحص إطارات الفيديو`,
+        'scene.deepNoFaces': `لم يتم العثور على مؤدين في إطارات الفيديو لهذا المشهد.`,
+        'scene.deepNoFile': `لا يحتوي هذا المشهد على ملف فيديو لفحصه.`,
+        'scene.deepNoResult': `انتهى الفحص العميق بدون نتيجة. حاول مرة أخرى.`,
+        'scene.deepUpsellTitle': `الفحص العميق مع Visage Server`,
+        'scene.deepUpsellBody': `يقرأ الفحص العميق إطارات الفيديو بالحجم الكامل من Stash الخاص بك. يعمل فقط على Visage Server، خادمك الخاص، وليس على Cloud المشترك. تبقى مقاطع الفيديو على جهازك. متوفر مع دعم Patreon.`,
+        'scene.deepRefusedOrigin': `لا يقبل Visage Server فحصًا عميقًا من {origin}. أضف "{origin}" إلى allowed_origins في visage.toml، ثم أعد تشغيل Visage Server.`,
+        'scene.deepBusy': `يُجري Visage Server فحصًا عميقًا بالفعل. حاول مرة أخرى عند انتهائه.`,
+        'scene.deepUnavailable': `الفحص العميق متوقف على Visage Server هذا. اضبط url في visage.toml، وثبّت ffmpeg، ثم أعد تشغيل Visage Server.`,
+        'batch.deepMenuItem': `فحص عميق باستخدام Visage`,
+        'batch.deepTitle': `فحص عميق للمشاهد: {count}`,
+        'batch.upsellCta': `احصل على Visage Server على Patreon`,
+        'batch.upsellHaveServer': `لدي خادم`,
+        'batch.upsellClose': `ليس الآن`,
         'banner.changeBackend': `تغيير الواجهة الخلفية`,
         'banner.dismiss': `إغلاق`,
         'error.dismiss': `إغلاق`,
@@ -13159,6 +14026,24 @@
         'search.imageMenuTitle': `اعرف من في هذه الصورة. اسحب مربعًا حول وجه، أو انقر للصورة كاملة.`,
         'faceMatch.adding.images': `جارٍ الإضافة…`,
         'sprite.confirm': `إضافة إلى المشهد ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `لا يوجد شيء على {url}/health. احذف أي مسار بعد المنفذ، مثل http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `احفظ على أي حال`,
+        'backendSettings.sync.off': `مزامنة Stash متوقفة. أضف url إلى visage.toml في مجلد بيانات الخادم، ثم أعد تشغيل Visage Server.`,
+        'backendSettings.sync.lastError': `فشلت آخر مزامنة: {error}`,
+        'scene.deepReady': `الفحص العميق: جاهز.`,
+        'scene.deepOffNoStash': `الفحص العميق: متوقف. لا يوجد url لـ Stash في visage.toml.`,
+        'scene.deepOffNoFfmpeg': `الفحص العميق: متوقف. لم يُعثر على ffmpeg. ثبّت ffmpeg أو شغّل Visage Server مع --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `الفحص العميق: متوقف. ffmpeg الذي عُثر عليه إصدار ثابت (static build) يفشل مع Stash عبر https. ثبّت ffmpeg الخاص بنظامك.`,
+        'scene.deepUpdateServer': `الفحص العميق: حدّث Visage Server إلى أحدث إصدار.`,
+        'scene.deepNeedsNewerServer': `يحتاج الفحص العميق إلى Visage Server أحدث. حدّث Visage Server، ثم أعد تحميل هذه الصفحة.`,
+        'scene.deepOriginWillRefuse': `سيرفض الفحص العميق هذه الصفحة ({origin}). أضفها إلى allowed_origins في visage.toml، ثم أعد تشغيل Visage Server.`,
+        'scene.deepOtherStash': `يقرأ Visage Server من {stash_url}، وليس من Stash هذا ({origin}). اجعل url في visage.toml يشير إلى Stash هذا، ثم أعد تشغيل Visage Server.`,
+        'scene.serverScanFailed': `تعذر على Visage Server فحص هذا المشهد: {error}`,
+        'backend.cspBlocked': `يحظر Stash الطلبات إلى {origin}. أضف "{origin}" تحت ui.csp.connect-src في plugins/visage/visage.yml، ثم أعد تحميل Stash. كرر ذلك بعد كل تحديث لـ Visage.`,
+        'backend.mixedContent': `Stash مفتوح عبر https، لذا يحظر المتصفح عنوان http التالي: {url}. قدّم Visage Server عبر https (مثلًا عبر الوكيل العكسي لديك)، أو افتح Stash عبر http.`,
+        'backend.loopbackRemote': `localhost تعني هذا الجهاز، وليس خادمك. في إعدادات Visage، استخدم عنوان الشبكة للخادم، مثل http://192.168.1.50:7860.`,
+        'batch.failedReason': `تعذر الفحص ({count}): {reason}`,
     };
 
     // French. Missing keys fall back to English automatically.
@@ -13175,11 +14060,6 @@
         'backendSettings.hintPrefix': `Vous voulez que vos images restent sur votre réseau ?`,
         'backendSettings.hintLink': `Exécuter un serveur privé via Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `La politique de sécurité (CSP) du navigateur n'autorise que`,
-        'backendSettings.csp2': `par défaut. Pour joindre un backend local sur une autre adresse (p. ex. votre IP LAN), ajoutez-la à la`,
-        'backendSettings.csp3': `liste dans le`,
-        'backendSettings.csp4': `fichier dans votre dossier de plugins Stash, sinon les requêtes seront bloquées. Remarque : une mise à jour de Visage réinstalle`,
-        'backendSettings.csp5': `, donc cela doit être réappliqué après chaque mise à jour.`,
         'backendSettings.testing': `Test de la connexion…`,
         'backendSettings.testConnection': `Tester la connexion`,
         'backendSettings.testingShort': `Test en cours…`,
@@ -13272,6 +14152,23 @@
         'scene.failed': `Échec de l'analyse de la scène : {error}`,
         'scene.menuItemTitle': `Trouvez toutes les personnes de cette scène. Nécessite une planche de vignettes ou une vidéo d’aperçu générée.`,
         'scene.wholeScene': `Visage : identifier la scène`,
+        'scene.deepScan': `Visage : analyse approfondie`,
+        'scene.deepScanTitle': `Analyse les images vidéo en taille réelle sur votre Visage Server. Plus lente que l'analyse de scène, trouve plus d'interprètes.`,
+        'scene.deepSprite': `Recherche de visages dans la feuille de sprite`,
+        'scene.deepFrames': `Analyse des images vidéo`,
+        'scene.deepNoFaces': `Aucun interprète trouvé dans les images vidéo de cette scène.`,
+        'scene.deepNoFile': `Cette scène n'a pas de fichier vidéo à analyser.`,
+        'scene.deepNoResult': `L'analyse approfondie s'est terminée sans résultat. Réessayez.`,
+        'scene.deepUpsellTitle': `Analyse approfondie avec Visage Server`,
+        'scene.deepUpsellBody': `L'analyse approfondie lit les images vidéo en taille réelle depuis votre propre Stash. Elle fonctionne uniquement sur Visage Server, votre serveur privé, pas sur le Cloud partagé. Vos vidéos restent sur votre machine. Inclus avec le soutien Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server n'accepte pas d'analyse approfondie depuis {origin}. Ajoutez « {origin} » à allowed_origins dans visage.toml, puis redémarrez Visage Server.`,
+        'scene.deepBusy': `Visage Server effectue déjà une analyse approfondie. Réessayez quand elle sera terminée.`,
+        'scene.deepUnavailable': `L'analyse approfondie est désactivée sur ce Visage Server. Définissez url dans visage.toml, installez ffmpeg, puis redémarrez Visage Server.`,
+        'batch.deepMenuItem': `Analyse approfondie avec Visage`,
+        'batch.deepTitle': `Analyse approfondie des scènes : {count}`,
+        'batch.upsellCta': `Obtenir Visage Server sur Patreon`,
+        'batch.upsellHaveServer': `J'ai un serveur`,
+        'batch.upsellClose': `Pas maintenant`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Changer de backend`,
         'banner.dismiss': `Ignorer`,
@@ -13334,6 +14231,24 @@
         'search.imageMenuTitle': `Trouvez qui est sur cette photo. Tracez un cadre autour d’un visage, ou cliquez pour toute la photo.`,
         'faceMatch.adding.images': `Ajout…`,
         'sprite.confirm': `Ajouter à la scène ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Rien à {url}/health. Supprimez tout chemin après le port, par exemple http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Enregistrer quand même`,
+        'backendSettings.sync.off': `La synchronisation Stash est désactivée. Ajoutez url à visage.toml dans le dossier de données du serveur, puis redémarrez Visage Server.`,
+        'backendSettings.sync.lastError': `Échec de la dernière synchronisation : {error}`,
+        'scene.deepReady': `Analyse approfondie : prête.`,
+        'scene.deepOffNoStash': `Analyse approfondie : désactivée. Aucune url Stash dans visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Analyse approfondie : désactivée. ffmpeg introuvable. Installez ffmpeg ou démarrez Visage Server avec --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Analyse approfondie : désactivée. Le ffmpeg trouvé est une version statique, qui échoue avec un Stash en https. Installez le ffmpeg de votre système.`,
+        'scene.deepUpdateServer': `Analyse approfondie : mettez Visage Server à jour vers la dernière version.`,
+        'scene.deepNeedsNewerServer': `L'analyse approfondie nécessite un Visage Server plus récent. Mettez Visage Server à jour, puis rechargez cette page.`,
+        'scene.deepOriginWillRefuse': `L'analyse approfondie refusera cette page ({origin}). Ajoutez-la à allowed_origins dans visage.toml, puis redémarrez Visage Server.`,
+        'scene.deepOtherStash': `Visage Server lit depuis {stash_url}, pas depuis ce Stash ({origin}). Faites pointer url dans visage.toml vers ce Stash, puis redémarrez Visage Server.`,
+        'scene.serverScanFailed': `Visage Server n'a pas pu analyser cette scène : {error}`,
+        'backend.cspBlocked': `Stash bloque les requêtes vers {origin}. Ajoutez "{origin}" sous ui.csp.connect-src dans plugins/visage/visage.yml, puis rechargez Stash. Refaites-le après chaque mise à jour de Visage.`,
+        'backend.mixedContent': `Stash est ouvert en https, donc le navigateur bloque l'adresse http {url}. Servez Visage Server en https (par exemple via votre proxy inverse), ou ouvrez Stash en http.`,
+        'backend.loopbackRemote': `localhost désigne cet appareil, pas votre serveur. Dans les paramètres de Visage, utilisez l'adresse réseau du serveur, par exemple http://192.168.1.50:7860.`,
+        'batch.failedReason': `Analyse impossible ({count}) : {reason}`,
     };
 
     // Norwegian Nynorsk.
@@ -13349,11 +14264,6 @@
         'backendSettings.hintPrefix': `Vil du at bileta dine skal bli på nettverket ditt?`,
         'backendSettings.hintLink': `Køyr ein privat server via Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Sikkerheitspolitikken til nettlesaren (CSP) tillèt berre",
-        'backendSettings.csp2': `som standard. For å nå ein lokal backend på ei anna adresse (t.d. LAN-IP-en din) må du leggje han til i`,
-        'backendSettings.csp3': `lista i`,
-        'backendSettings.csp4': `-fila i Stash-plugins-mappa di, elles vert førespurnadane blokkerte. Merk: oppdatering av Visage installerer`,
-        'backendSettings.csp5': `på nytt, så dette må gjerast på nytt etter kvar oppdatering.`,
         'backendSettings.testing': `Testar tilkopling…`,
         'backendSettings.testConnection': `Test tilkopling`,
         'backendSettings.testingShort': `Testar…`,
@@ -13441,6 +14351,23 @@
         'scene.failed': `Scene-skanning mislukkast: {error}`,
         'scene.menuItemTitle': `Finn alle i denne scena. Krev eit generert sprite sheet eller ein førehandsvisingsvideo.`,
         'scene.wholeScene': `Visage: Identifiser scene`,
+        'scene.deepScan': `Visage: Djupskanning`,
+        'scene.deepScanTitle': `Skannar videobilete i full storleik på Visage Server. Tregare enn scene-skanninga, finn fleire performarar.`,
+        'scene.deepSprite': `Finn andlet i sprite-arket`,
+        'scene.deepFrames': `Skannar videobilete`,
+        'scene.deepNoFaces': `Fann ingen performarar i videobileta i denne scenen.`,
+        'scene.deepNoFile': `Denne scenen har inga videofil å skanne.`,
+        'scene.deepNoResult': `Djupskanninga enda utan resultat. Prøv igjen.`,
+        'scene.deepUpsellTitle': `Djupskanning med Visage Server`,
+        'scene.deepUpsellBody': `Djupskanninga les videobilete i full storleik frå din eigen Stash. Ho køyrer berre på Visage Server, din private server, ikkje i den delte Cloud-tenesta. Videoane dine blir verande på maskina di. Følgjer med Patreon-støtte.`,
+        'scene.deepRefusedOrigin': `Visage Server godtek ikkje ei djupskanning frå {origin}. Legg til "{origin}" i allowed_origins i visage.toml, og start så Visage Server på nytt.`,
+        'scene.deepBusy': `Visage Server køyrer alt ei djupskanning. Prøv igjen når ho er ferdig.`,
+        'scene.deepUnavailable': `Djupskanning er slått av på denne Visage Server. Set url i visage.toml, installer ffmpeg, og start så Visage Server på nytt.`,
+        'batch.deepMenuItem': `Djupskanning med Visage`,
+        'batch.deepTitle': `Djupskannar scener: {count}`,
+        'batch.upsellCta': `Få Visage Server på Patreon`,
+        'batch.upsellHaveServer': `Eg har ein server`,
+        'batch.upsellClose': `Ikkje no`,
         'banner.changeBackend': `Byt backend`,
         'banner.dismiss': `Avvis`,
         'error.dismiss': `Avvis`,
@@ -13497,6 +14424,24 @@
         'search.imageMenuTitle': `Finn ut kven som er på fotoet. Dra ei ramme rundt eit andlet, eller klikk for heile fotoet.`,
         'faceMatch.adding.images': `Legg til…`,
         'sprite.confirm': `Legg til i scene ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Ingenting på {url}/health. Fjern eventuell sti etter porten, til dømes http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Lagre likevel`,
+        'backendSettings.sync.off': `Stash-synkronisering er slått av. Legg til url i visage.toml i datamappa til tenaren, og start så Visage Server på nytt.`,
+        'backendSettings.sync.lastError': `Siste synkronisering mislukkast: {error}`,
+        'scene.deepReady': `Djupskanning: klar.`,
+        'scene.deepOffNoStash': `Djupskanning: av. Ingen Stash-url i visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Djupskanning: av. Fann ikkje ffmpeg. Installer ffmpeg, eller start Visage Server med --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Djupskanning: av. ffmpeg som vart funnen, er ein statisk build som feilar med Stash over https. Installer ffmpeg frå systemet ditt.`,
+        'scene.deepUpdateServer': `Djupskanning: oppdater Visage Server til nyaste versjon.`,
+        'scene.deepNeedsNewerServer': `Djupskanning krev ein nyare Visage Server. Oppdater Visage Server, og last så inn denne sida på nytt.`,
+        'scene.deepOriginWillRefuse': `Djupskanning vil avvise denne sida ({origin}). Legg ho til i allowed_origins i visage.toml, og start så Visage Server på nytt.`,
+        'scene.deepOtherStash': `Visage Server les frå {stash_url}, ikkje frå denne Stash ({origin}). Peik url i visage.toml mot denne Stash, og start så Visage Server på nytt.`,
+        'scene.serverScanFailed': `Visage Server kunne ikkje skanne denne scena: {error}`,
+        'backend.cspBlocked': `Stash blokkerer førespurnader til {origin}. Legg til "{origin}" under ui.csp.connect-src i plugins/visage/visage.yml, og last så Stash inn på nytt. Gjer dette igjen etter kvar Visage-oppdatering.`,
+        'backend.mixedContent': `Stash er opna over https, så nettlesaren blokkerer http-adressa {url}. Køyr Visage Server over https (til dømes via reverse proxy-en din), eller opne Stash over http.`,
+        'backend.loopbackRemote': `localhost tyder denne eininga, ikkje tenaren din. Bruk nettverksadressa til tenaren i Visage-innstillingane, til dømes http://192.168.1.50:7860.`,
+        'batch.failedReason': `Kunne ikkje skannast ({count}): {reason}`,
     };
 
     const ko = {
@@ -13511,11 +14456,6 @@
         'backendSettings.hintPrefix': `이미지를 네트워크 내에 유지하고 싶으신가요?`,
         'backendSettings.hintLink': `Patreon을 통해 개인 서버 실행`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `브라우저의 보안 정책(CSP)은 기본적으로`,
-        'backendSettings.csp2': `만 허용합니다. 다른 주소(예: LAN IP)에 있는 로컬 백엔드에 연결하려면 해당 주소를`,
-        'backendSettings.csp3': `의`,
-        'backendSettings.csp4': `파일 목록에 추가하세요. 이 파일은 Stash 플러그인 폴더에 있습니다. 추가하지 않으면 요청이 차단됩니다. 참고: Visage를 업데이트하면`,
-        'backendSettings.csp5': `이(가) 다시 설치되므로 업데이트할 때마다 다시 적용해야 합니다.`,
         'backendSettings.testing': `연결 테스트 중…`,
         'backendSettings.testConnection': `연결 테스트`,
         'backendSettings.testingShort': `테스트 중…`,
@@ -13603,6 +14543,23 @@
         'scene.failed': `장면 스캔 실패: {error}`,
         'scene.menuItemTitle': `이 장면의 모든 사람을 찾습니다. 생성된 스프라이트 시트나 미리보기 영상이 필요합니다.`,
         'scene.wholeScene': `Visage: 장면 식별`,
+        'scene.deepScan': `Visage: 정밀 스캔`,
+        'scene.deepScanTitle': `Visage Server에서 원본 크기의 비디오 프레임을 스캔합니다. 장면 스캔보다 느리지만 더 많은 출연자를 찾습니다.`,
+        'scene.deepSprite': `스프라이트 시트에서 얼굴을 찾는 중`,
+        'scene.deepFrames': `비디오 프레임을 스캔하는 중`,
+        'scene.deepNoFaces': `이 장면의 비디오 프레임에서 출연자를 찾을 수 없습니다.`,
+        'scene.deepNoFile': `이 장면에는 스캔할 비디오 파일이 없습니다.`,
+        'scene.deepNoResult': `정밀 스캔이 결과 없이 끝났습니다. 다시 시도하세요.`,
+        'scene.deepUpsellTitle': `Visage Server로 정밀 스캔`,
+        'scene.deepUpsellBody': `정밀 스캔은 내 Stash에서 원본 크기의 비디오 프레임을 읽습니다. 공유 Cloud가 아닌 개인 서버인 Visage Server에서만 실행됩니다. 동영상은 내 컴퓨터에 그대로 남습니다. Patreon 후원으로 이용할 수 있습니다.`,
+        'scene.deepRefusedOrigin': `Visage Server가 {origin}에서 보낸 정밀 스캔을 받지 않습니다. visage.toml의 allowed_origins에 "{origin}"을 추가한 뒤 Visage Server를 다시 시작하세요.`,
+        'scene.deepBusy': `Visage Server에서 이미 정밀 스캔이 실행 중입니다. 끝난 뒤 다시 시도하세요.`,
+        'scene.deepUnavailable': `이 Visage Server에서는 정밀 스캔이 꺼져 있습니다. visage.toml에 url을 설정하고 ffmpeg를 설치한 뒤 Visage Server를 다시 시작하세요.`,
+        'batch.deepMenuItem': `Visage로 정밀 스캔`,
+        'batch.deepTitle': `장면 {count}개 정밀 스캔 중`,
+        'batch.upsellCta': `Patreon에서 Visage Server 받기`,
+        'batch.upsellHaveServer': `서버가 있습니다`,
+        'batch.upsellClose': `나중에`,
         'banner.changeBackend': `백엔드 변경`,
         'banner.dismiss': `닫기`,
         'error.dismiss': `닫기`,
@@ -13659,6 +14616,24 @@
         'search.imageMenuTitle': `이 이미지에 누가 있는지 찾습니다. 얼굴 주위에 상자를 그리거나 클릭해 이미지 전체를 사용하세요.`,
         'faceMatch.adding.images': `추가 중…`,
         'sprite.confirm': `장면에 추가 ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `{url}/health에 아무것도 없습니다. 포트 뒤의 경로를 지우세요. 예: http://192.168.1.50:7860`,
+        'backendSettings.saveAnyway': `그래도 저장`,
+        'backendSettings.sync.off': `Stash 동기화가 꺼져 있습니다. 서버 데이터 폴더의 visage.toml에 url을 추가한 뒤 Visage Server를 다시 시작하세요.`,
+        'backendSettings.sync.lastError': `마지막 동기화 실패: {error}`,
+        'scene.deepReady': `정밀 스캔: 준비됨.`,
+        'scene.deepOffNoStash': `정밀 스캔: 꺼짐. visage.toml에 Stash url이 없습니다.`,
+        'scene.deepOffNoFfmpeg': `정밀 스캔: 꺼짐. ffmpeg를 찾을 수 없습니다. ffmpeg를 설치하거나 --ffmpeg <path>로 Visage Server를 시작하세요.`,
+        'scene.deepOffStaticFfmpeg': `정밀 스캔: 꺼짐. 찾은 ffmpeg는 정적 빌드이며 https Stash에서 실패합니다. 시스템의 ffmpeg를 설치하세요.`,
+        'scene.deepUpdateServer': `정밀 스캔: Visage Server를 최신 버전으로 업데이트하세요.`,
+        'scene.deepNeedsNewerServer': `정밀 스캔에는 더 새로운 Visage Server가 필요합니다. Visage Server를 업데이트한 뒤 이 페이지를 새로고침하세요.`,
+        'scene.deepOriginWillRefuse': `정밀 스캔이 이 페이지({origin})를 거부합니다. visage.toml의 allowed_origins에 추가한 뒤 Visage Server를 다시 시작하세요.`,
+        'scene.deepOtherStash': `Visage Server는 이 Stash({origin})가 아니라 {stash_url}에서 읽습니다. visage.toml의 url을 이 Stash로 지정한 뒤 Visage Server를 다시 시작하세요.`,
+        'scene.serverScanFailed': `Visage Server가 이 장면을 스캔하지 못했습니다: {error}`,
+        'backend.cspBlocked': `Stash가 {origin}에 대한 요청을 차단합니다. plugins/visage/visage.yml의 ui.csp.connect-src에 "{origin}"을 추가한 뒤 Stash를 새로고침하세요. Visage를 업데이트할 때마다 다시 하세요.`,
+        'backend.mixedContent': `Stash가 https로 열려 있어 브라우저가 http 주소 {url}을 차단합니다. Visage Server를 https로 제공하거나(예: 리버스 프록시 사용) Stash를 http로 여세요.`,
+        'backend.loopbackRemote': `localhost는 서버가 아니라 이 기기를 뜻합니다. Visage 설정에서 서버의 네트워크 주소를 사용하세요. 예: http://192.168.1.50:7860`,
+        'batch.failedReason': `스캔 실패 {count}개: {reason}`,
     };
 
     const zhCn = {
@@ -13673,11 +14648,6 @@
         'backendSettings.hintPrefix': `希望图像保留在你的网络中？`,
         'backendSettings.hintLink': `通过 Patreon 运行私有服务器`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `浏览器的安全策略（CSP）仅允许`,
-        'backendSettings.csp2': `默认情况下。要访问其他地址（例如你的局域网 IP）上的本地后端，请将其添加到`,
-        'backendSettings.csp3': `中的`,
-        'backendSettings.csp4': `文件的列表里，该文件位于你的 Stash 插件文件夹中，否则请求将被阻止。注意：更新 Visage 会重新安装`,
-        'backendSettings.csp5': `，因此每次更新后都必须重新应用此设置。`,
         'backendSettings.testing': `正在测试连接…`,
         'backendSettings.testConnection': `测试连接`,
         'backendSettings.testingShort': `正在测试…`,
@@ -13765,6 +14735,23 @@
         'scene.failed': `场景扫描失败：{error}`,
         'scene.menuItemTitle': `找出此场景中的所有人。需要已生成的雪碧图或预览视频。`,
         'scene.wholeScene': `Visage:识别场景`,
+        'scene.deepScan': `Visage:深度扫描`,
+        'scene.deepScanTitle': `在你的 Visage Server 上扫描全尺寸视频帧。比场景扫描慢，但能找到更多表演者。`,
+        'scene.deepSprite': `正在精灵图中查找人脸`,
+        'scene.deepFrames': `正在扫描视频帧`,
+        'scene.deepNoFaces': `在此场景的视频帧中未找到表演者。`,
+        'scene.deepNoFile': `此场景没有可扫描的视频文件。`,
+        'scene.deepNoResult': `深度扫描结束，但没有结果。请重试。`,
+        'scene.deepUpsellTitle': `使用 Visage Server 进行深度扫描`,
+        'scene.deepUpsellBody': `深度扫描会从你自己的 Stash 读取全尺寸视频帧。它只在你的私有服务器 Visage Server 上运行，不在共享的 Cloud 上运行。你的视频始终留在你的机器上。随 Patreon 支持提供。`,
+        'scene.deepRefusedOrigin': `Visage Server 不接受来自 {origin} 的深度扫描。请将 "{origin}" 添加到 visage.toml 的 allowed_origins 中，然后重启 Visage Server。`,
+        'scene.deepBusy': `Visage Server 正在进行一次深度扫描。请在完成后重试。`,
+        'scene.deepUnavailable': `此 Visage Server 未启用深度扫描。请在 visage.toml 中设置 url，安装 ffmpeg，然后重启 Visage Server。`,
+        'batch.deepMenuItem': `使用 Visage 深度扫描`,
+        'batch.deepTitle': `正在深度扫描 {count} 个场景`,
+        'batch.upsellCta': `在 Patreon 获取 Visage Server`,
+        'batch.upsellHaveServer': `我有服务器`,
+        'batch.upsellClose': `暂不`,
         'banner.changeBackend': `更换后端`,
         'banner.dismiss': `关闭`,
         'error.dismiss': `关闭`,
@@ -13821,6 +14808,24 @@
         'search.imageMenuTitle': `找出这张图片里是谁。在人脸周围拖出方框,或点击使用整张图片。`,
         'faceMatch.adding.images': `正在添加…`,
         'sprite.confirm': `添加到场景 ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `{url}/health 上没有内容。请删除端口后面的路径，例如 http://192.168.1.50:7860。`,
+        'backendSettings.saveAnyway': `仍然保存`,
+        'backendSettings.sync.off': `Stash 同步已关闭。请在服务器数据文件夹的 visage.toml 中添加 url，然后重启 Visage Server。`,
+        'backendSettings.sync.lastError': `上次同步失败：{error}`,
+        'scene.deepReady': `深度扫描：就绪。`,
+        'scene.deepOffNoStash': `深度扫描：已关闭。visage.toml 中没有 Stash url。`,
+        'scene.deepOffNoFfmpeg': `深度扫描：已关闭。未找到 ffmpeg。请安装 ffmpeg，或使用 --ffmpeg <path> 启动 Visage Server。`,
+        'scene.deepOffStaticFfmpeg': `深度扫描：已关闭。找到的 ffmpeg 是静态构建版本，在 https 的 Stash 上会失败。请安装系统自带的 ffmpeg。`,
+        'scene.deepUpdateServer': `深度扫描：请将 Visage Server 更新到最新版本。`,
+        'scene.deepNeedsNewerServer': `深度扫描需要更新版本的 Visage Server。请更新 Visage Server，然后重新加载此页面。`,
+        'scene.deepOriginWillRefuse': `深度扫描将拒绝此页面（{origin}）。请将其添加到 visage.toml 的 allowed_origins 中，然后重启 Visage Server。`,
+        'scene.deepOtherStash': `Visage Server 读取的是 {stash_url}，而不是此 Stash（{origin}）。请将 visage.toml 中的 url 指向此 Stash，然后重启 Visage Server。`,
+        'scene.serverScanFailed': `Visage Server 无法扫描此场景：{error}`,
+        'backend.cspBlocked': `Stash 阻止了对 {origin} 的请求。请在 plugins/visage/visage.yml 的 ui.csp.connect-src 下添加 "{origin}"，然后重新加载 Stash。每次更新 Visage 后都需重新添加。`,
+        'backend.mixedContent': `Stash 通过 https 打开，因此浏览器阻止了 http 地址 {url}。请通过 https 提供 Visage Server（例如通过反向代理），或通过 http 打开 Stash。`,
+        'backend.loopbackRemote': `localhost 指的是这台设备，而不是你的服务器。请在 Visage 设置中使用服务器的网络地址，例如 http://192.168.1.50:7860。`,
+        'batch.failedReason': `{count} 个无法扫描：{reason}`,
     };
 
     const bg = {
@@ -13835,11 +14840,6 @@
         'backendSettings.hintPrefix': `Искате ли изображенията ви да останат във вашата мрежа?`,
         'backendSettings.hintLink': `Стартирайте частен сървър чрез Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Политиката за сигурност на браузъра (CSP) по подразбиране позволява само`,
-        'backendSettings.csp2': `. За да достигнете до локален бекенд на друг адрес (напр. IP на вашата LAN), добавете го към`,
-        'backendSettings.csp3': `списъка в`,
-        'backendSettings.csp4': `файла в папката за плъгини на Stash, в противен случай заявките ще бъдат блокирани. Забележка: актуализирането на Visage преинсталира`,
-        'backendSettings.csp5': `, така че това трябва да се приложи отново след всяка актуализация.`,
         'backendSettings.testing': `Тестване на връзката…`,
         'backendSettings.testConnection': `Тествай връзката`,
         'backendSettings.testingShort': `Тестване…`,
@@ -13927,6 +14927,23 @@
         'scene.failed': `Сканирането на сцената се провали: {error}`,
         'scene.menuItemTitle': `Намерете всички в тази сцена. Нужен е генериран sprite sheet или видео за преглед.`,
         'scene.wholeScene': `Visage: Разпознай сцената`,
+        'scene.deepScan': `Visage: Дълбоко сканиране`,
+        'scene.deepScanTitle': `Сканира кадри от видеото в пълен размер на вашия Visage Server. По-бавно от сканирането на сцената, открива повече изпълнители.`,
+        'scene.deepSprite': `Търсене на лица в спрайт листа`,
+        'scene.deepFrames': `Сканиране на видео кадри`,
+        'scene.deepNoFaces': `Не са открити изпълнители във видео кадрите на тази сцена.`,
+        'scene.deepNoFile': `Тази сцена няма видео файл за сканиране.`,
+        'scene.deepNoResult': `Дълбокото сканиране приключи без резултат. Опитайте отново.`,
+        'scene.deepUpsellTitle': `Дълбоко сканиране с Visage Server`,
+        'scene.deepUpsellBody': `Дълбокото сканиране чете видеокадри в пълен размер от вашия собствен Stash. Работи само на Visage Server, вашия частен сървър, а не в споделения Cloud. Видеоклиповете ви остават на вашата машина. Идва с подкрепа в Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server не приема дълбоко сканиране от {origin}. Добавете "{origin}" към allowed_origins във visage.toml, след това рестартирайте Visage Server.`,
+        'scene.deepBusy': `Visage Server вече изпълнява дълбоко сканиране. Опитайте отново, когато приключи.`,
+        'scene.deepUnavailable': `Дълбокото сканиране е изключено на този Visage Server. Задайте url във visage.toml, инсталирайте ffmpeg, след това рестартирайте Visage Server.`,
+        'batch.deepMenuItem': `Дълбоко сканиране с Visage`,
+        'batch.deepTitle': `Дълбоко сканиране на сцени: {count}`,
+        'batch.upsellCta': `Вземете Visage Server в Patreon`,
+        'batch.upsellHaveServer': `Имам сървър`,
+        'batch.upsellClose': `Не сега`,
         'banner.changeBackend': `Смяна на бекенда`,
         'banner.dismiss': `Отхвърляне`,
         'error.dismiss': `Отхвърляне`,
@@ -13983,6 +15000,24 @@
         'search.imageMenuTitle': `Разберете кой е в това изображение. Плъзнете рамка около лице или щракнете за цялото изображение.`,
         'faceMatch.adding.images': `Добавяне…`,
         'sprite.confirm': `Добави към сцената ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `На {url}/health няма нищо. Премахнете пътя след порта, например http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Запазване въпреки това`,
+        'backendSettings.sync.off': `Синхронизацията със Stash е изключена. Добавете url във visage.toml в папката с данни на сървъра, след това рестартирайте Visage Server.`,
+        'backendSettings.sync.lastError': `Последната синхронизация е неуспешна: {error}`,
+        'scene.deepReady': `Дълбоко сканиране: готово.`,
+        'scene.deepOffNoStash': `Дълбоко сканиране: изключено. Няма url на Stash във visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Дълбоко сканиране: изключено. ffmpeg не е намерен. Инсталирайте ffmpeg или стартирайте Visage Server с --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Дълбоко сканиране: изключено. Намереният ffmpeg е статична компилация, която не работи със Stash през https. Инсталирайте ffmpeg на системата си.`,
+        'scene.deepUpdateServer': `Дълбоко сканиране: обновете Visage Server до най-новата версия.`,
+        'scene.deepNeedsNewerServer': `Дълбокото сканиране изисква по-нов Visage Server. Обновете Visage Server, след това презаредете тази страница.`,
+        'scene.deepOriginWillRefuse': `Дълбокото сканиране ще откаже тази страница ({origin}). Добавете я към allowed_origins във visage.toml, след това рестартирайте Visage Server.`,
+        'scene.deepOtherStash': `Visage Server чете от {stash_url}, а не от този Stash ({origin}). Насочете url във visage.toml към този Stash, след това рестартирайте Visage Server.`,
+        'scene.serverScanFailed': `Visage Server не успя да сканира тази сцена: {error}`,
+        'backend.cspBlocked': `Stash блокира заявките към {origin}. Добавете "{origin}" в ui.csp.connect-src в plugins/visage/visage.yml, след това презаредете Stash. Повтаряйте това след всяко обновяване на Visage.`,
+        'backend.mixedContent': `Stash е отворен през https, затова браузърът блокира http адреса {url}. Предоставете Visage Server през https (например през вашия reverse proxy) или отворете Stash през http.`,
+        'backend.loopbackRemote': `localhost означава това устройство, а не вашия сървър. В настройките на Visage използвайте мрежовия адрес на сървъра, например http://192.168.1.50:7860.`,
+        'batch.failedReason': `Неуспешно сканиране ({count}): {reason}`,
     };
 
     const ru = {
@@ -13997,11 +15032,6 @@
         'backendSettings.hintPrefix': `Хотите, чтобы изображения оставались в вашей сети?`,
         'backendSettings.hintLink': `Запустите частный сервер через Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Политика безопасности браузера (CSP) по умолчанию разрешает только`,
-        'backendSettings.csp2': `. Чтобы получить доступ к локальному бэкенду по другому адресу (например, IP вашей локальной сети), добавьте его в`,
-        'backendSettings.csp3': `список в`,
-        'backendSettings.csp4': `файле в папке плагинов Stash, иначе запросы будут заблокированы. Примечание: обновление Visage переустанавливает`,
-        'backendSettings.csp5': `, поэтому это нужно повторять после каждого обновления.`,
         'backendSettings.testing': `Проверка подключения…`,
         'backendSettings.testConnection': `Проверить подключение`,
         'backendSettings.testingShort': `Проверка…`,
@@ -14089,6 +15119,23 @@
         'scene.failed': `Сканирование сцены не удалось: {error}`,
         'scene.menuItemTitle': `Найдите всех в этой сцене. Нужен сгенерированный sprite sheet или видео превью.`,
         'scene.wholeScene': `Visage: Распознать сцену`,
+        'scene.deepScan': `Visage: Глубокое сканирование`,
+        'scene.deepScanTitle': `Сканирует кадры видео в полном размере на вашем Visage Server. Медленнее сканирования сцены, находит больше исполнителей.`,
+        'scene.deepSprite': `Поиск лиц в спрайт-листе`,
+        'scene.deepFrames': `Сканирование кадров видео`,
+        'scene.deepNoFaces': `В кадрах видео этой сцены не найдено исполнителей.`,
+        'scene.deepNoFile': `У этой сцены нет видеофайла для сканирования.`,
+        'scene.deepNoResult': `Глубокое сканирование завершилось без результата. Попробуйте ещё раз.`,
+        'scene.deepUpsellTitle': `Глубокое сканирование с Visage Server`,
+        'scene.deepUpsellBody': `Глубокое сканирование читает кадры видео в полном размере из вашего собственного Stash. Оно работает только на Visage Server, вашем личном сервере, а не в общем Cloud. Ваши видео остаются на вашем компьютере. Доступно с поддержкой на Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server не принимает глубокое сканирование с {origin}. Добавьте "{origin}" в allowed_origins в visage.toml, затем перезапустите Visage Server.`,
+        'scene.deepBusy': `Visage Server уже выполняет глубокое сканирование. Попробуйте ещё раз, когда оно закончится.`,
+        'scene.deepUnavailable': `Глубокое сканирование отключено на этом Visage Server. Укажите url в visage.toml, установите ffmpeg, затем перезапустите Visage Server.`,
+        'batch.deepMenuItem': `Глубокое сканирование с Visage`,
+        'batch.deepTitle': `Глубокое сканирование сцен: {count}`,
+        'batch.upsellCta': `Получить Visage Server на Patreon`,
+        'batch.upsellHaveServer': `У меня есть сервер`,
+        'batch.upsellClose': `Не сейчас`,
         'banner.changeBackend': `Сменить бэкенд`,
         'banner.dismiss': `Отклонить`,
         'error.dismiss': `Отклонить`,
@@ -14145,6 +15192,24 @@
         'search.imageMenuTitle': `Узнайте, кто на этом изображении. Обведите лицо рамкой или нажмите для всего изображения.`,
         'faceMatch.adding.images': `Добавление…`,
         'sprite.confirm': `Добавить в сцену ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `По адресу {url}/health ничего нет. Удалите путь после порта, например http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Всё равно сохранить`,
+        'backendSettings.sync.off': `Синхронизация со Stash отключена. Добавьте url в visage.toml в папке данных сервера, затем перезапустите Visage Server.`,
+        'backendSettings.sync.lastError': `Последняя синхронизация не удалась: {error}`,
+        'scene.deepReady': `Глубокое сканирование: готово.`,
+        'scene.deepOffNoStash': `Глубокое сканирование: отключено. В visage.toml нет url Stash.`,
+        'scene.deepOffNoFfmpeg': `Глубокое сканирование: отключено. ffmpeg не найден. Установите ffmpeg или запустите Visage Server с --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Глубокое сканирование: отключено. Найденный ffmpeg является статической сборкой, которая не работает со Stash по https. Установите системный ffmpeg.`,
+        'scene.deepUpdateServer': `Глубокое сканирование: обновите Visage Server до последней версии.`,
+        'scene.deepNeedsNewerServer': `Для глубокого сканирования нужен более новый Visage Server. Обновите Visage Server, затем перезагрузите эту страницу.`,
+        'scene.deepOriginWillRefuse': `Глубокое сканирование отклонит эту страницу ({origin}). Добавьте её в allowed_origins в visage.toml, затем перезапустите Visage Server.`,
+        'scene.deepOtherStash': `Visage Server читает данные из {stash_url}, а не из этого Stash ({origin}). Укажите этот Stash в url в visage.toml, затем перезапустите Visage Server.`,
+        'scene.serverScanFailed': `Visage Server не смог просканировать эту сцену: {error}`,
+        'backend.cspBlocked': `Stash блокирует запросы к {origin}. Добавьте "{origin}" в ui.csp.connect-src в plugins/visage/visage.yml, затем перезагрузите Stash. Повторяйте это после каждого обновления Visage.`,
+        'backend.mixedContent': `Stash открыт по https, поэтому браузер блокирует http-адрес {url}. Откройте доступ к Visage Server по https (например, через обратный прокси) или откройте Stash по http.`,
+        'backend.loopbackRemote': `localhost означает это устройство, а не ваш сервер. В настройках Visage укажите сетевой адрес сервера, например http://192.168.1.50:7860.`,
+        'batch.failedReason': `Не удалось просканировать ({count}): {reason}`,
     };
 
     const id = {
@@ -14159,11 +15224,6 @@
         'backendSettings.hintPrefix': `Ingin gambar tetap berada di jaringan Anda?`,
         'backendSettings.hintLink': `Jalankan server pribadi melalui Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Kebijakan keamanan browser (CSP) hanya mengizinkan`,
-        'backendSettings.csp2': `secara default. Untuk menjangkau backend lokal di alamat lain (mis. IP LAN Anda), tambahkan ke`,
-        'backendSettings.csp3': `di dalam`,
-        'backendSettings.csp4': `di dalam folder plugin Stash Anda, jika tidak, permintaan akan diblokir. Catatan: memperbarui Visage akan menginstal ulang`,
-        'backendSettings.csp5': `, jadi ini harus diterapkan ulang setelah setiap pembaruan.`,
         'backendSettings.testing': `Menguji koneksi…`,
         'backendSettings.testConnection': `Uji koneksi`,
         'backendSettings.testingShort': `Menguji…`,
@@ -14251,6 +15311,23 @@
         'scene.failed': `Pemindaian scene gagal: {error}`,
         'scene.menuItemTitle': `Temukan semua orang di adegan ini. Perlu sprite sheet atau video pratinjau yang sudah dibuat.`,
         'scene.wholeScene': `Visage: Kenali adegan`,
+        'scene.deepScan': `Visage: Pindai mendalam`,
+        'scene.deepScanTitle': `Memindai frame video ukuran penuh di Visage Server Anda. Lebih lambat dari pemindaian scene, menemukan lebih banyak pemain.`,
+        'scene.deepSprite': `Mencari wajah di sprite sheet`,
+        'scene.deepFrames': `Memindai frame video`,
+        'scene.deepNoFaces': `Tidak ada pemain yang ditemukan di frame video scene ini.`,
+        'scene.deepNoFile': `Scene ini tidak memiliki file video untuk dipindai.`,
+        'scene.deepNoResult': `Pemindaian mendalam berakhir tanpa hasil. Coba lagi.`,
+        'scene.deepUpsellTitle': `Pindai mendalam dengan Visage Server`,
+        'scene.deepUpsellBody': `Pindai mendalam membaca frame video ukuran penuh dari Stash Anda sendiri. Fitur ini hanya berjalan di Visage Server, server pribadi Anda, bukan di Cloud bersama. Video Anda tetap di mesin Anda. Tersedia dengan dukungan Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server tidak menerima pemindaian mendalam dari {origin}. Tambahkan "{origin}" ke allowed_origins di visage.toml, lalu mulai ulang Visage Server.`,
+        'scene.deepBusy': `Visage Server sedang menjalankan pemindaian mendalam. Coba lagi setelah selesai.`,
+        'scene.deepUnavailable': `Pemindaian mendalam nonaktif di Visage Server ini. Atur url di visage.toml, pasang ffmpeg, lalu mulai ulang Visage Server.`,
+        'batch.deepMenuItem': `Pindai mendalam dengan Visage`,
+        'batch.deepTitle': `Memindai mendalam {count} scene`,
+        'batch.upsellCta': `Dapatkan Visage Server di Patreon`,
+        'batch.upsellHaveServer': `Saya punya server`,
+        'batch.upsellClose': `Nanti saja`,
         'banner.changeBackend': `Ganti backend`,
         'banner.dismiss': `Tutup`,
         'error.dismiss': `Tutup`,
@@ -14307,6 +15384,24 @@
         'search.imageMenuTitle': `Cari tahu siapa di gambar ini. Seret kotak di sekitar wajah, atau klik untuk seluruh gambar.`,
         'faceMatch.adding.images': `Menambahkan…`,
         'sprite.confirm': `Tambah ke adegan ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Tidak ada apa pun di {url}/health. Hapus path setelah port, misalnya http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Tetap simpan`,
+        'backendSettings.sync.off': `Sinkronisasi Stash nonaktif. Tambahkan url ke visage.toml di folder data server, lalu mulai ulang Visage Server.`,
+        'backendSettings.sync.lastError': `Sinkronisasi terakhir gagal: {error}`,
+        'scene.deepReady': `Pemindaian mendalam: siap.`,
+        'scene.deepOffNoStash': `Pemindaian mendalam: nonaktif. Tidak ada url Stash di visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Pemindaian mendalam: nonaktif. ffmpeg tidak ditemukan. Pasang ffmpeg atau jalankan Visage Server dengan --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Pemindaian mendalam: nonaktif. ffmpeg yang ditemukan adalah build statis, yang gagal pada Stash https. Pasang ffmpeg dari sistem Anda.`,
+        'scene.deepUpdateServer': `Pemindaian mendalam: perbarui Visage Server ke versi terbaru.`,
+        'scene.deepNeedsNewerServer': `Pemindaian mendalam memerlukan Visage Server yang lebih baru. Perbarui Visage Server, lalu muat ulang halaman ini.`,
+        'scene.deepOriginWillRefuse': `Pemindaian mendalam akan menolak halaman ini ({origin}). Tambahkan ke allowed_origins di visage.toml, lalu mulai ulang Visage Server.`,
+        'scene.deepOtherStash': `Visage Server membaca dari {stash_url}, bukan dari Stash ini ({origin}). Arahkan url di visage.toml ke Stash ini, lalu mulai ulang Visage Server.`,
+        'scene.serverScanFailed': `Visage Server tidak dapat memindai adegan ini: {error}`,
+        'backend.cspBlocked': `Stash memblokir permintaan ke {origin}. Tambahkan "{origin}" di ui.csp.connect-src pada plugins/visage/visage.yml, lalu muat ulang Stash. Lakukan lagi setelah setiap pembaruan Visage.`,
+        'backend.mixedContent': `Stash dibuka lewat https, jadi browser memblokir alamat http {url}. Sajikan Visage Server lewat https (misalnya melalui reverse proxy Anda), atau buka Stash lewat http.`,
+        'backend.loopbackRemote': `localhost berarti perangkat ini, bukan server Anda. Di pengaturan Visage, gunakan alamat jaringan server, misalnya http://192.168.1.50:7860.`,
+        'batch.failedReason': `Gagal dipindai ({count}): {reason}`,
     };
 
     const cs = {
@@ -14321,11 +15416,6 @@
         'backendSettings.hintPrefix': `Chcete, aby vaše obrázky zůstaly ve vaší síti?`,
         'backendSettings.hintLink': `Spusťte soukromý server přes Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Bezpečnostní politika prohlížeče (CSP) ve výchozím nastavení povoluje pouze`,
-        'backendSettings.csp2': `. Chcete-li se dostat k místnímu backendu na jiné adrese (např. IP vaší LAN), přidejte ji do`,
-        'backendSettings.csp3': `seznamu v`,
-        'backendSettings.csp4': `souboru ve složce pluginů Stash, jinak budou požadavky zablokovány. Poznámka: aktualizace Visage přeinstaluje`,
-        'backendSettings.csp5': `, takže to musíte provést znovu po každé aktualizaci.`,
         'backendSettings.testing': `Testování připojení…`,
         'backendSettings.testConnection': `Otestovat připojení`,
         'backendSettings.testingShort': `Testování…`,
@@ -14413,6 +15503,23 @@
         'scene.failed': `Skenování scény se nezdařilo: {error}`,
         'scene.menuItemTitle': `Najděte všechny v této scéně. Vyžaduje vygenerovaný sprite sheet nebo náhledové video.`,
         'scene.wholeScene': `Visage: Rozpoznat scénu`,
+        'scene.deepScan': `Visage: Hloubkové skenování`,
+        'scene.deepScanTitle': `Skenuje snímky videa v plné velikosti na vašem Visage Serveru. Pomalejší než skenování scény, najde více performerů.`,
+        'scene.deepSprite': `Hledání tváří ve sprite listu`,
+        'scene.deepFrames': `Skenování snímků videa`,
+        'scene.deepNoFaces': `Ve snímcích videa této scény nebyli nalezeni žádní performeři.`,
+        'scene.deepNoFile': `Tato scéna nemá žádný video soubor ke skenování.`,
+        'scene.deepNoResult': `Hloubkové skenování skončilo bez výsledku. Zkuste to znovu.`,
+        'scene.deepUpsellTitle': `Hloubkové skenování s Visage Serverem`,
+        'scene.deepUpsellBody': `Hloubkové skenování čte snímky videa v plné velikosti z vašeho vlastního Stash. Běží jen na Visage Serveru, vašem soukromém serveru, ne ve sdíleném Cloudu. Vaše videa zůstanou na vašem počítači. Součást podpory na Patreonu.`,
+        'scene.deepRefusedOrigin': `Visage Server nepřijímá hloubkové skenování z {origin}. Přidejte "{origin}" do allowed_origins ve visage.toml a pak Visage Server restartujte.`,
+        'scene.deepBusy': `Visage Server už provádí hloubkové skenování. Zkuste to znovu, až skončí.`,
+        'scene.deepUnavailable': `Hloubkové skenování je na tomto Visage Serveru vypnuté. Nastavte url ve visage.toml, nainstalujte ffmpeg a pak Visage Server restartujte.`,
+        'batch.deepMenuItem': `Hloubkové skenování s Visage`,
+        'batch.deepTitle': `Hloubkové skenování scén: {count}`,
+        'batch.upsellCta': `Získejte Visage Server na Patreonu`,
+        'batch.upsellHaveServer': `Mám server`,
+        'batch.upsellClose': `Teď ne`,
         'banner.changeBackend': `Změnit backend`,
         'banner.dismiss': `Zavřít`,
         'error.dismiss': `Zavřít`,
@@ -14469,6 +15576,24 @@
         'search.imageMenuTitle': `Zjistěte, kdo je na tomto obrázku. Táhněte rámeček kolem obličeje, nebo klikněte pro celý obrázek.`,
         'faceMatch.adding.images': `Přidávání…`,
         'sprite.confirm': `Přidat do scény ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Na {url}/health nic není. Odstraňte cestu za portem, například http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Přesto uložit`,
+        'backendSettings.sync.off': `Synchronizace se Stash je vypnutá. Přidejte url do visage.toml v datové složce serveru a pak Visage Server restartujte.`,
+        'backendSettings.sync.lastError': `Poslední synchronizace selhala: {error}`,
+        'scene.deepReady': `Hloubkové skenování: připraveno.`,
+        'scene.deepOffNoStash': `Hloubkové skenování: vypnuto. Ve visage.toml chybí url Stashe.`,
+        'scene.deepOffNoFfmpeg': `Hloubkové skenování: vypnuto. ffmpeg nenalezen. Nainstalujte ffmpeg nebo spusťte Visage Server s --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Hloubkové skenování: vypnuto. Nalezený ffmpeg je statické sestavení, které selhává se Stashem přes https. Nainstalujte systémový ffmpeg.`,
+        'scene.deepUpdateServer': `Hloubkové skenování: aktualizujte Visage Server na nejnovější verzi.`,
+        'scene.deepNeedsNewerServer': `Hloubkové skenování potřebuje novější Visage Server. Aktualizujte Visage Server a pak tuto stránku znovu načtěte.`,
+        'scene.deepOriginWillRefuse': `Hloubkové skenování odmítne tuto stránku ({origin}). Přidejte ji do allowed_origins ve visage.toml a pak Visage Server restartujte.`,
+        'scene.deepOtherStash': `Visage Server čte z {stash_url}, ne z tohoto Stashe ({origin}). Nastavte url ve visage.toml na tento Stash a pak Visage Server restartujte.`,
+        'scene.serverScanFailed': `Visage Server nemohl tuto scénu naskenovat: {error}`,
+        'backend.cspBlocked': `Stash blokuje požadavky na {origin}. Přidejte "{origin}" do ui.csp.connect-src v plugins/visage/visage.yml a pak Stash znovu načtěte. Opakujte to po každé aktualizaci Visage.`,
+        'backend.mixedContent': `Stash je otevřený přes https, proto prohlížeč blokuje http adresu {url}. Zpřístupněte Visage Server přes https (například přes reverzní proxy) nebo otevřete Stash přes http.`,
+        'backend.loopbackRemote': `localhost znamená toto zařízení, ne váš server. V nastavení Visage použijte síťovou adresu serveru, například http://192.168.1.50:7860.`,
+        'batch.failedReason': `Nelze naskenovat ({count}): {reason}`,
     };
 
     const hr = {
@@ -14483,11 +15608,6 @@
         'backendSettings.hintPrefix': `Želite li da vaše slike ostanu u vašoj mreži?`,
         'backendSettings.hintLink': `Pokrenite privatni poslužitelj putem Patreona`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Sigurnosna politika preglednika (CSP) prema zadanim postavkama dopušta samo`,
-        'backendSettings.csp2': `. Da biste dohvatili lokalni pozadinski poslužitelj na drugoj adresi (npr. IP vaše lokalne mreže), dodajte ga u`,
-        'backendSettings.csp3': `popis u`,
-        'backendSettings.csp4': `datoteci u mapi dodataka Stash, inače će zahtjevi biti blokirani. Napomena: ažuriranje Visagea ponovno instalira`,
-        'backendSettings.csp5': `, pa to morate ponoviti nakon svakog ažuriranja.`,
         'backendSettings.testing': `Testiranje veze…`,
         'backendSettings.testConnection': `Testiraj vezu`,
         'backendSettings.testingShort': `Testiranje…`,
@@ -14575,6 +15695,23 @@
         'scene.failed': `Skeniranje scene nije uspjelo: {error}`,
         'scene.menuItemTitle': `Pronađite sve u ovoj sceni. Potreban je generirani sprite sheet ili video pregleda.`,
         'scene.wholeScene': `Visage: Prepoznaj scenu`,
+        'scene.deepScan': `Visage: Dubinsko skeniranje`,
+        'scene.deepScanTitle': `Skenira video kadrove pune veličine na vašem Visage Serveru. Sporije od skeniranja scene, pronalazi više izvođača.`,
+        'scene.deepSprite': `Traženje lica u sprite sheetu`,
+        'scene.deepFrames': `Skeniranje video kadrova`,
+        'scene.deepNoFaces': `U video kadrovima ove scene nisu pronađeni izvođači.`,
+        'scene.deepNoFile': `Ova scena nema video datoteku za skeniranje.`,
+        'scene.deepNoResult': `Dubinsko skeniranje završilo je bez rezultata. Pokušajte ponovno.`,
+        'scene.deepUpsellTitle': `Dubinsko skeniranje s Visage Serverom`,
+        'scene.deepUpsellBody': `Dubinsko skeniranje čita video kadrove pune veličine iz vašeg vlastitog Stasha. Radi samo na Visage Serveru, vašem privatnom poslužitelju, ne u dijeljenom Cloudu. Vaši videozapisi ostaju na vašem računalu. Dolazi uz podršku na Patreonu.`,
+        'scene.deepRefusedOrigin': `Visage Server ne prihvaća dubinsko skeniranje s {origin}. Dodajte "{origin}" u allowed_origins u visage.toml, zatim ponovno pokrenite Visage Server.`,
+        'scene.deepBusy': `Visage Server već izvodi dubinsko skeniranje. Pokušajte ponovno kad završi.`,
+        'scene.deepUnavailable': `Dubinsko skeniranje isključeno je na ovom Visage Serveru. Postavite url u visage.toml, instalirajte ffmpeg, zatim ponovno pokrenite Visage Server.`,
+        'batch.deepMenuItem': `Dubinsko skeniranje s Visage`,
+        'batch.deepTitle': `Dubinsko skeniranje scena: {count}`,
+        'batch.upsellCta': `Nabavite Visage Server na Patreonu`,
+        'batch.upsellHaveServer': `Imam poslužitelj`,
+        'batch.upsellClose': `Ne sada`,
         'banner.changeBackend': `Promijeni pozadinski poslužitelj`,
         'banner.dismiss': `Odbaci`,
         'error.dismiss': `Odbaci`,
@@ -14631,6 +15768,24 @@
         'search.imageMenuTitle': `Saznajte tko je na ovoj slici. Povucite okvir oko lica ili kliknite za cijelu sliku.`,
         'faceMatch.adding.images': `Dodavanje…`,
         'sprite.confirm': `Dodaj u scenu ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Na {url}/health nema ničega. Uklonite putanju iza porta, na primjer http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Ipak spremi`,
+        'backendSettings.sync.off': `Stash sinkronizacija je isključena. Dodajte url u visage.toml u mapi podataka poslužitelja, zatim ponovno pokrenite Visage Server.`,
+        'backendSettings.sync.lastError': `Zadnja sinkronizacija nije uspjela: {error}`,
+        'scene.deepReady': `Dubinsko skeniranje: spremno.`,
+        'scene.deepOffNoStash': `Dubinsko skeniranje: isključeno. U visage.toml nema Stash url-a.`,
+        'scene.deepOffNoFfmpeg': `Dubinsko skeniranje: isključeno. ffmpeg nije pronađen. Instalirajte ffmpeg ili pokrenite Visage Server s --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Dubinsko skeniranje: isključeno. Pronađeni ffmpeg je statička izgradnja koja ne radi sa Stashom preko https-a. Instalirajte ffmpeg svog sustava.`,
+        'scene.deepUpdateServer': `Dubinsko skeniranje: ažurirajte Visage Server na najnoviju verziju.`,
+        'scene.deepNeedsNewerServer': `Dubinsko skeniranje treba noviji Visage Server. Ažurirajte Visage Server, zatim ponovno učitajte ovu stranicu.`,
+        'scene.deepOriginWillRefuse': `Dubinsko skeniranje odbit će ovu stranicu ({origin}). Dodajte je u allowed_origins u visage.toml, zatim ponovno pokrenite Visage Server.`,
+        'scene.deepOtherStash': `Visage Server čita iz {stash_url}, a ne iz ovog Stasha ({origin}). Usmjerite url u visage.toml na ovaj Stash, zatim ponovno pokrenite Visage Server.`,
+        'scene.serverScanFailed': `Visage Server nije mogao skenirati ovu scenu: {error}`,
+        'backend.cspBlocked': `Stash blokira zahtjeve prema {origin}. Dodajte "{origin}" pod ui.csp.connect-src u plugins/visage/visage.yml, zatim ponovno učitajte Stash. Ponovite to nakon svakog ažuriranja Visagea.`,
+        'backend.mixedContent': `Stash je otvoren preko https-a, pa preglednik blokira http adresu {url}. Poslužite Visage Server preko https-a (na primjer kroz svoj reverse proxy) ili otvorite Stash preko http-a.`,
+        'backend.loopbackRemote': `localhost znači ovaj uređaj, a ne vaš poslužitelj. U postavkama Visagea upotrijebite mrežnu adresu poslužitelja, na primjer http://192.168.1.50:7860.`,
+        'batch.failedReason': `Skeniranje nije uspjelo ({count}): {reason}`,
     };
 
     const th = {
@@ -14645,11 +15800,6 @@
         'backendSettings.hintPrefix': `ต้องการเก็บรูปภาพไว้ในเครือข่ายของคุณหรือไม่`,
         'backendSettings.hintLink': `เรียกใช้เซิร์ฟเวอร์ส่วนตัวผ่าน Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `นโยบายความปลอดภัยของเบราว์เซอร์ (CSP) อนุญาตเฉพาะ`,
-        'backendSettings.csp2': `ตามค่าเริ่มต้น หากต้องการเข้าถึงแบ็กเอนด์ภายในเครื่องที่อยู่ที่อยู่อื่น (เช่น IP แลนของคุณ) ให้เพิ่มลงใน`,
-        'backendSettings.csp3': `ใน`,
-        'backendSettings.csp4': `ภายในโฟลเดอร์ปลั๊กอิน Stash ของคุณ มิฉะนั้นคำขอจะถูกบล็อก หมายเหตุ: การอัปเดต Visage จะติดตั้ง`,
-        'backendSettings.csp5': `ใหม่ ดังนั้นต้องนำกลับมาใช้ใหม่หลังจากการอัปเดตทุกครั้ง`,
         'backendSettings.testing': `กำลังทดสอบการเชื่อมต่อ…`,
         'backendSettings.testConnection': `ทดสอบการเชื่อมต่อ`,
         'backendSettings.testingShort': `กำลังทดสอบ…`,
@@ -14737,6 +15887,23 @@
         'scene.failed': `การสแกนฉากล้มเหลว: {error}`,
         'scene.menuItemTitle': `ค้นหาทุกคนในฉากนี้ ต้องมี sprite sheet หรือวิดีโอตัวอย่างที่สร้างไว้`,
         'scene.wholeScene': `Visage: ระบุฉาก`,
+        'scene.deepScan': `Visage: สแกนเชิงลึก`,
+        'scene.deepScanTitle': `สแกนเฟรมวิดีโอขนาดเต็มบน Visage Server ของคุณ ช้ากว่าการสแกนฉาก แต่พบนักแสดงมากกว่า`,
+        'scene.deepSprite': `กำลังค้นหาใบหน้าในสไปรต์ชีต`,
+        'scene.deepFrames': `กำลังสแกนเฟรมวิดีโอ`,
+        'scene.deepNoFaces': `ไม่พบนักแสดงในเฟรมวิดีโอของฉากนี้`,
+        'scene.deepNoFile': `ฉากนี้ไม่มีไฟล์วิดีโอให้สแกน`,
+        'scene.deepNoResult': `การสแกนเชิงลึกจบลงโดยไม่มีผลลัพธ์ ลองอีกครั้ง`,
+        'scene.deepUpsellTitle': `สแกนเชิงลึกด้วย Visage Server`,
+        'scene.deepUpsellBody': `การสแกนเชิงลึกอ่านเฟรมวิดีโอขนาดเต็มจาก Stash ของคุณเอง ทำงานเฉพาะบน Visage Server ซึ่งเป็นเซิร์ฟเวอร์ส่วนตัวของคุณ ไม่ใช่บน Cloud ที่ใช้ร่วมกัน วิดีโอของคุณอยู่บนเครื่องของคุณ มาพร้อมกับการสนับสนุนบน Patreon`,
+        'scene.deepRefusedOrigin': `Visage Server ไม่รับการสแกนเชิงลึกจาก {origin} เพิ่ม "{origin}" ใน allowed_origins ในไฟล์ visage.toml แล้วรีสตาร์ต Visage Server`,
+        'scene.deepBusy': `Visage Server กำลังสแกนเชิงลึกอยู่แล้ว ลองอีกครั้งเมื่อสแกนเสร็จ`,
+        'scene.deepUnavailable': `การสแกนเชิงลึกปิดอยู่บน Visage Server นี้ ตั้งค่า url ในไฟล์ visage.toml ติดตั้ง ffmpeg แล้วรีสตาร์ต Visage Server`,
+        'batch.deepMenuItem': `สแกนเชิงลึกด้วย Visage`,
+        'batch.deepTitle': `กำลังสแกนเชิงลึก {count} ฉาก`,
+        'batch.upsellCta': `รับ Visage Server บน Patreon`,
+        'batch.upsellHaveServer': `ฉันมีเซิร์ฟเวอร์แล้ว`,
+        'batch.upsellClose': `ไว้ทีหลัง`,
         'banner.changeBackend': `เปลี่ยนแบ็กเอนด์`,
         'banner.dismiss': `ปิด`,
         'error.dismiss': `ปิด`,
@@ -14793,6 +15960,24 @@
         'search.imageMenuTitle': `ดูว่าใครอยู่ในภาพนี้ ลากกรอบรอบใบหน้า หรือคลิกเพื่อใช้ทั้งภาพ`,
         'faceMatch.adding.images': `กำลังเพิ่ม…`,
         'sprite.confirm': `เพิ่มในฉาก ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `ไม่มีอะไรที่ {url}/health ลบพาธหลังพอร์ตออก เช่น http://192.168.1.50:7860`,
+        'backendSettings.saveAnyway': `บันทึกต่อไป`,
+        'backendSettings.sync.off': `การซิงค์ Stash ปิดอยู่ เพิ่ม url ในไฟล์ visage.toml ในโฟลเดอร์ข้อมูลของเซิร์ฟเวอร์ แล้วรีสตาร์ต Visage Server`,
+        'backendSettings.sync.lastError': `การซิงค์ล่าสุดล้มเหลว: {error}`,
+        'scene.deepReady': `การสแกนเชิงลึก: พร้อม`,
+        'scene.deepOffNoStash': `การสแกนเชิงลึก: ปิด ไม่มี url ของ Stash ในไฟล์ visage.toml`,
+        'scene.deepOffNoFfmpeg': `การสแกนเชิงลึก: ปิด ไม่พบ ffmpeg ติดตั้ง ffmpeg หรือเริ่ม Visage Server ด้วย --ffmpeg <path>`,
+        'scene.deepOffStaticFfmpeg': `การสแกนเชิงลึก: ปิด ffmpeg ที่พบเป็นบิลด์แบบสแตติก ซึ่งใช้ไม่ได้กับ Stash ผ่าน https ติดตั้ง ffmpeg ของระบบคุณ`,
+        'scene.deepUpdateServer': `การสแกนเชิงลึก: อัปเดต Visage Server เป็นเวอร์ชันล่าสุด`,
+        'scene.deepNeedsNewerServer': `การสแกนเชิงลึกต้องใช้ Visage Server ที่ใหม่กว่า อัปเดต Visage Server แล้วโหลดหน้านี้ใหม่`,
+        'scene.deepOriginWillRefuse': `การสแกนเชิงลึกจะปฏิเสธหน้านี้ ({origin}) เพิ่มหน้านี้ใน allowed_origins ในไฟล์ visage.toml แล้วรีสตาร์ต Visage Server`,
+        'scene.deepOtherStash': `Visage Server อ่านจาก {stash_url} ไม่ใช่ Stash นี้ ({origin}) ตั้ง url ในไฟล์ visage.toml ให้ชี้มาที่ Stash นี้ แล้วรีสตาร์ต Visage Server`,
+        'scene.serverScanFailed': `Visage Server สแกนฉากนี้ไม่ได้: {error}`,
+        'backend.cspBlocked': `Stash บล็อกคำขอไปยัง {origin} เพิ่ม "{origin}" ใต้ ui.csp.connect-src ในไฟล์ plugins/visage/visage.yml แล้วโหลด Stash ใหม่ ทำซ้ำหลังอัปเดต Visage ทุกครั้ง`,
+        'backend.mixedContent': `Stash เปิดผ่าน https เบราว์เซอร์จึงบล็อกที่อยู่ http {url} ให้บริการ Visage Server ผ่าน https (เช่น ผ่าน reverse proxy ของคุณ) หรือเปิด Stash ผ่าน http`,
+        'backend.loopbackRemote': `localhost หมายถึงอุปกรณ์นี้ ไม่ใช่เซิร์ฟเวอร์ของคุณ ในการตั้งค่า Visage ให้ใช้ที่อยู่เครือข่ายของเซิร์ฟเวอร์ เช่น http://192.168.1.50:7860`,
+        'batch.failedReason': `สแกนไม่ได้ ({count}): {reason}`,
     };
 
     // Brazilian Portuguese. Missing keys fall back to English automatically.
@@ -14809,11 +15994,6 @@
         'backendSettings.hintPrefix': `Quer que suas imagens permaneçam na sua rede?`,
         'backendSettings.hintLink': `Execute um servidor privado via Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `A política de segurança do navegador (CSP) só permite`,
-        'backendSettings.csp2': `por padrão. Para acessar um backend local em outro endereço (por exemplo, seu IP LAN), adicione-o à`,
-        'backendSettings.csp3': `lista no arquivo`,
-        'backendSettings.csp4': `dentro da sua pasta de plugins do Stash; caso contrário, as solicitações serão bloqueadas. Observação: atualizar o Visage reinstala`,
-        'backendSettings.csp5': `, então isso deve ser reaplicado após cada atualização.`,
         'backendSettings.testing': `Testando a conexão…`,
         'backendSettings.testConnection': `Testar conexão`,
         'backendSettings.testingShort': `Testando…`,
@@ -14906,6 +16086,23 @@
         'scene.failed': `A varredura da cena falhou: {error}`,
         'scene.menuItemTitle': `Encontre todos nesta cena. Precisa de um sprite sheet ou vídeo de prévia gerado.`,
         'scene.wholeScene': `Visage: identificar cena`,
+        'scene.deepScan': `Visage: varredura profunda`,
+        'scene.deepScanTitle': `Varre quadros do vídeo em tamanho real no seu Visage Server. Mais lenta que a varredura da cena, encontra mais artistas.`,
+        'scene.deepSprite': `Procurando rostos na folha de sprites`,
+        'scene.deepFrames': `Varrendo quadros do vídeo`,
+        'scene.deepNoFaces': `Nenhum artista encontrado nos quadros do vídeo desta cena.`,
+        'scene.deepNoFile': `Esta cena não tem um arquivo de vídeo para varrer.`,
+        'scene.deepNoResult': `A varredura profunda terminou sem resultado. Tente novamente.`,
+        'scene.deepUpsellTitle': `Varredura profunda com Visage Server`,
+        'scene.deepUpsellBody': `A varredura profunda lê quadros do vídeo em tamanho real do seu próprio Stash. Ela roda só no Visage Server, o seu servidor privado, não na Cloud compartilhada. Seus vídeos ficam na sua máquina. Incluído com o apoio no Patreon.`,
+        'scene.deepRefusedOrigin': `O Visage Server não aceita uma varredura profunda de {origin}. Adicione "{origin}" a allowed_origins no visage.toml e reinicie o Visage Server.`,
+        'scene.deepBusy': `O Visage Server já está fazendo uma varredura profunda. Tente novamente quando ela terminar.`,
+        'scene.deepUnavailable': `A varredura profunda está desativada neste Visage Server. Defina url no visage.toml, instale o ffmpeg e reinicie o Visage Server.`,
+        'batch.deepMenuItem': `Varredura profunda com Visage`,
+        'batch.deepTitle': `Varredura profunda de cenas: {count}`,
+        'batch.upsellCta': `Obtenha o Visage Server no Patreon`,
+        'batch.upsellHaveServer': `Tenho um servidor`,
+        'batch.upsellClose': `Agora não`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Alterar backend`,
         'banner.dismiss': `Dispensar`,
@@ -14968,6 +16165,24 @@
         'search.imageMenuTitle': `Descubra quem está nesta imagem. Arraste uma caixa em volta de um rosto, ou clique para a imagem inteira.`,
         'faceMatch.adding.images': `Adicionando…`,
         'sprite.confirm': `Adicionar à cena ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Nada em {url}/health. Remova qualquer caminho depois da porta, por exemplo http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Salvar mesmo assim`,
+        'backendSettings.sync.off': `A sincronização com o Stash está desativada. Adicione url ao visage.toml na pasta de dados do servidor e reinicie o Visage Server.`,
+        'backendSettings.sync.lastError': `A última sincronização falhou: {error}`,
+        'scene.deepReady': `Varredura profunda: pronta.`,
+        'scene.deepOffNoStash': `Varredura profunda: desativada. Nenhuma url do Stash no visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Varredura profunda: desativada. ffmpeg não encontrado. Instale o ffmpeg ou inicie o Visage Server com --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Varredura profunda: desativada. O ffmpeg encontrado é uma build estática, que falha com Stash em https. Instale o ffmpeg do seu sistema.`,
+        'scene.deepUpdateServer': `Varredura profunda: atualize o Visage Server para a versão mais recente.`,
+        'scene.deepNeedsNewerServer': `A varredura profunda precisa de um Visage Server mais novo. Atualize o Visage Server e recarregue esta página.`,
+        'scene.deepOriginWillRefuse': `A varredura profunda vai recusar esta página ({origin}). Adicione-a a allowed_origins no visage.toml e reinicie o Visage Server.`,
+        'scene.deepOtherStash': `O Visage Server lê de {stash_url}, não deste Stash ({origin}). Aponte url no visage.toml para este Stash e reinicie o Visage Server.`,
+        'scene.serverScanFailed': `O Visage Server não conseguiu fazer a varredura desta cena: {error}`,
+        'backend.cspBlocked': `O Stash bloqueia requisições para {origin}. Adicione "{origin}" em ui.csp.connect-src no plugins/visage/visage.yml e recarregue o Stash. Faça isso de novo após cada atualização do Visage.`,
+        'backend.mixedContent': `O Stash está aberto via https, então o navegador bloqueia o endereço http {url}. Sirva o Visage Server via https (por exemplo pelo seu proxy reverso) ou abra o Stash via http.`,
+        'backend.loopbackRemote': `localhost significa este dispositivo, não o seu servidor. Nas configurações do Visage, use o endereço de rede do servidor, por exemplo http://192.168.1.50:7860.`,
+        'batch.failedReason': `Sem varredura ({count}): {reason}`,
     };
 
     // Danish.
@@ -14983,11 +16198,6 @@
         'backendSettings.hintPrefix': `Vil du have dine billeder til at blive på dit netværk?`,
         'backendSettings.hintLink': `Kør en privat server via Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Browserens sikkerhedspolitik (CSP) tillader kun",
-        'backendSettings.csp2': `som standard. For at nå en lokal backend på en anden adresse (f.eks. din LAN-IP) skal du tilføje den til`,
-        'backendSettings.csp3': `listen i`,
-        'backendSettings.csp4': `filen i din Stash plugins-mappe, ellers blokeres anmodningerne. Bemærk: opdatering af Visage geninstallerer`,
-        'backendSettings.csp5': `, så dette skal gøres igen efter hver opdatering.`,
         'backendSettings.testing': `Tester forbindelse…`,
         'backendSettings.testConnection': `Test forbindelse`,
         'backendSettings.testingShort': `Tester…`,
@@ -15075,6 +16285,23 @@
         'scene.failed': `Scene-scanning mislykkedes: {error}`,
         'scene.menuItemTitle': `Find alle i denne scene. Kræver et genereret sprite sheet eller en preview-video.`,
         'scene.wholeScene': `Visage: Identificer scene`,
+        'scene.deepScan': `Visage: Dybdescanning`,
+        'scene.deepScanTitle': `Scanner videobilleder i fuld størrelse på din Visage Server. Langsommere end scene-scanningen, finder flere performere.`,
+        'scene.deepSprite': `Finder ansigter i sprite-arket`,
+        'scene.deepFrames': `Scanner videobilleder`,
+        'scene.deepNoFaces': `Ingen performere fundet i videobillederne i denne scene.`,
+        'scene.deepNoFile': `Denne scene har ingen videofil at scanne.`,
+        'scene.deepNoResult': `Dybdescanningen sluttede uden resultat. Prøv igen.`,
+        'scene.deepUpsellTitle': `Dybdescanning med Visage Server`,
+        'scene.deepUpsellBody': `Dybdescanning læser videobilleder i fuld størrelse fra din egen Stash. Den kører kun på Visage Server, din private server, ikke i den delte Cloud-tjeneste. Dine videoer bliver på din maskine. Følger med Patreon-støtte.`,
+        'scene.deepRefusedOrigin': `Visage Server accepterer ikke en dybdescanning fra {origin}. Tilføj "{origin}" til allowed_origins i visage.toml, og genstart derefter Visage Server.`,
+        'scene.deepBusy': `Visage Server kører allerede en dybdescanning. Prøv igen, når den er færdig.`,
+        'scene.deepUnavailable': `Dybdescanning er slået fra på denne Visage Server. Angiv url i visage.toml, installer ffmpeg, og genstart derefter Visage Server.`,
+        'batch.deepMenuItem': `Dybdescanning med Visage`,
+        'batch.deepTitle': `Dybdescanner scener: {count}`,
+        'batch.upsellCta': `Få Visage Server på Patreon`,
+        'batch.upsellHaveServer': `Jeg har en server`,
+        'batch.upsellClose': `Ikke nu`,
         'banner.changeBackend': `Skift backend`,
         'banner.dismiss': `Afvis`,
         'error.dismiss': `Afvis`,
@@ -15131,6 +16358,24 @@
         'search.imageMenuTitle': `Find ud af, hvem der er på dette foto. Træk en ramme om et ansigt, eller klik for hele fotoet.`,
         'faceMatch.adding.images': `Tilføjer…`,
         'sprite.confirm': `Tilføj til scene ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Intet på {url}/health. Fjern en eventuel sti efter porten, for eksempel http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Gem alligevel`,
+        'backendSettings.sync.off': `Stash-synkronisering er slået fra. Tilføj url til visage.toml i serverens datamappe, og genstart derefter Visage Server.`,
+        'backendSettings.sync.lastError': `Seneste synkronisering mislykkedes: {error}`,
+        'scene.deepReady': `Dybdescanning: klar.`,
+        'scene.deepOffNoStash': `Dybdescanning: slået fra. Ingen Stash-url i visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Dybdescanning: slået fra. ffmpeg blev ikke fundet. Installer ffmpeg, eller start Visage Server med --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Dybdescanning: slået fra. Den fundne ffmpeg er en statisk build, som fejler med Stash over https. Installer dit systems ffmpeg.`,
+        'scene.deepUpdateServer': `Dybdescanning: opdater Visage Server til den nyeste version.`,
+        'scene.deepNeedsNewerServer': `Dybdescanning kræver en nyere Visage Server. Opdater Visage Server, og genindlæs derefter denne side.`,
+        'scene.deepOriginWillRefuse': `Dybdescanning vil afvise denne side ({origin}). Tilføj den til allowed_origins i visage.toml, og genstart derefter Visage Server.`,
+        'scene.deepOtherStash': `Visage Server læser fra {stash_url}, ikke fra denne Stash ({origin}). Peg url i visage.toml på denne Stash, og genstart derefter Visage Server.`,
+        'scene.serverScanFailed': `Visage Server kunne ikke scanne denne scene: {error}`,
+        'backend.cspBlocked': `Stash blokerer forespørgsler til {origin}. Tilføj "{origin}" under ui.csp.connect-src i plugins/visage/visage.yml, og genindlæs derefter Stash. Gør det igen efter hver Visage-opdatering.`,
+        'backend.mixedContent': `Stash er åbnet over https, så browseren blokerer http-adressen {url}. Lad Visage Server køre over https (for eksempel via din reverse proxy), eller åbn Stash over http.`,
+        'backend.loopbackRemote': `localhost betyder denne enhed, ikke din server. Brug serverens netværksadresse i Visage-indstillingerne, for eksempel http://192.168.1.50:7860.`,
+        'batch.failedReason': `Kunne ikke scannes ({count}): {reason}`,
     };
 
     // Hungarian.
@@ -15146,11 +16391,6 @@
         'backendSettings.hintPrefix': `Szeretnéd, hogy a képeid a hálózatodon maradjanak?`,
         'backendSettings.hintLink': `Privát szerver futtatása a Patreon segítségével`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "A böngésző biztonsági szabályzata (CSP) alapértelmezés szerint csak a következőt engedélyezi:",
-        'backendSettings.csp2': `Ha egy másik címen található helyi backendet szeretnél elérni (pl. a LAN-IP-d), add hozzá a`,
-        'backendSettings.csp3': `listához a`,
-        'backendSettings.csp4': `fájlban a Stash plugin-mappádban, különben a kérések blokkolva lesznek. Megjegyzés: a Visage frissítése újratelepíti a`,
-        'backendSettings.csp5': `fájlt, ezért ezt minden frissítés után újra el kell végezni.`,
         'backendSettings.testing': `Kapcsolat tesztelése…`,
         'backendSettings.testConnection': `Kapcsolat tesztelése`,
         'backendSettings.testingShort': `Tesztelés…`,
@@ -15238,6 +16478,23 @@
         'scene.failed': `Jelenetvizsgálat sikertelen: {error}`,
         'scene.menuItemTitle': `Találd meg a jelenet összes szereplőjét. Ehhez generált sprite sheet vagy előnézeti videó kell.`,
         'scene.wholeScene': `Visage: Jelenet azonosítása`,
+        'scene.deepScan': `Visage: Mélyvizsgálat`,
+        'scene.deepScanTitle': `Teljes méretű videóképkockákat vizsgál a Visage Serveren. Lassabb a jelenetvizsgálatnál, több előadót talál.`,
+        'scene.deepSprite': `Arcok keresése a sprite-lapon`,
+        'scene.deepFrames': `Videóképkockák vizsgálata`,
+        'scene.deepNoFaces': `A jelenet videóképkockáin nem található előadó.`,
+        'scene.deepNoFile': `Ennek a jelenetnek nincs vizsgálható videófájlja.`,
+        'scene.deepNoResult': `A mélyvizsgálat eredmény nélkül ért véget. Próbáld újra.`,
+        'scene.deepUpsellTitle': `Mélyvizsgálat Visage Serverrel`,
+        'scene.deepUpsellBody': `A mélyvizsgálat teljes méretű videóképkockákat olvas a saját Stash-edből. Csak a Visage Serveren, a privát szervereden fut, nem a megosztott Cloudban. A videóid a gépeden maradnak. Patreon-támogatással jár.`,
+        'scene.deepRefusedOrigin': `A Visage Server nem fogad mélyvizsgálatot innen: {origin}. Add hozzá a "{origin}" értéket az allowed_origins listához a visage.toml fájlban, majd indítsd újra a Visage Servert.`,
+        'scene.deepBusy': `A Visage Server már futtat egy mélyvizsgálatot. Próbáld újra, ha végzett.`,
+        'scene.deepUnavailable': `A mélyvizsgálat ki van kapcsolva ezen a Visage Serveren. Állítsd be az url értéket a visage.toml fájlban, telepítsd az ffmpeg programot, majd indítsd újra a Visage Servert.`,
+        'batch.deepMenuItem': `Visage: mélyvizsgálat`,
+        'batch.deepTitle': `{count} jelenet mélyvizsgálata`,
+        'batch.upsellCta': `Szerezd meg a Visage Servert a Patreonon`,
+        'batch.upsellHaveServer': `Van szerverem`,
+        'batch.upsellClose': `Most nem`,
         'banner.changeBackend': `Backend módosítása`,
         'banner.dismiss': `Elutasítás`,
         'error.dismiss': `Elutasítás`,
@@ -15294,6 +16551,24 @@
         'search.imageMenuTitle': `Derítsd ki, ki van ezen a képen. Húzz keretet egy arc köré, vagy kattints a teljes képhez.`,
         'faceMatch.adding.images': `Hozzáadás…`,
         'sprite.confirm': `Hozzáadás a jelenethez ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `A(z) {url}/health címen nincs semmi. Töröld a port utáni útvonalat, például http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Mentés mindenképp`,
+        'backendSettings.sync.off': `A Stash szinkronizálás ki van kapcsolva. Add hozzá az url értéket a szerver adatmappájában lévő visage.toml fájlhoz, majd indítsd újra a Visage Servert.`,
+        'backendSettings.sync.lastError': `Az utolsó szinkronizálás sikertelen: {error}`,
+        'scene.deepReady': `Mélyvizsgálat: kész.`,
+        'scene.deepOffNoStash': `Mélyvizsgálat: ki. Nincs Stash url a visage.toml fájlban.`,
+        'scene.deepOffNoFfmpeg': `Mélyvizsgálat: ki. Az ffmpeg nem található. Telepítsd az ffmpeg programot, vagy indítsd a Visage Servert a --ffmpeg <path> kapcsolóval.`,
+        'scene.deepOffStaticFfmpeg': `Mélyvizsgálat: ki. A talált ffmpeg statikus build, amely https Stash esetén hibázik. Telepítsd a rendszered ffmpeg csomagját.`,
+        'scene.deepUpdateServer': `Mélyvizsgálat: frissítsd a Visage Servert a legújabb verzióra.`,
+        'scene.deepNeedsNewerServer': `A mélyvizsgálathoz újabb Visage Server kell. Frissítsd a Visage Servert, majd töltsd újra ezt az oldalt.`,
+        'scene.deepOriginWillRefuse': `A mélyvizsgálat el fogja utasítani ezt az oldalt ({origin}). Add hozzá az allowed_origins listához a visage.toml fájlban, majd indítsd újra a Visage Servert.`,
+        'scene.deepOtherStash': `A Visage Server innen olvas: {stash_url}, nem ebből a Stashből ({origin}). Állítsd az url értéket a visage.toml fájlban erre a Stashre, majd indítsd újra a Visage Servert.`,
+        'scene.serverScanFailed': `A Visage Server nem tudta átvizsgálni ezt a jelenetet: {error}`,
+        'backend.cspBlocked': `A Stash blokkolja a kéréseket ide: {origin}. Add hozzá a "{origin}" értéket a plugins/visage/visage.yml fájl ui.csp.connect-src részéhez, majd töltsd újra a Stasht. Ismételd meg minden Visage frissítés után.`,
+        'backend.mixedContent': `A Stash https-en keresztül van megnyitva, ezért a böngésző blokkolja a(z) {url} http címet. Tedd elérhetővé a Visage Servert https-en (például a reverse proxyn keresztül), vagy nyisd meg a Stasht http-n.`,
+        'backend.loopbackRemote': `A localhost ezt az eszközt jelenti, nem a szerveredet. A Visage beállításaiban a szerver hálózati címét add meg, például http://192.168.1.50:7860.`,
+        'batch.failedReason': `Nem vizsgálható ({count}): {reason}`,
     };
 
     const uk = {
@@ -15308,11 +16583,6 @@
         'backendSettings.hintPrefix': `Хочете, щоб зображення залишалися у вашій мережі?`,
         'backendSettings.hintLink': `Запустіть приватний сервер через Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Політика безпеки браузера (CSP) за замовчуванням дозволяє лише`,
-        'backendSettings.csp2': `. Щоб отримати доступ до локального бекенду за іншою адресою (наприклад, IP вашої локальної мережі), додайте його до`,
-        'backendSettings.csp3': `списку у`,
-        'backendSettings.csp4': `файлі у папці плагінів Stash, інакше запити будуть заблоковані. Примітка: оновлення Visage перевстановлює`,
-        'backendSettings.csp5': `, тому це потрібно повторювати після кожного оновлення.`,
         'backendSettings.testing': `Перевірка підключення…`,
         'backendSettings.testConnection': `Перевірити підключення`,
         'backendSettings.testingShort': `Перевірка…`,
@@ -15400,6 +16670,23 @@
         'scene.failed': `Сканування сцени не вдалося: {error}`,
         'scene.menuItemTitle': `Знайдіть усіх у цій сцені. Потрібен згенерований sprite sheet або відео попереднього перегляду.`,
         'scene.wholeScene': `Visage: Розпізнати сцену`,
+        'scene.deepScan': `Visage: Глибоке сканування`,
+        'scene.deepScanTitle': `Сканує кадри відео в повному розмірі на вашому Visage Server. Повільніше за сканування сцени, знаходить більше виконавців.`,
+        'scene.deepSprite': `Пошук облич у спрайт-листі`,
+        'scene.deepFrames': `Сканування кадрів відео`,
+        'scene.deepNoFaces': `У кадрах відео цієї сцени не знайдено виконавців.`,
+        'scene.deepNoFile': `Ця сцена не має відеофайлу для сканування.`,
+        'scene.deepNoResult': `Глибоке сканування завершилося без результату. Спробуйте ще раз.`,
+        'scene.deepUpsellTitle': `Глибоке сканування з Visage Server`,
+        'scene.deepUpsellBody': `Глибоке сканування читає кадри відео в повному розмірі з вашого власного Stash. Воно працює лише на Visage Server, вашому приватному сервері, а не в спільному Cloud. Ваші відео залишаються на вашому комп’ютері. Доступно з підтримкою на Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server не приймає глибоке сканування з {origin}. Додайте "{origin}" до allowed_origins у visage.toml, потім перезапустіть Visage Server.`,
+        'scene.deepBusy': `Visage Server уже виконує глибоке сканування. Спробуйте ще раз, коли воно завершиться.`,
+        'scene.deepUnavailable': `Глибоке сканування вимкнено на цьому Visage Server. Вкажіть url у visage.toml, встановіть ffmpeg, потім перезапустіть Visage Server.`,
+        'batch.deepMenuItem': `Глибоке сканування з Visage`,
+        'batch.deepTitle': `Глибоке сканування сцен: {count}`,
+        'batch.upsellCta': `Отримати Visage Server на Patreon`,
+        'batch.upsellHaveServer': `У мене є сервер`,
+        'batch.upsellClose': `Не зараз`,
         'banner.changeBackend': `Змінити бекенд`,
         'banner.dismiss': `Відхилити`,
         'error.dismiss': `Відхилити`,
@@ -15456,6 +16743,24 @@
         'search.imageMenuTitle': `Дізнайтеся, хто на цьому зображенні. Обведіть обличчя рамкою або натисніть для всього зображення.`,
         'faceMatch.adding.images': `Додавання…`,
         'sprite.confirm': `Додати до сцени ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `За адресою {url}/health нічого немає. Видаліть шлях після порту, наприклад http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Усе одно зберегти`,
+        'backendSettings.sync.off': `Синхронізацію зі Stash вимкнено. Додайте url до visage.toml у теці даних сервера, потім перезапустіть Visage Server.`,
+        'backendSettings.sync.lastError': `Остання синхронізація не вдалася: {error}`,
+        'scene.deepReady': `Глибоке сканування: готово.`,
+        'scene.deepOffNoStash': `Глибоке сканування: вимкнено. У visage.toml немає url Stash.`,
+        'scene.deepOffNoFfmpeg': `Глибоке сканування: вимкнено. ffmpeg не знайдено. Встановіть ffmpeg або запустіть Visage Server з --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Глибоке сканування: вимкнено. Знайдений ffmpeg є статичною збіркою, яка не працює зі Stash через https. Встановіть системний ffmpeg.`,
+        'scene.deepUpdateServer': `Глибоке сканування: оновіть Visage Server до найновішої версії.`,
+        'scene.deepNeedsNewerServer': `Для глибокого сканування потрібен новіший Visage Server. Оновіть Visage Server, потім перезавантажте цю сторінку.`,
+        'scene.deepOriginWillRefuse': `Глибоке сканування відхилить цю сторінку ({origin}). Додайте її до allowed_origins у visage.toml, потім перезапустіть Visage Server.`,
+        'scene.deepOtherStash': `Visage Server читає дані з {stash_url}, а не з цього Stash ({origin}). Вкажіть цей Stash в url у visage.toml, потім перезапустіть Visage Server.`,
+        'scene.serverScanFailed': `Visage Server не зміг просканувати цю сцену: {error}`,
+        'backend.cspBlocked': `Stash блокує запити до {origin}. Додайте "{origin}" до ui.csp.connect-src у plugins/visage/visage.yml, потім перезавантажте Stash. Повторюйте це після кожного оновлення Visage.`,
+        'backend.mixedContent': `Stash відкрито через https, тому браузер блокує http-адресу {url}. Надайте доступ до Visage Server через https (наприклад, через зворотний проксі) або відкрийте Stash через http.`,
+        'backend.loopbackRemote': `localhost означає цей пристрій, а не ваш сервер. У налаштуваннях Visage вкажіть мережеву адресу сервера, наприклад http://192.168.1.50:7860.`,
+        'batch.failedReason': `Не вдалося просканувати ({count}): {reason}`,
     };
 
     // German. Missing keys fall back to English automatically.
@@ -15472,11 +16777,6 @@
         'backendSettings.hintPrefix': `Möchtest du, dass deine Bilder in deinem Netzwerk bleiben?`,
         'backendSettings.hintLink': `Einen privaten Server über Patreon betreiben`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Die Sicherheitsrichtlinie (CSP) des Browsers erlaubt nur`,
-        'backendSettings.csp2': `standardmäßig. Um ein lokales Backend unter einer anderen Adresse (z. B. deiner LAN-IP) zu erreichen, füge es zur`,
-        'backendSettings.csp3': `Liste in der`,
-        'backendSettings.csp4': `Datei in deinem Stash-Plugins-Ordner hinzu, sonst werden Anfragen blockiert. Hinweis: Ein Update von Visage installiert`,
-        'backendSettings.csp5': `neu, daher muss dies nach jedem Update erneut angewendet werden.`,
         'backendSettings.testing': `Verbindung wird getestet…`,
         'backendSettings.testConnection': `Verbindung testen`,
         'backendSettings.testingShort': `Testen…`,
@@ -15569,6 +16869,23 @@
         'scene.failed': `Szenen-Scan fehlgeschlagen: {error}`,
         'scene.menuItemTitle': `Finde alle Personen in dieser Szene. Benötigt ein erzeugtes Sprite-Sheet oder Vorschauvideo.`,
         'scene.wholeScene': `Visage: Szene identifizieren`,
+        'scene.deepScan': `Visage: Tiefenscan`,
+        'scene.deepScanTitle': `Scannt Videobilder in voller Größe auf deinem Visage Server. Langsamer als der Szenen-Scan, findet mehr Performer.`,
+        'scene.deepSprite': `Gesichter im Sprite-Sheet werden gesucht`,
+        'scene.deepFrames': `Videobilder werden gescannt`,
+        'scene.deepNoFaces': `In den Videobildern dieser Szene wurden keine Performer gefunden.`,
+        'scene.deepNoFile': `Diese Szene hat keine Videodatei zum Scannen.`,
+        'scene.deepNoResult': `Der Tiefenscan endete ohne Ergebnis. Versuche es erneut.`,
+        'scene.deepUpsellTitle': `Tiefenscan mit Visage Server`,
+        'scene.deepUpsellBody': `Der Tiefenscan liest Videobilder in voller Größe aus deinem eigenen Stash. Er läuft nur auf Visage Server, deinem privaten Server, nicht in der gemeinsam genutzten Cloud. Deine Videos bleiben auf deinem Rechner. Gibt es mit Patreon-Unterstützung.`,
+        'scene.deepRefusedOrigin': `Visage Server nimmt keinen Tiefenscan von {origin} an. Füge "{origin}" zu allowed_origins in visage.toml hinzu und starte Visage Server dann neu.`,
+        'scene.deepBusy': `Visage Server führt bereits einen Tiefenscan aus. Versuche es erneut, wenn er fertig ist.`,
+        'scene.deepUnavailable': `Der Tiefenscan ist auf diesem Visage Server aus. Setze url in visage.toml, installiere ffmpeg und starte Visage Server dann neu.`,
+        'batch.deepMenuItem': `Tiefenscan mit Visage`,
+        'batch.deepTitle': `Tiefenscan der Szenen: {count}`,
+        'batch.upsellCta': `Visage Server auf Patreon holen`,
+        'batch.upsellHaveServer': `Ich habe einen Server`,
+        'batch.upsellClose': `Nicht jetzt`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Backend ändern`,
         'banner.dismiss': `Ausblenden`,
@@ -15631,6 +16948,24 @@
         'search.imageMenuTitle': `Finde heraus, wer auf diesem Foto ist. Ziehe einen Rahmen um ein Gesicht oder klicke für das ganze Foto.`,
         'faceMatch.adding.images': `Wird hinzugefügt…`,
         'sprite.confirm': `Zur Szene hinzufügen ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Unter {url}/health ist nichts. Entferne alles hinter dem Port, zum Beispiel http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Trotzdem speichern`,
+        'backendSettings.sync.off': `Stash Sync ist aus. Füge url zu visage.toml im Datenordner des Servers hinzu und starte Visage Server dann neu.`,
+        'backendSettings.sync.lastError': `Letzte Synchronisierung fehlgeschlagen: {error}`,
+        'scene.deepReady': `Tiefenscan: bereit.`,
+        'scene.deepOffNoStash': `Tiefenscan: aus. Keine Stash-url in visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Tiefenscan: aus. ffmpeg nicht gefunden. Installiere ffmpeg oder starte Visage Server mit --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Tiefenscan: aus. Das gefundene ffmpeg ist ein statischer Build, der mit https-Stash scheitert. Installiere das ffmpeg deines Systems.`,
+        'scene.deepUpdateServer': `Tiefenscan: Aktualisiere Visage Server auf die neueste Version.`,
+        'scene.deepNeedsNewerServer': `Der Tiefenscan braucht einen neueren Visage Server. Aktualisiere Visage Server und lade diese Seite dann neu.`,
+        'scene.deepOriginWillRefuse': `Der Tiefenscan wird diese Seite ({origin}) ablehnen. Füge sie zu allowed_origins in visage.toml hinzu und starte Visage Server dann neu.`,
+        'scene.deepOtherStash': `Visage Server liest aus {stash_url}, nicht aus diesem Stash ({origin}). Richte url in visage.toml auf diesen Stash und starte Visage Server dann neu.`,
+        'scene.serverScanFailed': `Visage Server konnte diese Szene nicht scannen: {error}`,
+        'backend.cspBlocked': `Stash blockiert Anfragen an {origin}. Füge "{origin}" unter ui.csp.connect-src in plugins/visage/visage.yml hinzu und lade Stash dann neu. Wiederhole das nach jedem Visage-Update.`,
+        'backend.mixedContent': `Stash ist über https geöffnet, daher blockiert der Browser die http-Adresse {url}. Stelle Visage Server über https bereit (zum Beispiel über deinen Reverse Proxy) oder öffne Stash über http.`,
+        'backend.loopbackRemote': `localhost bedeutet dieses Gerät, nicht deinen Server. Nutze in den Visage-Einstellungen die Netzwerkadresse des Servers, zum Beispiel http://192.168.1.50:7860.`,
+        'batch.failedReason': `Nicht scanbar ({count}): {reason}`,
     };
 
     // Finnish.
@@ -15646,11 +16981,6 @@
         'backendSettings.hintPrefix': `Haluatko, että kuvasi pysyvät verkossasi?`,
         'backendSettings.hintLink': `Aja yksityinen palvelin Patreonin kautta`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Selaimen suojauskäytäntö (CSP) sallii oletuksena vain",
-        'backendSettings.csp2': `Jos haluat käyttää paikallista backendia toisessa osoitteessa (esim. LAN-IP-osoitteessasi), lisää se`,
-        'backendSettings.csp3': `luetteloon`,
-        'backendSettings.csp4': `-tiedostossa Stash-liitännäiskansiossasi, muuten pyynnöt estetään. Huomio: Visagen päivitys asentaa`,
-        'backendSettings.csp5': `:n uudelleen, joten tämä on tehtävä uudelleen jokaisen päivityksen jälkeen.`,
         'backendSettings.testing': `Testataan yhteyttä…`,
         'backendSettings.testConnection': `Testaa yhteys`,
         'backendSettings.testingShort': `Testataan…`,
@@ -15738,6 +17068,23 @@
         'scene.failed': `Kohtauksen skannaus epäonnistui: {error}`,
         'scene.menuItemTitle': `Löydä kaikki tämän kohtauksen esiintyjät. Vaatii luodun sprite sheetin tai esikatseluvideon.`,
         'scene.wholeScene': `Visage: Tunnista kohtaus`,
+        'scene.deepScan': `Visage: Syväskannaus`,
+        'scene.deepScanTitle': `Skannaa täysikokoisia videokuvia Visage Serverilläsi. Hitaampi kuin kohtauksen skannaus, löytää enemmän esiintyjiä.`,
+        'scene.deepSprite': `Etsitään kasvoja sprite-arkista`,
+        'scene.deepFrames': `Skannataan videokuvia`,
+        'scene.deepNoFaces': `Tämän kohtauksen videokuvista ei löytynyt esiintyjiä.`,
+        'scene.deepNoFile': `Tällä kohtauksella ei ole skannattavaa videotiedostoa.`,
+        'scene.deepNoResult': `Syväskannaus päättyi ilman tulosta. Yritä uudelleen.`,
+        'scene.deepUpsellTitle': `Syväskannaus Visage Serverillä`,
+        'scene.deepUpsellBody': `Syväskannaus lukee täysikokoisia videokuvia omasta Stashistasi. Se toimii vain Visage Serverillä, yksityisellä palvelimellasi, ei jaetussa Cloudissa. Videosi pysyvät koneellasi. Sisältyy Patreon-tukeen.`,
+        'scene.deepRefusedOrigin': `Visage Server ei hyväksy syväskannausta osoitteesta {origin}. Lisää "{origin}" kohtaan allowed_origins tiedostossa visage.toml ja käynnistä Visage Server uudelleen.`,
+        'scene.deepBusy': `Visage Server tekee jo syväskannausta. Yritä uudelleen, kun se on valmis.`,
+        'scene.deepUnavailable': `Syväskannaus on pois päältä tässä Visage Serverissä. Aseta url tiedostoon visage.toml, asenna ffmpeg ja käynnistä Visage Server uudelleen.`,
+        'batch.deepMenuItem': `Syväskannaus Visagella`,
+        'batch.deepTitle': `Kohtausten syväskannaus: {count}`,
+        'batch.upsellCta': `Hanki Visage Server Patreonista`,
+        'batch.upsellHaveServer': `Minulla on palvelin`,
+        'batch.upsellClose': `Ei nyt`,
         'banner.changeBackend': `Vaihda backend`,
         'banner.dismiss': `Hylkää`,
         'error.dismiss': `Hylkää`,
@@ -15794,6 +17141,24 @@
         'search.imageMenuTitle': `Selvitä, kuka on tässä kuvassa. Rajaa kasvot vetämällä tai napsauta koko kuvalle.`,
         'faceMatch.adding.images': `Lisätään…`,
         'sprite.confirm': `Lisää kohtaukseen ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Osoitteessa {url}/health ei ole mitään. Poista portin jälkeinen polku, esimerkiksi http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Tallenna silti`,
+        'backendSettings.sync.off': `Stash-synkronointi on pois päältä. Lisää url tiedostoon visage.toml palvelimen datakansiossa ja käynnistä Visage Server uudelleen.`,
+        'backendSettings.sync.lastError': `Viimeisin synkronointi epäonnistui: {error}`,
+        'scene.deepReady': `Syväskannaus: valmis.`,
+        'scene.deepOffNoStash': `Syväskannaus: pois päältä. Tiedostossa visage.toml ei ole Stashin url-osoitetta.`,
+        'scene.deepOffNoFfmpeg': `Syväskannaus: pois päältä. ffmpegiä ei löytynyt. Asenna ffmpeg tai käynnistä Visage Server valitsimella --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Syväskannaus: pois päältä. Löydetty ffmpeg on staattinen käännös, joka ei toimi https-Stashin kanssa. Asenna järjestelmäsi ffmpeg.`,
+        'scene.deepUpdateServer': `Syväskannaus: päivitä Visage Server uusimpaan versioon.`,
+        'scene.deepNeedsNewerServer': `Syväskannaus vaatii uudemman Visage Serverin. Päivitä Visage Server ja lataa tämä sivu uudelleen.`,
+        'scene.deepOriginWillRefuse': `Syväskannaus hylkää tämän sivun ({origin}). Lisää se kohtaan allowed_origins tiedostossa visage.toml ja käynnistä Visage Server uudelleen.`,
+        'scene.deepOtherStash': `Visage Server lukee osoitteesta {stash_url}, ei tästä Stashista ({origin}). Osoita url tiedostossa visage.toml tähän Stashiin ja käynnistä Visage Server uudelleen.`,
+        'scene.serverScanFailed': `Visage Server ei voinut skannata tätä kohtausta: {error}`,
+        'backend.cspBlocked': `Stash estää pyynnöt osoitteeseen {origin}. Lisää "{origin}" kohtaan ui.csp.connect-src tiedostossa plugins/visage/visage.yml ja lataa Stash uudelleen. Tee tämä uudelleen jokaisen Visage-päivityksen jälkeen.`,
+        'backend.mixedContent': `Stash on avattu https-yhteydellä, joten selain estää http-osoitteen {url}. Tarjoa Visage Server https-yhteydellä (esimerkiksi käänteisen välityspalvelimen kautta) tai avaa Stash http-yhteydellä.`,
+        'backend.loopbackRemote': `localhost tarkoittaa tätä laitetta, ei palvelintasi. Käytä Visagen asetuksissa palvelimen verkko-osoitetta, esimerkiksi http://192.168.1.50:7860.`,
+        'batch.failedReason': `Ei voitu skannata ({count}): {reason}`,
     };
 
     const lv = {
@@ -15808,11 +17173,6 @@
         'backendSettings.hintPrefix': `Vai vēlaties, lai jūsu attēli paliktu jūsu tīklā?`,
         'backendSettings.hintLink': `Palaidiet privātu serveri, izmantojot Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Pārlūka drošības politika (CSP) pēc noklusējuma atļauj tikai`,
-        'backendSettings.csp2': `. Lai sasniegtu lokālu pamata pakalpojumu citā adresē (piemēram, jūsu LAN IP), pievienojiet to`,
-        'backendSettings.csp3': `sarakstam failā`,
-        'backendSettings.csp4': `Stash spraudņu mapē, pretējā gadījumā pieprasījumi tiks bloķēti. Ņemiet vērā: Visage atjaunināšana pārinstalē`,
-        'backendSettings.csp5': `, tāpēc tas ir jāatkārto pēc katra atjauninājuma.`,
         'backendSettings.testing': `Savienojuma pārbaude…`,
         'backendSettings.testConnection': `Pārbaudīt savienojumu`,
         'backendSettings.testingShort': `Pārbaude…`,
@@ -15900,6 +17260,23 @@
         'scene.failed': `Ainas skenēšana neizdevās: {error}`,
         'scene.menuItemTitle': `Atrodiet visus šajā ainā. Nepieciešams ģenerēts sprite sheet vai priekšskatījuma video.`,
         'scene.wholeScene': `Visage: atpazīt ainu`,
+        'scene.deepScan': `Visage: dziļā skenēšana`,
+        'scene.deepScanTitle': `Skenē pilna izmēra video kadrus jūsu Visage Server. Lēnāka par ainas skenēšanu, atrod vairāk izpildītāju.`,
+        'scene.deepSprite': `Meklē sejas sprite lapā`,
+        'scene.deepFrames': `Skenē video kadrus`,
+        'scene.deepNoFaces': `Šīs ainas video kadros nav atrasti izpildītāji.`,
+        'scene.deepNoFile': `Šai ainai nav video faila, ko skenēt.`,
+        'scene.deepNoResult': `Dziļā skenēšana beidzās bez rezultāta. Mēģiniet vēlreiz.`,
+        'scene.deepUpsellTitle': `Dziļā skenēšana ar Visage Server`,
+        'scene.deepUpsellBody': `Dziļā skenēšana nolasa pilna izmēra video kadrus no jūsu paša Stash. Tā darbojas tikai Visage Server, jūsu privātajā serverī, nevis koplietotajā Cloud pakalpojumā. Jūsu video paliek jūsu datorā. Pieejama ar Patreon atbalstu.`,
+        'scene.deepRefusedOrigin': `Visage Server nepieņem dziļo skenēšanu no {origin}. Pievienojiet "{origin}" allowed_origins failā visage.toml, pēc tam restartējiet Visage Server.`,
+        'scene.deepBusy': `Visage Server jau veic dziļo skenēšanu. Mēģiniet vēlreiz, kad tā būs pabeigta.`,
+        'scene.deepUnavailable': `Šajā Visage Server dziļā skenēšana ir izslēgta. Iestatiet url failā visage.toml, instalējiet ffmpeg, pēc tam restartējiet Visage Server.`,
+        'batch.deepMenuItem': `Dziļā skenēšana ar Visage`,
+        'batch.deepTitle': `Ainu dziļā skenēšana: {count}`,
+        'batch.upsellCta': `Iegūt Visage Server pakalpojumā Patreon`,
+        'batch.upsellHaveServer': `Man ir serveris`,
+        'batch.upsellClose': `Ne tagad`,
         'banner.changeBackend': `Mainīt pamata pakalpojumu`,
         'banner.dismiss': `Noraidīt`,
         'error.dismiss': `Noraidīt`,
@@ -15956,6 +17333,24 @@
         'search.imageMenuTitle': `Uzziniet, kas ir šajā attēlā. Velciet rāmi ap seju vai noklikšķiniet visam attēlam.`,
         'faceMatch.adding.images': `Pievieno…`,
         'sprite.confirm': `Pievienot ainai ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Adresē {url}/health nekā nav. Noņemiet ceļu aiz porta, piemēram, http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Tomēr saglabāt`,
+        'backendSettings.sync.off': `Stash sinhronizēšana ir izslēgta. Pievienojiet url failam visage.toml servera datu mapē, pēc tam restartējiet Visage Server.`,
+        'backendSettings.sync.lastError': `Pēdējā sinhronizēšana neizdevās: {error}`,
+        'scene.deepReady': `Dziļā skenēšana: gatava.`,
+        'scene.deepOffNoStash': `Dziļā skenēšana: izslēgta. Failā visage.toml nav Stash url.`,
+        'scene.deepOffNoFfmpeg': `Dziļā skenēšana: izslēgta. ffmpeg nav atrasts. Instalējiet ffmpeg vai palaidiet Visage Server ar --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Dziļā skenēšana: izslēgta. Atrastais ffmpeg ir statisks būvējums, kas nedarbojas ar https Stash. Instalējiet savas sistēmas ffmpeg.`,
+        'scene.deepUpdateServer': `Dziļā skenēšana: atjauniniet Visage Server uz jaunāko versiju.`,
+        'scene.deepNeedsNewerServer': `Dziļajai skenēšanai vajag jaunāku Visage Server. Atjauniniet Visage Server, pēc tam pārlādējiet šo lapu.`,
+        'scene.deepOriginWillRefuse': `Dziļā skenēšana noraidīs šo lapu ({origin}). Pievienojiet to allowed_origins failā visage.toml, pēc tam restartējiet Visage Server.`,
+        'scene.deepOtherStash': `Visage Server lasa no {stash_url}, nevis no šī Stash ({origin}). Norādiet url failā visage.toml uz šo Stash, pēc tam restartējiet Visage Server.`,
+        'scene.serverScanFailed': `Visage Server nevarēja noskenēt šo ainu: {error}`,
+        'backend.cspBlocked': `Stash bloķē pieprasījumus uz {origin}. Pievienojiet "{origin}" sadaļā ui.csp.connect-src failā plugins/visage/visage.yml, pēc tam pārlādējiet Stash. Atkārtojiet to pēc katra Visage atjauninājuma.`,
+        'backend.mixedContent': `Stash ir atvērts caur https, tāpēc pārlūks bloķē http adresi {url}. Nodrošiniet Visage Server caur https (piemēram, ar savu reverso starpniekserveri) vai atveriet Stash caur http.`,
+        'backend.loopbackRemote': `localhost nozīmē šo ierīci, nevis jūsu serveri. Visage iestatījumos izmantojiet servera tīkla adresi, piemēram, http://192.168.1.50:7860.`,
+        'batch.failedReason': `Neizdevās noskenēt ({count}): {reason}`,
     };
 
     const vi = {
@@ -15970,11 +17365,6 @@
         'backendSettings.hintPrefix': `Muốn giữ hình ảnh trong mạng của bạn?`,
         'backendSettings.hintLink': `Chạy máy chủ riêng qua Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Chính sách bảo mật của trình duyệt (CSP) chỉ cho phép`,
-        'backendSettings.csp2': `theo mặc định. Để truy cập backend cục bộ tại địa chỉ khác (ví dụ: IP LAN của bạn), hãy thêm nó vào`,
-        'backendSettings.csp3': `trong`,
-        'backendSettings.csp4': `bên trong thư mục plugin Stash của bạn, nếu không các yêu cầu sẽ bị chặn. Lưu ý: cập nhật Visage sẽ cài lại`,
-        'backendSettings.csp5': `, vì vậy phải áp dụng lại sau mỗi lần cập nhật.`,
         'backendSettings.testing': `Đang kiểm tra kết nối…`,
         'backendSettings.testConnection': `Kiểm tra kết nối`,
         'backendSettings.testingShort': `Đang kiểm tra…`,
@@ -16062,6 +17452,23 @@
         'scene.failed': `Quét cảnh thất bại: {error}`,
         'scene.menuItemTitle': `Tìm mọi người trong cảnh này. Cần sprite sheet hoặc video xem trước đã tạo.`,
         'scene.wholeScene': `Visage: Nhận dạng cảnh`,
+        'scene.deepScan': `Visage: Quét sâu`,
+        'scene.deepScanTitle': `Quét các khung hình video kích thước đầy đủ trên Visage Server của bạn. Chậm hơn quét cảnh, tìm được nhiều diễn viên hơn.`,
+        'scene.deepSprite': `Đang tìm khuôn mặt trong sprite sheet`,
+        'scene.deepFrames': `Đang quét khung hình video`,
+        'scene.deepNoFaces': `Không tìm thấy diễn viên nào trong các khung hình video của cảnh này.`,
+        'scene.deepNoFile': `Cảnh này không có tệp video để quét.`,
+        'scene.deepNoResult': `Quét sâu đã kết thúc mà không có kết quả. Hãy thử lại.`,
+        'scene.deepUpsellTitle': `Quét sâu với Visage Server`,
+        'scene.deepUpsellBody': `Quét sâu đọc các khung hình video kích thước đầy đủ từ Stash của chính bạn. Tính năng này chỉ chạy trên Visage Server, máy chủ riêng của bạn, không chạy trên Cloud dùng chung. Video của bạn ở lại trên máy của bạn. Đi kèm khi ủng hộ trên Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server không nhận quét sâu từ {origin}. Thêm "{origin}" vào allowed_origins trong visage.toml, rồi khởi động lại Visage Server.`,
+        'scene.deepBusy': `Visage Server đang chạy một lần quét sâu. Hãy thử lại khi quét xong.`,
+        'scene.deepUnavailable': `Quét sâu đang tắt trên Visage Server này. Đặt url trong visage.toml, cài ffmpeg, rồi khởi động lại Visage Server.`,
+        'batch.deepMenuItem': `Quét sâu với Visage`,
+        'batch.deepTitle': `Đang quét sâu {count} cảnh`,
+        'batch.upsellCta': `Nhận Visage Server trên Patreon`,
+        'batch.upsellHaveServer': `Tôi đã có máy chủ`,
+        'batch.upsellClose': `Để sau`,
         'banner.changeBackend': `Đổi backend`,
         'banner.dismiss': `Bỏ qua`,
         'error.dismiss': `Bỏ qua`,
@@ -16118,6 +17525,24 @@
         'search.imageMenuTitle': `Tìm xem ai trong ảnh này. Kéo khung quanh một khuôn mặt, hoặc nhấp cho cả ảnh.`,
         'faceMatch.adding.images': `Đang thêm…`,
         'sprite.confirm': `Thêm vào cảnh ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Không có gì tại {url}/health. Xóa mọi đường dẫn sau cổng, ví dụ http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Vẫn lưu`,
+        'backendSettings.sync.off': `Đồng bộ Stash đang tắt. Thêm url vào visage.toml trong thư mục dữ liệu của máy chủ, rồi khởi động lại Visage Server.`,
+        'backendSettings.sync.lastError': `Lần đồng bộ cuối thất bại: {error}`,
+        'scene.deepReady': `Quét sâu: sẵn sàng.`,
+        'scene.deepOffNoStash': `Quét sâu: tắt. Không có url Stash trong visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Quét sâu: tắt. Không tìm thấy ffmpeg. Cài ffmpeg hoặc khởi động Visage Server với --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Quét sâu: tắt. ffmpeg tìm thấy là bản build tĩnh, bị lỗi với Stash qua https. Hãy cài ffmpeg của hệ thống.`,
+        'scene.deepUpdateServer': `Quét sâu: cập nhật Visage Server lên phiên bản mới nhất.`,
+        'scene.deepNeedsNewerServer': `Quét sâu cần Visage Server mới hơn. Cập nhật Visage Server, rồi tải lại trang này.`,
+        'scene.deepOriginWillRefuse': `Quét sâu sẽ từ chối trang này ({origin}). Thêm nó vào allowed_origins trong visage.toml, rồi khởi động lại Visage Server.`,
+        'scene.deepOtherStash': `Visage Server đọc từ {stash_url}, không phải Stash này ({origin}). Trỏ url trong visage.toml đến Stash này, rồi khởi động lại Visage Server.`,
+        'scene.serverScanFailed': `Visage Server không thể quét cảnh này: {error}`,
+        'backend.cspBlocked': `Stash chặn các yêu cầu đến {origin}. Thêm "{origin}" vào ui.csp.connect-src trong plugins/visage/visage.yml, rồi tải lại Stash. Làm lại sau mỗi lần cập nhật Visage.`,
+        'backend.mixedContent': `Stash đang mở qua https, nên trình duyệt chặn địa chỉ http {url}. Phục vụ Visage Server qua https (ví dụ qua reverse proxy của bạn), hoặc mở Stash qua http.`,
+        'backend.loopbackRemote': `localhost là thiết bị này, không phải máy chủ của bạn. Trong cài đặt Visage, hãy dùng địa chỉ mạng của máy chủ, ví dụ http://192.168.1.50:7860.`,
+        'batch.failedReason': `Không quét được ({count}): {reason}`,
     };
 
     // Estonian.
@@ -16133,11 +17558,6 @@
         'backendSettings.hintPrefix': `Kas soovid, et su pildid jääksid sinu võrku?`,
         'backendSettings.hintLink': `Käivita privaatne server Patreoni kaudu`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Brauseri turvapoliitika (CSP) lubab vaikimisi ainult",
-        'backendSettings.csp2': `Teise aadressiga (nt oma LAN-IP) kohaliku backendini jõudmiseks lisa see`,
-        'backendSettings.csp3': `loendisse failis`,
-        'backendSettings.csp4': `oma Stash pluginade kaustas, muidu päringud blokeeritakse. Märkus: Visage värskendamine installib`,
-        'backendSettings.csp5': `uuesti, nii et seda tuleb iga värskenduse järel uuesti teha.`,
         'backendSettings.testing': `Ühenduse testimine…`,
         'backendSettings.testConnection': `Testi ühendust`,
         'backendSettings.testingShort': `Testimine…`,
@@ -16225,6 +17645,23 @@
         'scene.failed': `Stseeni skannimine ebaõnnestus: {error}`,
         'scene.menuItemTitle': `Leia kõik selles stseenis. Vajab loodud sprite sheeti või eelvaatevideot.`,
         'scene.wholeScene': `Visage: Tuvasta stseen`,
+        'scene.deepScan': `Visage: Süvaskannimine`,
+        'scene.deepScanTitle': `Skannib täissuuruses videokaadreid sinu Visage Serveris. Aeglasem kui stseeni skannimine, leiab rohkem esinejaid.`,
+        'scene.deepSprite': `Nägude otsimine sprite-lehelt`,
+        'scene.deepFrames': `Videokaadrite skannimine`,
+        'scene.deepNoFaces': `Selle stseeni videokaadritest ei leitud ühtegi esinejat.`,
+        'scene.deepNoFile': `Sellel stseenil pole skannimiseks videofaili.`,
+        'scene.deepNoResult': `Süvaskannimine lõppes tulemuseta. Proovi uuesti.`,
+        'scene.deepUpsellTitle': `Süvaskannimine Visage Serveriga`,
+        'scene.deepUpsellBody': `Süvaskannimine loeb täissuuruses videokaadreid sinu enda Stashist. See töötab ainult Visage Serveris, sinu privaatses serveris, mitte jagatud Cloudis. Sinu videod jäävad sinu masinasse. Kaasas Patreoni toetusega.`,
+        'scene.deepRefusedOrigin': `Visage Server ei luba süvaskannimist aadressilt {origin}. Lisa "{origin}" faili visage.toml väljale allowed_origins ja taaskäivita Visage Server.`,
+        'scene.deepBusy': `Visage Server teeb juba süvaskannimist. Proovi uuesti, kui see on lõppenud.`,
+        'scene.deepUnavailable': `Süvaskannimine on selles Visage Serveris väljas. Määra failis visage.toml url, paigalda ffmpeg ja taaskäivita Visage Server.`,
+        'batch.deepMenuItem': `Süvaskannimine Visage'iga`,
+        'batch.deepTitle': `Stseenide süvaskannimine: {count}`,
+        'batch.upsellCta': `Hangi Visage Server Patreonist`,
+        'batch.upsellHaveServer': `Mul on server`,
+        'batch.upsellClose': `Mitte praegu`,
         'banner.changeBackend': `Vaheta backend`,
         'banner.dismiss': `Lükka tagasi`,
         'error.dismiss': `Lükka tagasi`,
@@ -16281,6 +17718,24 @@
         'search.imageMenuTitle': `Uuri, kes on sellel pildil. Lohista kast ümber näo või klõpsa kogu pildi jaoks.`,
         'faceMatch.adding.images': `Lisamine…`,
         'sprite.confirm': `Lisa stseeni ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Aadressil {url}/health pole midagi. Eemalda pordi järel olev tee, näiteks http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Salvesta ikkagi`,
+        'backendSettings.sync.off': `Stashi sünkroonimine on väljas. Lisa url serveri andmekaustas olevasse faili visage.toml ja taaskäivita Visage Server.`,
+        'backendSettings.sync.lastError': `Viimane sünkroonimine ebaõnnestus: {error}`,
+        'scene.deepReady': `Süvaskannimine: valmis.`,
+        'scene.deepOffNoStash': `Süvaskannimine: väljas. Failis visage.toml pole Stashi url-i.`,
+        'scene.deepOffNoFfmpeg': `Süvaskannimine: väljas. ffmpeg-i ei leitud. Paigalda ffmpeg või käivita Visage Server võtmega --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Süvaskannimine: väljas. Leitud ffmpeg on staatiline järk, mis ei tööta https-Stashiga. Paigalda oma süsteemi ffmpeg.`,
+        'scene.deepUpdateServer': `Süvaskannimine: uuenda Visage Server uusimale versioonile.`,
+        'scene.deepNeedsNewerServer': `Süvaskannimine vajab uuemat Visage Serverit. Uuenda Visage Server ja laadi see leht uuesti.`,
+        'scene.deepOriginWillRefuse': `Süvaskannimine keeldub sellest lehest ({origin}). Lisa see faili visage.toml väljale allowed_origins ja taaskäivita Visage Server.`,
+        'scene.deepOtherStash': `Visage Server loeb aadressilt {stash_url}, mitte sellest Stashist ({origin}). Suuna failis visage.toml url sellele Stashile ja taaskäivita Visage Server.`,
+        'scene.serverScanFailed': `Visage Server ei saanud seda stseeni skannida: {error}`,
+        'backend.cspBlocked': `Stash blokeerib päringud aadressile {origin}. Lisa "{origin}" faili plugins/visage/visage.yml jaotisse ui.csp.connect-src ja laadi Stash uuesti. Tee seda pärast iga Visage'i uuendust uuesti.`,
+        'backend.mixedContent': `Stash on avatud üle https, seega blokeerib brauser http-aadressi {url}. Paku Visage Serverit üle https (näiteks oma pöördpuhverserveri kaudu) või ava Stash üle http.`,
+        'backend.loopbackRemote': `localhost tähendab seda seadet, mitte sinu serverit. Kasuta Visage'i seadetes serveri võrguaadressi, näiteks http://192.168.1.50:7860.`,
+        'batch.failedReason': `Skannimine ebaõnnestus ({count}): {reason}`,
     };
 
     // Norwegian Bokmål.
@@ -16296,11 +17751,6 @@
         'backendSettings.hintPrefix': `Vil du at bildene dine skal bli på nettverket ditt?`,
         'backendSettings.hintLink': `Kjør en privat server via Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Nettleserens sikkerhetspolicy (CSP) tillater bare",
-        'backendSettings.csp2': `som standard. For å nå en lokal backend på en annen adresse (f.eks. LAN-IP-en din) må du legge den til i`,
-        'backendSettings.csp3': `listen i`,
-        'backendSettings.csp4': `-filen i Stash-plugins-mappen din, ellers blokkeres forespørslene. Merk: oppdatering av Visage installerer`,
-        'backendSettings.csp5': `på nytt, så dette må gjøres på nytt etter hver oppdatering.`,
         'backendSettings.testing': `Tester tilkobling…`,
         'backendSettings.testConnection': `Test tilkobling`,
         'backendSettings.testingShort': `Tester…`,
@@ -16388,6 +17838,23 @@
         'scene.failed': `Scene-skanning mislyktes: {error}`,
         'scene.menuItemTitle': `Finn alle i denne scenen. Krever et generert sprite sheet eller en forhåndsvisningsvideo.`,
         'scene.wholeScene': `Visage: Identifiser scene`,
+        'scene.deepScan': `Visage: Dypskanning`,
+        'scene.deepScanTitle': `Skanner videobilder i full størrelse på Visage Server. Tregere enn scene-skanningen, finner flere performere.`,
+        'scene.deepSprite': `Finner ansikter i sprite-arket`,
+        'scene.deepFrames': `Skanner videobilder`,
+        'scene.deepNoFaces': `Fant ingen performere i videobildene i denne scenen.`,
+        'scene.deepNoFile': `Denne scenen har ingen videofil å skanne.`,
+        'scene.deepNoResult': `Dypskanningen endte uten resultat. Prøv igjen.`,
+        'scene.deepUpsellTitle': `Dypskanning med Visage Server`,
+        'scene.deepUpsellBody': `Dypskanning leser videobilder i full størrelse fra din egen Stash. Den kjører bare på Visage Server, din private server, ikke i den delte Cloud-tjenesten. Videoene dine blir på maskinen din. Følger med Patreon-støtte.`,
+        'scene.deepRefusedOrigin': `Visage Server godtar ikke en dypskanning fra {origin}. Legg til "{origin}" i allowed_origins i visage.toml, og start deretter Visage Server på nytt.`,
+        'scene.deepBusy': `Visage Server kjører allerede en dypskanning. Prøv igjen når den er ferdig.`,
+        'scene.deepUnavailable': `Dypskanning er slått av på denne Visage Server. Angi url i visage.toml, installer ffmpeg, og start deretter Visage Server på nytt.`,
+        'batch.deepMenuItem': `Dypskanning med Visage`,
+        'batch.deepTitle': `Dypskanner scener: {count}`,
+        'batch.upsellCta': `Få Visage Server på Patreon`,
+        'batch.upsellHaveServer': `Jeg har en server`,
+        'batch.upsellClose': `Ikke nå`,
         'banner.changeBackend': `Bytt backend`,
         'banner.dismiss': `Avvis`,
         'error.dismiss': `Avvis`,
@@ -16444,6 +17911,24 @@
         'search.imageMenuTitle': `Finn ut hvem som er på fotoet. Dra en ramme rundt et ansikt, eller klikk for hele fotoet.`,
         'faceMatch.adding.images': `Legger til…`,
         'sprite.confirm': `Legg til i scene ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Ingenting på {url}/health. Fjern eventuell sti etter porten, for eksempel http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Lagre likevel`,
+        'backendSettings.sync.off': `Stash-synkronisering er slått av. Legg til url i visage.toml i datamappen til serveren, og start deretter Visage Server på nytt.`,
+        'backendSettings.sync.lastError': `Siste synkronisering mislyktes: {error}`,
+        'scene.deepReady': `Dypskanning: klar.`,
+        'scene.deepOffNoStash': `Dypskanning: av. Ingen Stash-url i visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Dypskanning: av. Fant ikke ffmpeg. Installer ffmpeg, eller start Visage Server med --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Dypskanning: av. ffmpeg som ble funnet, er en statisk build som feiler med Stash over https. Installer systemets ffmpeg.`,
+        'scene.deepUpdateServer': `Dypskanning: oppdater Visage Server til nyeste versjon.`,
+        'scene.deepNeedsNewerServer': `Dypskanning krever en nyere Visage Server. Oppdater Visage Server, og last deretter inn denne siden på nytt.`,
+        'scene.deepOriginWillRefuse': `Dypskanning vil avvise denne siden ({origin}). Legg den til i allowed_origins i visage.toml, og start deretter Visage Server på nytt.`,
+        'scene.deepOtherStash': `Visage Server leser fra {stash_url}, ikke fra denne Stash ({origin}). Pek url i visage.toml mot denne Stash, og start deretter Visage Server på nytt.`,
+        'scene.serverScanFailed': `Visage Server kunne ikke skanne denne scenen: {error}`,
+        'backend.cspBlocked': `Stash blokkerer forespørsler til {origin}. Legg til "{origin}" under ui.csp.connect-src i plugins/visage/visage.yml, og last deretter Stash inn på nytt. Gjør dette igjen etter hver Visage-oppdatering.`,
+        'backend.mixedContent': `Stash er åpnet over https, så nettleseren blokkerer http-adressen {url}. Kjør Visage Server over https (for eksempel via din reverse proxy), eller åpne Stash over http.`,
+        'backend.loopbackRemote': `localhost betyr denne enheten, ikke serveren din. Bruk nettverksadressen til serveren i Visage-innstillingene, for eksempel http://192.168.1.50:7860.`,
+        'batch.failedReason': `Kunne ikke skannes ({count}): {reason}`,
     };
 
     // Turkish.
@@ -16459,11 +17944,6 @@
         'backendSettings.hintPrefix': `Görsellerinizin ağınızda kalmasını ister misiniz?`,
         'backendSettings.hintLink': `Patreon üzerinden özel bir sunucu çalıştırın`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Tarayıcının güvenlik politikası (CSP) varsayılan olarak yalnızca",
-        'backendSettings.csp2': `adreslerine izin verir. Başka bir adresteki (örn. LAN IP'niz) yerel bir backend\u2019e ulaşmak için onu`,
-        'backendSettings.csp3': `dosyasındaki`,
-        'backendSettings.csp4': `listesine ekleyin, aksi halde istekler engellenir. Not: Visage güncellemesi`,
-        'backendSettings.csp5': `dosyasını yeniden yükler, bu nedenle bu işlemin her güncellemeden sonra tekrarlanması gerekir.`,
         'backendSettings.testing': `Bağlantı test ediliyor…`,
         'backendSettings.testConnection': `Bağlantıyı test et`,
         'backendSettings.testingShort': `Test ediliyor…`,
@@ -16551,6 +18031,23 @@
         'scene.failed': `Sahne taraması başarısız: {error}`,
         'scene.menuItemTitle': `Bu sahnedeki herkesi bulun. Oluşturulmuş bir sprite sheet veya önizleme videosu gerekir.`,
         'scene.wholeScene': `Visage: Sahneyi tanı`,
+        'scene.deepScan': `Visage: Derin tarama`,
+        'scene.deepScanTitle': `Visage Server üzerinde tam boyutlu video karelerini tarar. Sahne taramasından yavaştır, daha fazla oyuncu bulur.`,
+        'scene.deepSprite': `Sprite sayfasında yüzler aranıyor`,
+        'scene.deepFrames': `Video kareleri taranıyor`,
+        'scene.deepNoFaces': `Bu sahnenin video karelerinde oyuncu bulunamadı.`,
+        'scene.deepNoFile': `Bu sahnenin taranacak bir video dosyası yok.`,
+        'scene.deepNoResult': `Derin tarama sonuçsuz bitti. Tekrar deneyin.`,
+        'scene.deepUpsellTitle': `Visage Server ile derin tarama`,
+        'scene.deepUpsellBody': `Derin tarama, tam boyutlu video karelerini kendi Stash'inizden okur. Paylaşılan Cloud'da değil, yalnızca özel sunucunuz Visage Server'da çalışır. Videolarınız kendi makinenizde kalır. Patreon desteğiyle gelir.`,
+        'scene.deepRefusedOrigin': `Visage Server, {origin} adresinden derin tarama kabul etmiyor. visage.toml içindeki allowed_origins listesine "{origin}" ekleyin, ardından Visage Server'ı yeniden başlatın.`,
+        'scene.deepBusy': `Visage Server zaten bir derin tarama yürütüyor. Bittiğinde tekrar deneyin.`,
+        'scene.deepUnavailable': `Bu Visage Server'da derin tarama kapalı. visage.toml içinde url ayarlayın, ffmpeg kurun, ardından Visage Server'ı yeniden başlatın.`,
+        'batch.deepMenuItem': `Visage ile derin tarama`,
+        'batch.deepTitle': `{count} sahne derin taranıyor`,
+        'batch.upsellCta': `Visage Server'ı Patreon'dan edinin`,
+        'batch.upsellHaveServer': `Sunucum var`,
+        'batch.upsellClose': `Şimdi değil`,
         'banner.changeBackend': `Backend değiştir`,
         'banner.dismiss': `Kapat`,
         'error.dismiss': `Kapat`,
@@ -16607,6 +18104,24 @@
         'search.imageMenuTitle': `Bu görselde kim olduğunu bulun. Bir yüzün etrafına kutu çizin veya tüm görsel için tıklayın.`,
         'faceMatch.adding.images': `Ekleniyor…`,
         'sprite.confirm': `Sahneye ekle ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `{url}/health adresinde hiçbir şey yok. Bağlantı noktasından sonraki yolu kaldırın, örneğin http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Yine de kaydet`,
+        'backendSettings.sync.off': `Stash senkronizasyonu kapalı. Sunucu veri klasöründeki visage.toml dosyasına url ekleyin, ardından Visage Server'ı yeniden başlatın.`,
+        'backendSettings.sync.lastError': `Son senkronizasyon başarısız: {error}`,
+        'scene.deepReady': `Derin tarama: hazır.`,
+        'scene.deepOffNoStash': `Derin tarama: kapalı. visage.toml içinde Stash url'si yok.`,
+        'scene.deepOffNoFfmpeg': `Derin tarama: kapalı. ffmpeg bulunamadı. ffmpeg kurun veya Visage Server'ı --ffmpeg <path> ile başlatın.`,
+        'scene.deepOffStaticFfmpeg': `Derin tarama: kapalı. Bulunan ffmpeg statik bir derleme ve https Stash ile çalışmıyor. Sisteminizin ffmpeg'ini kurun.`,
+        'scene.deepUpdateServer': `Derin tarama: Visage Server'ı en yeni sürüme güncelleyin.`,
+        'scene.deepNeedsNewerServer': `Derin tarama daha yeni bir Visage Server gerektirir. Visage Server'ı güncelleyin, ardından bu sayfayı yeniden yükleyin.`,
+        'scene.deepOriginWillRefuse': `Derin tarama bu sayfayı ({origin}) reddedecek. Onu visage.toml içindeki allowed_origins listesine ekleyin, ardından Visage Server'ı yeniden başlatın.`,
+        'scene.deepOtherStash': `Visage Server bu Stash'ten ({origin}) değil, {stash_url} adresinden okuyor. visage.toml içindeki url'yi bu Stash'e yöneltin, ardından Visage Server'ı yeniden başlatın.`,
+        'scene.serverScanFailed': `Visage Server bu sahneyi tarayamadı: {error}`,
+        'backend.cspBlocked': `Stash, {origin} adresine yapılan istekleri engelliyor. plugins/visage/visage.yml içinde ui.csp.connect-src altına "{origin}" ekleyin, ardından Stash'i yeniden yükleyin. Bunu her Visage güncellemesinden sonra tekrarlayın.`,
+        'backend.mixedContent': `Stash https üzerinden açık, bu yüzden tarayıcı {url} http adresini engelliyor. Visage Server'ı https üzerinden sunun (örneğin ters vekil sunucunuzla) veya Stash'i http üzerinden açın.`,
+        'backend.loopbackRemote': `localhost bu cihaz anlamına gelir, sunucunuz değil. Visage ayarlarında sunucunun ağ adresini kullanın, örneğin http://192.168.1.50:7860.`,
+        'batch.failedReason': `Taranamadı ({count}): {reason}`,
     };
 
     const zhTw = {
@@ -16621,11 +18136,6 @@
         'backendSettings.hintPrefix': `希望影像留在你的網路內？`,
         'backendSettings.hintLink': `透過 Patreon 執行私人伺服器`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `瀏覽器的安全政策（CSP）僅允許`,
-        'backendSettings.csp2': `依預設情況下。若要連線位於其他位址（例如你的 LAN IP）的本機後端，請將其加入`,
-        'backendSettings.csp3': `中的`,
-        'backendSettings.csp4': `檔案清單，該檔案位於你的 Stash 外掛資料夾內，否則請求將被阻止。注意：更新 Visage 會重新安裝`,
-        'backendSettings.csp5': `，因此每次更新後都必須重新套用此設定。`,
         'backendSettings.testing': `正在測試連線…`,
         'backendSettings.testConnection': `測試連線`,
         'backendSettings.testingShort': `正在測試…`,
@@ -16713,6 +18223,23 @@
         'scene.failed': `場景掃描失敗：{error}`,
         'scene.menuItemTitle': `找出此場景中的所有人。需要已產生的 sprite sheet 或預覽影片。`,
         'scene.wholeScene': `Visage:辨識場景`,
+        'scene.deepScan': `Visage:深度掃描`,
+        'scene.deepScanTitle': `在你的 Visage Server 上掃描全尺寸影片畫格。比場景掃描慢，但能找到更多表演者。`,
+        'scene.deepSprite': `正在精靈圖中尋找人臉`,
+        'scene.deepFrames': `正在掃描影片畫格`,
+        'scene.deepNoFaces': `在此場景的影片畫格中找不到表演者。`,
+        'scene.deepNoFile': `此場景沒有可掃描的影片檔案。`,
+        'scene.deepNoResult': `深度掃描結束，但沒有結果。請再試一次。`,
+        'scene.deepUpsellTitle': `使用 Visage Server 進行深度掃描`,
+        'scene.deepUpsellBody': `深度掃描會從你自己的 Stash 讀取全尺寸影片畫格。它只在你的私人伺服器 Visage Server 上執行，不在共用的 Cloud 上執行。你的影片始終留在你的機器上。隨 Patreon 支持提供。`,
+        'scene.deepRefusedOrigin': `Visage Server 不接受來自 {origin} 的深度掃描。請將 "{origin}" 加入 visage.toml 的 allowed_origins，然後重新啟動 Visage Server。`,
+        'scene.deepBusy': `Visage Server 正在進行一次深度掃描。請在完成後再試一次。`,
+        'scene.deepUnavailable': `此 Visage Server 未啟用深度掃描。請在 visage.toml 中設定 url，安裝 ffmpeg，然後重新啟動 Visage Server。`,
+        'batch.deepMenuItem': `使用 Visage 深度掃描`,
+        'batch.deepTitle': `正在深度掃描 {count} 個場景`,
+        'batch.upsellCta': `在 Patreon 取得 Visage Server`,
+        'batch.upsellHaveServer': `我有伺服器`,
+        'batch.upsellClose': `暫時不要`,
         'banner.changeBackend': `更換後端`,
         'banner.dismiss': `關閉`,
         'error.dismiss': `關閉`,
@@ -16769,6 +18296,24 @@
         'search.imageMenuTitle': `找出這張圖片裡是誰。在臉部周圍拖曳方框,或點選使用整張圖片。`,
         'faceMatch.adding.images': `加入中…`,
         'sprite.confirm': `加入場景 ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `{url}/health 上沒有內容。請刪除連接埠後面的路徑，例如 http://192.168.1.50:7860。`,
+        'backendSettings.saveAnyway': `仍要儲存`,
+        'backendSettings.sync.off': `Stash 同步已關閉。請在伺服器資料資料夾的 visage.toml 中加入 url，然後重新啟動 Visage Server。`,
+        'backendSettings.sync.lastError': `上次同步失敗：{error}`,
+        'scene.deepReady': `深度掃描：就緒。`,
+        'scene.deepOffNoStash': `深度掃描：已關閉。visage.toml 中沒有 Stash url。`,
+        'scene.deepOffNoFfmpeg': `深度掃描：已關閉。找不到 ffmpeg。請安裝 ffmpeg，或使用 --ffmpeg <path> 啟動 Visage Server。`,
+        'scene.deepOffStaticFfmpeg': `深度掃描：已關閉。找到的 ffmpeg 是靜態建置版本，在 https 的 Stash 上會失敗。請安裝系統的 ffmpeg。`,
+        'scene.deepUpdateServer': `深度掃描：請將 Visage Server 更新到最新版本。`,
+        'scene.deepNeedsNewerServer': `深度掃描需要較新的 Visage Server。請更新 Visage Server，然後重新載入此頁面。`,
+        'scene.deepOriginWillRefuse': `深度掃描將拒絕此頁面（{origin}）。請將它加入 visage.toml 的 allowed_origins，然後重新啟動 Visage Server。`,
+        'scene.deepOtherStash': `Visage Server 讀取的是 {stash_url}，而不是此 Stash（{origin}）。請將 visage.toml 中的 url 指向此 Stash，然後重新啟動 Visage Server。`,
+        'scene.serverScanFailed': `Visage Server 無法掃描此場景：{error}`,
+        'backend.cspBlocked': `Stash 封鎖了對 {origin} 的請求。請在 plugins/visage/visage.yml 的 ui.csp.connect-src 下加入 "{origin}"，然後重新載入 Stash。每次更新 Visage 後都要重新加入。`,
+        'backend.mixedContent': `Stash 透過 https 開啟，因此瀏覽器封鎖了 http 位址 {url}。請透過 https 提供 Visage Server（例如透過反向代理），或透過 http 開啟 Stash。`,
+        'backend.loopbackRemote': `localhost 指的是這台裝置，而不是你的伺服器。請在 Visage 設定中使用伺服器的網路位址，例如 http://192.168.1.50:7860。`,
+        'batch.failedReason': `{count} 個無法掃描：{reason}`,
     };
 
     // Romanian.
@@ -16784,11 +18329,6 @@
         'backendSettings.hintPrefix': `Vrei ca imaginile tale să rămână în rețeaua ta?`,
         'backendSettings.hintLink': `Rulează un server privat prin Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Politica de securitate a browserului (CSP) permite doar",
-        'backendSettings.csp2': `în mod implicit. Pentru a ajunge la un backend local la altă adresă (de ex. IP-ul tău LAN), adaugă-l în`,
-        'backendSettings.csp3': `lista din`,
-        'backendSettings.csp4': `fișierul din folderul tău de plugin-uri Stash, altfel cererile vor fi blocate. Notă: actualizarea Visage reinstalează`,
-        'backendSettings.csp5': `, deci acest lucru trebuie refăcut după fiecare actualizare.`,
         'backendSettings.testing': `Se testează conexiunea…`,
         'backendSettings.testConnection': `Testează conexiunea`,
         'backendSettings.testingShort': `Se testează…`,
@@ -16876,6 +18416,23 @@
         'scene.failed': `Scanarea scenei a eșuat: {error}`,
         'scene.menuItemTitle': `Găsește pe toată lumea din această scenă. Necesită un sprite sheet sau un video de previzualizare generat.`,
         'scene.wholeScene': `Visage: identifică scena`,
+        'scene.deepScan': `Visage: scanare profundă`,
+        'scene.deepScanTitle': `Scanează cadrele video la dimensiune completă pe Visage Server. Mai lentă decât scanarea scenei, găsește mai mulți performeri.`,
+        'scene.deepSprite': `Se caută fețe în foaia de sprite`,
+        'scene.deepFrames': `Se scanează cadrele video`,
+        'scene.deepNoFaces': `Nu s-au găsit performeri în cadrele video ale acestei scene.`,
+        'scene.deepNoFile': `Această scenă nu are un fișier video de scanat.`,
+        'scene.deepNoResult': `Scanarea profundă s-a încheiat fără rezultat. Încearcă din nou.`,
+        'scene.deepUpsellTitle': `Scanare profundă cu Visage Server`,
+        'scene.deepUpsellBody': `Scanarea profundă citește cadrele video la dimensiune completă din propriul tău Stash. Rulează doar pe Visage Server, serverul tău privat, nu în Cloud-ul partajat. Videoclipurile tale rămân pe mașina ta. Inclusă cu sprijinul pe Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server nu acceptă o scanare profundă de la {origin}. Adaugă "{origin}" în allowed_origins din visage.toml, apoi repornește Visage Server.`,
+        'scene.deepBusy': `Visage Server face deja o scanare profundă. Încearcă din nou după ce se termină.`,
+        'scene.deepUnavailable': `Scanarea profundă este oprită pe acest Visage Server. Setează url în visage.toml, instalează ffmpeg, apoi repornește Visage Server.`,
+        'batch.deepMenuItem': `Scanare profundă cu Visage`,
+        'batch.deepTitle': `Scanare profundă a scenelor: {count}`,
+        'batch.upsellCta': `Obține Visage Server pe Patreon`,
+        'batch.upsellHaveServer': `Am un server`,
+        'batch.upsellClose': `Nu acum`,
         'banner.changeBackend': `Schimbă backend-ul`,
         'banner.dismiss': `Închide`,
         'error.dismiss': `Închide`,
@@ -16932,6 +18489,24 @@
         'search.imageMenuTitle': `Află cine este în această imagine. Trage un chenar în jurul unei fețe sau fă clic pentru toată imaginea.`,
         'faceMatch.adding.images': `Se adaugă…`,
         'sprite.confirm': `Adaugă la scenă ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Nimic la {url}/health. Elimină orice cale după port, de exemplu http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Salvează oricum`,
+        'backendSettings.sync.off': `Sincronizarea Stash este oprită. Adaugă url în visage.toml din folderul de date al serverului, apoi repornește Visage Server.`,
+        'backendSettings.sync.lastError': `Ultima sincronizare a eșuat: {error}`,
+        'scene.deepReady': `Scanare profundă: pregătită.`,
+        'scene.deepOffNoStash': `Scanare profundă: oprită. Nu există url Stash în visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Scanare profundă: oprită. ffmpeg nu a fost găsit. Instalează ffmpeg sau pornește Visage Server cu --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Scanare profundă: oprită. ffmpeg-ul găsit este o versiune statică, care eșuează cu Stash pe https. Instalează ffmpeg-ul sistemului tău.`,
+        'scene.deepUpdateServer': `Scanare profundă: actualizează Visage Server la cea mai nouă versiune.`,
+        'scene.deepNeedsNewerServer': `Scanarea profundă are nevoie de un Visage Server mai nou. Actualizează Visage Server, apoi reîncarcă această pagină.`,
+        'scene.deepOriginWillRefuse': `Scanarea profundă va refuza această pagină ({origin}). Adaug-o în allowed_origins din visage.toml, apoi repornește Visage Server.`,
+        'scene.deepOtherStash': `Visage Server citește din {stash_url}, nu din acest Stash ({origin}). Setează url din visage.toml pe acest Stash, apoi repornește Visage Server.`,
+        'scene.serverScanFailed': `Visage Server nu a putut scana această scenă: {error}`,
+        'backend.cspBlocked': `Stash blochează cererile către {origin}. Adaugă "{origin}" la ui.csp.connect-src în plugins/visage/visage.yml, apoi reîncarcă Stash. Repetă după fiecare actualizare Visage.`,
+        'backend.mixedContent': `Stash este deschis prin https, așa că browserul blochează adresa http {url}. Servește Visage Server prin https (de exemplu prin reverse proxy-ul tău) sau deschide Stash prin http.`,
+        'backend.loopbackRemote': `localhost înseamnă acest dispozitiv, nu serverul tău. În setările Visage, folosește adresa de rețea a serverului, de exemplu http://192.168.1.50:7860.`,
+        'batch.failedReason': `Nu s-au putut scana ({count}): {reason}`,
     };
 
     const sk = {
@@ -16946,11 +18521,6 @@
         'backendSettings.hintPrefix': `Chcete, aby vaše obrázky zostali vo vašej sieti?`,
         'backendSettings.hintLink': `Spustite súkromný server cez Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Bezpečnostná politika prehliadača (CSP) v predvolenom nastavení povoľuje iba`,
-        'backendSettings.csp2': `. Ak sa chcete dostať k lokálnemu backendu na inej adrese (napr. IP vašej LAN), pridajte ju do`,
-        'backendSettings.csp3': `zoznamu v`,
-        'backendSettings.csp4': `súbore v priečinku pluginov Stash, inak budú požiadavky zablokované. Poznámka: aktualizácia Visage preinštaluje`,
-        'backendSettings.csp5': `, takže to musíte vykonať znova po každej aktualizácii.`,
         'backendSettings.testing': `Testovanie pripojenia…`,
         'backendSettings.testConnection': `Otestovať pripojenie`,
         'backendSettings.testingShort': `Testovanie…`,
@@ -17038,6 +18608,23 @@
         'scene.failed': `Skenovanie scény zlyhalo: {error}`,
         'scene.menuItemTitle': `Nájdite všetkých v tejto scéne. Vyžaduje vygenerovaný sprite sheet alebo náhľadové video.`,
         'scene.wholeScene': `Visage: Rozpoznať scénu`,
+        'scene.deepScan': `Visage: Hĺbkové skenovanie`,
+        'scene.deepScanTitle': `Skenuje snímky videa v plnej veľkosti na vašom Visage Serveri. Pomalšie ako skenovanie scény, nájde viac performerov.`,
+        'scene.deepSprite': `Hľadanie tvárí v sprite liste`,
+        'scene.deepFrames': `Skenovanie snímok videa`,
+        'scene.deepNoFaces': `V snímkach videa tejto scény sa nenašli žiadni performeri.`,
+        'scene.deepNoFile': `Táto scéna nemá video súbor na skenovanie.`,
+        'scene.deepNoResult': `Hĺbkové skenovanie skončilo bez výsledku. Skúste to znova.`,
+        'scene.deepUpsellTitle': `Hĺbkové skenovanie s Visage Serverom`,
+        'scene.deepUpsellBody': `Hĺbkové skenovanie číta snímky videa v plnej veľkosti z vášho vlastného Stash. Beží len na Visage Serveri, vašom súkromnom serveri, nie v zdieľanom Cloude. Vaše videá zostanú na vašom počítači. Súčasť podpory na Patreone.`,
+        'scene.deepRefusedOrigin': `Visage Server neprijíma hĺbkové skenovanie z {origin}. Pridajte "{origin}" do allowed_origins vo visage.toml a potom Visage Server reštartujte.`,
+        'scene.deepBusy': `Visage Server už vykonáva hĺbkové skenovanie. Skúste to znova, keď skončí.`,
+        'scene.deepUnavailable': `Hĺbkové skenovanie je na tomto Visage Serveri vypnuté. Nastavte url vo visage.toml, nainštalujte ffmpeg a potom Visage Server reštartujte.`,
+        'batch.deepMenuItem': `Hĺbkové skenovanie s Visage`,
+        'batch.deepTitle': `Hĺbkové skenovanie scén: {count}`,
+        'batch.upsellCta': `Získajte Visage Server na Patreone`,
+        'batch.upsellHaveServer': `Mám server`,
+        'batch.upsellClose': `Teraz nie`,
         'banner.changeBackend': `Zmeniť backend`,
         'banner.dismiss': `Zavrieť`,
         'error.dismiss': `Zavrieť`,
@@ -17094,6 +18681,24 @@
         'search.imageMenuTitle': `Zistite, kto je na tomto obrázku. Ťahajte rámček okolo tváre, alebo kliknite pre celý obrázok.`,
         'faceMatch.adding.images': `Pridáva sa…`,
         'sprite.confirm': `Pridať do scény ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Na {url}/health nič nie je. Odstráňte cestu za portom, napríklad http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Napriek tomu uložiť`,
+        'backendSettings.sync.off': `Synchronizácia so Stash je vypnutá. Pridajte url do visage.toml v dátovom priečinku servera a potom Visage Server reštartujte.`,
+        'backendSettings.sync.lastError': `Posledná synchronizácia zlyhala: {error}`,
+        'scene.deepReady': `Hĺbkové skenovanie: pripravené.`,
+        'scene.deepOffNoStash': `Hĺbkové skenovanie: vypnuté. Vo visage.toml chýba url Stashu.`,
+        'scene.deepOffNoFfmpeg': `Hĺbkové skenovanie: vypnuté. ffmpeg sa nenašiel. Nainštalujte ffmpeg alebo spustite Visage Server s --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Hĺbkové skenovanie: vypnuté. Nájdený ffmpeg je statické zostavenie, ktoré zlyháva so Stashom cez https. Nainštalujte systémový ffmpeg.`,
+        'scene.deepUpdateServer': `Hĺbkové skenovanie: aktualizujte Visage Server na najnovšiu verziu.`,
+        'scene.deepNeedsNewerServer': `Hĺbkové skenovanie potrebuje novší Visage Server. Aktualizujte Visage Server a potom túto stránku znova načítajte.`,
+        'scene.deepOriginWillRefuse': `Hĺbkové skenovanie odmietne túto stránku ({origin}). Pridajte ju do allowed_origins vo visage.toml a potom Visage Server reštartujte.`,
+        'scene.deepOtherStash': `Visage Server číta z {stash_url}, nie z tohto Stashu ({origin}). Nastavte url vo visage.toml na tento Stash a potom Visage Server reštartujte.`,
+        'scene.serverScanFailed': `Visage Server nemohol túto scénu naskenovať: {error}`,
+        'backend.cspBlocked': `Stash blokuje požiadavky na {origin}. Pridajte "{origin}" do ui.csp.connect-src v plugins/visage/visage.yml a potom Stash znova načítajte. Zopakujte to po každej aktualizácii Visage.`,
+        'backend.mixedContent': `Stash je otvorený cez https, preto prehliadač blokuje http adresu {url}. Sprístupnite Visage Server cez https (napríklad cez reverzné proxy) alebo otvorte Stash cez http.`,
+        'backend.loopbackRemote': `localhost znamená toto zariadenie, nie váš server. V nastaveniach Visage použite sieťovú adresu servera, napríklad http://192.168.1.50:7860.`,
+        'batch.failedReason': `Nedá sa naskenovať ({count}): {reason}`,
     };
 
     const pl = {
@@ -17108,11 +18713,6 @@
         'backendSettings.hintPrefix': `Chcesz, aby Twoje obrazy pozostały w Twojej sieci?`,
         'backendSettings.hintLink': `Uruchom prywatny serwer przez Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `Polityka bezpieczeństwa przeglądarki (CSP) domyślnie zezwala tylko na`,
-        'backendSettings.csp2': `. Aby uzyskać dostęp do lokalnego backendu na innym adresie (np. IP Twojej sieci LAN), dodaj go do`,
-        'backendSettings.csp3': `listy w`,
-        'backendSettings.csp4': `pliku w folderze wtyczek Stash, w przeciwnym razie żądania zostaną zablokowane. Uwaga: aktualizacja Visage ponownie instaluje`,
-        'backendSettings.csp5': `, więc należy to powtórzyć po każdej aktualizacji.`,
         'backendSettings.testing': `Testowanie połączenia…`,
         'backendSettings.testConnection': `Przetestuj połączenie`,
         'backendSettings.testingShort': `Testowanie…`,
@@ -17200,6 +18800,23 @@
         'scene.failed': `Skanowanie sceny nie powiodło się: {error}`,
         'scene.menuItemTitle': `Znajdź wszystkich w tej scenie. Wymaga wygenerowanego sprite sheetu lub wideo podglądu.`,
         'scene.wholeScene': `Visage: rozpoznaj scenę`,
+        'scene.deepScan': `Visage: głębokie skanowanie`,
+        'scene.deepScanTitle': `Skanuje klatki wideo w pełnym rozmiarze na Twoim Visage Server. Wolniejsze niż skanowanie sceny, znajduje więcej wykonawców.`,
+        'scene.deepSprite': `Szukanie twarzy w arkuszu sprite`,
+        'scene.deepFrames': `Skanowanie klatek wideo`,
+        'scene.deepNoFaces': `Nie znaleziono wykonawców w klatkach wideo tej sceny.`,
+        'scene.deepNoFile': `Ta scena nie ma pliku wideo do zeskanowania.`,
+        'scene.deepNoResult': `Głębokie skanowanie zakończyło się bez wyniku. Spróbuj ponownie.`,
+        'scene.deepUpsellTitle': `Głębokie skanowanie z Visage Server`,
+        'scene.deepUpsellBody': `Głębokie skanowanie odczytuje klatki wideo w pełnym rozmiarze z Twojego własnego Stash. Działa tylko na Visage Server, Twoim prywatnym serwerze, a nie we wspólnej usłudze Cloud. Twoje filmy zostają na Twoim komputerze. W ramach wsparcia na Patreonie.`,
+        'scene.deepRefusedOrigin': `Visage Server nie przyjmuje głębokiego skanowania z {origin}. Dodaj "{origin}" do allowed_origins w visage.toml, a potem uruchom ponownie Visage Server.`,
+        'scene.deepBusy': `Visage Server już wykonuje głębokie skanowanie. Spróbuj ponownie, gdy się zakończy.`,
+        'scene.deepUnavailable': `Głębokie skanowanie jest wyłączone na tym Visage Server. Ustaw url w visage.toml, zainstaluj ffmpeg, a potem uruchom ponownie Visage Server.`,
+        'batch.deepMenuItem': `Głębokie skanowanie z Visage`,
+        'batch.deepTitle': `Głębokie skanowanie scen: {count}`,
+        'batch.upsellCta': `Zdobądź Visage Server na Patreonie`,
+        'batch.upsellHaveServer': `Mam serwer`,
+        'batch.upsellClose': `Nie teraz`,
         'banner.changeBackend': `Zmień backend`,
         'banner.dismiss': `Odrzuć`,
         'error.dismiss': `Odrzuć`,
@@ -17256,6 +18873,24 @@
         'search.imageMenuTitle': `Sprawdź, kto jest na tym obrazie. Przeciągnij ramkę wokół twarzy lub kliknij dla całego obrazu.`,
         'faceMatch.adding.images': `Dodawanie…`,
         'sprite.confirm': `Dodaj do sceny ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Pod {url}/health nic nie ma. Usuń ścieżkę po porcie, na przykład http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Zapisz mimo to`,
+        'backendSettings.sync.off': `Synchronizacja ze Stash jest wyłączona. Dodaj url do visage.toml w folderze danych serwera, a potem uruchom ponownie Visage Server.`,
+        'backendSettings.sync.lastError': `Ostatnia synchronizacja nie powiodła się: {error}`,
+        'scene.deepReady': `Głębokie skanowanie: gotowe.`,
+        'scene.deepOffNoStash': `Głębokie skanowanie: wyłączone. Brak url Stash w visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Głębokie skanowanie: wyłączone. Nie znaleziono ffmpeg. Zainstaluj ffmpeg lub uruchom Visage Server z --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Głębokie skanowanie: wyłączone. Znaleziony ffmpeg to wersja statyczna, która nie działa ze Stash przez https. Zainstaluj ffmpeg ze swojego systemu.`,
+        'scene.deepUpdateServer': `Głębokie skanowanie: zaktualizuj Visage Server do najnowszej wersji.`,
+        'scene.deepNeedsNewerServer': `Głębokie skanowanie wymaga nowszego Visage Server. Zaktualizuj Visage Server, a potem odśwież tę stronę.`,
+        'scene.deepOriginWillRefuse': `Głębokie skanowanie odrzuci tę stronę ({origin}). Dodaj ją do allowed_origins w visage.toml, a potem uruchom ponownie Visage Server.`,
+        'scene.deepOtherStash': `Visage Server czyta z {stash_url}, a nie z tego Stash ({origin}). Ustaw url w visage.toml na ten Stash, a potem uruchom ponownie Visage Server.`,
+        'scene.serverScanFailed': `Visage Server nie mógł przeskanować tej sceny: {error}`,
+        'backend.cspBlocked': `Stash blokuje żądania do {origin}. Dodaj "{origin}" w ui.csp.connect-src w plugins/visage/visage.yml, a potem odśwież Stash. Powtarzaj to po każdej aktualizacji Visage.`,
+        'backend.mixedContent': `Stash jest otwarty przez https, więc przeglądarka blokuje adres http {url}. Udostępnij Visage Server przez https (na przykład przez swoje reverse proxy) lub otwórz Stash przez http.`,
+        'backend.loopbackRemote': `localhost oznacza to urządzenie, a nie twój serwer. W ustawieniach Visage użyj adresu sieciowego serwera, na przykład http://192.168.1.50:7860.`,
+        'batch.failedReason': `Nie przeskanowano ({count}): {reason}`,
     };
 
     // Greek.
@@ -17271,11 +18906,6 @@
         'backendSettings.hintPrefix': `Θέλετε οι εικόνες σας να παραμείνουν στο δίκτυό σας;`,
         'backendSettings.hintLink': `Εκτελέστε έναν ιδιωτικό διακομιστή μέσω του Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Η πολιτική ασφαλείας του προγράμματος περιήγησης (CSP) επιτρέπει από προεπιλογή μόνο",
-        'backendSettings.csp2': `Για να προσεγγίσετε ένα τοπικό backend σε άλλη διεύθυνση (π.χ. τη LAN IP σας), προσθέστε το στη`,
-        'backendSettings.csp3': `λίστα στο`,
-        'backendSettings.csp4': `αρχείο μέσα στον φάκελο plugins του Stash, διαφορετικά τα αιτήματα θα αποκλειστούν. Σημείωση: η ενημέρωση του Visage επανεγκαθιστά το`,
-        'backendSettings.csp5': `, οπότε αυτό πρέπει να εφαρμοστεί ξανά μετά από κάθε ενημέρωση.`,
         'backendSettings.testing': `Έλεγχος σύνδεσης…`,
         'backendSettings.testConnection': `Έλεγχος σύνδεσης`,
         'backendSettings.testingShort': `Έλεγχος…`,
@@ -17363,6 +18993,23 @@
         'scene.failed': `Η σάρωση σκηνής απέτυχε: {error}`,
         'scene.menuItemTitle': `Βρείτε όλους σε αυτή τη σκηνή. Απαιτείται sprite sheet ή βίντεο προεπισκόπησης.`,
         'scene.wholeScene': `Visage: Αναγνώριση σκηνής`,
+        'scene.deepScan': `Visage: Σάρωση σε βάθος`,
+        'scene.deepScanTitle': `Σαρώνει καρέ βίντεο σε πλήρες μέγεθος στον Visage Server σας. Πιο αργή από τη σάρωση σκηνής, βρίσκει περισσότερους ερμηνευτές.`,
+        'scene.deepSprite': `Αναζήτηση προσώπων στο φύλλο sprite`,
+        'scene.deepFrames': `Σάρωση καρέ βίντεο`,
+        'scene.deepNoFaces': `Δεν βρέθηκαν ερμηνευτές στα καρέ βίντεο αυτής της σκηνής.`,
+        'scene.deepNoFile': `Αυτή η σκηνή δεν έχει αρχείο βίντεο για σάρωση.`,
+        'scene.deepNoResult': `Η σάρωση σε βάθος τελείωσε χωρίς αποτέλεσμα. Δοκιμάστε ξανά.`,
+        'scene.deepUpsellTitle': `Σάρωση σε βάθος με Visage Server`,
+        'scene.deepUpsellBody': `Η σάρωση σε βάθος διαβάζει καρέ βίντεο σε πλήρες μέγεθος από το δικό σας Stash. Λειτουργεί μόνο στον Visage Server, τον ιδιωτικό σας διακομιστή, όχι στο κοινόχρηστο Cloud. Τα βίντεό σας μένουν στον υπολογιστή σας. Περιλαμβάνεται με την υποστήριξη στο Patreon.`,
+        'scene.deepRefusedOrigin': `Το Visage Server δεν δέχεται σάρωση σε βάθος από {origin}. Προσθέστε το "{origin}" στο allowed_origins στο visage.toml και μετά επανεκκινήστε το Visage Server.`,
+        'scene.deepBusy': `Το Visage Server εκτελεί ήδη μια σάρωση σε βάθος. Δοκιμάστε ξανά όταν τελειώσει.`,
+        'scene.deepUnavailable': `Η σάρωση σε βάθος είναι απενεργοποιημένη σε αυτό το Visage Server. Ορίστε url στο visage.toml, εγκαταστήστε το ffmpeg και μετά επανεκκινήστε το Visage Server.`,
+        'batch.deepMenuItem': `Σάρωση σε βάθος με Visage`,
+        'batch.deepTitle': `Σάρωση σε βάθος σκηνών: {count}`,
+        'batch.upsellCta': `Αποκτήστε τον Visage Server στο Patreon`,
+        'batch.upsellHaveServer': `Έχω διακομιστή`,
+        'batch.upsellClose': `Όχι τώρα`,
         'banner.changeBackend': `Αλλαγή backend`,
         'banner.dismiss': `Απόρριψη`,
         'error.dismiss': `Απόρριψη`,
@@ -17419,6 +19066,24 @@
         'search.imageMenuTitle': `Βρείτε ποιος είναι σε αυτή την εικόνα. Σύρετε ένα πλαίσιο γύρω από ένα πρόσωπο ή κάντε κλικ για όλη την εικόνα.`,
         'faceMatch.adding.images': `Προσθήκη…`,
         'sprite.confirm': `Προσθήκη στη σκηνή ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Δεν υπάρχει τίποτα στο {url}/health. Αφαιρέστε κάθε διαδρομή μετά τη θύρα, για παράδειγμα http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Αποθήκευση ούτως ή άλλως`,
+        'backendSettings.sync.off': `Ο συγχρονισμός Stash είναι απενεργοποιημένος. Προσθέστε url στο visage.toml στον φάκελο δεδομένων του διακομιστή και μετά επανεκκινήστε το Visage Server.`,
+        'backendSettings.sync.lastError': `Ο τελευταίος συγχρονισμός απέτυχε: {error}`,
+        'scene.deepReady': `Σάρωση σε βάθος: έτοιμη.`,
+        'scene.deepOffNoStash': `Σάρωση σε βάθος: απενεργοποιημένη. Δεν υπάρχει url του Stash στο visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Σάρωση σε βάθος: απενεργοποιημένη. Το ffmpeg δεν βρέθηκε. Εγκαταστήστε το ffmpeg ή ξεκινήστε το Visage Server με --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Σάρωση σε βάθος: απενεργοποιημένη. Το ffmpeg που βρέθηκε είναι στατική έκδοση, που αποτυγχάνει με Stash μέσω https. Εγκαταστήστε το ffmpeg του συστήματός σας.`,
+        'scene.deepUpdateServer': `Σάρωση σε βάθος: ενημερώστε το Visage Server στην πιο πρόσφατη έκδοση.`,
+        'scene.deepNeedsNewerServer': `Η σάρωση σε βάθος χρειάζεται νεότερο Visage Server. Ενημερώστε το Visage Server και μετά φορτώστε ξανά αυτή τη σελίδα.`,
+        'scene.deepOriginWillRefuse': `Η σάρωση σε βάθος θα απορρίψει αυτή τη σελίδα ({origin}). Προσθέστε τη στο allowed_origins στο visage.toml και μετά επανεκκινήστε το Visage Server.`,
+        'scene.deepOtherStash': `Το Visage Server διαβάζει από το {stash_url}, όχι από αυτό το Stash ({origin}). Ορίστε το url στο visage.toml σε αυτό το Stash και μετά επανεκκινήστε το Visage Server.`,
+        'scene.serverScanFailed': `Το Visage Server δεν μπόρεσε να σαρώσει αυτή τη σκηνή: {error}`,
+        'backend.cspBlocked': `Το Stash μπλοκάρει τα αιτήματα προς {origin}. Προσθέστε το "{origin}" στο ui.csp.connect-src στο plugins/visage/visage.yml και μετά φορτώστε ξανά το Stash. Επαναλάβετε μετά από κάθε ενημέρωση του Visage.`,
+        'backend.mixedContent': `Το Stash είναι ανοιχτό μέσω https, οπότε ο browser μπλοκάρει τη διεύθυνση http {url}. Διαθέστε το Visage Server μέσω https (για παράδειγμα μέσω του reverse proxy σας) ή ανοίξτε το Stash μέσω http.`,
+        'backend.loopbackRemote': `Το localhost σημαίνει αυτή τη συσκευή, όχι τον διακομιστή σας. Στις ρυθμίσεις του Visage, χρησιμοποιήστε τη διεύθυνση δικτύου του διακομιστή, για παράδειγμα http://192.168.1.50:7860.`,
+        'batch.failedReason': `Δεν σαρώθηκαν ({count}): {reason}`,
     };
 
     const ja = {
@@ -17433,11 +19098,6 @@
         'backendSettings.hintPrefix': `画像を自分のネットワーク内に留めたいですか？`,
         'backendSettings.hintLink': `Patreon でプライベートサーバーを実行`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `ブラウザのセキュリティポリシー（CSP）は既定で`,
-        'backendSettings.csp2': `のみ許可します。別のアドレス（例：LAN IP）にあるローカルバックエンドに接続するには、それを`,
-        'backendSettings.csp3': `内の`,
-        'backendSettings.csp4': `ファイルのリストに追加してください。このファイルは Stash プラグインフォルダにあります。追加しないとリクエストはブロックされます。注意：Visage を更新すると`,
-        'backendSettings.csp5': `が再インストールされるため、更新のたびに再適用する必要があります。`,
         'backendSettings.testing': `接続をテスト中…`,
         'backendSettings.testConnection': `接続をテスト`,
         'backendSettings.testingShort': `テスト中…`,
@@ -17525,6 +19185,23 @@
         'scene.failed': `シーンのスキャンに失敗しました：{error}`,
         'scene.menuItemTitle': `このシーンの全員を探します。生成済みのスプライトシートかプレビュー動画が必要です。`,
         'scene.wholeScene': `Visage: シーンを識別`,
+        'scene.deepScan': `Visage: ディープスキャン`,
+        'scene.deepScanTitle': `Visage Server でフルサイズの動画フレームをスキャンします。シーンのスキャンより遅いですが、より多くのパフォーマーが見つかります。`,
+        'scene.deepSprite': `スプライトシートで顔を探しています`,
+        'scene.deepFrames': `動画フレームをスキャンしています`,
+        'scene.deepNoFaces': `このシーンの動画フレームにパフォーマーが見つかりませんでした。`,
+        'scene.deepNoFile': `このシーンにはスキャンする動画ファイルがありません。`,
+        'scene.deepNoResult': `ディープスキャンは結果なしで終了しました。もう一度お試しください。`,
+        'scene.deepUpsellTitle': `Visage Server でディープスキャン`,
+        'scene.deepUpsellBody': `ディープスキャンは、ご自身の Stash からフルサイズの動画フレームを読み込みます。共有の Cloud ではなく、プライベートサーバーである Visage Server でのみ動作します。動画はお使いのマシンから出ません。Patreon でのサポートで利用できます。`,
+        'scene.deepRefusedOrigin': `Visage Server は {origin} からのディープスキャンを受け付けません。visage.toml の allowed_origins に "{origin}" を追加し、Visage Server を再起動してください。`,
+        'scene.deepBusy': `Visage Server はすでにディープスキャンを実行中です。終了してからもう一度お試しください。`,
+        'scene.deepUnavailable': `この Visage Server ではディープスキャンが無効です。visage.toml に url を設定し、ffmpeg をインストールしてから Visage Server を再起動してください。`,
+        'batch.deepMenuItem': `Visage でディープスキャン`,
+        'batch.deepTitle': `{count} 件のシーンをディープスキャン中`,
+        'batch.upsellCta': `Patreon で Visage Server を入手`,
+        'batch.upsellHaveServer': `サーバーを持っています`,
+        'batch.upsellClose': `後で`,
         'banner.changeBackend': `バックエンドを変更`,
         'banner.dismiss': `閉じる`,
         'error.dismiss': `閉じる`,
@@ -17581,6 +19258,24 @@
         'search.imageMenuTitle': `この画像に誰が写っているか調べます。顔の周りを囲むか、クリックで画像全体。`,
         'faceMatch.adding.images': `追加中…`,
         'sprite.confirm': `シーンに追加 ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `{url}/health には何もありません。ポート番号より後ろのパスを削除してください。例: http://192.168.1.50:7860`,
+        'backendSettings.saveAnyway': `このまま保存`,
+        'backendSettings.sync.off': `Stash 同期はオフです。サーバーのデータフォルダにある visage.toml に url を追加し、Visage Server を再起動してください。`,
+        'backendSettings.sync.lastError': `前回の同期に失敗しました: {error}`,
+        'scene.deepReady': `ディープスキャン: 使用できます。`,
+        'scene.deepOffNoStash': `ディープスキャン: オフ。visage.toml に Stash の url がありません。`,
+        'scene.deepOffNoFfmpeg': `ディープスキャン: オフ。ffmpeg が見つかりません。ffmpeg をインストールするか、--ffmpeg <path> を付けて Visage Server を起動してください。`,
+        'scene.deepOffStaticFfmpeg': `ディープスキャン: オフ。見つかった ffmpeg は静的ビルドで、https の Stash では失敗します。システムの ffmpeg をインストールしてください。`,
+        'scene.deepUpdateServer': `ディープスキャン: Visage Server を最新バージョンに更新してください。`,
+        'scene.deepNeedsNewerServer': `ディープスキャンには新しい Visage Server が必要です。Visage Server を更新してから、このページを再読み込みしてください。`,
+        'scene.deepOriginWillRefuse': `ディープスキャンはこのページ ({origin}) を拒否します。visage.toml の allowed_origins に追加し、Visage Server を再起動してください。`,
+        'scene.deepOtherStash': `Visage Server はこの Stash ({origin}) ではなく {stash_url} から読み込んでいます。visage.toml の url をこの Stash に設定し、Visage Server を再起動してください。`,
+        'scene.serverScanFailed': `Visage Server はこのシーンをスキャンできませんでした: {error}`,
+        'backend.cspBlocked': `Stash は {origin} へのリクエストをブロックしています。plugins/visage/visage.yml の ui.csp.connect-src に "{origin}" を追加し、Stash を再読み込みしてください。Visage を更新するたびにやり直してください。`,
+        'backend.mixedContent': `Stash が https で開かれているため、ブラウザは http のアドレス {url} をブロックします。Visage Server を https で公開する (例: リバースプロキシ経由) か、Stash を http で開いてください。`,
+        'backend.loopbackRemote': `localhost はこのデバイスを指し、サーバーではありません。Visage の設定でサーバーのネットワークアドレスを使ってください。例: http://192.168.1.50:7860`,
+        'batch.failedReason': `スキャンできませんでした ({count} 件): {reason}`,
     };
 
     // Swedish.
@@ -17596,11 +19291,6 @@
         'backendSettings.hintPrefix': `Vill du att dina bilder ska stanna i ditt nätverk?`,
         'backendSettings.hintLink': `Kör en privat server via Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': "Webbläsarens säkerhetspolicy (CSP) tillåter endast",
-        'backendSettings.csp2': `som standard. För att nå en lokal backend på en annan adress (t.ex. din LAN-IP) måste du lägga till den i`,
-        'backendSettings.csp3': `listan i`,
-        'backendSettings.csp4': `-filen i din Stash plugins-mapp, annars blockeras förfrågningarna. Observera: uppdatering av Visage installerar om`,
-        'backendSettings.csp5': `, så detta måste göras om efter varje uppdatering.`,
         'backendSettings.testing': `Testar anslutning…`,
         'backendSettings.testConnection': `Testa anslutning`,
         'backendSettings.testingShort': `Testar…`,
@@ -17688,6 +19378,23 @@
         'scene.failed': `Scen-skanning misslyckades: {error}`,
         'scene.menuItemTitle': `Hitta alla i den här scenen. Kräver ett genererat sprite sheet eller en förhandsvisningsvideo.`,
         'scene.wholeScene': `Visage: Identifiera scen`,
+        'scene.deepScan': `Visage: Djupskanning`,
+        'scene.deepScanTitle': `Skannar videobilder i full storlek på din Visage Server. Långsammare än scen-skanningen, hittar fler performers.`,
+        'scene.deepSprite': `Söker ansikten i sprite-arket`,
+        'scene.deepFrames': `Skannar videobilder`,
+        'scene.deepNoFaces': `Inga performers hittades i videobilderna i denna scen.`,
+        'scene.deepNoFile': `Denna scen har ingen videofil att skanna.`,
+        'scene.deepNoResult': `Djupskanningen slutade utan resultat. Försök igen.`,
+        'scene.deepUpsellTitle': `Djupskanning med Visage Server`,
+        'scene.deepUpsellBody': `Djupskanning läser videobilder i full storlek från din egen Stash. Den körs bara på Visage Server, din privata server, inte i den delade Cloud-tjänsten. Dina videor stannar på din dator. Ingår med stöd på Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server tar inte emot en djupskanning från {origin}. Lägg till "{origin}" i allowed_origins i visage.toml och starta sedan om Visage Server.`,
+        'scene.deepBusy': `Visage Server kör redan en djupskanning. Försök igen när den är klar.`,
+        'scene.deepUnavailable': `Djupskanning är avstängd på den här Visage Server. Ange url i visage.toml, installera ffmpeg och starta sedan om Visage Server.`,
+        'batch.deepMenuItem': `Djupskanning med Visage`,
+        'batch.deepTitle': `Djupskannar scener: {count}`,
+        'batch.upsellCta': `Skaffa Visage Server på Patreon`,
+        'batch.upsellHaveServer': `Jag har en server`,
+        'batch.upsellClose': `Inte nu`,
         'banner.changeBackend': `Byt backend`,
         'banner.dismiss': `Avvisa`,
         'error.dismiss': `Avvisa`,
@@ -17744,6 +19451,24 @@
         'search.imageMenuTitle': `Ta reda på vem som är på bilden. Dra en ram runt ett ansikte, eller klicka för hela bilden.`,
         'faceMatch.adding.images': `Lägger till…`,
         'sprite.confirm': `Lägg till i scen ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Inget finns på {url}/health. Ta bort eventuell sökväg efter porten, till exempel http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Spara ändå`,
+        'backendSettings.sync.off': `Stash-synkronisering är avstängd. Lägg till url i visage.toml i serverns datamapp och starta sedan om Visage Server.`,
+        'backendSettings.sync.lastError': `Senaste synkroniseringen misslyckades: {error}`,
+        'scene.deepReady': `Djupskanning: redo.`,
+        'scene.deepOffNoStash': `Djupskanning: av. Ingen Stash-url i visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Djupskanning: av. ffmpeg hittades inte. Installera ffmpeg eller starta Visage Server med --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Djupskanning: av. Den hittade ffmpeg är ett statiskt bygge, som misslyckas med Stash över https. Installera systemets ffmpeg.`,
+        'scene.deepUpdateServer': `Djupskanning: uppdatera Visage Server till den senaste versionen.`,
+        'scene.deepNeedsNewerServer': `Djupskanning kräver en nyare Visage Server. Uppdatera Visage Server och ladda sedan om den här sidan.`,
+        'scene.deepOriginWillRefuse': `Djupskanning kommer att neka den här sidan ({origin}). Lägg till den i allowed_origins i visage.toml och starta sedan om Visage Server.`,
+        'scene.deepOtherStash': `Visage Server läser från {stash_url}, inte från den här Stash ({origin}). Peka url i visage.toml på den här Stash och starta sedan om Visage Server.`,
+        'scene.serverScanFailed': `Visage Server kunde inte skanna den här scenen: {error}`,
+        'backend.cspBlocked': `Stash blockerar förfrågningar till {origin}. Lägg till "{origin}" under ui.csp.connect-src i plugins/visage/visage.yml och ladda sedan om Stash. Gör det igen efter varje Visage-uppdatering.`,
+        'backend.mixedContent': `Stash är öppnad över https, så webbläsaren blockerar http-adressen {url}. Kör Visage Server över https (till exempel via din omvända proxy) eller öppna Stash över http.`,
+        'backend.loopbackRemote': `localhost betyder den här enheten, inte din server. Använd serverns nätverksadress i Visage-inställningarna, till exempel http://192.168.1.50:7860.`,
+        'batch.failedReason': `Kunde inte skannas ({count}): {reason}`,
     };
 
     // Italian. Missing keys fall back to English automatically.
@@ -17760,11 +19485,6 @@
         'backendSettings.hintPrefix': `Vuoi che le tue immagini restino nella tua rete?`,
         'backendSettings.hintLink': `Esegui un server privato tramite Patreon`,
         'backendSettings.urlLabel': `URL`,
-        'backendSettings.csp1': `La politica di sicurezza del browser (CSP) consente solo`,
-        'backendSettings.csp2': `per impostazione predefinita. Per raggiungere un backend locale su un altro indirizzo (ad es. il tuo IP LAN), aggiungilo alla`,
-        'backendSettings.csp3': `elenco nel file`,
-        'backendSettings.csp4': `all'interno della tua cartella plugin di Stash, altrimenti le richieste verranno bloccate. Nota: aggiornare Visage reinstallerà`,
-        'backendSettings.csp5': `, quindi questo va riapplicato dopo ogni aggiornamento.`,
         'backendSettings.testing': `Verifica della connessione…`,
         'backendSettings.testConnection': `Verifica connessione`,
         'backendSettings.testingShort': `Verifica…`,
@@ -17857,6 +19577,23 @@
         'scene.failed': `Scansione della scena non riuscita: {error}`,
         'scene.menuItemTitle': `Trova tutti in questa scena. Richiede uno sprite sheet o un video di anteprima generato.`,
         'scene.wholeScene': `Visage: identifica scena`,
+        'scene.deepScan': `Visage: scansione approfondita`,
+        'scene.deepScanTitle': `Scansiona i fotogrammi del video a dimensione piena sul tuo Visage Server. Più lenta della scansione della scena, trova più performer.`,
+        'scene.deepSprite': `Ricerca dei volti nello sprite sheet`,
+        'scene.deepFrames': `Scansione dei fotogrammi del video`,
+        'scene.deepNoFaces': `Nessun performer trovato nei fotogrammi del video di questa scena.`,
+        'scene.deepNoFile': `Questa scena non ha un file video da scansionare.`,
+        'scene.deepNoResult': `La scansione approfondita è terminata senza risultato. Riprova.`,
+        'scene.deepUpsellTitle': `Scansione approfondita con Visage Server`,
+        'scene.deepUpsellBody': `La scansione approfondita legge i fotogrammi del video a dimensione piena dal tuo Stash. Funziona solo su Visage Server, il tuo server privato, non sul Cloud condiviso. I tuoi video restano sulla tua macchina. Incluso con il supporto su Patreon.`,
+        'scene.deepRefusedOrigin': `Visage Server non accetta una scansione approfondita da {origin}. Aggiungi "{origin}" ad allowed_origins in visage.toml, poi riavvia Visage Server.`,
+        'scene.deepBusy': `Visage Server sta già eseguendo una scansione approfondita. Riprova quando ha finito.`,
+        'scene.deepUnavailable': `La scansione approfondita è disattivata su questo Visage Server. Imposta url in visage.toml, installa ffmpeg, poi riavvia Visage Server.`,
+        'batch.deepMenuItem': `Scansione approfondita con Visage`,
+        'batch.deepTitle': `Scansione approfondita delle scene: {count}`,
+        'batch.upsellCta': `Ottieni Visage Server su Patreon`,
+        'batch.upsellHaveServer': `Ho un server`,
+        'batch.upsellClose': `Non ora`,
         // ---- BackendHealthBanner.tsx ----
         'banner.changeBackend': `Cambia backend`,
         'banner.dismiss': `Ignora`,
@@ -17919,6 +19656,24 @@
         'search.imageMenuTitle': `Scopri chi c’è in questa immagine. Trascina un riquadro intorno a un volto, o clicca per l’intera immagine.`,
         'faceMatch.adding.images': `Aggiunta…`,
         'sprite.confirm': `Aggiungi alla scena ({count})`,
+        // ---- connection diagnostics and deep scan reasons ----
+        'backendSettings.feedback.noHealth': `Niente su {url}/health. Rimuovi qualsiasi percorso dopo la porta, per esempio http://192.168.1.50:7860.`,
+        'backendSettings.saveAnyway': `Salva comunque`,
+        'backendSettings.sync.off': `La sincronizzazione con Stash è disattivata. Aggiungi url a visage.toml nella cartella dati del server, poi riavvia Visage Server.`,
+        'backendSettings.sync.lastError': `Ultima sincronizzazione non riuscita: {error}`,
+        'scene.deepReady': `Scansione approfondita: pronta.`,
+        'scene.deepOffNoStash': `Scansione approfondita: disattivata. Nessun url di Stash in visage.toml.`,
+        'scene.deepOffNoFfmpeg': `Scansione approfondita: disattivata. ffmpeg non trovato. Installa ffmpeg o avvia Visage Server con --ffmpeg <path>.`,
+        'scene.deepOffStaticFfmpeg': `Scansione approfondita: disattivata. Il ffmpeg trovato è una build statica, che non funziona con Stash in https. Installa il ffmpeg del tuo sistema.`,
+        'scene.deepUpdateServer': `Scansione approfondita: aggiorna Visage Server all'ultima versione.`,
+        'scene.deepNeedsNewerServer': `La scansione approfondita richiede un Visage Server più recente. Aggiorna Visage Server, poi ricarica questa pagina.`,
+        'scene.deepOriginWillRefuse': `La scansione approfondita rifiuterà questa pagina ({origin}). Aggiungila ad allowed_origins in visage.toml, poi riavvia Visage Server.`,
+        'scene.deepOtherStash': `Visage Server legge da {stash_url}, non da questo Stash ({origin}). Imposta url in visage.toml su questo Stash, poi riavvia Visage Server.`,
+        'scene.serverScanFailed': `Visage Server non è riuscito a scansionare questa scena: {error}`,
+        'backend.cspBlocked': `Stash blocca le richieste verso {origin}. Aggiungi "{origin}" sotto ui.csp.connect-src in plugins/visage/visage.yml, poi ricarica Stash. Ripeti dopo ogni aggiornamento di Visage.`,
+        'backend.mixedContent': `Stash è aperto in https, quindi il browser blocca l'indirizzo http {url}. Servi Visage Server in https (per esempio tramite il tuo reverse proxy), oppure apri Stash in http.`,
+        'backend.loopbackRemote': `localhost indica questo dispositivo, non il tuo server. Nelle impostazioni di Visage usa l'indirizzo di rete del server, per esempio http://192.168.1.50:7860.`,
+        'batch.failedReason': `Scansione non riuscita ({count}): {reason}`,
     };
 
     registerLocale('en', en);
@@ -17970,7 +19725,8 @@
     // Portal `content` into a host element that Stash renders lazily. `findAnchor`
     // returns the anchor once its host exists (creating it on first sight), else
     // null. A MutationObserver retries on every DOM change, and again if Stash
-    // removes the host, so a re-rendered host gets the content back.
+    // removes the host, so a re-rendered host gets the content back. Unmount takes
+    // the injected anchor out again, so the next mount (a new scene) can inject.
     function useInjectedPortal(findAnchor, content) {
         const [anchor, setAnchor] = React.useState(null);
         React.useEffect(() => {
@@ -17987,12 +19743,25 @@
             tryInject();
             const obs = new MutationObserver(tryInject);
             obs.observe(document.body, { childList: true, subtree: true });
-            return () => obs.disconnect();
+            return () => {
+                obs.disconnect();
+                const divider = current === null || current === void 0 ? void 0 : current.nextElementSibling;
+                if (divider === null || divider === void 0 ? void 0 : divider.classList.contains('visage-menu-divider'))
+                    divider.remove();
+                current === null || current === void 0 ? void 0 : current.remove();
+            };
         }, []);
         return anchor ? ReactDOM.createPortal(content(), anchor) : null;
     }
+    // The deep scan upsell lives outside the menu portal, so a re-anchored menu
+    // does not close it. A scene scan outlives a re-anchored menu too, but not the
+    // scene page: leaving it, or moving to another scene, cancels the running scan
+    // and closes its stream.
     function OperationsMenuPortal() {
-        return useInjectedPortal(findOpsMenuAnchor, () => React.createElement(React.Fragment, null, React.createElement(FaceSearchButton, { menuItem: true }), React.createElement(SceneScanButton, { menuItem: true })));
+        const [upsell, setUpsell] = React.useState(false);
+        React.useEffect(() => () => cancelDetection(), []);
+        const menu = useInjectedPortal(findOpsMenuAnchor, () => React.createElement(React.Fragment, null, React.createElement(FaceSearchButton, { menuItem: true }), React.createElement(SceneScanButton, { menuItem: true }), React.createElement(DeepScanButton, { onUpsell: () => setUpsell(true) })));
+        return React.createElement(React.Fragment, null, menu, upsell && ReactDOM.createPortal(React.createElement(DeepScanUpsell, { onClose: () => setUpsell(false) }), document.body));
     }
     function ImageOperationsMenuPortal() {
         return useInjectedPortal(findOpsMenuAnchor, () => React.createElement(FaceSearchButton, { menuItem: true }));
@@ -18000,11 +19769,21 @@
     function PerformerActionsPortal() {
         return useInjectedPortal(findPerformerActionsAnchor, () => React.createElement(IdentifyPerformerButton, null));
     }
+    // The scene list batch items: sprite scan and deep scan. One modal at a time,
+    // in the mode its item picked. Leaving the list unmounts this root, and the
+    // modal unmount stops a running batch.
     function SceneBatchRoot() {
-        const [sceneIds, setSceneIds] = React.useState(null);
+        const [batch, setBatch] = React.useState(null);
         const [upsellCount, setUpsellCount] = React.useState(0);
-        const menuItem = useInjectedPortal(findSceneListMenuAnchor, () => React.createElement(SceneBatchMenuItem, { onStart: setSceneIds, onUpsell: setUpsellCount }));
-        return React.createElement(React.Fragment, null, menuItem, upsellCount > 0 && ReactDOM.createPortal(React.createElement(SceneBatchUpsell, { sceneCount: upsellCount, onClose: () => setUpsellCount(0) }), document.body), sceneIds && ReactDOM.createPortal(React.createElement(SceneBatchModal, { sceneIds, onClose: () => setSceneIds(null) }), document.body));
+        const [deepUpsell, setDeepUpsell] = React.useState(false);
+        const menuItem = useInjectedPortal(findSceneListMenuAnchor, () => React.createElement(React.Fragment, null, React.createElement(SceneBatchMenuItem, {
+            onStart: (sceneIds) => setBatch({ sceneIds, mode: 'sprite' }),
+            onUpsell: setUpsellCount,
+        }), React.createElement(DeepBatchMenuItem, {
+            onStart: (sceneIds) => setBatch({ sceneIds, mode: 'deep' }),
+            onUpsell: () => setDeepUpsell(true),
+        })));
+        return React.createElement(React.Fragment, null, menuItem, upsellCount > 0 && ReactDOM.createPortal(React.createElement(SceneBatchUpsell, { sceneCount: upsellCount, onClose: () => setUpsellCount(0) }), document.body), deepUpsell && ReactDOM.createPortal(React.createElement(DeepScanUpsell, { onClose: () => setDeepUpsell(false) }), document.body), batch && ReactDOM.createPortal(React.createElement(SceneBatchModal, { ...batch, onClose: () => setBatch(null) }), document.body));
     }
     function ModalRoot() {
         const { state, openSettings, closeSettings } = useVisage();
@@ -18088,11 +19867,14 @@
             pageContainer = null;
         }
     }
+    // Keyed by scene: a new scene id mounts a fresh Visage tree (state, modal,
+    // menu), so a scan or result never carries over to the next scene. Stash's own
+    // page stays outside the key and is not remounted.
     PluginApi.patch.after('ScenePage', (props, _, result) => {
         const scenarioId = extractIdFromProps(props);
         if (!scenarioId)
             return result;
-        return React.createElement(VisageProvider, { scenario: 'scenes', scenarioId }, React.createElement(ThemeDetector, null), result, React.createElement(OperationsMenuPortal, null), React.createElement(ModalRoot, null));
+        return React.createElement(React.Fragment, null, result, React.createElement(VisageProvider, { key: scenarioId, scenario: 'scenes', scenarioId }, React.createElement(ThemeDetector, null), React.createElement(OperationsMenuPortal, null), React.createElement(ModalRoot, null)));
     });
     PluginApi.Event.addEventListener('stash:page:image', (e) => {
         var _a, _b, _c;
@@ -18131,6 +19913,8 @@
     document.body.appendChild(firstRunRoot);
     // Load the server wide endpoint first: an endpoint saved in Stash means this
     // Stash is set up, so a browser with cleared storage skips onboarding.
+    // Read Stash's CSP now, so a blocked backend call can name the cause at once.
+    loadStashCsp();
     syncApiEndpointFromStash().then((hasEndpoint) => {
         if (hasEndpoint)
             markOnboarded();

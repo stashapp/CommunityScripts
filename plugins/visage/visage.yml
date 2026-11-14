@@ -1,6 +1,6 @@
 name: Visage
 description: Use facial recognition to lookup performers from scene sprites
-version: 2.12.0
+version: 2.13.0
 url: https://discourse.stashapp.cc/t/visage/11785
 # Read and written by src/services/stash.ts (getPluginSettings). Server wide.
 settings:
@@ -15,12 +15,16 @@ ui:
   - visage.css
   csp:
     connect-src:
-    # Local backend default: http://localhost:7860
-    # If your backend runs on another address (e.g. your LAN IP), add it below
-    # or the browser CSP will block requests. Reapply after every Visage update.
+    # Stash lets the browser call ONLY the addresses listed here. Any other
+    # Visage Server address is blocked: another port (http://localhost:7861),
+    # 127.0.0.1 instead of localhost, a LAN IP, a host name or an https proxy.
+    # Add yours exactly as you type it in Visage settings (scheme, host, port,
+    # no path), then reload Stash. A Visage update replaces this file: add it
+    # again after each update.
     - "https://cc1234-stashface-onnx.hf.space"
     - "http://localhost:7860"
-    # Example (uncomment and replace):
+    # Examples (remove the # and change the address):
     # - "http://192.168.1.50:7860"
+    # - "http://127.0.0.1:7860"
     script-src:
     - "'self'"
