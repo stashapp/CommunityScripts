@@ -1,0 +1,126 @@
+.sve-stage { position: relative; overflow: hidden; background: #000; }
+/* Safari-only: a <video> inside the modal's clipped/transformed compositing context
+   decodes but never repaints — it shows one frozen frame (play AND seek look dead),
+   while the same clip animates fine on the image page. Forcing the element onto its
+   own GPU layer makes Safari actually update it. Harmless on Chrome. Hits single-GOP
+   .vclip image clips hardest (their hardware-decode path is the one Safari won't
+   composite). Verified 2026-07-01. */
+.sve-stage video { transform: translateZ(0); -webkit-transform: translateZ(0); }
+
+.sve-crop-box {
+  position: absolute; border: 2px solid #4caf50;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); cursor: move; box-sizing: border-box;
+}
+/* Stretch mode: the box is the output frame over a clipped region — no spotlight dimming. */
+.sve-crop-box.sve-frame {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.6); border-color: #2196f3;
+}
+
+/* Clipping wrapper that shows only the cropped region in stretch mode. */
+.sve-frame-clip { position: absolute; overflow: hidden; }
+
+/* 8 resize handles. 14px squares centered on the box edges (offset -7px). */
+.sve-handle {
+  position: absolute; width: 14px; height: 14px;
+  background: #4caf50; border: 1px solid #fff; border-radius: 2px; box-sizing: border-box;
+}
+.sve-frame .sve-handle { background: #2196f3; }
+.sve-handle-nw { left: -7px;  top: -7px;    cursor: nwse-resize; }
+.sve-handle-n  { left: 50%;   top: -7px;    transform: translateX(-50%); cursor: ns-resize; }
+.sve-handle-ne { right: -7px; top: -7px;    cursor: nesw-resize; }
+.sve-handle-e  { right: -7px; top: 50%;     transform: translateY(-50%); cursor: ew-resize; }
+.sve-handle-se { right: -7px; bottom: -7px; cursor: nwse-resize; }
+.sve-handle-s  { left: 50%;   bottom: -7px; transform: translateX(-50%); cursor: ns-resize; }
+.sve-handle-sw { left: -7px;  bottom: -7px; cursor: nesw-resize; }
+.sve-handle-w  { left: -7px;  top: 50%;     transform: translateY(-50%); cursor: ew-resize; }
+
+/* The edge that arrow keys will nudge. Subtle — it marks a target, not a selection. */
+.sve-handle-active { box-shadow: 0 0 0 2px rgba(255,255,255,0.55); }
+
+/* Magnifier: a 1:1 source-pixel view of the edge under the cursor. Deliberately
+   OUTSIDE the crop box's dimming (which is what makes a black bar and a dimmed
+   strip of content look identical on the stage), and pointer-transparent so it can
+   never swallow a drag. `pixelated` keeps the browser from smoothing the source
+   pixels back into the blur we are trying to see through. */
+.sve-loupe {
+  position: absolute; z-index: 4; pointer-events: none;
+  border: 1px solid rgba(255,255,255,0.65); border-radius: 3px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.7); background: #000; overflow: hidden;
+}
+.sve-loupe-canvas {
+  display: block;
+  image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;
+}
+.sve-loupe-label {
+  font-size: .72rem; font-variant-numeric: tabular-nums; text-align: center;
+  padding: 2px 4px; color: #fff; background: rgba(0,0,0,0.75); white-space: nowrap;
+}
+
+.sve-transport { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.sve-play-btn { min-width: 2.6em; font-family: monospace; }
+.sve-seek { flex: 1; }
+.sve-time { font-variant-numeric: tabular-nums; font-size: .85em; color: var(--gray-11, #888); min-width: 7.5em; text-align: right; }
+
+.sve-modebar { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.sve-mode-btn { font-weight: 600; }
+
+/* Lossless/Precision segmented control: two joined buttons, active one filled. */
+.sve-modeseg { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+.sve-modeseg-label { font-size: .75em; letter-spacing: .05em; text-transform: uppercase; color: var(--gray-11, #888); }
+.sve-modeseg-btn { font-weight: 600; }
+.sve-modeseg-label + .sve-modeseg-btn { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.sve-modeseg-btn + .sve-modeseg-btn { margin-left: -1px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+
+/* Trim filmstrip timeline (reuses Stash's sprite sheet) + draggable in/out. */
+.sve-film {
+  position: relative; margin-top: 10px; overflow: hidden; background: #000;
+  border-radius: 3px; user-select: none; -webkit-user-select: none;
+}
+.sve-film-row { position: absolute; inset: 0; display: flex; }
+.sve-film-tile { flex: 0 0 auto; background-repeat: no-repeat; }
+.sve-film-blank {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, #2b2b2b 0 2px, #232323 2px 40px);
+}
+/* Dim the regions outside the selection. */
+.sve-film-dim { position: absolute; top: 0; bottom: 0; background: rgba(0,0,0,0.6); pointer-events: none; z-index: 1; }
+.sve-film-playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 3px rgba(0,0,0,0.8); pointer-events: none; z-index: 2; }
+/* Draggable in/out handles. */
+.sve-film-handle {
+  position: absolute; top: 0; bottom: 0; width: 12px; margin-left: -6px;
+  cursor: ew-resize; z-index: 3; box-sizing: border-box;
+}
+.sve-film-handle::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 5px; width: 2px; background: #fff;
+}
+.sve-film-handle.sve-in  { border-left: 3px solid #4caf50; background: linear-gradient(90deg, rgba(76,175,80,0.55), transparent); }
+.sve-film-handle.sve-out { border-right: 3px solid #f44336; background: linear-gradient(270deg, rgba(244,67,54,0.55), transparent); }
+
+.sve-warn { color: var(--bs-warning, #e0a800) !important; }
+
+.sve-controls { margin-top: 12px; }
+.sve-controls input { width: 6em; margin: 0 .4em; }
+.sve-outdims { font-weight: 600; }
+.sve-hint { font-size: .85em; color: var(--gray-11, #888); margin-top: .4em; }
+.sve-cropinfo { font-size: .85em; font-variant-numeric: tabular-nums; color: var(--gray-11, #aaa); margin-top: .5em; }
+.sve-open-btn { margin-top: 10px; }
+
+/* Shown when the browser can't decode the source: the stage would otherwise be
+   blank with nothing explaining why. Overlays the stage rather than replacing
+   it, so the (empty) video element stays mounted and a later successful load
+   can clear the notice. */
+.sve-unplayable {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+  gap: .5rem;
+  background: rgba(0, 0, 0, .82);
+  color: #fff;
+  z-index: 5;
+}
+.sve-unplayable p { margin: 0; max-width: 46ch; font-size: .9rem; opacity: .9; }
