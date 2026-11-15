@@ -13,7 +13,7 @@ Full documentation, known limitations and issues: https://github.com/RyanAtNight
 - The page buttons show the page in view and jump to any page; the count shows the total.
 - Keeps Stash's own features working across everything loaded: Select all, shift-click ranges, bulk edit and delete, the play queue, the image lightbox, random sort and the scene tagger.
 - Re-fetches what's loaded when items are added or removed while you scroll, so nothing is skipped or shown twice.
-- Stays fast in long lists: off-screen Grid cards become empty boxes of the same size, and previews wait while you scroll fast.
+- Stays fast in long lists: off-screen Grid cards become empty boxes of the same size, cards are drawn a few per frame, card pictures load four at a time, and previews wait while you scroll fast.
 
 If a Stash update removes something the plugin relies on, that part switches itself off and Stash's normal pages are used.
 

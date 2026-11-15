@@ -69,6 +69,9 @@
   // how far ahead to load when scrolling fast: this many seconds of travel
   const LEAD_SECONDS = 0.6;
   const MAX_LEAD_SCREENS = 8;
+  // a page that lands while others are still loading waits up to this long
+  // to be written together with them
+  const LAND_TOGETHER_MS = 80;
   // Scrolling faster than this many screen heights a second holds previews
   // back (a card is then on screen for under about a second). Measured in
   // screens, not pixels, so it's the same at every zoom level...
@@ -80,6 +83,14 @@
   // a placeholder turning back into a card is drawn within this budget per
   // frame, so a burst of them doesn't freeze the page
   const DRAW_BUDGET_MS = 8;
+  // Card pictures loading at once. Browsers open about 6 connections to a
+  // server; the rest stay free for loading more items.
+  const MAX_PICTURES = 4;
+  // a picture that hasn't arrived after this long stops counting as loading
+  const PICTURE_TIMEOUT_MS = 20000;
+  // drawn cards catch up on list updates they skipped once scrolling has
+  // paused for this long
+  const STALE_QUIET_MS = 200;
   const MAX_SIZE_CACHE = 20000;
 
   // ---------------------------------------------------------------------------
@@ -443,6 +454,9 @@
     st.last = page;
     st.error = null;
     st.inflight.clear();
+    st.landed = [];
+    window.clearTimeout(st.landTimer);
+    st.landTimer = 0;
     // a refresh still running belongs to the old generation and won't clear
     // this itself; left set, it would block loading for good
     st.refreshing = false;
@@ -605,6 +619,9 @@
         ackCount: count,
         gen: 0,
         inflight: new Set(),
+        // pages that have arrived and are about to be written (see fetchPage)
+        landed: [],
+        landTimer: 0,
         refreshing: false,
         refreshAgain: false,
         error: null,
@@ -658,15 +675,22 @@
       const variables = pageVars(st, page);
       const res = await client.query({ query: st.doc, variables, fetchPolicy: "no-cache" });
       if (st.gen !== gen) return;
-      client.cache.writeQuery({ query: st.doc, variables, data: res.data });
-      const data = res.data && res.data[st.field];
-      if (data && countBefore !== undefined && data.count !== countBefore) {
-        // items were added or removed since earlier pages were fetched, so page
-        // offsets moved: re-fetch the loaded range so nothing is skipped
-        st.inflight.delete(page);
-        st.ackCount = data.count;
-        refreshRange(st);
+      // When scrolling outruns loading, several pages load at once and land
+      // within moments of each other. Each write re-renders the whole list,
+      // so one that lands while others are still on their way waits briefly,
+      // and they're written together.
+      st.landed.push({ page, variables, data: res.data, countBefore });
+      if (st.inflight.size <= st.landed.length) {
+        window.clearTimeout(st.landTimer);
+        st.landTimer = 0;
+        writeLanded(st);
+      } else if (!st.landTimer) {
+        st.landTimer = window.setTimeout(() => {
+          st.landTimer = 0;
+          if (st.gen === gen) writeLanded(st);
+        }, LAND_TOGETHER_MS);
       }
+      return;
     } catch (e) {
       if (st.gen !== gen) return;
       console.warn(LOG_PREFIX, "failed to load page", page, e);
@@ -679,13 +703,58 @@
       } else if (page > st.first && page <= st.last) {
         st.last = page - 1;
       }
-    } finally {
-      if (st.gen === gen) {
-        st.inflight.delete(page);
+      st.inflight.delete(page);
+      // with this one gone, the landed ones may have nothing left to wait for
+      if (st.landed.length && st.inflight.size <= st.landed.length) {
+        window.clearTimeout(st.landTimer);
+        st.landTimer = 0;
+        writeLanded(st);
+      } else {
         bump();
         notify(st);
       }
     }
+  }
+
+  // Writes the pages that have landed to the cache in one batch (one
+  // re-render) and takes them off the loading list.
+  function writeLanded(st) {
+    const landed = st.landed;
+    st.landed = [];
+    if (!landed.length) return;
+    const client = getClient();
+    let count;
+    for (const w of landed) st.inflight.delete(w.page);
+    try {
+      // bump() inside the batch: the cache then tells the list once, at the
+      // end, instead of once for the pages and once for the bump (each time
+      // re-reading every loaded item)
+      const write = (cache) => {
+        for (const w of landed) cache.writeQuery({ query: st.doc, variables: w.variables, data: w.data });
+        bump();
+      };
+      if (typeof client.cache.batch === "function") client.cache.batch({ update: write });
+      else write(client.cache);
+      for (const w of landed) {
+        const data = w.data && w.data[st.field];
+        if (data && w.countBefore !== undefined && data.count !== w.countBefore) count = data.count;
+      }
+    } catch (e) {
+      console.warn(LOG_PREFIX, "failed to store loaded pages", e);
+      st.pendingAnchor = undefined;
+      st.error = e;
+      st.errorAt = Date.now();
+      const firstFailed = Math.min(...landed.map((w) => w.page));
+      if (firstFailed > st.first && firstFailed <= st.last) st.last = firstFailed - 1;
+      bump();
+    }
+    if (count !== undefined && !st.error) {
+      // items were added or removed since earlier pages were fetched, so page
+      // offsets moved: re-fetch the loaded range so nothing is skipped
+      st.ackCount = count;
+      refreshRange(st);
+    }
+    notify(st);
   }
 
   // Re-fetches every loaded page in as few requests as possible and writes
@@ -794,6 +863,111 @@
   }
 
   // ---------------------------------------------------------------------------
+  // card pictures: a few at a time
+  //
+  // A browser opens about six connections to Stash. Card pictures that are
+  // slow to arrive (thumbnails Stash still has to make, a disk that's slow or
+  // asleep) fill all of them, and the request for the next batch then waits
+  // in line behind them: measured with photos on a network disk, each request
+  // spent 0.75 s of its 0.76 s waiting, and the list sat at its end. So the
+  // pictures of the cards in an infinite list load a few at a time, those on
+  // screen first. That always leaves connections for loading, and the picture
+  // of a card that's swapped for a placeholder before its turn is never
+  // asked for.
+
+  const pictures = (() => {
+    // cell -> { box, imgs }: the cards with pictures still to come
+    const cards = new Map();
+    // img -> its address, in the order the cards were drawn
+    const waiting = new Map();
+    // img -> what to undo when it's done
+    const loading = new Map();
+    const onScreen = new WeakSet();
+    let io = null;
+
+    function finish(img) {
+      const undo = loading.get(img);
+      if (!undo) return;
+      loading.delete(img);
+      undo();
+      pump();
+    }
+
+    function start(img, src) {
+      const done = () => finish(img);
+      // one that never finishes mustn't hold the others up for good
+      const timer = window.setTimeout(done, PICTURE_TIMEOUT_MS);
+      loading.set(img, () => {
+        window.clearTimeout(timer);
+        img.removeEventListener("load", done);
+        img.removeEventListener("error", done);
+      });
+      img.addEventListener("load", done);
+      img.addEventListener("error", done);
+      // its turn has come, so not when the browser thinks it's near enough
+      if (img.loading === "lazy") img.loading = "eager";
+      img.setAttribute("src", src);
+    }
+
+    function pump() {
+      while (loading.size < MAX_PICTURES && waiting.size) {
+        let pick;
+        for (const [img, w] of waiting) {
+          if (pick === undefined) pick = img;
+          if (onScreen.has(w.box)) {
+            pick = img;
+            break;
+          }
+        }
+        const w = waiting.get(pick);
+        waiting.delete(pick);
+        // gone, or given another address since
+        if (pick.isConnected && !pick.hasAttribute("src")) start(pick, w.src);
+      }
+    }
+
+    return {
+      // called as a card is drawn, before its pictures have started loading
+      adopt(cell, box) {
+        const imgs = [];
+        for (const img of cell.querySelectorAll("img[src]")) {
+          const src = img.getAttribute("src");
+          if (img.complete || !src || /^(data|blob):/.test(src)) continue;
+          img.removeAttribute("src");
+          waiting.set(img, { src, box });
+          imgs.push(img);
+        }
+        if (!imgs.length) return;
+        cards.set(cell, { box, imgs });
+        if (!io && typeof IntersectionObserver === "function") {
+          io = new IntersectionObserver((entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) onScreen.add(e.target);
+              else onScreen.delete(e.target);
+            }
+          });
+        }
+        if (io && box) io.observe(box);
+        pump();
+      },
+      // the card is going away: its pictures aren't needed any more
+      drop(cell) {
+        const c = cards.get(cell);
+        if (!c) return;
+        cards.delete(cell);
+        if (io && c.box) io.unobserve(c.box);
+        for (const img of c.imgs) {
+          if (waiting.delete(img)) continue;
+          if (loading.has(img)) {
+            img.removeAttribute("src");
+            finish(img);
+          }
+        }
+      },
+    };
+  })();
+
+  // ---------------------------------------------------------------------------
   // windowing: far off-screen cards become same-sized placeholders
 
   const WindowCtx = React.createContext(null);
@@ -809,6 +983,24 @@
   ];
   const sizeCache = new Map();
   const batchedUpdates = (api.ReactDOM && api.ReactDOM.unstable_batchedUpdates) || ((fn) => fn());
+  // Renders the updates made inside it before returning, so the time they
+  // take can be measured. (Since React 18 a batched update made outside
+  // React's own events renders later, in a task of its own.)
+  const renderNow = (api.ReactDOM && api.ReactDOM.flushSync) || batchedUpdates;
+  const windowCtls = new Set();
+
+  // Do two sets of card props differ only in their functions? A list update
+  // hands every card new click handlers, and usually nothing else.
+  function sameData(a, b) {
+    const keys = Object.keys(a);
+    if (keys.length !== Object.keys(b).length) return false;
+    for (const k of keys) {
+      const x = a[k];
+      const y = b[k];
+      if (x !== y && !(typeof x === "function" && typeof y === "function")) return false;
+    }
+    return true;
+  }
 
   // `pw` is the card's width prop when it was measured. The measured element
   // can be wider than that: another plugin's wrapper around the card includes
@@ -828,26 +1020,52 @@
     // at once, so they're drawn a few per frame (nearest to the screen first)
     // instead of all in one long frame.
     const queue = new Map();
+    // Drawn cards that sat out a list update (see MemoWindowedCard) and still
+    // have to take in its render: id -> a function that re-renders the card.
+    // What they show is unchanged, so they wait until scrolling pauses, and
+    // then take their turn behind the placeholders, a few per frame.
+    const stale = new Map();
+    let staleTimer = 0;
+    let typicalAt = -Infinity;
+    let typicalSize = null;
     let frame = 0;
-    let chunk = 4;
+    // what drawing one card, and bringing one drawn card up to date, has been
+    // costing lately (ms); each frame's share is what fits the budget
+    let drawCost = 2;
+    let staleCost = 1;
+    const share = (budget, cost) => Math.max(1, Math.min(32, Math.floor(budget / cost)));
     const drain = () => {
       frame = 0;
-      if (!queue.size) return;
-      const vh = window.innerHeight;
-      const order = [...queue].map(([el, draw]) => {
-        const r = el.getBoundingClientRect();
-        return { el, draw, d: r.bottom < 0 ? -r.bottom : r.top > vh ? r.top - vh : 0 };
-      });
-      order.sort((a, b) => a.d - b.d);
-      const now = order.slice(0, chunk);
-      now.forEach((x) => queue.delete(x.el));
-      const t0 = performance.now();
-      batchedUpdates(() => now.forEach((x) => x.draw()));
-      // aim each frame's share at the budget
-      const took = performance.now() - t0;
-      if (took < DRAW_BUDGET_MS * 0.6) chunk = Math.min(chunk + 2, 32);
-      else if (took > DRAW_BUDGET_MS) chunk = Math.max(1, Math.floor(chunk / 2));
-      if (queue.size) frame = requestAnimationFrame(drain);
+      let took = 0;
+      if (queue.size) {
+        const vh = window.innerHeight;
+        const order = [...queue].map(([el, draw]) => {
+          const r = el.getBoundingClientRect();
+          return { el, draw, d: r.bottom < 0 ? -r.bottom : r.top > vh ? r.top - vh : 0 };
+        });
+        order.sort((a, b) => a.d - b.d);
+        const now = order.slice(0, share(DRAW_BUDGET_MS, drawCost));
+        now.forEach((x) => queue.delete(x.el));
+        const t0 = performance.now();
+        renderNow(() => now.forEach((x) => x.draw()));
+        took = performance.now() - t0;
+        drawCost = Math.max(0.1, drawCost * 0.5 + (took / now.length) * 0.5);
+      }
+      const quiet = performance.now() - speed.lastEventAt > STALE_QUIET_MS;
+      if (stale.size && quiet && took < DRAW_BUDGET_MS * 0.6) {
+        const now = [...stale].slice(0, share(DRAW_BUDGET_MS - took, staleCost));
+        now.forEach(([id]) => stale.delete(id));
+        const t0 = performance.now();
+        renderNow(() => now.forEach(([, refresh]) => refresh()));
+        staleCost = Math.max(0.1, staleCost * 0.5 + ((performance.now() - t0) / now.length) * 0.5);
+      }
+      if (queue.size || (stale.size && quiet)) frame = requestAnimationFrame(drain);
+      else if (stale.size && !staleTimer) {
+        staleTimer = window.setTimeout(() => {
+          staleTimer = 0;
+          if (!frame) frame = requestAnimationFrame(drain);
+        }, STALE_QUIET_MS);
+      }
     };
 
     const ctl = {
@@ -855,9 +1073,54 @@
       margin: undefined,
       // ids currently shown as placeholders
       far: new Set(),
-      // the latest props and rendered card for each card, which a skipped (memoised)
-      // placeholder needs when it turns back into a real card
+      // the latest props and rendered card for each card, which a card that
+      // skipped a list update (a placeholder, or a drawn card with nothing new
+      // to show) needs when it next renders
       latest: new Map(),
+      // id -> re-render that drawn card
+      refreshers: new Map(),
+      // a drawn card of this list ({ el, widthRef }) to take the size from,
+      // and whether a card never drawn before may start as a placeholder of
+      // that size (see WindowedCard)
+      sample: null,
+      guessing: true,
+      // The size of a card in this list right now ({ w, h, pw }), or null.
+      // Measured when asked, not when the card was first seen: a card can be
+      // drawn before the list has worked out its width. One measurement
+      // serves all the cards of a batch.
+      typical() {
+        if (!ctl.guessing) return null;
+        const t = performance.now();
+        if (t - typicalAt < 100) return typicalSize;
+        typicalAt = t;
+        typicalSize = null;
+        const smp = ctl.sample;
+        if (smp && smp.el.isConnected) {
+          const r = smp.el.getBoundingClientRect();
+          if (r.width && r.height) typicalSize = { w: r.width, h: r.height, pw: smp.widthRef.current };
+        }
+        return typicalSize;
+      },
+      // a drawn card skipped a list update: have it take the update in soon
+      defer(id) {
+        const refresh = ctl.refreshers.get(id);
+        if (!refresh) return false;
+        stale.set(id, refresh);
+        if (!frame) frame = requestAnimationFrame(drain);
+        return true;
+      },
+      settled(id) {
+        stale.delete(id);
+      },
+      // Bring every waiting card up to date right now. The click handlers of
+      // a card that's waiting are those of the previous list update, so this
+      // runs before a click or key press reaches any of them.
+      catchUp() {
+        if (!stale.size) return;
+        const now = [...stale.values()];
+        stale.clear();
+        renderNow(() => now.forEach((refresh) => refresh()));
+      },
       observe(el, fn) {
         if (!io) {
           io = new IntersectionObserver(
@@ -904,13 +1167,24 @@
         io = null;
         if (frame) cancelAnimationFrame(frame);
         frame = 0;
+        window.clearTimeout(staleTimer);
+        staleTimer = 0;
         queue.clear();
+        stale.clear();
         callbacks.clear();
         ctl.far.clear();
         ctl.latest.clear();
+        ctl.refreshers.clear();
+        ctl.sample = null;
+        windowCtls.delete(ctl);
       },
     };
+    windowCtls.add(ctl);
     return ctl;
+  }
+
+  for (const type of ["pointerdown", "keydown"]) {
+    document.addEventListener(type, () => windowCtls.forEach((ctl) => ctl.catchUp()), true);
   }
 
   // Other plugins sometimes wrap a card in their own element, or move it.
@@ -1001,8 +1275,20 @@
     const ref = React.useRef(null);
     const widthRef = React.useRef(props.width);
     widthRef.current = props.width;
-    const [near, setNear] = React.useState(() => !(ctl.enabled && id && sizeCache.has(id)));
-    const show = near || !ctl.enabled || !id || !sizeCache.has(id);
+    // A card never drawn before starts as a placeholder too, the size of the
+    // cards around it, and is drawn in turn like the rest. So a batch that
+    // arrives costs a handful of empty boxes, and its cards are then drawn a
+    // few per frame, instead of all of them in the frame they arrive in.
+    const guess = React.useRef(null);
+    const [near, setNear] = React.useState(() => {
+      if (!(ctl.enabled && id)) return true;
+      if (sizeCache.has(id)) return false;
+      guess.current = ctl.typical();
+      return !guess.current;
+    });
+    const [, setTick] = React.useState(0);
+    const size = id ? sizeCache.get(id) || guess.current : null;
+    const show = near || !ctl.enabled || !size;
     const enabled = ctl.enabled && !!id;
 
     React.useLayoutEffect(() => {
@@ -1015,7 +1301,10 @@
       if (!enabled) return undefined;
       ctl.observe(el, (isNear, rect, immediate) => {
         if (isNear) {
-          if (show) return;
+          if (show) {
+            ctl.sample = { el, widthRef };
+            return;
+          }
           // placeholders turn back into cards through the queue, unless the
           // view jumped (restoring a position) and they're needed right now
           if (immediate) setNear(true);
@@ -1028,9 +1317,33 @@
         if (show) rememberSize(id, rect.width, rect.height, widthRef.current);
         setNear(false);
       });
-      return () => ctl.unobserve(el);
+      return () => {
+        ctl.unobserve(el);
+        if (ctl.sample && ctl.sample.el === el) ctl.sample = null;
+      };
     }, [show, enabled, id, ctl]);
 
+    // while drawn, the card can be told to take in a list update it skipped
+    React.useLayoutEffect(() => {
+      if (!show || !enabled) return undefined;
+      const refresh = () => setTick((n) => n + 1);
+      ctl.refreshers.set(id, refresh);
+      return () => {
+        if (ctl.refreshers.get(id) === refresh) ctl.refreshers.delete(id);
+        ctl.settled(id);
+      };
+    }, [show, enabled, id, ctl]);
+
+    // a drawn card's pictures take their turn (see pictures)
+    React.useLayoutEffect(() => {
+      const cell = show ? ref.current : null;
+      if (!cell) return undefined;
+      pictures.adopt(cell, cardElement(cell));
+      return () => pictures.drop(cell);
+    }, [show, id, ctl]);
+
+    // this render shows the latest there is
+    if (id) ctl.settled(id);
     if (show) {
       if (id) ctl.far.delete(id);
       return h(
@@ -1040,7 +1353,7 @@
       );
     }
     ctl.far.add(id);
-    const s = sizeCache.get(id);
+    const s = size;
     // follows the card's width prop (zoom), keeping any extra a wrapper adds
     const width = props.width ? props.width + (s.pw ? s.w - s.pw : 0) : s.w;
     return h("div", {
@@ -1053,16 +1366,20 @@
 
   // A placeholder doesn't need to re-render when the list does; with hundreds
   // of cards loaded that is most of the cost of each list update.
-  const MemoWindowedCard = React.memo(
-    WindowedCard,
-    (prev, next) =>
-      prev.ctl === next.ctl &&
-      prev.id === next.id &&
-      !!next.id &&
-      next.ctl.enabled &&
-      next.ctl.far.has(next.id) &&
-      prev.props.width === next.props.width
-  );
+  //
+  // Nor does a drawn card the update has nothing new to show for: each batch
+  // that arrives re-renders the whole list, and redrawing every card on and
+  // around the screen in that one go is what makes scrolling stutter. Such a
+  // card keeps what it shows and takes the update in once scrolling pauses
+  // (its click handlers are new each time), a few cards per frame, or all at
+  // once just before a click or key press. A card whose own data changed
+  // (selected, resized, edited) is redrawn at once, and so is one that
+  // re-rendered by itself: it then gets the very same props.
+  const MemoWindowedCard = React.memo(WindowedCard, (prev, next) => {
+    if (prev.ctl !== next.ctl || prev.id !== next.id || !next.id || !next.ctl.enabled) return false;
+    if (next.ctl.far.has(next.id)) return prev.props.width === next.props.width;
+    return prev.props !== next.props && sameData(prev.props, next.props) && next.ctl.defer(next.id);
+  });
 
   // ---------------------------------------------------------------------------
   // videos: only on-screen previews play; nearby ones stay loaded (paused) so
@@ -1585,6 +1902,13 @@
       : undefined;
 
     ctl.enabled = enabled && mode === DisplayMode.Grid && !settings.disableWindowing;
+    // Cards added above the ones already there (an earlier page) are drawn
+    // at once: a guessed placeholder that turned out the wrong height would
+    // move what's on screen. The list then starts with a different item.
+    const firstRef = React.useRef(undefined);
+    const firstId = items[0] ? items[0].id : undefined;
+    ctl.guessing = firstRef.current === undefined || firstRef.current === firstId;
+    firstRef.current = firstId;
 
     // everything the event handlers need, without re-binding them each render
     const S = stateRef.current;

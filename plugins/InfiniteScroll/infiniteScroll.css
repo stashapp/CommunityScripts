@@ -177,3 +177,9 @@
   border-radius: 0.25rem;
   background: rgba(127, 127, 127, 0.06);
 }
+
+/* a card picture waiting for its turn to load has no address yet: show
+   nothing rather than its alt text */
+.isc-list [data-isc-item] img:not([src]) {
+  visibility: hidden;
+}
