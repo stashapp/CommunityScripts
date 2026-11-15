@@ -105,7 +105,9 @@
     hidePageJumper: false,
     disableWindowing: false,
     disablePinnedHeader: false,
-    prefetchScreens: 1.5,
+    // percent of a screen: Stash's own number box drops decimals, so "1.5
+    // screens" couldn't be typed
+    prefetchPercent: 150,
     taggerConfirmThreshold: 0,
   };
 
@@ -136,6 +138,12 @@
         } else {
           settings[k] = !!v;
         }
+      }
+      // until 1.1.4 the distance was set in screens; a value saved then
+      // still counts until the percent one is set
+      const screens = Number(cfg.prefetchScreens);
+      if (!(Number(cfg.prefetchPercent) > 0) && Number.isFinite(screens) && screens > 0) {
+        settings.prefetchPercent = screens * 100;
       }
     } catch (e) {
       console.warn(LOG_PREFIX, "could not load settings", e);
@@ -755,6 +763,18 @@
       refreshRange(st);
     }
     notify(st);
+  }
+
+  // Whether pages of the loaded range are missing from what the list was
+  // given (`run`), with nothing on its way to bring them: Stash emptied its
+  // cache (a scan finished, an edit) and fetched only its own page again.
+  function pagesLost(st, run, currentPage) {
+    if (st.first >= st.last || currentPage < st.first || currentPage > st.last) return false;
+    for (let p = st.first; p <= st.last; p++) {
+      // (a page that's still loading isn't in the list yet either)
+      if ((p < run.first || p > run.last) && !st.inflight.has(p)) return true;
+    }
+    return false;
   }
 
   // Re-fetches every loaded page in as few requests as possible and writes
@@ -1876,8 +1896,10 @@
     const stateRef = React.useRef({});
     const ctl = React.useMemo(() => createWindowCtl(), []);
 
+    const heldRef = React.useRef(undefined);
+
     const filter = props.filter;
-    const items = props[cfg.prop] || [];
+    let items = props[cfg.prop] || [];
     const mode = filter ? filter.displayMode : undefined;
     const detailPage = !TOP_LEVEL_LIST_PATH.test(location.pathname);
     const allowed = !!filter && modeEnabled(mode) && !(detailPage && settings.disableOnDetailPages);
@@ -1895,11 +1917,37 @@
 
     const st = wanted ? getOrCreateEntry(cfg, items, filter) : undefined;
     const enabled = !!st;
-    const run = st
+    let run = st
       ? st.run && filter.currentPage >= st.run.first && filter.currentPage <= st.run.last
         ? st.run
         : { first: filter.currentPage, last: filter.currentPage, starts: [0], length: items.length }
       : undefined;
+
+    // Loaded pages can go missing from Stash's cache: it empties the cache
+    // when a scan finishes (and after some edits) and fetches only its own
+    // page again. The list would shrink to that one batch, the page with it,
+    // and the browser would leave the view at the top. The effect further
+    // down fetches the pages again; until they're back, keep showing the
+    // list as it was.
+    const lost = !!st && pagesLost(st, run, filter.currentPage);
+    const held = heldRef.current;
+    let holding = false;
+    if (
+      lost &&
+      held &&
+      held.st === st &&
+      held.gen === st.gen &&
+      filter.currentPage >= held.run.first &&
+      filter.currentPage <= held.run.last
+    ) {
+      holding = true;
+      items = held.items;
+      run = held.run;
+    } else if (st && !lost && items.length) {
+      heldRef.current = { st, gen: st.gen, items, run };
+    } else if (!st || (held && (held.st !== st || held.gen !== st.gen))) {
+      heldRef.current = undefined;
+    }
 
     ctl.enabled = enabled && mode === DisplayMode.Grid && !settings.disableWindowing;
     // Cards added above the ones already there (an earlier page) are drawn
@@ -1926,6 +1974,7 @@
     let passProps = props;
     if (enabled) {
       passProps = Object.assign({}, props, { filter: passFilter });
+      if (holding) passProps[cfg.prop] = items;
       // the lightbox walks the merged list itself: no page switching, and no
       // "Page x / y" header (0 pages hides it)
       if (name === "ImageList") passProps.pageCount = 0;
@@ -2114,16 +2163,7 @@
 
       // pages in range but missing from the cache (cache reset after a scan,
       // eviction): fetch them again
-      if (
-        !st.refreshing &&
-        st.inflight.size === 0 &&
-        !st.error &&
-        (run.first > st.first || run.last < st.last) &&
-        filter.currentPage >= st.first &&
-        filter.currentPage <= st.last
-      ) {
-        refreshRange(st);
-      }
+      if (lost && !st.refreshing && st.inflight.size === 0 && !st.error) refreshRange(st);
 
       // The list was handed fewer items than the loaded pages hold. Opening a
       // scene does this: Stash stores its play queue's scenes with fewer
@@ -2226,7 +2266,7 @@
         const screen = scroller ? scroller.clientHeight : vh;
         const lead = Math.min(
           MAX_LEAD_SCREENS * screen,
-          Math.max(settings.prefetchScreens * screen, currentSpeed() * LEAD_SECONDS)
+          Math.max((settings.prefetchPercent / 100) * screen,currentSpeed() * LEAD_SECONDS)
         );
         let below;
         let nearTop;
@@ -2270,6 +2310,13 @@
         } else {
           staleSince = 0;
         }
+
+        // Pages missing from the cache are fetched again after the render that
+        // shows them missing. But nothing re-renders the list when that had to
+        // wait (a load failed because the cache was emptied under it, and its
+        // retry time has now passed), so look here too; loading further ahead
+        // instead would leave the list a batch long for good.
+        if (idle && s.run && pagesLost(s, s.run, f.currentPage)) refreshRange(s);
 
         // load ahead: as many batches as it takes to cover the shortfall, a
         // few at a time, counting the ones already on their way
@@ -2426,7 +2473,7 @@
         sentinelRef,
         onRetry: () => {
           st.error = null;
-          if (run.first > st.first || run.last < st.last) refreshRange(st);
+          if (lost || run.first > st.first || run.last < st.last) refreshRange(st);
           else loadPage(st, st.last + 1);
           notify(st);
         },

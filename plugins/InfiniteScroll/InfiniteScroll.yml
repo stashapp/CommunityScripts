@@ -1,6 +1,6 @@
 name: Infinite Scroll
 description: Replaces pagination with infinite scrolling in every list (grid, list, wall and tagger views), including the lists on performer, studio, tag, group and gallery pages.
-version: 1.1.4
+version: 1.1.5
 ui:
   javascript:
     - infiniteScroll.js
@@ -39,9 +39,9 @@ settings:
     displayName: Don't pin the list header
     description: By default the toolbar, filter tags, page buttons and count stay at the top while the list scrolls under them.
     type: BOOLEAN
-  prefetchScreens:
-    displayName: Load-ahead distance (screens)
-    description: How many screen heights before the bottom the next batch starts loading. Default 1.5. When you scroll fast it loads further ahead on its own.
+  prefetchPercent:
+    displayName: Load-ahead distance (% of a screen)
+    description: How far before the bottom the next batch starts loading, in percent of the screen's height. Default (0) is 150, one and a half screens; 800 is the most. When you scroll fast it loads further ahead on its own.
     type: NUMBER
   taggerConfirmThreshold:
     displayName: Tagger confirmation threshold

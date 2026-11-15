@@ -12,7 +12,7 @@ Full documentation, known limitations and issues: https://github.com/RyanAtNight
 - Pins the toolbar, filter tags, page buttons and result count at the top while the list scrolls under them.
 - The page buttons show the page in view and jump to any page; the count shows the total.
 - Keeps Stash's own features working across everything loaded: Select all, shift-click ranges, bulk edit and delete, the play queue, the image lightbox, random sort and the scene tagger.
-- Re-fetches what's loaded when items are added or removed while you scroll, so nothing is skipped or shown twice.
+- Re-fetches what's loaded when items are added or removed while you scroll, so nothing is skipped or shown twice, and stays where you are when a finished scan makes Stash reload its lists.
 - Stays fast in long lists: off-screen Grid cards become empty boxes of the same size, cards are drawn a few per frame, card pictures load four at a time, and previews wait while you scroll fast.
 
 If a Stash update removes something the plugin relies on, that part switches itself off and Stash's normal pages are used.
@@ -26,7 +26,7 @@ If a Stash update removes something the plugin relies on, that part switches its
 | Hide the page jumper | off | Hide the page buttons above the list. |
 | Don't pin the list header | off | Let the toolbar, filter tags, page buttons and count scroll away. |
 | Keep every card mounted | off | Turn off the Grid placeholders. |
-| Load-ahead distance (screens) | 1.5 | The least that's kept loaded below the view; fast scrolling loads further. |
+| Load-ahead distance (% of a screen) | 150 | The least that's kept loaded below the view, in percent of the screen's height; fast scrolling loads further. |
 | Tagger confirmation threshold | 40 | When "Scrape All" asks first. |
 
 ## Compatibility
