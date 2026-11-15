@@ -14,7 +14,7 @@ import os, sys, time, pathlib, argparse, platform, traceback, logging
 from StashPluginHelper import StashPluginHelper
 from StashPluginHelper import taskQueue
 from threading import Lock, Condition
-from multiprocessing import shared_memory
+from multiprocessing import shared_memory, resource_tracker
 from filemonitor_config import config
 from filemonitor_task_examples import task_examples
 from filemonitor_self_unit_test import self_unit_test
@@ -84,7 +84,12 @@ mutex = Lock()
 signal = Condition(mutex)
 shouldUpdate = False
 
-SHAREDMEMORY_NAME = "DavidMaisonaveAxter_FileMonitor" # Unique name for shared memory
+SHAREDMEMORY_NAME = "DavidMaisonave_FileMonitor" # Unique name for shared memory
+# Note: must stay <=30 chars - macOS's POSIX shm_open() rejects names (incl. leading "/")
+# longer than PSHMNAMLEN (31), raising OSError "File name too long" on SharedMemory(create=True).
+# "DavidMaisonaveAxter_FileMonitor" (31 chars) silently hit this on every macOS start attempt,
+# and was reported as the generic "must already be running" message below instead of the
+# real OSError, since the except clause doesn't log the caught exception.
 SHAREDMEMORY_SIZE = 4
 RECURSIVE = stash.pluginSettings["recursiveDisabled"] == False
 SCAN_MODIFIED = stash.pluginConfig["scanModified"]
@@ -602,8 +607,8 @@ def start_library_monitor():
     try:
         # Create shared memory buffer which can be used as singleton logic or to get a signal to quit task from external script
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=True, size=SHAREDMEMORY_SIZE)
-    except:
-        stash.Error(f"Could not open shared memory map ({SHAREDMEMORY_NAME}). Change File Monitor must be running. Can not run multiple instance of Change File Monitor. Stop FileMonitor before trying to start it again.")
+    except Exception as e:
+        stash.Error(f"Could not open shared memory map ({SHAREDMEMORY_NAME}). Change File Monitor must be running. Can not run multiple instance of Change File Monitor. Stop FileMonitor before trying to start it again. Error: {e}")
         return
     type(shm_a.buf)
     shm_buffer = shm_a.buf
@@ -897,9 +902,17 @@ def stop_library_monitor():
 def start_library_monitor_service():
     # First check if FileMonitor is already running
     try:
+        # Just attach-and-close to confirm the segment exists; do NOT unlink it here.
+        # unlink() would delete the already-running instance's lock as a side effect of
+        # merely checking for it, breaking that instance's own status checks and stop
+        # command even though we're refusing to start a duplicate, not actually stopping it.
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
+        # Also unregister from *this* process's resource_tracker: just attaching
+        # (even read-only) registers the segment there, and when this short-lived
+        # process exits, its tracker treats an unregistered-but-tracked segment as
+        # "leaked" and unlinks it - destroying the real running instance's lock.
+        resource_tracker.unregister(shm_a._name, "shared_memory")
         shm_a.close()
-        shm_a.unlink()
         stash.Error("FileMonitor is already running. Need to stop FileMonitor before trying to start it again.")
         return
     except:
@@ -991,9 +1004,18 @@ runTypeName=["NothingToDo", "stop_library_monitor", "StartFileMonitorAsAServiceT
 def getFileMonitorRunningStatus():
     FileMonitorStatus = "NOT running"
     try:
+        # Just attach-and-close to confirm the segment exists; do NOT unlink it here.
+        # unlink() deletes the named shared memory object immediately, so a mere status
+        # check would permanently break the name for the actually-running service (and
+        # for subsequent status checks and stop_library_monitor), even though the running
+        # process keeps its own already-open mapping and is otherwise unaffected.
         shm_a = shared_memory.SharedMemory(name=SHAREDMEMORY_NAME, create=False, size=SHAREDMEMORY_SIZE)
+        # Also unregister from *this* process's resource_tracker: just attaching
+        # (even read-only) registers the segment there, and when this short-lived
+        # process exits, its tracker treats an unregistered-but-tracked segment as
+        # "leaked" and unlinks it - destroying the real running instance's lock.
+        resource_tracker.unregister(shm_a._name, "shared_memory")
         shm_a.close()
-        shm_a.unlink()
         FileMonitorStatus = "RUNNING"
         stash.Log("FileMonitor is running...")
     except:
