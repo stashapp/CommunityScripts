@@ -1,7 +1,7 @@
 name: Bulk Image Scrape
 # requires: PythonDepManager 
 description: Apply an image scraper to all images
-version: 0.3.6
+version: 0.3.7
 url: https://discourse.stashapp.cc/t/bulk-image-scrape/1339
 exec:
   - python
@@ -36,7 +36,10 @@ settings:
   PerformerIdsFilter:
     displayName: List of performers IDs (comma separated) to filter images the plugins sees
     type: STRING
-  
+  ScrapeDelaySeconds:
+    displayName: Delay in seconds between each image scrape (default 0.5, use a higher value to avoid rate limits)
+    type: NUMBER
+
 tasks:
   - name: "Bulk Image Scrape"
     description: Apply an image scraper to all images

@@ -125,6 +125,35 @@ def parse_performerIds_filter(performerIdsFilter: str) -> list[str]:
     return performerIdsFilter
 
 
+DEFAULT_SCRAPE_DELAY_SECONDS: float = 0.5
+
+
+def parse_scrape_delay(value: object) -> float:
+    """
+    Parse the delay (in seconds) to wait before each image is scraped.
+
+    Falls back to the default for missing or non-numeric values and never
+    returns a negative delay.
+    """
+    if value is None or value == "" or isinstance(value, bool):
+        return DEFAULT_SCRAPE_DELAY_SECONDS
+
+    try:
+        delay = float(value)
+    except (TypeError, ValueError):
+        delay = math.nan
+
+    # NaN and infinity would break time.sleep()
+    if not math.isfinite(delay):
+        log.warning(
+            f"Invalid ScrapeDelaySeconds value {value!r} - "
+            f"using the default of {DEFAULT_SCRAPE_DELAY_SECONDS} seconds"
+        )
+        return DEFAULT_SCRAPE_DELAY_SECONDS
+
+    return max(delay, 0.0)
+
+
 def build_image_filter(skip_tags: list[str], performerIdsFilter: list[str], exclude_organized: bool
 ) -> dict:
     image_filter: dict = {}
@@ -306,7 +335,7 @@ settings: dict[str, any] = {
     "MergeExistingTags": False,
     "ExcludeOrganized": False,
     "SkipEntriesNum": 0,
-
+    "ScrapeDelaySeconds": DEFAULT_SCRAPE_DELAY_SECONDS,
 }
 
 if "BulkImageScrape" in config:
@@ -329,6 +358,7 @@ validate_stashapi(StashItem.IMAGE, stash)
 scraper_id: str = validate_scraper(stash, settings["ScraperID"])
 parsed_skip_tags: list[str] = parse_skip_tags(stash, settings["SkipTags"])
 parsed_performerids_filter: list[str] = parse_performerIds_filter(settings["PerformerIdsFilter"])
+scrape_delay: float = parse_scrape_delay(settings["ScrapeDelaySeconds"])
 
 #
 # MAIN
@@ -350,7 +380,8 @@ images: Generator[dict, None, None] = get_all_images(
 )
 
 for i, image in enumerate(images, start=1):
-    time.sleep(0.5)
+    if scrape_delay > 0:
+        time.sleep(scrape_delay)
     log.progress((i / total_images))
     log.debug(f"Scraping image {image['id']} with scraper {scraper_id}")
 
