@@ -1,9 +1,10 @@
 name: scrollFeed
 description: >
-  A scrolling feed of your favorite marker clips, designed for private
-  one-handed mobile viewing. No scene navigation — just scroll for the next
-  clip. Pairs with the preview-cap patch (linked) for clip-length playback.
-version: 3.0
+  A scrolling feed of your favorite marker clips, image clips and scene
+  previews, designed for private one-handed mobile viewing. Works on the
+  Markers, Images and Scenes walls. Just scroll for the next clip. Pairs
+  with the preview-cap patch (linked) for clip-length playback.
+version: 3.7
 url: https://discourse.stashapp.cc/t/mobile-wall-layout/6160
 ui:
   javascript:
