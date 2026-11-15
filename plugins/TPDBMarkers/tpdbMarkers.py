@@ -23,6 +23,10 @@ def getTag(name):
 
 
 def processScene(scene):
+    if scene is None:
+        # The hook queues a task by scene id; the scene may be deleted before it runs.
+        log.debug("Scene not found, it may have been deleted; skipping")
+        return
     getTag("[TPDBMarker]")
     for sid in scene["stash_ids"]:
         if sid["endpoint"] == TPDB_ENDPOINT:
