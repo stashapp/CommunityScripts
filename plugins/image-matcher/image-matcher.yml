@@ -1,0 +1,11 @@
+name: Image Matcher
+description: Finds images that look the same (perceptual hash). Merge them into one image with every file kept, or delete the lesser copies, one group or one folder pair at a time.
+version: 0.11.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/image-matcher
+ui:
+  javascript:
+    - imcore.js
+    - imops.js
+    - imui.js
+  css:
+    - image-matcher.css
