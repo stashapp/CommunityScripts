@@ -1,0 +1,19 @@
+/* scene-to-imageclip: filled Bootstrap button (btn-secondary, default size) plus an inline error.
+   Never an outline-* variant: those are invisible on Stash's dark theme. */
+.s2i-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.image-toolbar .s2i-toggle {
+  margin: 0 0 0 0.5rem;
+}
+.s2i-toggle-msg {
+  font-size: 0.875rem;
+}
+/* Scene page button. */
+.s2i-scene-btn {
+  margin-top: 10px;
+}

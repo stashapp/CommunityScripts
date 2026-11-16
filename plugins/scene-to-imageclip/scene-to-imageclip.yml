@@ -1,23 +1,51 @@
 name: Scene to ImageClip Converter
-description: Converts scenes tagged 'imageclip' into Stash image clips by normalizing tag variants and renaming files to use the .vclip extension.
-version: "1.1"
+description: Converts scenes tagged 'imageclip' into Stash image clips in a batch, and adds a button that turns one scene into an image clip, or one image clip back into a scene, keeping the file and its metadata.
+version: "1.3"
 url: https://discourse.stashapp.cc/t/scene-to-imageclip-converter/6558
 exec:
   - python3
   - "{pluginDir}/scene_to_imageclip.py"
 interface: raw
 tasks:
-  - name: Rename imageclip Scenes to .vclip
+  - name: Convert tagged scenes to image clips (rename, scan, transfer)
     description: >
-      Adds .vclip to image_extensions, reconciles imageclip tag variants,
-      and renames tagged scene files to filename.ext.vclip.
+      One click for the three tasks below. Renames the files of scenes tagged imageclip,
+      then queues a scan of just those files and the transfer task behind it, and ends.
+      Stash runs the queued jobs in order, so the transfer starts once the scan is done.
+      Safe to run again; a file renamed earlier but not yet scanned is picked up.
+    defaultArgs:
+      mode: convert
+  - name: Rename imageclip Scenes to clip files
+    description: >
+      Adds the image clip extension (default vclip) to image_extensions, reconciles
+      imageclip tag variants, and renames tagged scene files to filename.ext.vclip
+      (or filename.ext.<image clip extension>).
       Run a library scan afterward to reclassify as image clips.
     defaultArgs:
       mode: rename
   - name: Transfer metadata and clean up original scenes
     description: >
-      For each .vclip image clip, copies metadata (tags, rating, performers,
-      studio, title, details, date) from the original scene entry and removes
-      the scene from the database. Run after renaming files and scanning.
+      For each image clip named .vclip (or with the image clip extension), moves
+      the original scene entry onto it the way Convert to clip does (metadata,
+      galleries, O count, and the scene-only data saved in a custom field), then
+      removes the scene from the database. Run after renaming files and scanning.
     defaultArgs:
       mode: transfer
+  - name: Recover interrupted toggles
+    description: Rolls back or finishes any Convert to clip / Convert to scene that was cut off part way (for example when the browser tab was closed while it ran).
+    defaultArgs:
+      mode: recover
+settings:
+  destinationRoot:
+    displayName: Destination root for moves
+    description: Used by the Convert to clip / Convert to scene buttons. Library root (the path as Stash sees it) that scans both images and video. Files that cannot change type in place are moved here. Empty means the first library root that scans both.
+    type: STRING
+  clipExtension:
+    displayName: Image clip extension
+    description: Extension added to a video's name to make it an image clip (video.mp4 becomes video.mp4.vclip). Empty means vclip. Set 3gp to let Finder, Quick Look and Windows Explorer preview clips as video. Files already named .vclip keep working either way. It must not be one of Stash's video extensions.
+    type: STRING
+ui:
+  javascript:
+    - toggle.js
+  css:
+    - toggle.css
