@@ -308,11 +308,13 @@
     }
 
     // ---- dedupe: keep one copy, delete the others from disk ----
-    // Deleting an image deletes all of its files. A lesser image holding more than one file (one
-    // that was merged, here or elsewhere) is left alone and counted in `skipped`; merging is the
-    // right action for it. Works from what Stash says now, not from what the page loaded earlier.
+    // Deleting an image deletes all of its files, wherever they are: a lesser image that holds
+    // several files (one that was merged) loses every one of them, and `files` counts them. A
+    // lesser image with a file whose name is too long for Stash to delete (core.tooLongToDelete)
+    // is left alone and counted in `tooLong`: one such file would fail the whole delete call.
+    // Works from what Stash says now, not from what the page loaded earlier.
     function dedupeImages(plans, onStep) {
-      var step = onStep || function () {}, meta, skipped = 0;
+      var step = onStep || function () {}, meta, tooLong = 0;
       return Promise.resolve().then(function () {
         checkPlans(plans);
         return imageMeta(allIds(plans));
@@ -320,12 +322,12 @@
         meta = m;
         plans = plans.map(function (p) {
           return { keeperId: p.keeperId, loserIds: p.loserIds.filter(function (id) {
-            if (meta[id].visual_files.length > 1) { skipped++; return false; }
+            if (meta[id].visual_files.some(function (f) { return core.tooLongToDelete(f.path); })) { tooLong++; return false; }
             return true;
           }) };
         }).filter(function (p) { return p.loserIds.length; });
-        if (!plans.length) return { deleted: 0, images: 0, skipped: skipped, plans: plans };
-        return dedupeNow(plans, meta, step).then(function (res) { res.skipped = skipped; res.plans = plans; return res; });
+        if (!plans.length) return { deleted: 0, files: 0, images: 0, tooLong: tooLong, plans: plans };
+        return dedupeNow(plans, meta, step).then(function (res) { res.tooLong = tooLong; res.plans = plans; return res; });
       });
     }
     function dedupeNow(plans, meta, step) {
@@ -336,7 +338,16 @@
         step("Deleting the lesser copies");
         var ids = plans.reduce(function (a, p) { return a.concat(p.loserIds); }, []);
         return gql("mutation($ids: [ID!]!) { imagesDestroy(input: { ids: $ids, delete_file: true, delete_generated: true }) }", { ids: ids })
-          .then(function () { return { deleted: ids.length, images: plans.length }; });
+          .then(function () {
+            var files = ids.reduce(function (t, id) { return t + meta[id].visual_files.length; }, 0);
+            return { deleted: ids.length, files: files, images: plans.length };
+          }, function (err) {
+            // the check above should catch these; this covers a limit lower than 255 bytes
+            if (/file name too long/i.test(String(err && err.message))) {
+              throw new Error("Stash could not delete a file because its name is too long (Stash adds \".delete\" to the name while deleting). Merge instead: merging keeps every file, so nothing is renamed.");
+            }
+            throw err;
+          });
       });
     }
 
@@ -387,7 +398,7 @@
         otherG = folderGalleryIds(meta, otherFolder);
         return mode === "merge" ? mergeImages(plans, onStep) : dedupeImages(plans, onStep);
       }).then(function (res) {
-        res.skipped = res.skipped || 0; res.plans = res.plans || plans;
+        res.plans = res.plans || plans;
         if (onStep) onStep("Syncing gallery details");
         return syncGalleries(keepG, otherG, mode === "merge").then(function (n) { res.galleriesUpdated = n; return res; });
       });

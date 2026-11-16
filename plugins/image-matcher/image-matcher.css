@@ -9,6 +9,11 @@
 .imt-tabs { display: flex; gap: 0.5rem; margin: 0.75rem 0 1rem; }
 .imt-card { padding: 1rem; margin-bottom: 1rem; }
 .imt-message { padding: 0.5rem 0.75rem; margin: 0.5rem 0; border-left: 3px solid #4caf50; background: rgba(76, 175, 80, 0.12); }
+.imt-toast { position: fixed; z-index: 1050; left: 50%; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(40rem, calc(100vw - 2rem));
+  display: flex; align-items: flex-start; gap: 0.25rem; border-radius: 4px; background: #202b33; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+.imt-toast .imt-message { flex: 1; margin: 0; background: rgba(76, 175, 80, 0.18); }
+.imt-toast-close { font-size: 1.25rem; line-height: 1; padding: 0.4rem 0.6rem; }
+.imt-folders div:first-child { opacity: 0.7; }
 .imt-error { padding: 0.5rem 0.75rem; margin: 0.5rem 0; border-left: 3px solid #db3737; background: rgba(219, 55, 55, 0.12); word-break: break-word; }
 .imt-busy { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; }
 .imt-spinner { width: 1rem; height: 1rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: imt-spin 0.8s linear infinite; }
@@ -22,6 +27,7 @@
 .imt-fit img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .imt-spot { position: absolute; box-sizing: border-box; border: 2px solid #ff5252; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7); pointer-events: none; }
 .imt-diff { font-size: 0.8rem; color: #ff8a80; }
+.imt-long { font-size: 0.8rem; color: #ffb74d; }
 .imt-pair-dist.imt-diff { opacity: 1; font-size: 0.75rem; }
 .imt-out .imt-pair-dist.imt-diff, .imt-out .imt-diff { text-decoration: none; opacity: 1; }
 .imt-thumb-sm { height: calc(72px * var(--imt-zoom)); width: calc(96px * var(--imt-zoom)); max-width: 100%; }
@@ -72,4 +78,5 @@
   .imt-thumb { height: calc(120px * var(--imt-zoom)); }
   .imt-zoom { margin-left: 0 !important; }
   .imt-remember { margin-left: 0; }
+  .imt-toast { bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)); }
 }

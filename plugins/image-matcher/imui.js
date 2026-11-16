@@ -73,6 +73,31 @@
     return b + " B";
   }
   function plural(n, one, many) { return n + " " + (n === 1 ? one : many || one + "s"); }
+  // what a delete left alone, and why; merging is the way out
+  function leftAlone(res) {
+    var t = "";
+    if (res.tooLong) t += " Left " + plural(res.tooLong, "image") + " alone because " + (res.tooLong === 1 ? "its file name is" : "their file names are") + " too long for Stash to delete; merge " + (res.tooLong === 1 ? "it" : "those") + " instead.";
+    return t;
+  }
+  var LONG_TEXT = "Name too long for Stash to delete; merge instead";
+  // every folder an image's files are in, with a count where a folder holds more than one
+  function folderList(m) {
+    var counts = {}, order = [];
+    m.files.forEach(function (f) { var d = core.dirname(f.path); if (!counts[d]) { counts[d] = 0; order.push(d); } counts[d]++; });
+    return order.map(function (d) { return counts[d] > 1 ? d + " (" + counts[d] + " files)" : d; });
+  }
+  // the folders of the images that hold several files, for a delete warning; "" when there are none
+  function severalFiles(images, except) {
+    var multi = images.filter(function (m) { return m.files.length > 1; }), dirs = [];
+    multi.forEach(function (m) { m.files.forEach(function (f) { var d = core.dirname(f.path); if (d !== except && dirs.indexOf(d) < 0) dirs.push(d); }); });
+    if (!multi.length) return "";
+    return (multi.length === 1 ? "One of these images holds" : plural(multi.length, "of these images", "of these images") + " hold") + " several files; all of them go" +
+      (dirs.length ? ", including files in " + dirs.join(", ") : "") + ". ";
+  }
+  // "Deleted 2 copies (3 files)" when merged images took extra files with them
+  function deletedText(res, where) {
+    return "Deleted " + plural(res.deleted, "copy", "copies") + (res.files > res.deleted ? " (" + plural(res.files, "file") + ")" : "") + where;
+  }
 
   // The picture sits in a box of its own shape inside the thumbnail frame, so a marker placed by
   // fractions of the picture lands on the right spot at any zoom.
@@ -102,6 +127,7 @@
     ["What the buttons do", [
       "Merge turns the look-alikes into one image in Stash. No file is deleted or moved. The kept copy is the one shown, and the image appears in each folder's gallery.",
       "Delete keeps one copy and deletes the other files from disk for good. Tags, ratings and details move to the kept copy first.",
+      "A copy that holds several files (one merged earlier) lists every folder they are in. Delete removes all of them, and the warning names those folders.",
       "Not a match hides the group or set from now on.",
       "Leave out drops one pair or one image from the merge or delete. Put back undoes it.",
       "There is no undo for a merge or a delete. One runs at a time.",
@@ -119,7 +145,7 @@
     ]],
     ["What is left out", [
       "Images inside zip and cbz archives, because a file inside an archive cannot be merged or deleted on its own.",
-      "An image that already holds more than one file is never deleted by Delete. Merge it instead.",
+      "A copy whose file name is too long for Stash to delete (over 248 bytes) is left out of Delete and labelled. Merge it instead.",
     ]],
   ];
   function Help(props) {
@@ -153,7 +179,7 @@
             h("button", { className: "btn btn-secondary btn-sm", onClick: function () { setConfirm(false); } }, "Cancel"))
         : h("div", { className: "imt-actions" },
             h("button", { className: "btn btn-primary btn-sm", disabled: !!props.disabled, onClick: props.onMerge, title: "One image in Stash. Every file stays where it is; the kept copy is the one shown." }, props.mergeLabel),
-            h("button", { className: "btn btn-outline-danger btn-sm", disabled: !!props.disabled, onClick: function () { setConfirm(true); } }, props.deleteLabel),
+            h("button", { className: "btn btn-outline-danger btn-sm", disabled: !!props.disabled || !!props.deleteDisabled, title: props.deleteTitle, onClick: function () { setConfirm(true); } }, props.deleteLabel),
             props.onDismiss ? h("button", { className: "btn btn-link btn-sm", onClick: props.onDismiss }, props.dismissLabel) : null,
             props.extra || null));
   }
@@ -183,12 +209,23 @@
     });
     var waiting = checking(members);
     var losers = members.filter(function (m) { return m !== keeper && !out[m.id]; });
+    var deletable = losers.filter(function (m) { return !m.longName; });
     function toggleOut(id) { var next = Object.assign({}, picked); next[id] = !out[id]; setOut(next); }
+    // choosing another copy to keep changes nothing else: every copy keeps its current in or out,
+    // and the copy that was kept joins the action. Without this, the old kept copy is compared
+    // against the new one, and a one-area difference leaves it out again.
+    function pickKeeper(id) {
+      var next = {};
+      members.forEach(function (o) { if (o.id !== id) next[o.id] = o === keeper ? false : !!out[o.id]; });
+      setOut(next);
+      setKeeperId(id);
+    }
 
     // tell the page what this card would do, for the "all on this page" buttons
     React.useEffect(function () {
       props.registerPlan(planKey, busy ? null : { waiting: waiting > 0, keeperId: keeper.id,
-        loserIds: losers.map(function (m) { return m.id; }), files: losers.reduce(function (t, m) { return t + m.files.length; }, 0) });
+        loserIds: losers.map(function (m) { return m.id; }), deletable: deletable.map(function (m) { return m.id; }),
+        files: deletable.reduce(function (t, m) { return t + m.files.length; }, 0) });
     });
     React.useEffect(function () { return function () { props.registerPlan(planKey, undefined); }; }, [planKey]);
 
@@ -198,7 +235,7 @@
       props.runOp("group:" + planKey, function (step) { return mode === "merge" ? ops.mergeImages(plans, step) : ops.dedupeImages(plans, step); }).then(function (res) {
         props.onDone(res.plans || plans, mode, mode === "merge"
           ? "Merged " + plural(res.merged, "file") + " into image " + keeper.id + "."
-          : "Deleted " + plural(res.deleted, "copy", "copies") + "; kept image " + keeper.id + "." + (res.skipped ? " Left " + plural(res.skipped, "image") + " alone because " + (res.skipped === 1 ? "it holds" : "they hold") + " more than one file; merge " + (res.skipped === 1 ? "it" : "those") + " instead." : ""));
+          : deletedText(res, "; kept image " + keeper.id + ".") + leftAlone(res));
       }).catch(function (err) { setError(String(err.message || err)); });
     }
 
@@ -208,25 +245,31 @@
         return h("div", { key: m.id, className: "imt-tile" + (isKeeper ? " imt-keep" : "") + (!isKeeper && out[m.id] ? " imt-out" : "") },
           h(Thumb, { item: m, box: !isKeeper && diffs[m.id] && diffs[m.id].flag ? diffs[m.id].box : null }),
           !isKeeper && diffs[m.id] && diffs[m.id].flag ? h("div", { className: "imt-diff" }, diffs[m.id].different ? DIFFERENT_TEXT + " than the kept copy" : SPOT_TEXT + " from the kept copy") : null,
+          !isKeeper && m.longName ? h("div", { className: "imt-long" }, LONG_TEXT) : null,
           h("div", { className: "imt-facts" },
             h("div", null, m.width + "×" + m.height + " · " + fmtSize(m.size) + (mixedColor ? (m.color === false ? " · black and white" : m.color === true ? " · colour" : "") : "")),
-            h("div", { className: "imt-path", title: m.folder }, m.folder),
-            h("div", { className: "imt-muted" },
-              isKeeper ? "" : dist === 0 ? "same hash" : plural(dist, "bit") + " off",
-              m.files.length > 1 ? (isKeeper ? "" : " · ") + plural(m.files.length, "file") : "")),
+            m.files.length > 1
+              ? h("div", { className: "imt-path imt-folders" }, h("div", null, plural(m.files.length, "file") + " in:"),
+                  folderList(m).map(function (t) { return h("div", { key: t }, t); }))
+              : h("div", { className: "imt-path", title: m.folder }, m.folder),
+            isKeeper ? null : h("div", { className: "imt-muted" }, dist === 0 ? "same hash" : plural(dist, "bit") + " off")),
           isKeeper
             ? h("span", { className: "imt-badge" }, "Keep" + (m === suggestion.keeper ? " · " + suggestion.reason : ""))
             : h("div", { className: "imt-tile-btns" },
-                h("button", { className: "btn btn-secondary btn-sm", disabled: !!busy, onClick: function () { setKeeperId(m.id); } }, "Keep this one"),
+                h("button", { className: "btn btn-secondary btn-sm", disabled: !!busy, onClick: function () { pickKeeper(m.id); } }, "Keep this one"),
                 h("button", { className: "btn btn-link btn-sm", disabled: !!busy, onClick: function () { toggleOut(m.id); } }, out[m.id] ? "Put back" : "Leave out")));
       })),
       h(Actions, {
         busy: busy, error: error, disabled: losers.length === 0 || waiting > 0 || locked,
         mergeLabel: waiting ? "Comparing pictures…" : "Merge into one", onMerge: function () { run("merge"); },
-        deleteLabel: "Delete the other " + (losers.length === 1 ? "copy" : losers.length + " copies") + "…",
-        deleteWarning: "This deletes " + plural(losers.length, "image") + " and " +
-          plural(losers.reduce(function (t, m) { return t + m.files.length; }, 0), "file") + " from disk for good. Tags, ratings and details move to the kept copy first. There is no undo.",
-        deleteConfirmLabel: "Delete " + plural(losers.length, "copy", "copies"), onDelete: function () { run("dedupe"); },
+        deleteDisabled: deletable.length === 0,
+        deleteTitle: deletable.length === 0 && losers.length ? LONG_TEXT : undefined,
+        deleteLabel: losers.length === 0 ? "Delete the other copies…" : deletable.length === 0 ? "Can't delete: name too long" : "Delete the other " + (deletable.length === 1 ? "copy" : deletable.length + " copies") + "…",
+        deleteWarning: "This deletes " + plural(deletable.length, "image") + " and " +
+          plural(deletable.reduce(function (t, m) { return t + m.files.length; }, 0), "file") + " from disk for good. " + severalFiles(deletable) + "Tags, ratings and details move to the kept copy first. " +
+          (deletable.length < losers.length ? plural(losers.length - deletable.length, "copy", "copies") + " with a name too long for Stash to delete " + (losers.length - deletable.length === 1 ? "stays" : "stay") + "; merge to deal with " + (losers.length - deletable.length === 1 ? "it" : "them") + ". " : "") +
+          "There is no undo.",
+        deleteConfirmLabel: "Delete " + plural(deletable.length, "copy", "copies"), onDelete: function () { run("dedupe"); },
         dismissLabel: "Not a match", onDismiss: function () { props.onDismiss(core.groupKey(members.map(function (m) { return m.id; }))); },
       }));
   }
@@ -258,8 +301,7 @@
       props.runOp(set.key, function (step) { return mode === "merge" ? ops.mergeSet(plans, keepFolder, otherFolder, step) : ops.dedupeSet(plans, keepFolder, otherFolder, step); }).then(function (res) {
         props.onDone(res.plans || plans, mode, mode === "merge"
           ? "Merged " + plural(res.merged, "file") + " from " + otherFolder + " into " + plural(res.images, "image") + " kept in " + keepFolder + "."
-          : "Deleted " + plural(res.deleted, "copy", "copies") + " from " + otherFolder + "; kept " + keepFolder + "." +
-            (res.skipped ? " Left " + plural(res.skipped, "image") + " alone because " + (res.skipped === 1 ? "it holds" : "they hold") + " more than one file; merge " + (res.skipped === 1 ? "it" : "those") + " instead." : ""));
+          : deletedText(res, " from " + otherFolder + "; kept " + keepFolder + ".") + leftAlone(res));
       }).catch(function (err) { setError(String(err.message || err)); });
     }
 
@@ -303,8 +345,10 @@
     var waiting = 0;
     set.matches.forEach(function (m) { waiting += checking(m.a.concat(m.b).map(function (x) { return items[x]; })); });
     var included = pairs.filter(function (p) { return !out[p.key]; }), leftOut = pairs.length - included.length;
-    var otherMatched = included.reduce(function (t, p) { return t + (keep === "A" ? p.m.b.length : p.m.a.length); }, 0);
-    var strays = Math.max(0, otherTotal - otherMatched);
+    var otherImgs = [], longOnes = 0;
+    included.forEach(function (p) { (keep === "A" ? p.m.b : p.m.a).forEach(function (i) { if (items[i].longName) longOnes++; else otherImgs.push(items[i]); }); });
+    var otherMatched = otherImgs.length, otherFiles = otherImgs.reduce(function (t, m) { return t + m.files.length; }, 0);
+    var strays = Math.max(0, otherTotal - otherMatched - longOnes);
     var mix = core.distanceMix(included.map(function (p) { return p.dist; }));
     var PREVIEW = 8, visible = showAll ? pairs : pairs.slice(0, PREVIEW);
     var mixText = included.length === 0 ? "Every pair is left out" : (mix.near === 0 && mix.unknown === 0
@@ -337,6 +381,10 @@
           tops.length + bottoms.length > 2 ? h("div", { className: "imt-pair-dist" }, tops.length + bottoms.length + " images") : null,
           h("div", { className: "imt-pair-dist" + (p.dist ? " imt-pair-off" : "") }, p.dist === null ? "not measured" : p.dist === 0 ? "same hash" : plural(p.dist, "bit") + " off"),
           p.mixed ? h("div", { className: "imt-pair-dist imt-pair-off" }, "colour / B&W") : null,
+          bottoms.some(function (i) { return items[i].longName; }) ? h("div", { className: "imt-pair-dist imt-pair-off", title: LONG_TEXT }, "name too long to delete") : null,
+          bottoms.filter(function (i) { return items[i].files.length > 1; }).map(function (i) {
+            return h("div", { key: "f" + i, className: "imt-pair-dist imt-pair-off imt-pair-files", title: folderList(items[i]).join("\n") }, plural(items[i].files.length, "file") + " in " + plural(folderList(items[i]).length, "folder"));
+          }),
           h("button", { className: "btn btn-link btn-sm imt-pair-out", disabled: !!busy, title: "Leave this pair out of the merge or delete",
             onClick: function () { toggleOut(p.key); } }, out[p.key] ? "Put back" : "Leave out"));
       }), pairs.length > PREVIEW
@@ -348,10 +396,12 @@
         busy: busy, error: error, disabled: included.length === 0 || waiting > 0 || locked,
         mergeLabel: "Merge set (" + included.length + ")", onMerge: function () { run("merge"); },
         deleteLabel: "Delete duplicates from the other folder…",
-        deleteWarning: "This deletes " + plural(otherMatched, "file") + " from " + otherFolder + " for good, so they leave that folder's gallery. " +
-          "Tags, ratings and gallery details move to " + keepFolder + " first. " +
-          (strays ? plural(strays, "other image") + " in " + otherFolder + " " + (strays === 1 ? "stays" : "stay") + ". " : "") + "There is no undo.",
-        deleteConfirmLabel: "Delete " + plural(otherMatched, "file"), onDelete: function () { run("dedupe"); },
+        deleteWarning: "This deletes " + plural(otherMatched, "image") + (otherFiles > otherMatched ? " (" + plural(otherFiles, "file") + ")" : "") + " from " + otherFolder + " for good, so they leave that folder's gallery. " +
+          severalFiles(otherImgs, otherFolder) + "Tags, ratings and gallery details move to " + keepFolder + " first. " +
+          (strays ? plural(strays, "other image") + " in " + otherFolder + " " + (strays === 1 ? "stays" : "stay") + ". " : "") +
+          (longOnes ? plural(longOnes, "file") + " with a name too long for Stash to delete " + (longOnes === 1 ? "stays" : "stay") + "; merge to deal with " + (longOnes === 1 ? "it" : "them") + ". " : "") + "There is no undo.",
+        deleteDisabled: otherMatched === 0,
+        deleteConfirmLabel: "Delete " + plural(otherFiles, "file"), onDelete: function () { run("dedupe"); },
         dismissLabel: "Not the same set", onDismiss: function () { props.onDismiss(set.key); },
         extra: h("label", { className: "imt-remember" },
           h("input", { type: "checkbox", checked: remember, onChange: function (ev) { setRemember(ev.target.checked); } }),
@@ -486,7 +536,7 @@
     var o = React.useState(null), op = o[0], setOp = o[1], opRef = React.useRef(null);
     function runOp(key, start) {
       if (opRef.current) return Promise.reject(new Error("Another merge or delete is still running. Wait for it to finish."));
-      opRef.current = key; setOp({ key: key, text: "Starting" });
+      opRef.current = key; setOp({ key: key, text: "Starting" }); setMessage(null);
       var done = function () { opRef.current = null; setOp(null); };
       var p;
       try { p = Promise.resolve(start(function (t) { if (opRef.current === key) setOp({ key: key, text: t }); })); } catch (err) { p = Promise.reject(err); }
@@ -519,7 +569,7 @@
         var did = res.plans || plans;
         onDone(did, mode, mode === "merge"
           ? "Merged " + plural(res.merged, "file") + " into " + plural(did.length, "image") + " on this page."
-          : "Deleted " + plural(res.deleted, "copy", "copies") + " on this page; kept " + plural(did.length, "image") + "." + (res.skipped ? " Left " + plural(res.skipped, "image") + " alone because " + (res.skipped === 1 ? "it holds" : "they hold") + " more than one file; merge " + (res.skipped === 1 ? "it" : "those") + " instead." : ""));
+          : deletedText(res, " on this page; kept " + plural(did.length, "image") + ".") + leftAlone(res));
         goPage(page);
       }).catch(function (err) { setBulkError(String(err.message || err)); });
     }
@@ -559,7 +609,10 @@
         onSave: function (rules, skip) { saveCfg(Object.assign({}, cfg, { folderRules: core.normalizeRules(rules), setSkip: core.normalizeSkips(skip) })); setShowRules(false); } }) : null,
       phase.status === "loading" ? h("div", { className: "imt-busy" }, h("span", { className: "imt-spinner" }), phase.text + "…") : null,
       phase.status === "error" ? h("div", { className: "imt-error" }, phase.text) : null,
-      message ? h("div", { className: "imt-message" }, message) : null,
+      // results show in a bar fixed to the bottom of the screen, so they are seen wherever the button was
+      message ? h("div", { className: "imt-toast", role: "status" },
+        h("div", { className: "imt-message" }, message),
+        h("button", { className: "btn btn-link btn-sm imt-toast-close", "aria-label": "Close", onClick: function () { setMessage(null); } }, "×")) : null,
       view ? h("div", null,
         h("p", { className: "imt-summary" },
           plural(data.items.length, "image") + " checked" +
@@ -577,11 +630,14 @@
         tab === "images" && shown.length > 1 ? (function () {
           // only the groups listed right now: a card that has just left the page may not have signed off yet
           var all = shown.map(function (g) { return pagePlans.current[core.groupKey(g.map(function (i) { return data.items[i].id; }))]; }).filter(Boolean);
-          if (all.length < shown.length) all.push({ waiting: true, loserIds: [], files: 0 });
+          if (all.length < shown.length) all.push({ waiting: true, loserIds: [], deletable: [], files: 0 });
           var waiting = all.some(function (pl) { return pl.waiting; });
           var plans = all.filter(function (pl) { return pl.loserIds.length > 0; }).map(function (pl) { return { keeperId: pl.keeperId, loserIds: pl.loserIds }; });
           var images = plans.reduce(function (t, pl) { return t + pl.loserIds.length; }, 0);
-          var files = all.reduce(function (t, pl) { return t + (pl.loserIds.length ? pl.files : 0); }, 0);
+          var delImages = [];
+          all.forEach(function (pl) { pl.deletable.forEach(function (id) { delImages.push(data.items.filter(function (it) { return it.id === id; })[0]); }); });
+          delImages = delImages.filter(Boolean);
+          var files = delImages.reduce(function (t, m) { return t + m.files.length; }, 0), stuck = images - delImages.length;
           return h("div", { className: "card imt-card imt-bulk" },
             h("div", { className: "imt-mix" }, waiting ? "Comparing pictures…"
               : "Everything on this page, as the cards above are set: " + plural(plans.length, "group") + ", " + plural(images, "copy", "copies") + ". Images left out stay as they are."),
@@ -589,9 +645,11 @@
               busy: bulkBusy, error: bulkError, disabled: waiting || plans.length === 0 || (!!op && !bulkBusy),
               mergeLabel: "Merge all " + plans.length + " on this page", onMerge: function () { runAll("merge", plans); },
               deleteLabel: "Delete the other copies in all " + plans.length + "…",
-              deleteWarning: "This deletes " + plural(images, "image") + " and " + plural(files, "file") + " from disk for good, across " + plural(plans.length, "group") +
-                " on this page. Tags, ratings and details move to the kept copies first. There is no undo.",
-              deleteConfirmLabel: "Delete " + plural(images, "copy", "copies"), onDelete: function () { runAll("dedupe", plans); },
+              deleteDisabled: delImages.length === 0,
+              deleteWarning: "This deletes " + plural(delImages.length, "image") + " and " + plural(files, "file") + " from disk for good, across " + plural(plans.length, "group") +
+                " on this page. " + severalFiles(delImages) + "Tags, ratings and details move to the kept copies first. " +
+                (stuck ? plural(stuck, "copy", "copies") + " with a name too long for Stash to delete " + (stuck === 1 ? "stays" : "stay") + "; merge to deal with " + (stuck === 1 ? "it" : "them") + ". " : "") + "There is no undo.",
+              deleteConfirmLabel: "Delete " + plural(delImages.length, "copy", "copies"), onDelete: function () { runAll("dedupe", plans); },
             }));
         })() : null,
         h(Pager, { page: safePage, per: per, total: list.length, onPage: goPage })) : null);

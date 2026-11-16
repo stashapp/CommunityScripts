@@ -12,6 +12,26 @@
     return i === 0 ? p.slice(0, 1) : p.slice(0, i);
   }
 
+  // Stash deletes a file by first renaming it to "<name>.delete" (stashapp/stash#3664), so a file
+  // whose name is within 7 bytes of the usual 255-byte limit cannot be deleted through Stash.
+  var NAME_MAX = 255, DELETE_SUFFIX = ".delete";
+  function utf8Length(s) {
+    var n = 0;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      if (c < 0x80) n += 1;
+      else if (c < 0x800) n += 2;
+      else if (c >= 0xd800 && c < 0xdc00 && i + 1 < s.length) { n += 4; i++; }
+      else n += 3;
+    }
+    return n;
+  }
+  function tooLongToDelete(p) {
+    p = p || "";
+    var name = p.slice(Math.max(p.lastIndexOf("/"), p.lastIndexOf("\\")) + 1);
+    return name.length > 0 && utf8Length(name) + DELETE_SUFFIX.length > NAME_MAX;
+  }
+
   function popcount32(v) {
     v = v - ((v >>> 1) & 0x55555555);
     v = (v & 0x33333333) + ((v >>> 2) & 0x33333333);
@@ -42,7 +62,7 @@
       return {
         id: String(f.id), path: f.path || "", size: Number(f.size) || 0,
         width: f.width || 0, height: f.height || 0, phash: fingerprint(f, "phash"),
-        archived: !!(f.zip_file && f.zip_file.id),
+        archived: !!(f.zip_file && f.zip_file.id), longName: tooLongToDelete(f.path),
       };
     });
     var primary = files[0] || { path: "", size: 0, width: 0, height: 0 };
@@ -55,6 +75,7 @@
       area: primary.width * primary.height, width: primary.width, height: primary.height,
       size: primary.size, phash: hash,
       archived: files.some(function (f) { return f.archived; }), // any file inside a cbz or zip
+      longName: files.some(function (f) { return f.longName; }), // a file Stash cannot delete
     };
   }
 
@@ -441,7 +462,7 @@
 
   var api = {
     STAMP: STAMP, dirname: dirname, popcount32: popcount32, parseHash: parseHash, hashDistance: hashDistance,
-    fingerprint: fingerprint, toItem: toItem, findGroups: findGroups, bandKey: bandKey,
+    fingerprint: fingerprint, toItem: toItem, tooLongToDelete: tooLongToDelete, findGroups: findGroups, bandKey: bandKey,
     normalizeRules: normalizeRules, folderRank: folderRank, chooseKeeper: chooseKeeper, compareItems: compareItems,
     buildSets: buildSets, matchDistance: matchDistance, isColor: isColor, rememberRule: rememberRule, folderRank: folderRank, folderSkipped: folderSkipped, normalizeSkips: normalizeSkips, localDiff: localDiff, luminance: luminance, DIFF_N: DIFF_N, splitMatch: splitMatch, pairKey: pairKey, distanceMix: distanceMix, setKey: setKey, groupKey: groupKey, setPlans: setPlans, mergeMeta: mergeMeta,
   };

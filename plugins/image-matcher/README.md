@@ -44,18 +44,18 @@ Real content hashes (md5, oshash) are never touched. The `imagematch` stamp stay
 ## Limits
 
 - One merge or delete runs at a time; the other cards are locked until it finishes.
-- A delete never removes an image that holds more than one file (one that was merged); it is left alone and counted, and merging is the right action for it.
+- Deleting an image deletes every file it holds. A copy that holds several files (one that was merged) lists every folder they are in, and the delete warning names those folders and gives the true file count.
+- Stash deletes a file by first renaming it to `<name>.delete` ([stashapp/stash#3664](https://github.com/stashapp/stash/issues/3664)), so a file whose name is over 248 bytes cannot be deleted. Delete leaves those copies alone and labels them; merge them instead.
 - **No undo.** Stash has no "split image" call. A merge can only be reversed by hand; a delete cannot be reversed at all.
 - Matching uses the phash Stash already stores. It finds resized and recompressed copies well; crops, rotations and mirrors mostly not.
 - Groups are chains: if A looks like B and B looks like C, all three are shown together even when A and C are further apart.
 - Folder and zip galleries cannot be edited in Stash, so "merging galleries" means their details (tags, performers, rating, and so on) are synced; their contents converge because the merged images belong to both folders.
-- In a folder-set delete, an image that also holds files in other folders is left alone; merge it instead.
 - Very loose accuracy on very large libraries is slow. At *High* a 200,000-image library compares in well under a second; at *Low* a 34,000-image library takes about a third of a second on a desktop.
 - `custom_fields` are not merged.
 
 ## How it was tested
 
-- Unit tests of the matching and decision logic (17), end-to-end tests of merge, delete and folder sets against a throwaway Stash in Docker (12), and a scripted browser pass. All three pass on Stash v0.31.1 (release) and v0.32.0-12 (development image).
+- Unit tests of the matching and decision logic (18), end-to-end tests of merge, delete and folder sets against a throwaway Stash in Docker (13), and a scripted browser pass. All three pass on Stash v0.31.1 (release) and v0.32.0-12 (development image).
 - Used by its author on a real library.
 - The test files are kept with the development copy, not shipped here, so they are not installed with the plugin. They can be added to this folder if that is preferred.
 
