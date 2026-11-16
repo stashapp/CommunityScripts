@@ -1,6 +1,6 @@
 name: SFW Switch
 description: Add a button to the menu bar to blur images, text and optionally mute audio.
-version: 1.9
+version: "1.10"
 url: https://discourse.stashapp.cc/t/sfw-switch/4658
 ui:
   javascript:
