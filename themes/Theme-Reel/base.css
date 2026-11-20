@@ -1,0 +1,402 @@
+/* Buttons, form controls, menus, modals, tabs, toggles. */
+
+/* ---------- Buttons ---------- */
+.btn {
+  font-family: var(--reel-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--reel-r-ctl);
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s var(--reel-ease);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Primary actions: wine pill */
+.btn-primary:not(.minimal),
+.btn-success {
+  background-color: var(--reel-acc) !important;
+  border-color: var(--reel-acc) !important;
+  color: var(--reel-acc-ink) !important;
+  font-weight: 600;
+}
+.btn-primary:not(.minimal):hover,
+.btn-success:hover {
+  background-color: var(--reel-acc-hover) !important;
+  border-color: var(--reel-acc-hover) !important;
+}
+
+/* Secondary: neutral raised pill */
+.btn-secondary,
+.btn-info,
+.btn-light,
+.btn-outline-secondary {
+  background-color: var(--reel-bg3) !important;
+  border-color: transparent !important;
+  color: var(--reel-t1) !important;
+}
+.btn-secondary:hover,
+.btn-info:hover,
+.btn-light:hover,
+.btn-outline-secondary:hover {
+  background-color: var(--reel-bg4) !important;
+}
+.btn-secondary.active,
+.btn-secondary:not(:disabled):not(.disabled):active {
+  background-color: var(--reel-bg4) !important;
+  color: var(--reel-acc) !important;
+}
+
+/* Destructive: quiet outline until hovered */
+.btn-danger {
+  background-color: transparent !important;
+  border: 1px solid var(--reel-bg3) !important;
+  color: var(--reel-t2) !important;
+}
+.btn-danger:hover {
+  background-color: var(--reel-danger) !important;
+  border-color: var(--reel-danger) !important;
+  color: #fff !important;
+}
+
+/* Icon-only "minimal" buttons */
+.btn.minimal {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: var(--reel-t2) !important;
+  box-shadow: none !important;
+}
+.btn.minimal:hover {
+  color: var(--reel-t1) !important;
+  background-color: var(--reel-bg2) !important;
+}
+
+.btn-link {
+  color: var(--reel-acc) !important;
+}
+
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.45;
+}
+
+.btn:focus,
+.btn.focus {
+  box-shadow: none !important;
+}
+.btn:focus-visible {
+  box-shadow: var(--reel-ring) !important;
+}
+
+/* ---------- Form controls ---------- */
+.form-control,
+.custom-select,
+.input-control,
+.react-select__control,
+.date-input,
+.text-input {
+  background-color: var(--reel-bg2) !important;
+  border: 1px solid transparent !important;
+  color: var(--reel-t1) !important;
+  border-radius: 10px !important;
+  font-size: 13px;
+  box-shadow: none !important;
+}
+.form-control:focus,
+.react-select__control--is-focused {
+  border-color: var(--reel-acc) !important;
+  box-shadow: 0 0 0 3px var(--reel-acc-soft) !important;
+}
+.form-control::placeholder,
+.react-select__placeholder {
+  color: var(--reel-t3) !important;
+}
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: var(--reel-bg1) !important;
+  color: var(--reel-t2) !important;
+}
+textarea.form-control {
+  border-radius: 10px !important;
+}
+
+/* Single-line inputs are pills */
+input.form-control:not([type="checkbox"]):not([type="range"]),
+select.form-control,
+.custom-select {
+  border-radius: var(--reel-r-ctl) !important;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+.input-group > .form-control:not(:last-child) {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.input-group > .input-group-append > .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.react-select__menu,
+.react-select__menu-list {
+  background-color: var(--reel-bg2) !important;
+  border-radius: var(--reel-r-card) !important;
+  box-shadow: var(--reel-shadow-pop) !important;
+}
+.react-select__option {
+  background-color: transparent !important;
+  color: var(--reel-t2) !important;
+  border-radius: 7px;
+}
+.react-select__option--is-focused,
+.react-select__option--is-selected {
+  background-color: var(--reel-bg3) !important;
+  color: var(--reel-t1) !important;
+}
+.react-select__multi-value {
+  background-color: var(--reel-bg3) !important;
+  border-radius: 999px !important;
+}
+.react-select__multi-value__label,
+.react-select__single-value,
+.react-select__input-container {
+  color: var(--reel-t1) !important;
+}
+
+label,
+.form-label,
+.col-form-label {
+  color: var(--reel-t2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Checkboxes */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--reel-acc);
+}
+
+/* Toggles (Bootstrap custom-switch) */
+.custom-switch .custom-control-label::before {
+  background-color: var(--reel-bg3) !important;
+  border-color: var(--reel-bg3) !important;
+  border-radius: 999px !important;
+}
+.custom-switch .custom-control-label::after {
+  background-color: var(--reel-t3) !important;
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--reel-acc) !important;
+  border-color: var(--reel-acc) !important;
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+  background-color: var(--reel-acc-ink) !important;
+}
+.custom-control-input:focus ~ .custom-control-label::before {
+  box-shadow: 0 0 0 3px var(--reel-acc-soft) !important;
+}
+
+/* Range sliders */
+input[type="range"] {
+  accent-color: var(--reel-acc);
+}
+
+/* ---------- Menus ---------- */
+.dropdown-menu,
+.popover {
+  background-color: var(--reel-bg2) !important;
+  border: 1px solid var(--reel-line) !important;
+  border-radius: var(--reel-r-card) !important;
+  box-shadow: var(--reel-shadow-pop) !important;
+  padding: 6px !important;
+  color: var(--reel-t1);
+}
+.dropdown-item {
+  color: var(--reel-t2) !important;
+  border-radius: 7px;
+  padding: 6px 10px !important;
+  font-size: 13px;
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--reel-bg3) !important;
+  color: var(--reel-t1) !important;
+}
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--reel-bg3) !important;
+  color: var(--reel-acc) !important;
+}
+.dropdown-divider {
+  border-color: var(--reel-line) !important;
+}
+.popover-header {
+  background: transparent !important;
+  border-color: var(--reel-line) !important;
+  color: var(--reel-t1);
+}
+.popover-body {
+  color: var(--reel-t1) !important;
+}
+.popover .arrow::after {
+  border-top-color: var(--reel-bg2) !important;
+  border-bottom-color: var(--reel-bg2) !important;
+}
+
+.tooltip-inner {
+  background-color: var(--reel-bg3);
+  color: var(--reel-t1);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+/* ---------- Modals ---------- */
+.modal-backdrop.show {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(2px);
+}
+.modal-content {
+  background-color: var(--reel-bg1) !important;
+  border: 1px solid var(--reel-line) !important;
+  border-radius: var(--reel-r-card) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  color: var(--reel-t1);
+}
+.modal-header,
+.modal-footer {
+  border-color: var(--reel-line) !important;
+  background-color: transparent !important;
+}
+.modal-header,
+.modal-header .modal-title {
+  font-family: var(--reel-font-title);
+  font-size: 22px;
+}
+.modal-body {
+  background-color: transparent !important;
+}
+.close {
+  color: var(--reel-t2) !important;
+  text-shadow: none !important;
+}
+
+/* ---------- Tabs (underline) ---------- */
+.nav-tabs {
+  border-bottom: 1px solid var(--reel-line) !important;
+  gap: 18px;
+}
+.nav-tabs .nav-link {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--reel-t2) !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 0 9px !important;
+}
+.nav-tabs .nav-link:hover {
+  color: var(--reel-t1) !important;
+}
+.nav-tabs .nav-link.active {
+  color: var(--reel-t1) !important;
+  border-bottom-color: var(--reel-acc) !important;
+}
+.nav-tabs .nav-link .left-spacing,
+.nav-tabs .badge,
+.nav-link .count {
+  background-color: var(--reel-bg3) !important;
+  color: var(--reel-t1) !important;
+  border-radius: 999px !important;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 7px;
+}
+
+/* Pills (settings menu) */
+.nav-pills .nav-link {
+  color: var(--reel-t2) !important;
+  border-radius: 999px !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 12px;
+}
+.nav-pills .nav-link:hover {
+  color: var(--reel-t1) !important;
+  background-color: var(--reel-bg2) !important;
+}
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: var(--reel-bg3) !important;
+  color: var(--reel-t1) !important;
+}
+
+/* Badges and tag chips */
+.badge {
+  border-radius: 999px;
+  font-weight: 500;
+}
+.badge-secondary,
+.tag-item,
+.badge.tag-item {
+  background-color: var(--reel-bg3) !important;
+  color: var(--reel-t1) !important;
+  border-radius: 999px !important;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+}
+.badge-primary,
+.badge-info {
+  background-color: var(--reel-acc-soft) !important;
+  color: var(--reel-acc) !important;
+}
+
+/* Generic panels */
+.card {
+  background-color: var(--reel-bg1);
+  border: 0;
+  border-radius: var(--reel-r-card);
+  box-shadow: none;
+  color: var(--reel-t1);
+}
+.card-header,
+.card-footer {
+  background-color: transparent;
+  border-color: var(--reel-line);
+}
+
+.table {
+  color: var(--reel-t1);
+}
+.table td,
+.table th {
+  border-color: var(--reel-line) !important;
+}
+
+/* Rating stars: off-white on, neutral off */
+.rating-stars .star-fill,
+.rating-stars .filled,
+.rating-stars button.star-fill svg {
+  color: var(--reel-rating) !important;
+}
+.rating-stars .unfilled,
+.rating-stars button:not(.star-fill) svg {
+  color: var(--reel-bg4) !important;
+}
+
+/* Toasts */
+.toast {
+  background-color: var(--reel-bg2) !important;
+  border: 1px solid var(--reel-line) !important;
+  border-radius: var(--reel-r-card) !important;
+  color: var(--reel-t1);
+}
+.toast-header {
+  background-color: transparent !important;
+  color: var(--reel-t1) !important;
+  border-color: var(--reel-line) !important;
+}

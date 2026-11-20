@@ -1,0 +1,562 @@
+/* Cards. Scenes and performers are posters (image fills the card, text set
+   over a gradient); studios, tags, galleries and groups are framed tiles.
+   Stash sets each card's width inline from the zoom slider: never override
+   width here, only aspect and contents. */
+
+.grid-card {
+  margin: 6px !important;
+  border: 0 !important;
+  border-radius: var(--reel-r-card) !important;
+  transition: transform 0.22s var(--reel-ease), box-shadow 0.22s var(--reel-ease);
+}
+.grid-card hr {
+  display: none;
+}
+.row.justify-content-center:has(> .grid-card) {
+  padding: 8px 10px 16px;
+}
+
+/* Selection check: a ring on hover, a filled wine dot when checked */
+.grid-card .card-controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.grid-card:hover .card-controls,
+.grid-card .card-controls:has(.card-check:checked) {
+  opacity: 1;
+}
+.grid-card .card-check {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  border: 2px solid var(--reel-t1) !important;
+  background: rgba(22, 22, 22, 0.35) !important;
+  cursor: pointer;
+}
+.grid-card .card-check:checked {
+  border-color: var(--reel-acc) !important;
+  background: var(--reel-acc) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat !important;
+}
+.grid-card:has(.card-check:checked) {
+  box-shadow: var(--reel-ring) !important;
+}
+
+/* Count buttons at the foot of a card */
+.grid-card .card-popovers {
+  justify-content: flex-start !important;
+  gap: 10px;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-wrap: nowrap;
+}
+.grid-card .card-popovers .btn {
+  padding: 0 !important;
+  height: auto;
+  font-size: 11px !important;
+  font-weight: 500;
+  color: var(--reel-t2) !important;
+  background: transparent !important;
+}
+.grid-card .card-popovers .btn:hover {
+  color: var(--reel-t1) !important;
+}
+.grid-card .card-popovers svg {
+  width: 11px;
+  margin-right: 4px;
+  opacity: 0.8;
+}
+
+/* ================= Poster cards: scenes, performers ================= */
+.scene-card.grid-card,
+.performer-card.grid-card {
+  position: relative;
+  overflow: hidden;
+  padding: 0 !important;
+  background: var(--reel-media) !important;
+}
+/* Scene grids: landscape 4:3 posters, nearer the video's own 16:9 while
+   leaving room for the text over the image. The grid fills each row with
+   equal columns; the zoom slider still works by setting the minimum column
+   width for its level (Stash's inline card width is set aside here). At the
+   default zoom on 1440px that is 4 a row, or 3 with the filter sidebar open. */
+.row.justify-content-center:has(> .scene-card.grid-card) {
+  --reel-scene-col: 320px;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--reel-scene-col), 100%), 1fr));
+  gap: 12px;
+  margin: 0 !important;
+}
+.row.justify-content-center:has(> .scene-card.zoom-0) { --reel-scene-col: 250px; }
+.row.justify-content-center:has(> .scene-card.zoom-2) { --reel-scene-col: 420px; }
+.row.justify-content-center:has(> .scene-card.zoom-3) { --reel-scene-col: 560px; }
+.row.justify-content-center > .scene-card.grid-card {
+  width: auto !important;
+  margin: 0 !important;
+}
+.scene-card.grid-card {
+  aspect-ratio: 4 / 3;
+}
+.performer-card.grid-card {
+  aspect-ratio: 2 / 3;
+}
+.scene-card.grid-card:hover,
+.performer-card.grid-card:hover {
+  transform: scale(1.015);
+  box-shadow: var(--reel-glow);
+}
+
+/* Media fills the card */
+.scene-card .thumbnail-section,
+.performer-card .thumbnail-section {
+  position: absolute !important;
+  inset: 0;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+}
+.scene-card .scene-card-link,
+.scene-card .scene-card-preview,
+.performer-card .thumbnail-section > a {
+  display: block;
+  height: 100% !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+}
+.scene-card .scene-card-preview-image,
+.scene-card .scene-card-preview-video,
+.performer-card .performer-card-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  aspect-ratio: auto !important;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 0 !important;
+}
+
+/* Gradient under the text */
+.scene-card .thumbnail-section::after,
+.performer-card .thumbnail-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(22, 22, 22, 0) 38%, rgba(22, 22, 22, 0.94) 100%);
+  z-index: 1;
+}
+.performer-card .thumbnail-section::after {
+  background: linear-gradient(180deg, rgba(22, 22, 22, 0) 55%, rgba(22, 22, 22, 0.94) 100%);
+}
+
+/* Text block over the image */
+.scene-card .card-section,
+.performer-card .card-section {
+  position: absolute !important;
+  left: 14px;
+  right: 14px;
+  bottom: 42px; /* clear of the counts below, with a 10px gap */
+  z-index: 2;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  display: grid;
+  gap: 3px;
+  pointer-events: none;
+}
+.scene-card .card-section a,
+.performer-card .card-section a {
+  pointer-events: auto;
+}
+.scene-card .card-popovers,
+.performer-card .card-popovers {
+  position: absolute !important;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  z-index: 2;
+}
+
+.scene-card .card-section-title,
+.performer-card .card-section-title {
+  font-family: var(--reel-font-title) !important;
+  font-size: var(--reel-title-card) !important;
+  line-height: var(--reel-title-lh) !important;
+  font-weight: 400 !important;
+  color: var(--reel-t1) !important;
+  text-shadow: none !important;
+  margin: 0 !important;
+}
+.scene-card .card-section-title .TruncatedText {
+  -webkit-line-clamp: 2 !important;
+}
+
+.scene-card .scene-card__details {
+  display: grid;
+  gap: 3px;
+  margin: 0 !important;
+}
+.scene-card .scene-card__date {
+  font-size: 11px;
+  color: var(--reel-t2) !important;
+}
+.scene-card .scene-card__description {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  color: var(--reel-t2) !important;
+  -webkit-line-clamp: 2 !important;
+  margin: 0 !important;
+}
+.scene-card .extra-scene-info {
+  display: none !important;
+}
+
+/* "1080P · 21:04", top right */
+.scene-card .scene-specs-overlay {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 3;
+  padding: 3px 7px;
+  border-radius: var(--reel-r-chip);
+  background: rgba(22, 22, 22, 0.7);
+  color: var(--reel-t1) !important;
+  font-size: 10px !important;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: none !important;
+  display: flex;
+  gap: 0;
+}
+.scene-card .scene-specs-overlay > span {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-shadow: none !important;
+}
+.scene-card .scene-specs-overlay .overlay-resolution + .overlay-duration::before {
+  content: "\00a0·\00a0";
+}
+
+/* Studio logo, top left; steps aside for the check on hover */
+.scene-card .studio-overlay {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  right: auto !important;
+  z-index: 3;
+  max-width: 45%;
+  opacity: 0.85;
+  transition: left 0.15s, opacity 0.15s;
+}
+.scene-card .studio-overlay .image-thumbnail {
+  max-height: 22px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+}
+.scene-card:hover .studio-overlay,
+.scene-card:has(.card-check:checked) .studio-overlay {
+  left: 38px !important;
+}
+
+/* Resume progress sits on the very bottom edge */
+.scene-card .progress-bar {
+  z-index: 3;
+  background-color: var(--reel-acc) !important;
+}
+
+/* Rating as a small chip, not a diagonal banner */
+.grid-card .rating-banner {
+  transform: none !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: 10px !important;
+  top: 36px !important;
+  width: auto !important;
+  padding: 2px 7px !important;
+  border-radius: var(--reel-r-chip) !important;
+  background: rgba(22, 22, 22, 0.7) !important;
+  color: var(--reel-t1) !important;
+  font-size: 10px !important;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  z-index: 3;
+  box-shadow: none !important;
+}
+
+/* ---- Performer specifics ---- */
+.performer-card .card-section-title {
+  display: flex !important;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 18px !important;
+}
+.performer-card .card-section-title .gender-icon,
+.performer-card .card-section-title svg {
+  color: var(--reel-t2) !important;
+  width: 12px;
+  flex: none;
+}
+.performer-card .card-section-title span,
+.performer-card .performer-name {
+  font-size: inherit !important;
+}
+.performer-card .performer-card__age {
+  font-size: 11px !important;
+  color: var(--reel-t2) !important;
+}
+.performer-card .performer-card__country-flag {
+  display: none !important;
+}
+.performer-card .thumbnail-section > a:has(.performer-card__country-string) {
+  position: absolute;
+  top: 10px;
+  right: 38px;            /* clear of the favourite heart in the corner */
+  height: auto !important;
+  z-index: 3;
+}
+.performer-card .performer-card__country-string {
+  display: inline-block !important;
+  padding: 3px 7px;
+  border-radius: var(--reel-r-chip);
+  background: rgba(22, 22, 22, 0.7);
+  color: var(--reel-t1);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+/* Favourite heart: top-right, mirroring the selection check on the left, at
+   the same 20px. No black halo or pill; off-white until it's a favourite. */
+.grid-card button.btn.favorite-button {
+  position: absolute !important;
+  z-index: 4;
+  top: 10px !important;
+  right: 10px !important;
+  left: auto !important;
+  width: 20px;
+  height: 20px;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: grid;
+  place-items: center;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) !important;
+  color: var(--reel-acc) !important;
+}
+.grid-card button.btn.favorite-button svg.fa-icon,
+.grid-card button.btn.favorite-button svg {
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 18px !important;
+  margin: 0 !important;
+}
+.grid-card button.btn.favorite-button.not-favorite {
+  color: rgba(243, 240, 238, 0.85) !important;
+}
+.grid-card button.btn.favorite-button:hover {
+  background: none !important;
+  transform: scale(1.1);
+}
+
+/* ================= Framed tiles: studios, tags, galleries, groups ================= */
+.studio-card.grid-card,
+.tag-card.grid-card,
+.gallery-card.grid-card,
+.group-card.grid-card,
+.image-card.grid-card {
+  background-color: var(--reel-bg1) !important;
+  padding: 5px !important;
+  overflow: hidden;
+}
+.studio-card.grid-card:hover,
+.tag-card.grid-card:hover,
+.gallery-card.grid-card:hover,
+.group-card.grid-card:hover,
+.image-card.grid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--reel-glow);
+}
+.studio-card .thumbnail-section,
+.tag-card .thumbnail-section,
+.gallery-card .thumbnail-section,
+.group-card .thumbnail-section,
+.image-card .thumbnail-section {
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: var(--reel-bg2);
+  position: relative;
+}
+/* Fixed 16:9 logo box. The logo is positioned inside it, so a tall logo
+   can't stretch the box and every tile in a grid comes out the same size. */
+.studio-card .studio-card-header,
+.tag-card .tag-card-header {
+  display: block !important;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden;
+  background-color: var(--reel-bg2);
+}
+.studio-card .studio-card-image,
+.tag-card .tag-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  object-fit: contain;
+  padding: 10% 12%;
+  aspect-ratio: auto !important;
+}
+.gallery-card .gallery-card-image,
+.group-card .group-card-image,
+.image-card .image-card-preview-image {
+  border-radius: 0;
+  object-fit: cover;
+}
+.studio-card .card-section,
+.tag-card .card-section,
+.gallery-card .card-section,
+.group-card .card-section,
+.image-card .card-section {
+  padding: 10px 9px 4px !important;
+  background: transparent !important;
+}
+.studio-card .card-section-title,
+.tag-card .card-section-title,
+.gallery-card .card-section-title,
+.group-card .card-section-title,
+.image-card .card-section-title {
+  font-size: var(--reel-title-card) !important;
+  line-height: var(--reel-title-lh) !important;
+  color: var(--reel-t1) !important;
+  margin-bottom: 3px !important;
+  text-align: left !important;
+}
+.studio-card__details,
+.studio-card__details a,
+.tag-card .tag-description,
+.gallery-card__details,
+.group-card__details {
+  font-size: 11px !important;
+  color: var(--reel-t3) !important;
+  font-weight: 500;
+}
+.studio-card .card-popovers,
+.tag-card .card-popovers,
+.gallery-card .card-popovers,
+.group-card .card-popovers,
+.image-card .card-popovers {
+  padding: 2px 9px 6px !important;
+}
+.studio-card .card-popovers .btn,
+.tag-card .card-popovers .btn,
+.gallery-card .card-popovers .btn,
+.group-card .card-popovers .btn {
+  color: var(--reel-t3) !important;
+}
+
+/* Home-page carousels ("Recently added ...") size each card from its
+   contents, so a wide studio logo made a wide card. Pin them like stock. */
+.recommendation-row .grid-card {
+  width: 320px !important;
+  max-width: 320px;
+}
+.recommendation-row .studio-card .studio-card-image,
+.recommendation-row .tag-card .tag-card-image {
+  max-width: 100% !important;
+}
+
+/* Reserve the "Part of …" line so studio tiles stay the same height with or
+   without a parent studio. */
+.studio-card .studio-card__details {
+  min-height: 1.5em;
+}
+
+/* Framed tiles place the heart inside the 5px-inset image box; offset it so
+   it sits as far from the corner as the check does. */
+.studio-card button.btn.favorite-button,
+.tag-card button.btn.favorite-button,
+.gallery-card button.btn.favorite-button,
+.group-card button.btn.favorite-button {
+  top: 5px !important;
+  right: 5px !important;
+}
+
+/* ---------- Review fixes ---------- */
+
+.btn-primary.btn.donate.minimal {
+  display: none;
+}
+
+/* Home carousels: slides pulled in so the arrows sit inside the page (stock
+   pushes the next arrow off a phone screen), arrows centred on the cards
+   rather than the cards plus the dots, every card in a row one height */
+.recommendation-row .slick-slider {
+  margin: 0 30px 30px;
+}
+.recommendation-row .slick-prev {
+  left: -28px;
+}
+.recommendation-row .slick-next {
+  right: -28px;
+}
+.recommendation-row .slick-dots {
+  position: absolute;
+  top: 100%;
+}
+.recommendation-row .slick-track {
+  display: flex !important;
+  margin-bottom: 0;
+}
+.recommendation-row .slick-arrow {
+  top: 0;
+  height: 100%;
+  transform: none;
+}
+.recommendation-row .slick-slide {
+  height: auto !important;
+}
+.recommendation-row .slick-slide > div {
+  height: 100%;
+}
+.recommendation-row .slick-slide .grid-card {
+  height: calc(100% - 10px);
+}
+
+/* Scene page: two performers side by side in the details panel */
+.scene-performers .performer-card {
+  width: calc(50% - 10px) !important;
+  margin: 5px !important;
+}
+
+/* Home carousels: whole cards only. The number of cards that fits at about
+   320px, sized to fill the row exactly, so none is cut off at the edge */
+.recommendation-row .slick-list {
+  container-type: inline-size;
+}
+.recommendation-row .slick-slide .grid-card {
+  width: calc(100cqw / max(1, round(100cqw / 332px, 1)) - 12px) !important;
+  max-width: none !important;
+}
