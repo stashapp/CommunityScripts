@@ -1,0 +1,404 @@
+/* Buttons, form controls, menus, modals, tabs, toggles. */
+
+/* ---------- Buttons ---------- */
+.btn {
+  font-family: var(--vel-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--vel-r-ctl);
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.15s var(--vel-ease);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Primary actions: rose pill (controls elsewhere are rounded rectangles) */
+.btn-primary:not(.minimal),
+.btn-success {
+  border-radius: 999px !important;
+  background-color: var(--vel-acc) !important;
+  border-color: var(--vel-acc) !important;
+  color: var(--vel-acc-ink) !important;
+  font-weight: 600;
+}
+.btn-primary:not(.minimal):hover,
+.btn-success:hover {
+  background-color: var(--vel-acc-hover) !important;
+  border-color: var(--vel-acc-hover) !important;
+}
+
+/* Secondary: neutral raised pill */
+.btn-secondary,
+.btn-info,
+.btn-light,
+.btn-outline-secondary {
+  background-color: var(--vel-bg3) !important;
+  border-color: transparent !important;
+  color: var(--vel-t1) !important;
+}
+.btn-secondary:hover,
+.btn-info:hover,
+.btn-light:hover,
+.btn-outline-secondary:hover {
+  background-color: var(--vel-bg4) !important;
+}
+.btn-secondary.active,
+.btn-secondary:not(:disabled):not(.disabled):active {
+  background-color: var(--vel-bg4) !important;
+  color: var(--vel-acc) !important;
+}
+
+/* Destructive: quiet outline until hovered */
+.btn-danger {
+  background-color: transparent !important;
+  border: 1px solid var(--vel-bg3) !important;
+  color: var(--vel-t2) !important;
+}
+.btn-danger:hover {
+  background-color: var(--vel-danger) !important;
+  border-color: var(--vel-danger) !important;
+  color: #fff !important;
+}
+
+/* Icon-only "minimal" buttons */
+.btn.minimal {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: var(--vel-t2) !important;
+  box-shadow: none !important;
+}
+.btn.minimal:hover {
+  color: var(--vel-t1) !important;
+  background-color: var(--vel-bg2) !important;
+}
+
+.btn-link {
+  color: var(--vel-acc) !important;
+}
+
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.45;
+}
+
+.btn:focus,
+.btn.focus {
+  box-shadow: none !important;
+}
+.btn:focus-visible {
+  box-shadow: var(--vel-ring) !important;
+}
+
+/* ---------- Form controls ---------- */
+.form-control,
+.custom-select,
+.input-control,
+.react-select__control,
+.date-input,
+.text-input {
+  background-color: var(--vel-bg2) !important;
+  border: 1px solid transparent !important;
+  color: var(--vel-t1) !important;
+  border-radius: 10px !important;
+  font-size: 13px;
+  box-shadow: none !important;
+}
+.form-control:focus,
+.react-select__control--is-focused {
+  border-color: var(--vel-acc) !important;
+  box-shadow: 0 0 0 3px var(--vel-acc-soft) !important;
+}
+.form-control::placeholder,
+.react-select__placeholder {
+  color: var(--vel-t3) !important;
+}
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: var(--vel-bg1) !important;
+  color: var(--vel-t2) !important;
+}
+textarea.form-control {
+  border-radius: 10px !important;
+}
+
+/* Single-line inputs are pills */
+input.form-control:not([type="checkbox"]):not([type="range"]),
+select.form-control,
+.custom-select {
+  border-radius: var(--vel-r-ctl) !important;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+.input-group > .form-control:not(:last-child) {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.input-group > .input-group-append > .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.react-select__menu,
+.react-select__menu-list {
+  background-color: var(--vel-bg2) !important;
+  border-radius: var(--vel-r-card) !important;
+  box-shadow: var(--vel-shadow-pop) !important;
+}
+.react-select__option {
+  background-color: transparent !important;
+  color: var(--vel-t2) !important;
+  border-radius: 7px;
+}
+.react-select__option--is-focused,
+.react-select__option--is-selected {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-t1) !important;
+}
+.react-select__multi-value {
+  background-color: var(--vel-bg3) !important;
+  border-radius: 999px !important;
+}
+.react-select__multi-value__label,
+.react-select__single-value,
+.react-select__input-container {
+  color: var(--vel-t1) !important;
+}
+
+label,
+.form-label,
+.col-form-label {
+  color: var(--vel-t2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Checkboxes */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--vel-acc);
+}
+
+/* Toggles (Bootstrap custom-switch) */
+.custom-switch .custom-control-label::before {
+  background-color: var(--vel-bg3) !important;
+  border-color: var(--vel-bg3) !important;
+  border-radius: 999px !important;
+}
+.custom-switch .custom-control-label::after {
+  background-color: var(--vel-t3) !important;
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--vel-acc) !important;
+  border-color: var(--vel-acc) !important;
+}
+.custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+  background-color: var(--vel-acc-ink) !important;
+}
+.custom-control-input:focus ~ .custom-control-label::before {
+  box-shadow: 0 0 0 3px var(--vel-acc-soft) !important;
+}
+
+/* Range sliders */
+input[type="range"] {
+  accent-color: var(--vel-acc);
+}
+
+/* ---------- Menus ---------- */
+.dropdown-menu,
+.popover {
+  background-color: var(--vel-bg2) !important;
+  border: 1px solid var(--vel-line) !important;
+  border-radius: var(--vel-r-card) !important;
+  box-shadow: var(--vel-shadow-pop) !important;
+  padding: 6px !important;
+  color: var(--vel-t1);
+}
+.dropdown-item {
+  color: var(--vel-t2) !important;
+  border-radius: 7px;
+  padding: 6px 10px !important;
+  font-size: 13px;
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-t1) !important;
+}
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-acc) !important;
+}
+.dropdown-divider {
+  border-color: var(--vel-line) !important;
+}
+.popover-header {
+  background: transparent !important;
+  border-color: var(--vel-line) !important;
+  color: var(--vel-t1);
+}
+.popover-body {
+  color: var(--vel-t1) !important;
+}
+.popover .arrow::after {
+  border-top-color: var(--vel-bg2) !important;
+  border-bottom-color: var(--vel-bg2) !important;
+}
+
+.tooltip-inner {
+  background-color: var(--vel-bg3);
+  color: var(--vel-t1);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+/* ---------- Modals ---------- */
+.modal-backdrop.show {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(2px);
+}
+.modal-content {
+  background-color: var(--vel-bg1) !important;
+  border: 1px solid var(--vel-line) !important;
+  border-radius: var(--vel-r-card) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  color: var(--vel-t1);
+}
+.modal-header,
+.modal-footer {
+  border-color: var(--vel-line) !important;
+  background-color: transparent !important;
+}
+.modal-header,
+.modal-header .modal-title {
+  font-family: var(--vel-font-title);
+  font-style: var(--vel-title-style);
+  font-size: 22px;
+}
+.modal-body {
+  background-color: transparent !important;
+}
+.close {
+  color: var(--vel-t2) !important;
+  text-shadow: none !important;
+}
+
+/* ---------- Tabs (underline) ---------- */
+.nav-tabs {
+  border-bottom: 1px solid var(--vel-line) !important;
+  gap: 18px;
+}
+.nav-tabs .nav-link {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--vel-t2) !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 0 9px !important;
+}
+.nav-tabs .nav-link:hover {
+  color: var(--vel-t1) !important;
+}
+.nav-tabs .nav-link.active {
+  color: var(--vel-t1) !important;
+  border-bottom-color: var(--vel-acc) !important;
+}
+.nav-tabs .nav-link .left-spacing,
+.nav-tabs .badge,
+.nav-link .count {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-t1) !important;
+  border-radius: 999px !important;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 7px;
+}
+
+/* Pills (settings menu) */
+.nav-pills .nav-link {
+  color: var(--vel-t2) !important;
+  border-radius: 999px !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 12px;
+}
+.nav-pills .nav-link:hover {
+  color: var(--vel-t1) !important;
+  background-color: var(--vel-bg2) !important;
+}
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-t1) !important;
+}
+
+/* Badges and tag chips */
+.badge {
+  border-radius: 999px;
+  font-weight: 500;
+}
+.badge-secondary,
+.tag-item,
+.badge.tag-item {
+  background-color: var(--vel-bg3) !important;
+  color: var(--vel-t1) !important;
+  border-radius: 999px !important;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+}
+.badge-primary,
+.badge-info {
+  background-color: var(--vel-acc-soft) !important;
+  color: var(--vel-acc) !important;
+}
+
+/* Generic panels */
+.card {
+  background-color: var(--vel-bg1);
+  border: 0;
+  border-radius: var(--vel-r-card);
+  box-shadow: none;
+  color: var(--vel-t1);
+}
+.card-header,
+.card-footer {
+  background-color: transparent;
+  border-color: var(--vel-line);
+}
+
+.table {
+  color: var(--vel-t1);
+}
+.table td,
+.table th {
+  border-color: var(--vel-line) !important;
+}
+
+/* Rating stars: off-white on, neutral off */
+.rating-stars .star-fill,
+.rating-stars .filled,
+.rating-stars button.star-fill svg {
+  color: var(--vel-rating) !important;
+}
+.rating-stars .unfilled,
+.rating-stars button:not(.star-fill) svg {
+  color: var(--vel-bg4) !important;
+}
+
+/* Toasts */
+.toast {
+  background-color: var(--vel-bg2) !important;
+  border: 1px solid var(--vel-line) !important;
+  border-radius: var(--vel-r-card) !important;
+  color: var(--vel-t1);
+}
+.toast-header {
+  background-color: transparent !important;
+  color: var(--vel-t1) !important;
+  border-color: var(--vel-line) !important;
+}
