@@ -1885,7 +1885,24 @@
     );
   }
 
-  function InfiniteList({ name, cfg, props, Original, extra }) {
+  // A list is patched with "before" and "after", not "instead", and the two
+  // halves below run inside the list component's own render. With two
+  // "instead" patches on a list, Stash hands the first one a new function for
+  // the rest each render, and a plugin that renders that as a component
+  // (Stash TV does, on SceneList) makes React rebuild everything under it
+  // every time: as the second "instead" patch this plugin lost its state on
+  // each redraw, every card was rebuilt with each batch, and opening a list
+  // rewrote the address over and over until React gave up ("Something went
+  // wrong", error 185). The list component itself is rendered by Stash, so
+  // hooks called from its "before" and "after" patches stay put whatever the
+  // other patches do.
+  //
+  // What the "before" half leaves for the "after" half of the same render.
+  const listPending = {};
+
+  // The "before" half: works out what the list should show and returns the
+  // props to render it with.
+  function useListProps(name, cfg, props) {
     const history = ReactRouterDOM.useHistory();
     const location = ReactRouterDOM.useLocation();
     trackNavigation(history);
@@ -1979,6 +1996,21 @@
       // "Page x / y" header (0 pages hides it)
       if (name === "ImageList") passProps.pageCount = 0;
     }
+
+    listPending[name] = {
+      name, props, history, location, containerRef, sentinelRef, topRef, mountedRef, ctl, S,
+      filter, items, mode, needsBatchSize, st, enabled, run, lost,
+    };
+    return passProps;
+  }
+
+  // The "after" half: the scroll handling, and the frame (loaders, sentinel)
+  // around what the list and other plugins' patches rendered.
+  function useListFrame(pending, rendered) {
+    const {
+      name, props, history, location, containerRef, sentinelRef, topRef, mountedRef, ctl, S,
+      filter, items, mode, needsBatchSize, st, enabled, run, lost,
+    } = pending;
 
     // --- anchors ---------------------------------------------------------
 
@@ -2076,6 +2108,10 @@
       const page = Math.floor(((filter.currentPage - 1) * per) / BATCH_SIZE) + 1;
       const loc = history.location;
       const search = searchWithPage(setSearchParam(loc.search, "perPage", String(BATCH_SIZE)), page);
+      // The address already says so and Stash hasn't followed yet. Replacing
+      // it again redraws the page, and if something rebuilds this list on
+      // each redraw, that never ends.
+      if (search === loc.search) return;
       history.replace(Object.assign({}, loc, { search }));
     }, [needsBatchSize, filter && filter.itemsPerPage, filter && filter.currentPage]);
 
@@ -2449,7 +2485,7 @@
 
     // --- render ---------------------------------------------------------------
 
-    const inner = h(WindowCtx.Provider, { value: ctl }, h(Passthrough, { Original, props: passProps, extra }));
+    const inner = h(WindowCtx.Provider, { value: ctl }, rendered);
     if (!enabled) return h("div", { className: "isc-list", ref: containerRef }, inner);
 
     return h(
@@ -2610,13 +2646,6 @@
   function install() {
     if (!installCachePolicies()) return;
 
-    for (const name of Object.keys(LISTS)) {
-      const cfg = LISTS[name];
-      api.patch.instead(name, function (props, ...rest) {
-        return h(InfiniteList, { name, cfg, props, Original: lastArg(rest), extra: rest.slice(0, -1) });
-      });
-    }
-
     // Windowing is applied per card type rather than on the shared GridCard.
     // It's an "after" patch, not "instead": with two "instead" patches on a
     // card, Stash hands the first one a new function for the rest each render,
@@ -2627,7 +2656,8 @@
     // returned untouched. One consequence: inside a list, hooks that another
     // plugin calls in its card patch stay mounted while the card's DOM is
     // swapped for a placeholder, so an effect holding on to that DOM needs to
-    // re-check its ref.
+    // re-check its ref. Lists are patched the same way, for the same reason
+    // (see useListProps).
     //
     // An "after" patch gets the component's arguments followed by the result,
     // joined with concat, so an array result arrives spread out (or not at
@@ -2635,15 +2665,16 @@
     // arguments there are. A "before" patch of ours notes the arguments, so
     // the result can be split off exactly. It only sees the final arguments if
     // it runs last, so whenever another plugin later adds a "before" patch to
-    // a card, another one of ours is added right after it. A plugin that kept
-    // Stash's function from before ours replaced it gets past that, so when
-    // the arguments don't match, or a match leaves something React can't
-    // draw, the result is told apart from them by being something React can
-    // draw, and another recorder is added. A match whose result first comes
-    // in several parts, or in more parts than ever before, also adds one, in case
-    // a kept function added a drawable argument (that render draws it beside
-    // the card; the next one doesn't).
+    // a card or a list, another one of ours is added right after it. A plugin
+    // that kept Stash's function from before ours replaced it gets past that,
+    // so when the arguments don't match, or a match leaves something React
+    // can't draw, the result is told apart from them by being something React
+    // can draw, and another recorder is added. A match whose result first
+    // comes in several parts, or in more parts than ever before, also adds
+    // one, in case a kept function added a drawable argument (that render
+    // draws it beside the card; the next one doesn't).
     const cardArgs = {};
+    const recorded = CARD_COMPONENTS.concat(Object.keys(LISTS));
     const nativeBefore = api.patch.before;
     const addRecorder = (name) => {
       nativeBefore.call(api.patch, name, function (...args) {
@@ -2654,7 +2685,7 @@
     try {
       api.patch.before = function (component) {
         const ret = nativeBefore.apply(this, arguments);
-        if (CARD_COMPONENTS.includes(component)) addRecorder(component);
+        if (recorded.includes(component)) addRecorder(component);
         return ret;
       };
     } catch (e) {
@@ -2709,6 +2740,22 @@
         const id = cardId(props);
         if (id) ctl.latest.set(id, { props, rendered });
         return h(MemoWindowedCard, { ctl, id, props, rendered });
+      });
+    }
+
+    for (const name of Object.keys(LISTS)) {
+      const cfg = LISTS[name];
+      // (the second slot stays filled, so a plugin's "instead" patch written
+      // as (props, _, next) finds its `next` function in the third place)
+      nativeBefore.call(api.patch, name, function (props, ...rest) {
+        return [useListProps(name, cfg, props)].concat(rest.length ? rest : [undefined]);
+      });
+      addRecorder(name);
+      api.patch.after(name, function (...all) {
+        const rendered = cardResult(name, all);
+        const pending = listPending[name];
+        listPending[name] = undefined;
+        return pending ? useListFrame(pending, rendered) : rendered;
       });
     }
 
