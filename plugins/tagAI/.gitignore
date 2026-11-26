@@ -1,0 +1,12 @@
+Models/*.csv
+Models/*.onnx
+Models/*.part
+Models/*-thresholds.json
+api.key
+tagai-debug.json
+tagai-debug-*.json
+hf_token
+hf.token
+huggingface.token
+__pycache__/
+*.pyc
