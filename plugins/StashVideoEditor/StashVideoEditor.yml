@@ -1,0 +1,46 @@
+# StashVideoEditor.yml
+name: Stash Video Editor
+description: Crop, stretch or trim a scene's video from the scene page. The edit becomes the scene's primary file and the original is kept. Crop and stretch re-encode with Stash's transcode settings; trim is lossless (stream copy) or precision (re-encode). Crop and stretch also work on image clips (.vclip).
+version: 0.6.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/StashVideoEditor
+ui:
+  javascript:
+    - cropMath.js
+    - cropLoupe.js
+    - playability.js
+    - timeMath.js
+    - spriteVtt.js
+    - videoEditor.js
+  css:
+    - videoEditor.css
+exec:
+  - python3
+  - "{pluginDir}/video_editor.py"
+interface: raw
+settings:
+  encodeHook:
+    displayName: Encode hook (executable path)
+    description: Optional. An executable that does the crop, stretch and precision-trim re-encodes instead of Stash's own ffmpeg, for example on another machine. It gets the job as JSON on stdin and exits 0 once it has written the output file. Leave blank to encode locally. See the plugin README for the job format.
+    type: STRING
+  encodeHookTimeout:
+    displayName: Encode hook timeout (seconds)
+    description: How long the encode hook may run before the plugin stops it and encodes locally. Blank or 0 means 3600; at most 86400 (a day).
+    type: NUMBER
+tasks:
+  - name: Crop and re-encode
+    description: Started by the Crop & re-encode button on a scene or image clip page. Does nothing when run from here.
+    defaultArgs:
+      mode: crop_reencode
+  - name: Trim
+    description: Started by the Trim button on a scene page. Does nothing when run from here.
+    defaultArgs:
+      mode: trim
+  - name: Merge edited scenes
+    description: Finish any edit that was encoded but not swapped in (normally the hook does this after the scan). Safe to run at any time.
+    defaultArgs:
+      mode: merge
+hooks:
+  - name: Merge edited file into source scene
+    description: When a scan creates a scene for a file this plugin just encoded, merge it into the source scene and make it the primary file.
+    triggeredBy:
+      - Scene.Create.Post
