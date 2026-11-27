@@ -1,0 +1,82 @@
+.imt-page { --imt-zoom: 1; max-width: 1100px; margin: 0 auto; padding: 1rem; }
+.imt-zoom { margin-left: auto !important; }
+.imt-zoom input { width: 9rem; }
+.imt-muted { opacity: 0.7; font-size: 0.875rem; }
+.imt-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 1rem 0; }
+.imt-toolbar label { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.imt-toolbar select { width: auto; }
+.imt-summary { margin: 0.5rem 0; }
+.imt-tabs { display: flex; gap: 0.5rem; margin: 0.75rem 0 1rem; }
+.imt-card { padding: 1rem; margin-bottom: 1rem; }
+.imt-message { padding: 0.5rem 0.75rem; margin: 0.5rem 0; border-left: 3px solid #4caf50; background: rgba(76, 175, 80, 0.12); }
+.imt-toast { position: fixed; z-index: 1050; left: 50%; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(40rem, calc(100vw - 2rem));
+  display: flex; align-items: flex-start; gap: 0.25rem; border-radius: 4px; background: #202b33; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); }
+.imt-toast .imt-message { flex: 1; margin: 0; background: rgba(76, 175, 80, 0.18); }
+.imt-toast-close { font-size: 1.25rem; line-height: 1; padding: 0.4rem 0.6rem; }
+.imt-folders div:first-child { opacity: 0.7; }
+.imt-error { padding: 0.5rem 0.75rem; margin: 0.5rem 0; border-left: 3px solid #db3737; background: rgba(219, 55, 55, 0.12); word-break: break-word; }
+.imt-busy { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; }
+.imt-spinner { width: 1rem; height: 1rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: imt-spin 0.8s linear infinite; }
+@keyframes imt-spin { to { transform: rotate(360deg); } }
+
+.imt-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(170px * var(--imt-zoom))), 1fr)); gap: 0.75rem; margin-bottom: 0.75rem; }
+.imt-tile { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.5rem; border: 2px solid transparent; border-radius: 4px; background: rgba(0, 0, 0, 0.15); }
+.imt-tile.imt-keep, .imt-side.imt-keep { border-color: #4caf50; }
+.imt-thumb { display: flex; align-items: center; justify-content: center; container-type: size; height: calc(150px * var(--imt-zoom)); background: rgba(0, 0, 0, 0.3); border-radius: 3px; overflow: hidden; }
+.imt-fit { position: relative; display: block; width: min(100cqw, calc(100cqh * var(--imt-ar))); height: min(100cqh, calc(100cqw / var(--imt-ar))); }
+.imt-fit img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.imt-spot { position: absolute; box-sizing: border-box; border: 2px solid #ff5252; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7); pointer-events: none; }
+.imt-diff { font-size: 0.8rem; color: #ff8a80; }
+.imt-long { font-size: 0.8rem; color: #ffb74d; }
+.imt-pair-dist.imt-diff { opacity: 1; font-size: 0.75rem; }
+.imt-out .imt-pair-dist.imt-diff, .imt-out .imt-diff { text-decoration: none; opacity: 1; }
+.imt-thumb-sm { height: calc(72px * var(--imt-zoom)); width: calc(96px * var(--imt-zoom)); max-width: 100%; }
+.imt-pair { max-width: 100%; }
+.imt-facts { font-size: 0.875rem; line-height: 1.35; }
+.imt-path { font-size: 0.8rem; word-break: break-all; }
+.imt-badge { align-self: flex-start; padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.8rem; background: #4caf50; color: #fff; }
+
+.imt-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem; }
+.imt-side { display: flex; align-items: flex-start; gap: 0.6rem; margin: 0; padding: 0.6rem; border: 2px solid transparent; border-radius: 4px; background: rgba(0, 0, 0, 0.15); cursor: pointer; }
+.imt-side input { margin-top: 0.25rem; }
+.imt-side .imt-badge { display: inline-block; margin-top: 0.3rem; }
+.imt-pairs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.imt-pair { display: flex; flex-direction: column; gap: 2px; }
+.imt-pair-row { display: flex; gap: 2px; }
+.imt-more { padding: 0 0.5rem; }
+.imt-pair-dist { font-size: 0.75rem; opacity: 0.7; text-align: center; }
+.imt-out .imt-thumb img { opacity: 0.6; }
+.imt-out .imt-pair-dist, .imt-out .imt-facts { text-decoration: line-through; opacity: 0.5; }
+.imt-pair-out { padding: 0; font-size: 0.75rem; }
+.imt-tile-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; }
+.imt-pair-dist.imt-pair-off { opacity: 1; color: #ffb74d; }
+.imt-mix { font-size: 0.875rem; margin-bottom: 0.75rem; }
+
+.imt-skip { display: block; padding: 0; font-size: 0.75rem; }
+.imt-rules h5 { margin-top: 0.75rem; }
+.imt-found { max-height: 16rem; overflow-y: auto; margin-bottom: 0.6rem; padding: 0.25rem 0.5rem; background: rgba(0, 0, 0, 0.15); border-radius: 4px; }
+.imt-found-row { display: flex; align-items: baseline; gap: 0.5rem; margin: 0; padding: 0.15rem 0; cursor: pointer; }
+.imt-found-row .imt-muted { margin-left: auto; white-space: nowrap; }
+.imt-help h5 { margin: 0.75rem 0 0.25rem; font-size: 1rem; }
+.imt-help h5:first-child { margin-top: 0; }
+.imt-help ul { margin: 0 0 0.25rem; padding-left: 1.2rem; }
+.imt-help li { margin-bottom: 0.2rem; font-size: 0.9rem; line-height: 1.4; }
+.imt-help-link { padding: 0; vertical-align: baseline; font-size: inherit; }
+.imt-caution { padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; border-left: 3px solid #ffb74d; background: rgba(255, 183, 77, 0.12); font-size: 0.875rem; }
+.imt-bulk { border: 1px solid rgba(255, 255, 255, 0.25); }
+.imt-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.imt-remember { margin: 0 0 0 auto; font-size: 0.875rem; cursor: pointer; }
+.imt-confirm { padding: 0.75rem; border: 1px solid #db3737; border-radius: 4px; }
+.imt-confirm p { margin: 0 0 0.6rem; }
+.imt-confirm .btn { margin-right: 0.5rem; }
+.imt-rules textarea { font-family: monospace; margin-bottom: 0.6rem; }
+.imt-pager { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1rem 0; }
+
+@media (max-width: 576px) {
+  .imt-page { padding: 0.5rem; }
+  .imt-tiles { grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(150px * var(--imt-zoom))), 1fr)); }
+  .imt-thumb { height: calc(120px * var(--imt-zoom)); }
+  .imt-zoom { margin-left: 0 !important; }
+  .imt-remember { margin-left: 0; }
+  .imt-toast { bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)); }
+}
