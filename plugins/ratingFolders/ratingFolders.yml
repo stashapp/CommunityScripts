@@ -1,0 +1,43 @@
+name: Rating Folders
+description: Moves a scene's file to the folder you set for its rating (for example 9-10 to Top, 1-4 to Trash), optionally renaming it. Uses Stash's moveFiles, never deletes or overwrites, and starts in dry run.
+version: 1.0.0
+url: https://github.com/stashapp/CommunityScripts/tree/main/plugins/ratingFolders
+exec:
+  - python
+  - "{pluginDir}/ratingFolders.py"
+interface: raw
+settings:
+  rules:
+    displayName: Rating rules
+    description: "Rating range = folder, separated by semicolons, on the 0-10 scale (1 star = 2, 5 stars = 10). Example: 9-10=D:\\Videos\\Top; 7-8=D:\\Videos\\Keep; 1-4=D:\\Videos\\Trash. '7-8' covers 7.0 to 8.9. First matching rule wins. Folders must already exist and be inside a Stash library."
+    type: STRING
+  unratedFolder:
+    displayName: Folder for unrated scenes
+    description: "Where a scene goes when its rating is removed. Leave empty (default) to never move unrated scenes."
+    type: STRING
+  renameTemplate:
+    displayName: Rename template
+    description: "Optional. Leave empty to keep file names. Example: {performers} - {studio} - {date} - {title}. Also: {year} {code} {rating} {original}. Empty fields are dropped with their separator; name clashes get ' (2)'."
+    type: STRING
+  moveForReal:
+    displayName: Move files for real (turn off dry run)
+    description: "Off by default: the plugin only writes to the log what it would do. Check the log (or run the Preview task) first, then turn this on."
+    type: BOOLEAN
+  leaveSidecars:
+    displayName: Leave sidecar files behind
+    description: "By default .funscript and subtitle files (.srt .vtt .ass .ssa) with the same name move with the video. Turn on to leave them where they are."
+    type: BOOLEAN
+hooks:
+  - name: Move on rating change
+    description: When a scene's rating changes, moves its file to the folder of the matching rule.
+    triggeredBy:
+      - Scene.Update.Post
+tasks:
+  - name: Preview rating folders (dry run)
+    description: Logs what would happen to every rated scene. Never moves anything, whatever the settings.
+    defaultArgs:
+      mode: preview
+  - name: Apply rating folders to all rated scenes
+    description: Moves every rated scene to the folder of its rule. Respects dry run (on by default), so turn on "Move files for real" first.
+    defaultArgs:
+      mode: apply
