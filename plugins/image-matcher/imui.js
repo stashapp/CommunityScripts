@@ -128,7 +128,8 @@
       "Merge turns the look-alikes into one image in Stash. No file is deleted or moved. The kept copy is the one shown, and the image appears in each folder's gallery.",
       "Delete keeps one copy and deletes the other files from disk for good. Tags, ratings and details move to the kept copy first.",
       "A copy that holds several files (one merged earlier) lists every folder they are in. Delete removes all of them, and the warning names those folders.",
-      "Not a match hides the group or set from now on.",
+      "Folder rules also holds a list of folders to ignore: images in them are left out of every match, on both tabs.",
+      "Not a match hides the group or set from now on. On the Images tab, the bar under the list has one for every group on the page.",
       "Leave out drops one pair or one image from the merge or delete. Put back undoes it.",
       "There is no undo for a merge or a delete. One runs at a time.",
     ]],
@@ -180,7 +181,7 @@
         : h("div", { className: "imt-actions" },
             h("button", { className: "btn btn-primary btn-sm", disabled: !!props.disabled, onClick: props.onMerge, title: "One image in Stash. Every file stays where it is; the kept copy is the one shown." }, props.mergeLabel),
             h("button", { className: "btn btn-outline-danger btn-sm", disabled: !!props.disabled || !!props.deleteDisabled, title: props.deleteTitle, onClick: function () { setConfirm(true); } }, props.deleteLabel),
-            props.onDismiss ? h("button", { className: "btn btn-link btn-sm", onClick: props.onDismiss }, props.dismissLabel) : null,
+            props.onDismiss ? h("button", { className: "btn btn-link btn-sm", disabled: !!props.dismissDisabled, onClick: props.onDismiss }, props.dismissLabel) : null,
             props.extra || null));
   }
 
@@ -412,6 +413,7 @@
   function RulesPanel(props) {
     var t = React.useState(props.rules.join("\n")), text = t[0], setText = t[1];
     var sk = React.useState(props.skip.join("\n")), skipText = sk[0], setSkipText = sk[1];
+    var ig = React.useState(props.ignore.join("\n")), ignoreText = ig[0], setIgnoreText = ig[1];
     return h("div", { className: "card imt-card imt-rules" },
       h("h5", null, "Folders that win"),
       h("p", { className: "imt-muted" }, "One folder per line. The first folder listed wins, and a folder covers its subfolders. " +
@@ -421,6 +423,10 @@
       h("p", { className: "imt-muted" }, "One folder per line. A folder listed here is never compared as a set, which suits a folder of loose, unrelated images such as a year folder. " +
         "Its subfolders are still compared; end the line with /* to leave those out too. Its images still show on the Images tab."),
       h("textarea", { className: "form-control text-input imt-skip-list", rows: 4, value: skipText, spellCheck: false, onChange: function (ev) { setSkipText(ev.target.value); } }),
+      h("h5", null, "Folders to ignore"),
+      h("p", { className: "imt-muted" }, "One folder per line. Images in a folder listed here are left out of every match, on both tabs, so nothing here can be merged or deleted. " +
+        "Its subfolders are still checked; end the line with /* to ignore those too. An image merged across folders is ignored if any of its folders is listed."),
+      h("textarea", { className: "form-control text-input imt-ignore-list", rows: 4, value: ignoreText, spellCheck: false, onChange: function (ev) { setIgnoreText(ev.target.value); } }),
       props.found && props.found.length ? h("div", null,
         h("p", { className: "imt-muted" }, "Or tick them here. These are the folders in the sets found, the ones in the most sets first."),
         h("div", { className: "imt-found" }, props.found.map(function (f) {
@@ -433,7 +439,7 @@
             h("span", { className: "imt-muted" }, "in " + plural(f.sets, "set")));
         }))) : null,
       h("div", { className: "imt-actions" },
-        h("button", { className: "btn btn-primary btn-sm", onClick: function () { props.onSave(text.split("\n"), skipText.split("\n")); } }, "Save"),
+        h("button", { className: "btn btn-primary btn-sm", onClick: function () { props.onSave(text.split("\n"), skipText.split("\n"), ignoreText.split("\n")); } }, "Save"),
         h("button", { className: "btn btn-secondary btn-sm", onClick: props.onClose }, "Close")));
   }
 
@@ -497,7 +503,8 @@
       if (!data || !cfg) return null;
       var dismissed = {};
       cfg.dismissed.forEach(function (key) { dismissed[key] = true; });
-      var groups = data.groups.filter(function (g) { return !dismissed[core.groupKey(g.map(function (i) { return data.items[i].id; }))]; });
+      var kept = core.applyIgnore(data.items, data.groups, cfg.ignore);
+      var groups = kept.groups.filter(function (g) { return !dismissed[core.groupKey(g.map(function (i) { return data.items[i].id; }))]; });
       var sets = core.buildSets(data.items, groups, cfg.folderRules, 2, cfg.setSkip).filter(function (s) { return !dismissed[s.key]; });
       // every folder that is in a set when nothing is left out, for the tick list under Folder rules
       var counts = {};
@@ -507,7 +514,7 @@
       });
       var found = Object.keys(counts).map(function (f) { return { folder: f, sets: counts[f] }; })
         .sort(function (p, q) { return q.sets - p.sets || (p.folder < q.folder ? -1 : 1); });
-      return { groups: groups, sets: sets, found: found };
+      return { groups: groups, sets: sets, found: found, ignored: kept.ignored };
     }, [data, cfg, colorTick]);
 
     // Works from the list as it is when the operation ends, not as it was when it began.
@@ -543,6 +550,16 @@
       return p.then(function (r) { done(); return r; }, function (err) { done(); throw err; });
     }
     function onDismiss(key) { saveCfg(Object.assign({}, cfg, { dismissed: cfg.dismissed.concat([key]) })); }
+    // one save for the whole page: calling onDismiss once per group would each start from the same stale list
+    function onDismissMany(keys) {
+      var have = {};
+      cfg.dismissed.forEach(function (k) { have[k] = true; });
+      var fresh = keys.filter(function (k) { if (have[k]) return false; have[k] = true; return true; });
+      if (!fresh.length) return;
+      saveCfg(Object.assign({}, cfg, { dismissed: cfg.dismissed.concat(fresh) }));
+      setMessage("Marked " + plural(fresh.length, "group") + " on this page as not a match. They stay hidden from now on.");
+      goPage(page); // the next groups slide into this page: start them at the top
+    }
     function onRemember(keepFolder, otherFolder) {
       saveCfg(Object.assign({}, cfg, { folderRules: core.rememberRule(cfg.folderRules, keepFolder, otherFolder) }));
     }
@@ -601,12 +618,12 @@
             LEVELS.map(function (l) { return h("option", { key: l[0], value: l[0] }, l[1]); }))),
         h("button", { className: "btn btn-primary", disabled: phase.status === "loading" || !!op, onClick: find }, data ? "Find matches again" : "Find matches"),
         h("button", { className: "btn btn-secondary", onClick: function () { setShowRules(!showRules); } },
-          "Folder rules" + (cfg.folderRules.length + cfg.setSkip.length ? " (" + (cfg.folderRules.length + cfg.setSkip.length) + ")" : "")),
+          "Folder rules" + (cfg.folderRules.length + cfg.setSkip.length + cfg.ignore.length ? " (" + (cfg.folderRules.length + cfg.setSkip.length + cfg.ignore.length) + ")" : "")),
         h("label", { className: "imt-zoom" }, "Zoom",
           h("input", { type: "range", min: ZOOM_MIN, max: ZOOM_MAX, step: 0.25, value: zoom, title: "Thumbnail size",
             onChange: function (ev) { var v = Number(ev.target.value); setZoom(v); writeZoom(v); } }))),
-      showRules ? h(RulesPanel, { key: cfg.setSkip.join("\n"), rules: cfg.folderRules, skip: cfg.setSkip, found: view ? view.found : null, onClose: function () { setShowRules(false); },
-        onSave: function (rules, skip) { saveCfg(Object.assign({}, cfg, { folderRules: core.normalizeRules(rules), setSkip: core.normalizeSkips(skip) })); setShowRules(false); } }) : null,
+      showRules ? h(RulesPanel, { key: cfg.setSkip.join("\n") + "|" + cfg.ignore.join("\n"), rules: cfg.folderRules, skip: cfg.setSkip, ignore: cfg.ignore, found: view ? view.found : null, onClose: function () { setShowRules(false); },
+        onSave: function (rules, skip, ignore) { saveCfg(Object.assign({}, cfg, { folderRules: core.normalizeRules(rules), setSkip: core.normalizeSkips(skip), ignore: core.normalizeSkips(ignore) })); setShowRules(false); } }) : null,
       phase.status === "loading" ? h("div", { className: "imt-busy" }, h("span", { className: "imt-spinner" }), phase.text + "…") : null,
       phase.status === "error" ? h("div", { className: "imt-error" }, phase.text) : null,
       // results show in a bar fixed to the bottom of the screen, so they are seen wherever the button was
@@ -617,6 +634,7 @@
         h("p", { className: "imt-summary" },
           plural(data.items.length, "image") + " checked" +
           (data.archived ? " · " + data.archived + " inside archives (cbz, zip) left out" : "") +
+          (view.ignored ? " · " + view.ignored + " in ignored folders left out" : "") +
           (data.skipped ? " · " + data.skipped + " skipped (no perceptual hash yet; run Generate with image perceptual hashes on)" : "")),
         h("div", { className: "imt-tabs" },
           h("button", { className: "btn btn-sm " + (tab === "sets" ? "btn-primary" : "btn-secondary"), onClick: function () { switchTab("sets"); } }, "Folder sets (" + view.sets.length + ")"),
@@ -650,6 +668,9 @@
                 " on this page. " + severalFiles(delImages) + "Tags, ratings and details move to the kept copies first. " +
                 (stuck ? plural(stuck, "copy", "copies") + " with a name too long for Stash to delete " + (stuck === 1 ? "stays" : "stay") + "; merge to deal with " + (stuck === 1 ? "it" : "them") + ". " : "") + "There is no undo.",
               deleteConfirmLabel: "Delete " + plural(delImages.length, "copy", "copies"), onDelete: function () { runAll("dedupe", plans); },
+              // every group listed here, whatever is left in or out on its card
+              dismissLabel: "Not a match, all " + shown.length + " on this page", dismissDisabled: !!op,
+              onDismiss: function () { onDismissMany(shown.map(function (g) { return core.groupKey(g.map(function (i) { return data.items[i].id; })); })); },
             }));
         })() : null,
         h(Pager, { page: safePage, per: per, total: list.length, onPage: goPage })) : null);

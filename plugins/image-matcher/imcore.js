@@ -346,6 +346,23 @@
     }
     return false;
   }
+  // An image is ignored when any folder holding one of its files is on the ignore list, so
+  // neither merge nor delete can ever reach a file in an ignored folder. Same line syntax as skips.
+  function itemIgnored(it, ignore) {
+    if (!ignore || !ignore.length) return false;
+    var fs = it.folders && it.folders.length ? it.folders : [it.folder];
+    for (var i = 0; i < fs.length; i++) if (folderSkipped(fs[i], ignore)) return true;
+    return false;
+  }
+  // Drops ignored images from look-alike groups (arrays of item indexes); a group left with fewer than two is gone.
+  function applyIgnore(items, groups, ignore) {
+    if (!ignore || !ignore.length) return { groups: groups, ignored: 0 };
+    var gone = {}, count = 0;
+    items.forEach(function (it, i) { if (itemIgnored(it, ignore)) { gone[i] = true; count++; } });
+    var out = [];
+    groups.forEach(function (g) { var keep = g.filter(function (i) { return !gone[i]; }); if (keep.length > 1) out.push(keep); });
+    return { groups: out, ignored: count };
+  }
   function normalizeSkips(list) {
     var out = [];
     (list || []).forEach(function (r) {
@@ -464,7 +481,7 @@
     STAMP: STAMP, dirname: dirname, popcount32: popcount32, parseHash: parseHash, hashDistance: hashDistance,
     fingerprint: fingerprint, toItem: toItem, tooLongToDelete: tooLongToDelete, findGroups: findGroups, bandKey: bandKey,
     normalizeRules: normalizeRules, folderRank: folderRank, chooseKeeper: chooseKeeper, compareItems: compareItems,
-    buildSets: buildSets, matchDistance: matchDistance, isColor: isColor, rememberRule: rememberRule, folderRank: folderRank, folderSkipped: folderSkipped, normalizeSkips: normalizeSkips, localDiff: localDiff, luminance: luminance, DIFF_N: DIFF_N, splitMatch: splitMatch, pairKey: pairKey, distanceMix: distanceMix, setKey: setKey, groupKey: groupKey, setPlans: setPlans, mergeMeta: mergeMeta,
+    buildSets: buildSets, matchDistance: matchDistance, isColor: isColor, rememberRule: rememberRule, folderRank: folderRank, folderSkipped: folderSkipped, itemIgnored: itemIgnored, applyIgnore: applyIgnore, normalizeSkips: normalizeSkips, localDiff: localDiff, luminance: luminance, DIFF_N: DIFF_N, splitMatch: splitMatch, pairKey: pairKey, distanceMix: distanceMix, setKey: setKey, groupKey: groupKey, setPlans: setPlans, mergeMeta: mergeMeta,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.ImageMatcher = root.ImageMatcher || {};

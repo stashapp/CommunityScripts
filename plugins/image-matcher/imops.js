@@ -32,6 +32,7 @@
           folderRules: core.normalizeRules(parseList(raw.folderRules)),
           dismissed: parseList(raw.dismissed),
           setSkip: core.normalizeSkips(parseList(raw.setSkip)),
+          ignore: core.normalizeSkips(parseList(raw.ignore)),
         };
       });
     }
@@ -41,6 +42,7 @@
         folderRules: JSON.stringify(core.normalizeRules(cfg.folderRules)),
         dismissed: JSON.stringify(cfg.dismissed || []),
         setSkip: JSON.stringify(core.normalizeSkips(cfg.setSkip)),
+        ignore: JSON.stringify(core.normalizeSkips(cfg.ignore)),
       };
       return gql("mutation($id: ID!, $input: Map!) { configurePlugin(plugin_id: $id, input: $input) }", { id: PLUGIN_ID, input: input });
     }
